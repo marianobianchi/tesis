@@ -1,0 +1,12 @@
+Bajar opencv
+
+Instalar cmake y cmake-qt-gui
+
+Descomprimir opencv
+
+Seguir estos pasos: (sacados de http://www.raben.com/book/export/html/9)
+    * cd a la carpeta descomprimida
+    * mkdir build && cd build
+    * cmake -D CMAKE_INSTALL_PREFIX=/usr -D BUILD_NEW_PYTHON_SUPPORT=ON -D INSTALL_PYTHON_EXAMPLES=ON -D INSTALL_C_EXAMPLES=ON -D BUILD_EXAMPLES=ON -D WITH_OPENGL=ON ..
+    * make -j 2
+    

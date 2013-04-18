@@ -1,0 +1,22 @@
+http://www.ipol.im/
+http://vision.middlebury.edu
+
+
+
+
+http://matplotlib.org/
+http://www.numpy.org/
+
+Eclipse CDT con pydev
+http://www.eclipse.org/downloads/packages/eclipse-ide-cc-developers/junosr2
+http://pydev.org/
+
+OpenCV 
+http://docs.opencv.org/doc/tutorials/tutorials.html
+http://opencv.willowgarage.com/documentation/python/
+http://opencv.willowgarage.com/documentation/python/cookbook.html
+
+
+Bases de datos RGBD
+https://vision.in.tum.de/data/datasets/rgbd-dataset
+http://www.cs.washington.edu/rgbd-dataset/
