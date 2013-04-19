@@ -1,0 +1,34 @@
+Comienza hablando de técnicas no paramétricas y estimadores de densidad.
+
+Existen muchas técnicas estadísticas para extraer características importantes
+de una muestra de datos. Estas técnicas pueden dividirse en las paramétricas y 
+las no paramétricas. Estas últimas se enfocan en el reconocimiento de patrones
+sin suponer nada acerda de la distribución de los valores en el espacio de 
+características. Dos técnicas conocidas son "ventanas de parsen" (R. O. Duda and 
+P. E. Hart. Analysis. Pattern Classification and Scene John Willey & Sons, New 
+York, 1973.) y "k vecinos más cercanos".
+
+LLEGUÉ HASTA EL COMIENZO DEL CAPITULO 3. LEER/RESUMIR DESDE AHI
+
+
+Habla sobre ventanas de parzen, que es un interpolador.
+
+
+Con las funciones no paramétricas se obtiene un estidamor de la densidad a 
+partir de una muestra. A partir de esta función de densidad, va a aplicar la
+técnica "mean shift" (ver 3.2.3) para obtener las modas (En estadística, la moda es el valor
+con una mayor frecuencia en una distribución de datos).
+
+
+En el capítulo 4 muestra algoritmos de agrupamiento/clustering.
+
+
+En el 5 presenta un algoritmo de suavizado que preserva bordes.
+
+
+En el 6, comienza a explicar seguimiento. Hay 2 enfoques posibles: bottom-up y
+top-down. Primero explica la técnica bottom-up, que entra en el grupo de 
+"Representación y localización del objetivo", donde se da un modelo del objetivo
+a seguir y luego se utiliza una técnica para su localización cuadro a cuadro.
+Más adelante, explica el "filtro de Kalman" que pertenece a la segunda familia,
+que se reconoce como "Filtrado y asociación de datos".
