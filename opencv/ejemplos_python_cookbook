@@ -1,0 +1,20 @@
+Ejemplos simples en python (sacados de http://opencv.willowgarage.com/documentation/python/cookbook.html)
+
+
+
+CONVERTIR UNA IMAGEN
+
+import cv
+im = cv.LoadImageM('imagen.jpg')
+type(im)
+cv.SaveImage('imagen.png', im)
+
+
+
+CAMBIAR TAMAÑO
+
+import cv
+original = cv.LoadImageM("building.jpg")
+thumbnail = cv.CreateMat(original.rows / 10, original.cols / 10, cv.CV_8UC3)
+cv.Resize(original, thumbnail)
+

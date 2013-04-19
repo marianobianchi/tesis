@@ -1,0 +1,11 @@
+Park, Lepetit, Woo - Texture-Less Object Tracking with Online Training using An RGB-D Camera
+
+
+
+
+Dice que el algoritmo DOT detecta templates 2D. ¿A qué llama templates?
+
+
+No entiendo en qué consiste el entrenamiento y que información almacena.
+
+¿Que significa que en el entrenamiento el objeto sea alineado con un patron de imagen conocido?
