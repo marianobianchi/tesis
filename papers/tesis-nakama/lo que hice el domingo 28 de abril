@@ -1,0 +1,158 @@
+import numpy
+numpy.array
+numpy.array??
+a=numpy.array()
+a=numpy.array([1])
+a
+b = numpy.array([1,2,3,4])
+b + a
+a = numpy.array([4,3,2,1])
+a+b
+a*b
+a ** b
+numpy.matrix??
+numpy.ndarray??
+numpy.ndarray([[1], [2], [3], [4]])
+numpy.ndarray??
+numpy.matrix??
+numpy.matrix([[1], [2], [3], [4]])
+m=_
+m
+m * a
+a
+a
+import cv
+cv.LoadImage??
+cv.LoadImageM??
+im = cv.LoadImageM('tigre.jpg')
+im
+cv.CreateImage
+im
+im.channels
+im.rows == im.height
+cv.CreateImage??
+im.__dict
+im.__dict__
+im
+lab_im = cv.CreateImage??
+lab_im = cv.CreateImage(cv.GetSize(im), cv.IPL_DEPTH_16S, 3)
+cv.CvtColor(im, lab_im, cv.CV_BGR2Lab)
+lab_im = cv.CreateImage(cv.GetSize(im), cv.IPL_DEPTH_8U, 3)
+cv.CvtColor(im, lab_im, cv.CV_BGR2Lab)
+lab_im
+cv.ShowImage??
+cv.ShowImage('', lab_im)
+cv.SaveImage??
+cv.SaveImage('tigre_lab', lab_im)
+cv.SaveImage('tigre_lab.lab', lab_im)
+cv.SaveImage('tigre_lab.jpg', lab_im)
+lab_im
+lab_im[0]
+lab_im[0][0]
+a=lab_im[0][0]
+a
+a.type
+a.step
+a
+a[0]
+a[0]
+a.tostring
+a.tostring()
+im
+lab_im
+lab_im
+lab_im[0][0]
+lab_im[0]
+lab_im.origin
+lab_im.tostring
+lab_im.tostring()
+lab_im
+lab_im[1,1]
+lab_im[0,0]
+im[0,0]
+for r,g,b in im:
+    print r,g,b
+for r,g,b in lab_im:
+    print r,g,b
+im[0:2,0:2]
+import numpy
+import pylab
+pylab.figure()
+f=_
+pylab.plot??
+lab_im.depth
+lab_im.height
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        pass
+pylab.plot([1,2,3,4],[1,2,3,4],[10,20,30,40])
+pylab.plot([1,2,3,4],[1,2,3,4],[10,20,30,40])
+pylab.plot??
+f
+ax=f.gca(projection='3d')
+x = [1,2,3,4]
+y = [1,2,3,4]
+from mpl_toolkits.mplot3d import Axes3D
+ax=f.gca(projection='3d')
+ax.plot??
+ax.plot(x,y,[10,20,30,40])
+pylab.show()
+f=pylab.figure()
+ax=f.gca(projection='3d')
+ax.plot(x,y,[10,20,30,40])
+lab_im_L = []
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        lab_im_L.append(lab_im[nfil,nrow])
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        lab_im_L.append(lab_im[nfil,ncol])
+lab_im_a = []
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        lab_im_a.append(lab_im[nfil,ncol][1])
+lab_im_a
+lab_im_L = []
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        lab_im_L.append(lab_im[nfil,ncol][0])
+lab_im_b = []
+for nfil in range(lab_im.height):
+    for ncol in range(lab_im.width):
+        lab_im_b.append(lab_im[nfil,ncol][2])
+len(lab_im_L)
+len(lab_im_a)
+len(lab_im_b)
+f
+ax
+ax.plot(lab_im_L, lab_im_a, lab_im_b)
+pylab.show()
+ax.plot_surface(lab_im_L, lab_im_a, lab_im_b)
+pylab.show()
+f=pylab.figure()
+ax=f.gca(projection='3d')
+ax.plot_surface(lab_im_L, lab_im_a, lab_im_b)
+pylab.show()
+import numpy
+numpy.meshgrid??
+numpy.meshgrid([1,2,3,4],[5,6,7,8])
+numpy.meshgrid??
+ax.plot_surface??
+ax.images??
+pylab.imag??
+pylab.imshow??
+mat = numpy.matrix??
+mat = numpy.matrix()
+lab_im
+lab_im[:,:]
+lab_im[:,:,0]
+mat=lab_im[:,:]
+cv.cvmat??
+cv.cvmat
+cv.cvmat()
+cv.CreateMat??
+cv.CreateMat(lab_im.height, lab_im.width)
+cv.CreateMat(lab_im.height, lab_im.width, 3)
+cv.CreateMat(lab_im.height, lab_im.width, im.type)
+mat=cv.CreateMat(lab_im.height, lab_im.width, im.type)
+mat[0,0]

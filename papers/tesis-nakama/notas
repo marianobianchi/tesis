@@ -1,65 +1,38 @@
 Comienza hablando de técnicas no paramétricas y estimadores de densidad.
 
-Existen muchas técnicas estadísticas para extraer características importantes
-de una muestra de datos. Estas técnicas pueden dividirse en las paramétricas y 
-las no paramétricas. Estas últimas se enfocan en el reconocimiento de patrones
-sin suponer nada acerda de la distribución de los valores en el espacio de 
-características. Dos técnicas conocidas son "ventanas de parsen" (R. O. Duda and 
-P. E. Hart. Analysis. Pattern Classification and Scene John Willey & Sons, New 
-York, 1973.) y "k vecinos más cercanos".
+Existen muchas técnicas estadísticas para extraer características importantes de una muestra de datos. Estas técnicas pueden dividirse en las paramétricas ylas no paramétricas. Estas últimas se enfocan en el reconocimiento de patrones sin suponer nada acerda de la distribución de los valores en el espacio de características. Dos técnicas conocidas son "ventanas de parsen" (R. O. Duda andP. E. Hart. Analysis. Pattern Classification and Scene John Willey & Sons, NewYork, 1973.) y "k vecinos más cercanos".
 
 
-Con las funciones no paramétricas se obtiene un estidamor de la densidad a 
-partir de una muestra. A partir de esta función de densidad (PDF), va a aplicar la
-técnica "mean shift" (ver 3.2.3) para obtener las modas (En estadística, la moda 
-es el valor con una mayor frecuencia en una distribución de datos).
+Con las funciones no paramétricas se obtiene un estidamor de la densidad apartir de una muestra. A partir de esta función de densidad (PDF), va a aplicar la técnica "mean shift" (ver 3.2.3) para obtener las modas (En estadística, la modaes el valor con una mayor frecuencia en una distribución de datos).
 
 Cap 3.
 
-Mean shift es un proceso iterativo de punto fijo que converge a un máximo local
-donde en cada iteración se estima el gradiente normalizado de la función de
-densidad en el punto correspondiente a cada paso. Aplicado varias veces desde
-distintos puntos de partida se pueden encontrar las modas de la densidad (ver FH75).
+Un espacio de características (EC) es un espacio d-dimensional en el que cada elemento de la muestra es representado como un punto. Por ejemplo, si se toma una imagen, cada punto puede ser dispuesto en un EC tridimensional segun las coordenadas correspondientes a los valores L, a y b asociados a cada uno de los píxeles de la imagen.
 
-Para hallar la función de densidad se utiliza un método basado en kernels,
-conocido como Ventanas de Parzen..
+Mean shift es un proceso iterativo de punto fijo que converge a un máximo local donde en cada iteración se estima el gradiente normalizado de la función de densidad en el punto correspondiente a cada paso. Aplicado varias veces desde distintos puntos de partida se pueden encontrar las modas de la densidad (ver FH75).
 
-Se denomina "Mean shift" al desplazamiento desde un punto inicial x en el espacio
-a otro que resulta del promedio de los pesos de los datos s dentro de una vecindad
-determinada por la región S centrado en x.
+Para hallar la función de densidad se utiliza un método basado en kernels, conocido como Ventanas de Parzen..
 
-Mean shift usando un kernel Epanechnikov para estimar la función de densidad
-siempre converge.
+Se denomina "Mean shift" al desplazamiento desde un punto inicial x en el espacio a otro que resulta del promedio de los pesos de los datos s dentro de una vecindad determinada por la región S centrado en x.
 
-Hay técnicas para la elección del bandwidth. Una inapropiada elección del 
-bandwidth puede causar la unión de modas significativas en un contexto en 
-particular o generar otras no representativas.
+Mean shift usando un kernel Epanechnikov para estimar la función de densidad siempre converge.
+
+Hay técnicas para la elección del bandwidth. Una inapropiada elección delbandwidth puede causar la unión de modas significativas en un contexto enparticular o generar otras no representativas.
 
 
 Cap. 4
 
-El agrupamiento es un procedimiento de agrupación de datos d-dimensionales de una
-muestra de acuerdo a un criterio de cercanía el cual está determinado (en este
-trabajo) por la distancia euclidiana.
+El agrupamiento es un procedimiento de agrupación de datos d-dimensionales de una muestra de acuerdo a un criterio de cercanía el cual está determinado (en este trabajo) por la distancia euclidiana.
 
-Hay 3 grandes grupos en los que se dividen estos métodos: Algoritmos jerárquicos,
-particionales y basados en densidad
+Hay 3 grandes grupos en los que se dividen estos métodos: Algoritmos jerárquicos, particionales y basados en densidad
 
-El que se utiliza en este trabajo es el propuesto en CM98 el cuál se basa en la
-distribución de densidad utilizando Mean Shift que se complementa con un método
-supervisado/paramétrico por cuestiones de rendimiento en tiempo de ejecución. Este
-algoritmo es el de los k-vecinos más cercanos.
+El que se utiliza en este trabajo es el propuesto en CM98 el cuál se basa en la distribución de densidad utilizando Mean Shift que se complementa con un método supervisado/paramétrico por cuestiones de rendimiento en tiempo de ejecución. Este algoritmo es el de los k-vecinos más cercanos.
 
 
 Cap. 5
 
 
-Dominio empalmado: la localización de los pixeles está determinada por el dominio
-espacial mientras que la dimensionalidad por el dominio del rango. Ambos dominios
-conforman el dominio empalmado de dimensión d = r + 2, con r=1 en imagenes en 
-escala de grises, r=3 en imagenes a color, r>3 en el caso multiespectral.
-
-Presenta un algoritmo de suavizado preservando bordes.
+Dominio empalmado: la localización de los pixeles está determinada por el dominio espacial mientras que la dimensionalidad por el dominio del rango. Ambos dominios conforman el dominio empalmado de dimensión d = r + 2, con r=1 en imagenes enescala de grises, r=3 en imagenes a color, r>3 en el caso multiespectral.  Presenta un algoritmo de suavizado preservando bordes.
 
 Presenta un algoritmo de segmentación.
 
@@ -67,9 +40,5 @@ Presenta un algoritmo de segmentación.
 Cap. 6
 
 
-En el 6, comienza a explicar seguimiento. Hay 2 enfoques posibles: bottom-up y
-top-down. Primero explica la técnica bottom-up, que entra en el grupo de 
-"Representación y localización del objetivo", donde se da un modelo del objetivo
-a seguir y luego se utiliza una técnica para su localización cuadro a cuadro.
-Más adelante, explica el "filtro de Kalman" que pertenece a la segunda familia,
-que se reconoce como "Filtrado y asociación de datos".
+En el 6, comienza a explicar seguimiento. Hay 2 enfoques posibles: bottom-up y top-down. Primero explica la técnica bottom-up, que entra en el grupo de"Representación y localización del objetivo", donde se da un modelo del objetivo a seguir y luego se utiliza una técnica para su localización cuadro a cuadro. Más adelante, explica el "filtro de Kalman" que pertenece a la segunda familia, que se reconoce como "Filtrado y asociación de datos".
+
