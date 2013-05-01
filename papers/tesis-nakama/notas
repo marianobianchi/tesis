@@ -11,13 +11,13 @@ Un espacio de características (EC) es un espacio d-dimensional en el que cada e
 
 Mean shift es un proceso iterativo de punto fijo que converge a un máximo local donde en cada iteración se estima el gradiente normalizado de la función de densidad en el punto correspondiente a cada paso. Aplicado varias veces desde distintos puntos de partida se pueden encontrar las modas de la densidad (ver FH75).
 
-Para hallar la función de densidad se utiliza un método basado en kernels, conocido como Ventanas de Parzen..
+Para hallar la función de densidad (f sombrerito - Sección 3.2.1) se utiliza un método basado en kernels, conocido como Ventanas de Parzen..
 
 Se denomina "Mean shift" al desplazamiento desde un punto inicial x en el espacio a otro que resulta del promedio de los pesos de los datos s dentro de una vecindad determinada por la región S centrado en x.
 
 Mean shift usando un kernel Epanechnikov para estimar la función de densidad siempre converge.
 
-Hay técnicas para la elección del bandwidth. Una inapropiada elección delbandwidth puede causar la unión de modas significativas en un contexto enparticular o generar otras no representativas.
+Hay técnicas para la elección del bandwidth. Una inapropiada elección del bandwidth puede causar la unión de modas significativas en un contexto enparticular o generar otras no representativas.
 
 
 Cap. 4
