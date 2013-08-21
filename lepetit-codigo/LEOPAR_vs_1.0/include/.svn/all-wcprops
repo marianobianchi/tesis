@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include
+END
+cv_leopar.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_leopar.h
+END
+cv_esm.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_esm.h
+END
+cv_hyper.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_hyper.h
+END
+cv_camera.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_camera.h
+END
+cv_harris.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_harris.h
+END
+cv_define.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_define.h
+END
+cv_utilities.h
+K 25
+svn:wc:ra_dav:version-url
+V 87
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_utilities.h
+END
+cv_homography.h
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/hinterst/!svn/ver/1628/trunk/code/PROJECTS/Leopar/LEOPAR_vs_1.0/include/cv_homography.h
+END

@@ -1,0 +1,9 @@
+Primero poner en el entorno las variables de intel:
+
+cd /opt/intel/ipp/6.1.6.063/ia32/tools/env/
+. ./ippvars32.sh
+cd -
+
+Compilar:
+
+g++ -o maindot2d main_dot2D.cc cv_camera.cc cv_esm.cc cv_utilities.cc -I/home/mbianchi/tesis/lepetit-codigo/DOT_vs_1.0/include/ -I/home/mbianchi/tesis/lepetit-codigo/DOT_vs_1.0/resources/ESM/inc/ -I$IPPROOT/include -L$IPPROOT/lib -L$IPPROOT/sharedlib `pkg-config opencv --cflags --libs` -msse2 -lippi -lippcv -lippcore -lipps -lippm -shared -fPIC -lm

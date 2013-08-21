@@ -1,0 +1,57 @@
+DOT Demo
+----------------------------------------
+----------------------------------------
+
+ATTENTION 1: please download the ESM library from the following site (it is used for refining the 2D tracking):
+
+http://esm.gforge.inria.fr/ESMdownloads.html
+
+or directly:
+
+LINUX: ftp://ftp-sop.inria.fr/evolution/malis/software/ESM/ESMkitLin_0_4.tar.gz
+WINDOWS: ftp://ftp-sop.inria.fr/evolution/malis/software/ESM/ESMkitWin_0_4.zip
+
+extract the folders and files and put ESMlibry.dll, ESMlibry.h and ESMlibry.lib into the ./resources/ESM folder!
+
+The authors of the ESM code are:
+
+Email:  Selim.Benhimane@in.tum.de
+Email:  Ezio.Malis@inria.fr
+
+ATTENTION: all software included in the folder "resources" might not be under GPL license! 
+Please check the licensing of the corresponding providers. 
+
+-----------------------------------------
+
+ATTENTION 2: Linux/Mac users have to switch of the WIN32 flag. I have not tested the code under LINUX/MAC however I always tried to write the code
+such that platform specific modules are mirrored for LINUX/MAC versions. Thus, porting the code should not be a big problem any more.
+
+-----------------------------------------
+
+ATTENTION 3: The code is only running on computers with Intel processors (since I make use of IPP and SSE). 
+
+-----------------------------------------
+
+ATTENTION 4:
+
+The approach is sensible to how well you learn the object:
+The best result for 3D objects are obtained by learning the object of interest on a homogenous white background.
+The matching results improve if you save the images and manually set the region of interest such that the most discriminative regions of the objects are learned.
+
+-----------------------------------------
+
+Parameters to tune (amongst others):
+
+l_T: the number of pixels the template is invariant to translation (set to 7 - you should leave it as it is)
+l_N: width of the template in number of regions - if e.g. l_N=10 and l_T=7 the template width is 70 pixels
+l_M: height of the template in number of regions - if e.g. l_M=10 and l_T=7 the template height is 70 pixels
+l_G: number of regions unmasked - for small templates l_G=l_N*l_M. For larger templates tracking arbitrary shapes
+l_G might be set to a much lower number (in order to deal with changing background in case of non-rectangular shaped objects)
+
+There is also a constructor parameter: it determines the gradient norm which is responsible to decide which region
+is set as homogenous region (bottom symbol in the paper). For objects with high gradient norms this might be set
+to a high value (and for objects with small gradient norms it might be set to a low value).
+
+Runtime is dependent on the template size, on the number of used templates and on the cluster parameter: 
+corresponding to which value parameter in cluster_heu(paramter) is set the matching might be slower or faster.
+

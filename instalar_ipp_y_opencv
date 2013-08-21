@@ -1,0 +1,24 @@
+1. Instalar ipp
+    - Registrarse y bajar la versión 6.1.6.063: https://registrationcenter.intel.com/RegCenter/AutoGen.aspx?ProductID=1452&AccountID=&EmailID=&ProgramID=&RequestDt=&rm=NCOM&lang=
+    - Ejecutar el instalador como superuser
+
+2. Instalar opencv
+    - Descargar opencv (version 2.4.0)
+    - Descomprimir y crear una carpeta adentro de la descomprimida llamada "build"
+    - Para compilar usar cmake (sudo aptitude install cmake-qt-gui)
+        - Abrir cmake
+        - Poner como carpeta del código la descomprimida y como "build" la creada antes
+        - Click en configurar
+        - Ingresar estas configuraciones:
+            - with_ipp = True (una vez hecho esto, poner Configurar otra vez)
+            - ipp_h_path = carpeta "include" dentro de ipp
+            - Si se quiere, instalar los ejemplos de python y c (buscar "example")
+            - Si se quiere instalar soporte para python, instalar python-dev y hacer 
+              click en configurar otra vez. Asegurarse que la entrada "BUILD_opencv_python"
+              esté seleccionada
+            - cmake_install_prefix = /usr/
+        - Click en Generar
+        - Ir por consola a la carpeta build y ejecutar "make"
+        - Ejecutar "sudo make install"
+        
+            

@@ -1,0 +1,12 @@
+Authors of dot-demo
+--------------------
+
+Stefan Hinterstoiﬂer (hinterst@in.tum.de)
+
+
+This is an implementation of the CVPR 10 paper:
+-------------------------------------------------
+
+S. Hinterstoisser, V. Lepetit, S. Ilic, P. Fua, N. Navab
+Dominant Orientation Templates for Real-Time Detection of Texture-Less Objects
+IEEE Computer Society Conference on Computer Vision and Pattern Recognition (CVPR), San Francisco, California
