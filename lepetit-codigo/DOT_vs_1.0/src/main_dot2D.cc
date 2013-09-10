@@ -45,7 +45,9 @@ int main( int argc, char * argv[] )
 	const int l_G=121;
 	
 	int l_learn_thres=l_G*0.9;
-	int l_detect_thres=l_G*0.8;	
+	int l_detect_thres=l_G*0.8;
+	
+	
 
 	cv::cv_dot_template<l_M,l_N,l_T,l_G> l_template(23);
 
