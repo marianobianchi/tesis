@@ -32,7 +32,9 @@
 
 /******************************* includes ***********************************/
 
-#include "ESMlibry.h"
+extern "C" {
+    #include "ESMlibry.h"
+}
 
 #include "cv.h"
 #include "cxcore.h"
