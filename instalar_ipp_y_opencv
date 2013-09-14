@@ -5,6 +5,11 @@
 2. Instalar opencv
     - Descargar opencv (version 2.4.0)
     - Descomprimir y crear una carpeta adentro de la descomprimida llamada "build"
+    - Instalar libgtk2.0 desde este link: http://www.ubuntuupdates.org/package/gnome_shell/raring/main/base/libgtk2.0-dev
+      o ingresando esta dirección en el navegador: apt:libgtk2.0-dev
+    - Instalar algunas librerias necesarias para que opencv pueda usar la camara web.
+        - sudo apt-get install libavformat-dev libswscale-dev
+        -  ffmpeg, libgstreamer, libv4l, libdc1394 2.x. (instalar todos con sus respectivos paquetes "dev")
     - Para compilar usar cmake (sudo aptitude install cmake-qt-gui)
         - Abrir cmake
         - Poner como carpeta del código la descomprimida y como "build" la creada antes
