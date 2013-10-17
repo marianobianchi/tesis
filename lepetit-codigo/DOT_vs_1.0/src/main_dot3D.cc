@@ -37,12 +37,23 @@
 
 int main( int argc, char * argv[] )
 {
-	const int l_T=7;
+    //the number of pixels the template is invariant to translation (set to 7 - you should leave it as it is)
+	const int l_T=7; 
+    
+    //width of the template in number of regions - if e.g. l_N=10 and l_T=7 the template width is 70 pixels
 	const int l_N=154/l_T;
-	const int l_M=154/l_T;
-	const int l_IN=640;
-	const int l_IM=480;
-	const int l_G=121;
+	
+    //height of the template in number of regions - if e.g. l_M=10 and l_T=7 the template height is 70 pixels
+    const int l_M=154/l_T;
+	
+    // Supongo que es el tamaño de la imagen
+    const int l_IN=640;
+    const int l_IM=480;
+	
+    //number of regions unmasked - for small templates l_G=l_N*l_M. For larger templates tracking arbitrary shapes
+    // It might be set to a much lower number (in order to deal with changing background in case of non-rectangular shaped objects)
+    const int l_G=121;
+    
 
 	int l_learn_thres_up=l_G*0.95;
 	int l_learn_thres_down=l_G*0.9;

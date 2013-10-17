@@ -8,9 +8,14 @@ VARIABLES = $(shell . /opt/intel/ipp/6.1.6.063/ia32/tools/env/ippvars32.sh)
 
 .PHONY: clean
 
+all: main2d main3d
 
 main2d: main_dot2D.cc $(OBJECTS)
-	g++ -o $@ $^ $(ESM_LIB) $(DOT_INCLUDE) $(ESM_INCLUDE) $(OPENCV) -I$(IPPROOT)/include -L$(IPPROOT)/lib -L$(IPPROOT)/sharedlib -msse2 -lippi -lippcv -lippcore -lipps -lippm -lm
+	g++ -o $@ -D MAIN_DOT_2D $^ $(ESM_LIB) $(DOT_INCLUDE) $(ESM_INCLUDE) $(OPENCV) -I$(IPPROOT)/include -L$(IPPROOT)/lib -L$(IPPROOT)/sharedlib -msse2 -lippi -lippcv -lippcore -lipps -lippm -lm
+
+
+main3d: main_dot3D.cc $(OBJECTS)
+	g++ -o $@ -D MAIN_DOT_3D $^ $(ESM_LIB) $(DOT_INCLUDE) $(ESM_INCLUDE) $(OPENCV) -I$(IPPROOT)/include -L$(IPPROOT)/lib -L$(IPPROOT)/sharedlib -msse2 -lippi -lippcv -lippcore -lipps -lippm -lm
 
 
 cv_esm.o: cv_esm.cc
@@ -20,5 +25,5 @@ cv_esm.o: cv_esm.cc
 	g++ -c -g -o $@ $< $(DOT_INCLUDE) $(OPENCV) -msse2
 
 clean:
-	rm -f *.o main2d
+	rm -f *.o main2d main3d
 
