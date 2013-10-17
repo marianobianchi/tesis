@@ -27,7 +27,6 @@
 //																			//
 //////////////////////////////////////////////////////////////////////////////
 
-#include "cv_define.h"
 
 #ifdef MAIN_DOT_3D
 
@@ -118,6 +117,8 @@ int main( int argc, char * argv[] )
 			l_tra_col1 = l_x;
 			l_tra_row1 = l_y;
 		}
+        // Se fija que el recuadro (imagino que el recuadro de donde toma
+        // el nuevo template) esté completamente dentro de la imagen
 		if( l_tra_col1-l_template.get_width()/2 >= 0 ||
 			l_tra_row1-l_template.get_height()/2 >= 0 ||
 			l_tra_col1+l_template.get_width()/2 <= lp_gray->width-1 ||
@@ -128,15 +129,24 @@ int main( int argc, char * argv[] )
 			CvPoint l_pt3;
 			CvPoint l_pt4;
 
+            // punto de la esquina superior izquierda del recuadro
 			l_pt1.x = l_tra_col1-l_template.get_width()/2;
 			l_pt1.y = l_tra_row1-l_template.get_height()/2;
-			l_pt2.x = l_tra_col1+l_template.get_width()/2;
+			
+            // punto de la esquina superior derecha del recuadro
+            l_pt2.x = l_tra_col1+l_template.get_width()/2;
 			l_pt2.y = l_tra_row1-l_template.get_height()/2;
+            
+            // punto de la esquina inferior derecha del recuadro
 			l_pt3.x = l_tra_col1+l_template.get_width()/2;
 			l_pt3.y = l_tra_row1+l_template.get_height()/2;
-			l_pt4.x = l_tra_col1-l_template.get_width()/2;
+			
+            // punto de la esquina inferior izquierda del recuadro
+            l_pt4.x = l_tra_col1-l_template.get_width()/2;
 			l_pt4.y = l_tra_row1+l_template.get_height()/2;
 
+            // Si hay que mostrar el recuadro, lo dibuja sobre la imagen
+            // de color
 			if( l_show_rec )
 			{
 				cvLine(lp_color,l_pt1,l_pt2,CV_RGB(0,0,0),3);
@@ -144,12 +154,15 @@ int main( int argc, char * argv[] )
 				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(0,0,0),3);
 				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(0,0,0),3);
 
-				cvLine(lp_color,l_pt1,l_pt2,CV_RGB(255,255,0),1);
-				cvLine(lp_color,l_pt2,l_pt3,CV_RGB(255,255,0),1);
-				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,255,0),1);
-				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,255,0),1);
+				cvLine(lp_color,l_pt1,l_pt2,CV_RGB(255,0,0),1);
+				cvLine(lp_color,l_pt2,l_pt3,CV_RGB(255,0,0),1);
+				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,0,0),1);
+				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
 			}
 		}
+        
+        // Si hizo click derecho (l_e == 2) y está dentro de la imagen
+        // (creo que l_x != -1 y l_y != -1 es eso)
 		if(  l_x != -1 && l_y != -1 && l_e == 2 )
 		{
 		
