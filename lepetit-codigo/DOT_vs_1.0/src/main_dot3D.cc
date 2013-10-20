@@ -37,26 +37,26 @@
 int main( int argc, char * argv[] )
 {
     //the number of pixels the template is invariant to translation (set to 7 - you should leave it as it is)
-	const int l_T=7; 
-    
+	const int l_T=7;
+
     //width of the template in number of regions - if e.g. l_N=10 and l_T=7 the template width is 70 pixels
 	const int l_N=154/l_T;
-	
+
     //height of the template in number of regions - if e.g. l_M=10 and l_T=7 the template height is 70 pixels
     const int l_M=154/l_T;
-	
+
     // Supongo que es el tamaño de la imagen
     const int l_IN=640;
     const int l_IM=480;
-	
+
     //number of regions unmasked - for small templates l_G=l_N*l_M. For larger templates tracking arbitrary shapes
     // It might be set to a much lower number (in order to deal with changing background in case of non-rectangular shaped objects)
     const int l_G=121;
-    
+
 
 	int l_learn_thres_up=l_G*0.95;
 	int l_learn_thres_down=l_G*0.9;
-	int l_detect_thres=l_G*0.6;	
+	int l_detect_thres=l_G*0.6;
 
 	cv::cv_dot_template<l_M,l_N,l_T,l_G> l_template(10);
 
@@ -110,7 +110,7 @@ int main( int argc, char * argv[] )
 		if( l_xx >= 0 && l_yy >= 0 )
 		{
 			l_x = l_xx;
-			l_y = l_yy;		
+			l_y = l_yy;
 		}
 		if( l_x != -1 && l_y != -1 )
 		{
@@ -132,15 +132,15 @@ int main( int argc, char * argv[] )
             // punto de la esquina superior izquierda del recuadro
 			l_pt1.x = l_tra_col1-l_template.get_width()/2;
 			l_pt1.y = l_tra_row1-l_template.get_height()/2;
-			
+
             // punto de la esquina superior derecha del recuadro
             l_pt2.x = l_tra_col1+l_template.get_width()/2;
 			l_pt2.y = l_tra_row1-l_template.get_height()/2;
-            
+
             // punto de la esquina inferior derecha del recuadro
 			l_pt3.x = l_tra_col1+l_template.get_width()/2;
 			l_pt3.y = l_tra_row1+l_template.get_height()/2;
-			
+
             // punto de la esquina inferior izquierda del recuadro
             l_pt4.x = l_tra_col1-l_template.get_width()/2;
 			l_pt4.y = l_tra_row1+l_template.get_height()/2;
@@ -160,12 +160,12 @@ int main( int argc, char * argv[] )
 				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
 			}
 		}
-        
+
         // Si hizo click derecho (l_e == 2) y está dentro de la imagen
         // (creo que l_x != -1 y l_y != -1 es eso)
 		if(  l_x != -1 && l_y != -1 && l_e == 2 )
 		{
-		
+            // Matriz de 3 filas x 4 columnas, de tipo float
 			CvMat * lp_result = cvCreateMat(3,4,CV_32F);
 			cvSet(lp_result,cvRealScalar(1));
 
@@ -178,19 +178,21 @@ int main( int argc, char * argv[] )
 			CV_MAT_ELEM(*lp_result,float,0,3) = l_x-l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,3) = l_y+l_template.get_height()/2;
 
+            // l_template se va a encargar de hacer el matching
 			l_template.online_create_bit_list_fast(lp_mean,lp_result,0,7,0.9);
 			l_template.add_class();
 
+            // l_cur_vec es un vector de matrices
 			l_cur_vec.push_back(lp_result);
 
 			l_learn_onl = true;
 			l_class += 1;
 		}
-		
-		cv::cv_timer l_timer0;		
-		cv::cv_timer l_timer1;		
-		cv::cv_timer l_timer2;		
-		cv::cv_timer l_timer3;		
+
+		cv::cv_timer l_timer0;
+		cv::cv_timer l_timer1;
+		cv::cv_timer l_timer2;
+		cv::cv_timer l_timer3;
 
 
 		l_timer0.start();
@@ -201,7 +203,7 @@ int main( int argc, char * argv[] )
 		std::list<cv::cv_candidate*> * lp_list = NULL;
 		if( l_learn_onl == true )
 		{
-			lp_list = l_template.online_process(l_img.first,l_detect_thres,l_IN/l_T,l_IM/l_T);	
+			lp_list = l_template.online_process(l_img.first,l_detect_thres,l_IN/l_T,l_IM/l_T);
 		}
 		else
 		{
@@ -256,8 +258,8 @@ int main( int argc, char * argv[] )
 						CV_MAT_ELEM(*lp_rec,float,0,2) += (*l_i)->m_col;
 						CV_MAT_ELEM(*lp_rec,float,1,2) += (*l_i)->m_row;
 						CV_MAT_ELEM(*lp_rec,float,0,3) += (*l_i)->m_col;
-						CV_MAT_ELEM(*lp_rec,float,1,3) += (*l_i)->m_row;	
-						
+						CV_MAT_ELEM(*lp_rec,float,1,3) += (*l_i)->m_row;
+
 						if( l_counter == 0 )
 						{
 							if( (*l_i)->m_val >= l_detect_thres )
@@ -265,7 +267,7 @@ int main( int argc, char * argv[] )
 								l_template.render(lp_color,l_template.get_cnt()[(*l_i)->m_ind-1],(*l_i)->m_row,(*l_i)->m_col);
 							}
 							lp_max_val[l_j] = (*l_i)->m_val;
-							
+
 							if( l_show_hyp == true )
 							{
 								cv::cv_draw_poly(lp_color,lp_rec,3,255,255,255);
@@ -297,7 +299,7 @@ int main( int argc, char * argv[] )
 												float l_mag = *(l_img.second+l_row*lp_gray->width+l_col);
 
 												if( l_mag > 10 )
-												{		
+												{
 													l_center_x += l_mag*l_col;
 													l_center_y += l_mag*l_row;
 
@@ -311,7 +313,7 @@ int main( int argc, char * argv[] )
 
 									CvMat * lp_rec1 = cvCreateMat(3,4,CV_32F);
 									cvSet(lp_rec1,cvRealScalar(1));
-									
+
 									CV_MAT_ELEM(*lp_rec1,float,0,0) = l_center_x-l_N*l_T/2;
 									CV_MAT_ELEM(*lp_rec1,float,1,0) = l_center_y-l_M*l_T/2;
 									CV_MAT_ELEM(*lp_rec1,float,0,1) = l_center_x+l_N*l_T/2;
@@ -341,13 +343,13 @@ int main( int argc, char * argv[] )
 					}
 					++l_counter;
 				}
-			}	
+			}
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
 			{
 				cv::empty_ptr_list(lp_list[l_i]);
 			}
 			std::cerr << "tim: " << (int)(l_timer0.get_time()*1000) << "ms; fps: " << (int)l_timer0.get_fps() << "fps ";
-			std::cerr << "pre: " << (int)(l_timer1.get_time()*1000) << "ms; pro: " << (int)(l_timer2.get_time()*1000) << "ms; "; 
+			std::cerr << "pre: " << (int)(l_timer1.get_time()*1000) << "ms; pro: " << (int)(l_timer2.get_time()*1000) << "ms; ";
 
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
 			{
@@ -367,7 +369,7 @@ int main( int argc, char * argv[] )
 			std::cerr << "tim: " << (int)(l_timer0.get_time()*1000) << "ms; fps: " << (int)l_timer0.get_fps() << "fps ";
 			std::cerr << "pre: " << (int)(l_timer1.get_time()*1000) << "ms; pro: " << (int)(l_timer2.get_time()*1000) << "ms ";
 			std::cerr << " size: " << l_template.get_templates() << "    " << char(13) << std::flush;
-		}	
+		}
 		cv::cv_show_image(lp_color,"hallo1");
 		int l_key = cvWaitKey(1);
 
@@ -421,7 +423,7 @@ int main( int argc, char * argv[] )
 		if( l_key == 105 )
 		{
 			l_learn_onl = !l_learn_onl;
-		
+
 			if( l_learn_onl == false )
 			{
 				l_template.clear_clu_list();

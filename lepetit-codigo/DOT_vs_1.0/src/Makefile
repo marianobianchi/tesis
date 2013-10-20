@@ -1,10 +1,18 @@
+export IPPROOT=/opt/intel/ipp/6.1.6.063/ia32
+export INCLUDE=$(IPPROOT)/include:
+export LD_LIBRARY_PATH=$(IPPROOT)/sharedlib:
+export LIB=$(IPPROOT)/lib:
+export CPATH=$(IPPROOT)/include:
+export LIBRARY_PATH=$(IPPROOT)/lib:
+export NLSPATH=$(IPPROOT)/lib/locale/%l_%t/%N:
+
+
+
 OBJECTS = cv_utilities.o cv_camera.o cv_esm.o
 DOT_INCLUDE = -I../include/
 ESM_INCLUDE = -I../../resources/ESM/inc/
 ESM_LIB = ../../resources/ESM/lib/ESMlib.a
 OPENCV = `pkg-config --cflags --libs opencv`
-
-VARIABLES = $(shell . /opt/intel/ipp/6.1.6.063/ia32/tools/env/ippvars32.sh)
 
 .PHONY: clean
 
