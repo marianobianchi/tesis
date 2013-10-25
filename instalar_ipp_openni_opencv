@@ -33,3 +33,28 @@
         - Ejecutar "sudo make install"
         
             
+
+Para compilar openCV de 32 bits en una máquina de 64 bits:
+
+1. Comentar unas lineas de cmake que se usan al copilar OpenCV. El archivo a modificar es OpenCV_version/cmake/OpenCVFindIPP.cmake
+
+> set(IPP_X64 0)
+> #if (CMAKE_CXX_SIZEOF_DATA_PTR EQUAL 8)
+> #    set(IPP_X64 1)
+> #endif()
+> #if (CMAKE_CL_64)
+> #    set(IPP_X64 1)
+> #endif()
+
+2. Agregar las siguientes lineas al archivo OpenCV_version/cmake/OpenCVGenConfig.cmake antes de la linea que contiene "math(EXPR SIZEOF_VOID_P_BITS "8 * ${CMAKE_SIZEOF_VOID_P}")":
+
+if(NOT CMAKE_SIZEOF_VOID_P)
+  set(CMAKE_SIZEOF_VOID_P 4)  # replace 4 with 8 for 64-bit machine
+endif()
+
+3. Instalar IPP de 32 bits
+4. Instalar ia32-libs (además de las antes mencionadas)
+5. Instalar: sudo apt-get install libc6-dev-i386
+6. Instalar: sudo apt-get install lib32z1-dev
+7. Instalar: sudo apt-get install g++-multilib
+
