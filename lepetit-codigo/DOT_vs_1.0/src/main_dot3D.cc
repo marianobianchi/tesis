@@ -28,11 +28,11 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-#ifdef MAIN_DOT_3D
+//#ifdef MAIN_DOT_3D
 
 #include "cv_dot_template.h"
 #include "cv_camera.h"
-#include "cv_esm.h"
+
 
 int main( int argc, char * argv[] )
 {
@@ -117,69 +117,80 @@ int main( int argc, char * argv[] )
 			l_tra_col1 = l_x;
 			l_tra_row1 = l_y;
 		}
-        // Se fija que el recuadro (imagino que el recuadro de donde toma
-        // el nuevo template) esté completamente dentro de la imagen
-		if( l_tra_col1-l_template.get_width()/2 >= 0 ||
-			l_tra_row1-l_template.get_height()/2 >= 0 ||
-			l_tra_col1+l_template.get_width()/2 <= lp_gray->width-1 ||
-			l_tra_row1+l_template.get_height()/2 <= lp_gray->height-1 )
-		{
-			CvPoint l_pt1;
-			CvPoint l_pt2;
-			CvPoint l_pt3;
-			CvPoint l_pt4;
+
+		// Si el mouse está dentro de la ventana, dibuja
+		// el recuadro
+        if( l_tra_col1-l_template.get_width()/2 >= 0 ||
+            l_tra_row1-l_template.get_height()/2 >= 0 ||
+            l_tra_col1+l_template.get_width()/2 <= lp_gray->width-1 ||
+            l_tra_row1+l_template.get_height()/2 <= lp_gray->height-1 )
+        {
+            CvPoint l_pt1;
+            CvPoint l_pt2;
+            CvPoint l_pt3;
+            CvPoint l_pt4;
 
             // punto de la esquina superior izquierda del recuadro
-			l_pt1.x = l_tra_col1-l_template.get_width()/2;
-			l_pt1.y = l_tra_row1-l_template.get_height()/2;
+            l_pt1.x = l_tra_col1-l_template.get_width()/2;
+            l_pt1.y = l_tra_row1-l_template.get_height()/2;
 
             // punto de la esquina superior derecha del recuadro
             l_pt2.x = l_tra_col1+l_template.get_width()/2;
-			l_pt2.y = l_tra_row1-l_template.get_height()/2;
+            l_pt2.y = l_tra_row1-l_template.get_height()/2;
 
             // punto de la esquina inferior derecha del recuadro
-			l_pt3.x = l_tra_col1+l_template.get_width()/2;
-			l_pt3.y = l_tra_row1+l_template.get_height()/2;
+            l_pt3.x = l_tra_col1+l_template.get_width()/2;
+            l_pt3.y = l_tra_row1+l_template.get_height()/2;
 
             // punto de la esquina inferior izquierda del recuadro
             l_pt4.x = l_tra_col1-l_template.get_width()/2;
-			l_pt4.y = l_tra_row1+l_template.get_height()/2;
+            l_pt4.y = l_tra_row1+l_template.get_height()/2;
 
             // Si hay que mostrar el recuadro, lo dibuja sobre la imagen
             // de color
-			if( l_show_rec )
-			{
-				cvLine(lp_color,l_pt1,l_pt2,CV_RGB(0,0,0),3);
-				cvLine(lp_color,l_pt2,l_pt3,CV_RGB(0,0,0),3);
-				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(0,0,0),3);
-				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(0,0,0),3);
+            if( l_show_rec )
+            {
+                cvLine(lp_color,l_pt1,l_pt2,CV_RGB(0,0,0),3);
+                cvLine(lp_color,l_pt2,l_pt3,CV_RGB(0,0,0),3);
+                cvLine(lp_color,l_pt3,l_pt4,CV_RGB(0,0,0),3);
+                cvLine(lp_color,l_pt4,l_pt1,CV_RGB(0,0,0),3);
 
-				cvLine(lp_color,l_pt1,l_pt2,CV_RGB(255,0,0),1);
-				cvLine(lp_color,l_pt2,l_pt3,CV_RGB(255,0,0),1);
-				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,0,0),1);
-				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
-			}
-		}
+                cvLine(lp_color,l_pt1,l_pt2,CV_RGB(255,0,0),1);
+                cvLine(lp_color,l_pt2,l_pt3,CV_RGB(255,0,0),1);
+                cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,0,0),1);
+                cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
+            }
+        }
 
         // Si hizo click derecho (l_e == 2) y está dentro de la imagen
-        // (creo que l_x != -1 y l_y != -1 es eso)
+        // (creo que l_x != -1 y l_y != -1 es eso), toma una nueva muestra
+        // (TOMA UN NUEVO TEMPLATE)
 		if(  l_x != -1 && l_y != -1 && l_e == 2 )
 		{
             // Matriz de 3 filas x 4 columnas, de tipo float
 			CvMat * lp_result = cvCreateMat(3,4,CV_32F);
 			cvSet(lp_result,cvRealScalar(1));
 
+            //Fila 0 y 1, columna 0: son el punto izquierdo de arriba del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,0) = l_x-l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,0) = l_y-l_template.get_height()/2;
+
+			//Fila 0 y 1, columna 1: son el punto derecho de arriba del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,1) = l_x+l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,1) = l_y-l_template.get_height()/2;
+
+            //Fila 0 y 1, columna 2: son el punto derecho de abajo del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,2) = l_x+l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,2) = l_y+l_template.get_height()/2;
+
+            //Fila 0 y 1, columna 3: son el punto izquierdo de abajo del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,3) = l_x-l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,3) = l_y+l_template.get_height()/2;
 
-            // l_template se va a encargar de hacer el matching
+            // Toma un template de la imagen del recuadro
 			l_template.online_create_bit_list_fast(lp_mean,lp_result,0,7,0.9);
+
+			// Entiendo que llama clase a cada muestra tomada (template)
 			l_template.add_class();
 
             // l_cur_vec es un vector de matrices
@@ -222,6 +233,9 @@ int main( int argc, char * argv[] )
 			float * lp_col_val = new float[l_template.get_classes()];
 			float * lp_row_val = new float[l_template.get_classes()];
 
+
+            // Entiendo que lo que hace acá es buscar un template que matchee con
+            // alguna parte de la imagen
 			for( int l_j=0; l_j<l_template.get_classes(); ++l_j )
 			{
 				int l_counter = 0;
@@ -396,6 +410,8 @@ int main( int argc, char * argv[] )
 			}
 			std::cerr << "new threshold: " << l_thres << "  " << std::endl;
 		}
+
+		// Si se aprieta J
 		if( l_key == 106 )
 		{
 			static int l_n=0;
@@ -408,18 +424,22 @@ int main( int argc, char * argv[] )
 
 			++l_n;
 		}
+		// Si se aprieta R
 		if( l_key == 114 )
 		{
 			l_show_rec = !l_show_rec;
 		}
+		// Si se aprieta S
 		if( l_key == 115 )
 		{
 			l_show_hyp = !l_show_hyp;
 		}
+		// Si se aprieta E
 		if( l_key == 101 )
 		{
 			l_show_esm = !l_show_esm;
 		}
+		// Si se aprieta I
 		if( l_key == 105 )
 		{
 			l_learn_onl = !l_learn_onl;
@@ -430,6 +450,8 @@ int main( int argc, char * argv[] )
 				l_template.cluster_heu(4);
 			}
 		}
+
+		// Si se aprieta D
 		if( l_key == 100 )
 		{
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
@@ -443,6 +465,7 @@ int main( int argc, char * argv[] )
 			l_template.clear_rec_list();
 			l_template.clear_cnt_list();
 		}
+		// Si se aprieta ESC
 		if( l_key == 27 )
 		{
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
@@ -469,5 +492,5 @@ int main( int argc, char * argv[] )
 	return 0;
 }
 
-#endif
-
+////#endif
+//
