@@ -1,7 +1,3 @@
-#include "cv_define.h"
-
-#ifdef MAIN_WIL
-
 #include <sstream>
 #include <string>
 
@@ -33,12 +29,12 @@ void  draw_patch( IplImage * ap_image, CvMat * ap_image_points )
 	l_pt2.y = CV_MAT_ELEM(*ap_image_points,float,1,2);
 	l_pt3.x = CV_MAT_ELEM(*ap_image_points,float,0,3);
 	l_pt3.y = CV_MAT_ELEM(*ap_image_points,float,1,3);
-	
+
 	CvPoint l_point_vector[5] = {l_pt0,l_pt1,l_pt2,l_pt3,l_pt0};
 	cvFillConvexPoly(ap_image,l_point_vector,5,CV_RGB(170,170,0));
 
 	cv::cv_draw_poly(ap_image,ap_image_points,4,0,0,0);
-	
+
 	cvDrawLine(ap_image,l_pt0,l_pt1,cvScalar(255,255,255,255),2);
 	cvDrawLine(ap_image,l_pt1,l_pt2,cvScalar(0,0,255,255),2);
 	cvDrawLine(ap_image,l_pt2,l_pt3,cvScalar(0,255,0,255),2);
@@ -53,16 +49,16 @@ int main( int argc, char * argv[] )
 
 	CvMat * lp_k = cvCreateMat(3,3,CV_32FC1);
 
-	CV_MAT_ELEM(*lp_k,float,0,0) = 1073.20; 
-	CV_MAT_ELEM(*lp_k,float,0,1) = 0; 
-	CV_MAT_ELEM(*lp_k,float,0,2) = 320; 
-	CV_MAT_ELEM(*lp_k,float,1,0) = 0; 
+	CV_MAT_ELEM(*lp_k,float,0,0) = 1073.20;
+	CV_MAT_ELEM(*lp_k,float,0,1) = 0;
+	CV_MAT_ELEM(*lp_k,float,0,2) = 320;
+	CV_MAT_ELEM(*lp_k,float,1,0) = 0;
 	CV_MAT_ELEM(*lp_k,float,1,1) = 1075.92;
-	CV_MAT_ELEM(*lp_k,float,1,2) = 240; 
-	CV_MAT_ELEM(*lp_k,float,2,0) = 0; 
-	CV_MAT_ELEM(*lp_k,float,2,1) = 0; 
-	CV_MAT_ELEM(*lp_k,float,2,2) = 1; 
-	
+	CV_MAT_ELEM(*lp_k,float,1,2) = 240;
+	CV_MAT_ELEM(*lp_k,float,2,0) = 0;
+	CV_MAT_ELEM(*lp_k,float,2,1) = 0;
+	CV_MAT_ELEM(*lp_k,float,2,2) = 1;
+
 	cv::cv_pcabase l_pcabase;
 
 	int l_num_of_gep_trains = 300;
@@ -84,13 +80,13 @@ int main( int argc, char * argv[] )
 		std::cerr << "- a pca base is not available yet..." << std::endl;
 		std::cerr << "- we will learn one now for once and for all..." << std::endl;
 
-		l_pcabase.set_parameters(lp_k,l_pat_size,l_sup_size,l_gep_nx,l_gep_ny,l_num_of_gep_trains);	
-			
+		l_pcabase.set_parameters(lp_k,l_pat_size,l_sup_size,l_gep_nx,l_gep_ny,l_num_of_gep_trains);
+
 		int l_learn_counter = 0;
 
 		cv::cv_harris::set_radius(4);
 		cv::cv_harris::set_num_of_points(300);
-		
+
 		for( int l_i=1; l_i<=10; ++l_i )
 		{
 			std::stringstream l_string;
@@ -109,7 +105,7 @@ int main( int argc, char * argv[] )
 			if( lp_points == NULL )
 			{
 				cvReleaseImage(&lp_image);
-					
+
 				printf("error: lp_points is NULL!");
 				return 0;
 			}
@@ -121,7 +117,7 @@ int main( int argc, char * argv[] )
 			{
 				int l_col = CV_MAT_ELEM(*lp_points,float,0,l_j);
 				int l_row = CV_MAT_ELEM(*lp_points,float,1,l_j);
-				
+
 				if( l_col - l_pcabase.get_support_size()  > 0 &&
 					l_row - l_pcabase.get_support_size()  > 0 &&
 					l_col + l_pcabase.get_support_size()  < lp_image->width &&
@@ -145,7 +141,7 @@ int main( int argc, char * argv[] )
 		}
 		std::cerr << "- finished learning the base... "  << std::endl;
 		std::cerr << "try to save the base: ";
-		
+
 		if( l_pcabase.save(l_base_name) == false )
 		{
 			std::cerr << "error: pca base could not be saved... " << std::endl;
@@ -154,12 +150,12 @@ int main( int argc, char * argv[] )
 		{
 			std::cerr << " successfully saved..." << std::endl;
 		}
-	}	
+	}
 	else
-	{	
+	{
 		std::cerr << "successfull!" << std::endl;
 	}
-	std::vector<cv::cv_gepard*> l_gepard; 
+	std::vector<cv::cv_gepard*> l_gepard;
 	std::vector<cv::cv_hyper*>	l_hyper;
 	std::vector<cv::cv_esm*>    l_esm;
 
@@ -167,16 +163,16 @@ int main( int argc, char * argv[] )
 	bool l_esm_break = true;
 	bool l_pat_break = true;
 	bool l_fps_break = true;
-	
+
 	float l_fps = 15;
 
 	cv::cv_create_window("runtime");
 	cv::cv_camera l_camera;
 	cv::cv_timer l_timer1;
 	cv::cv_mouse l_mouse;
-	
+
 	l_camera.set_cam(cv::usb);
-	
+
 	if( l_camera.start_capture_from_cam() == false )
 	{
 		printf("main_wil: the camera could not be initalized!");
@@ -204,7 +200,7 @@ int main( int argc, char * argv[] )
 		lp_color = l_camera.get_image();
 		lp_gray  = cv::cv_convert_color_to_gray(lp_color);
 		lp_mean	 = cv::cv_smooth(lp_gray,5);
-		
+
 		int l_inlier=0;
 		int l_num_of_points=0;
 		int l_point_num=100;
@@ -229,7 +225,7 @@ int main( int argc, char * argv[] )
 
 		cv::cv_draw_points(lp_color,lp_points,3,0,0,255,l_point_num);
 		cv::cv_draw_points(lp_color,lp_points,3,255,0,0,l_point_num/2);
-		
+
 		int l_x=l_mouse.get_x();
 		int l_y=l_mouse.get_y();
 		int l_e=l_mouse.get_event();
@@ -277,7 +273,7 @@ int main( int argc, char * argv[] )
 				cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,0,0),1);
 				cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
 			}
-		}			
+		}
 		if(  l_x != -1 && l_y != -1 && l_e == 2 )
 		{
 			float	l_best_distance = 10e10;
@@ -310,7 +306,7 @@ int main( int argc, char * argv[] )
 			{
 				//cv::cv_timer l_timer1;
 				//l_timer1.start();
-				
+
 				CvMat * lp_rec = cvCreateMat(3,4,CV_32FC1);
 				cvSet(lp_rec,cvRealScalar(1));
 
@@ -326,12 +322,12 @@ int main( int argc, char * argv[] )
 				cv::cv_gepard * lp_gepard = l_pcabase.get_tracker(lp_mean,599,l_best_row,l_best_col);
 				cv::cv_hyper * lp_hyper = new cv::cv_hyper;
 				cv::cv_esm * lp_esm = new cv::cv_esm;
-			
+
 				lp_hyper->set_parameters(10,10,4,l_max_motion,600,0);//23,300
 				lp_hyper->learn(lp_mean,lp_rec);
-	
+
 				lp_esm->learn(lp_mean,l_best_row-l_pat_size/2,l_best_col-l_pat_size/2,l_pat_size,l_pat_size);
-	
+
 				cvReleaseMat(&lp_rec);
 
 				if( lp_gepard != NULL && lp_hyper != NULL && lp_esm != NULL )
@@ -347,7 +343,7 @@ int main( int argc, char * argv[] )
 					delete lp_esm;
 				}
 				//l_timer1.stop();
-				
+
 				l_learn_flag1 = true;
 				l_learn_flag2 = true;
 			}
@@ -384,18 +380,18 @@ int main( int argc, char * argv[] )
 				float l_esm_ncc = 0.90;
 
 				CvMat * lp_quad = NULL;
-	
+
 				lp_quad = l_gepard[l_i]->recognize(	lp_mean,
 													CV_MAT_ELEM(*lp_points,float,1,l_j),
 													CV_MAT_ELEM(*lp_points,float,0,l_j) );
 				if( lp_quad == NULL )
 					continue;
-				
+
 				CvMat * lp_result = l_hyper[l_i]->track(lp_mean,lp_quad,3);
 
 				if( lp_result == NULL )
 				{
-					cvReleaseMat(&lp_quad);				
+					cvReleaseMat(&lp_quad);
 					continue;
 				}
 				if( l_hyper[l_i]->get_ncc() < l_hyp_ncc  )
@@ -406,23 +402,23 @@ int main( int argc, char * argv[] )
 				if( cv::cv_homography_heuristic(lp_result,0.7,5) == false )
 				{
 					cvReleaseMat(&lp_result);
-					cvReleaseMat(&lp_quad);				
+					cvReleaseMat(&lp_quad);
 					continue;
-				}	
+				}
 				CvMat * lp_result1 = l_esm[l_i]->track(lp_mean,lp_result,10,1);
 				cvCopy(lp_result1,lp_result);
 				cvReleaseMat(&lp_result1);
-			
+
 				if( l_esm[l_i]->get_ncc() < l_esm_ncc )
 				{
 					cvReleaseMat(&lp_result);
-					cvReleaseMat(&lp_quad);				
+					cvReleaseMat(&lp_quad);
 					continue;
 				}
 				if( cv::cv_homography_heuristic(lp_result,0.7,5) == false )
 				{
 					cvReleaseMat(&lp_result);
-					cvReleaseMat(&lp_quad);				
+					cvReleaseMat(&lp_quad);
 					continue;
 				}
 				++l_inlier;
@@ -432,9 +428,9 @@ int main( int argc, char * argv[] )
 				cvReleaseMat(&lp_result);
 				cvReleaseMat(&lp_quad);
 
-				break; 
+				break;
 			}
-			if( l_one_break == true && l_inlier == 1 ) 
+			if( l_one_break == true && l_inlier == 1 )
 				break;
 		}
 		l_timer1.stop();
@@ -454,17 +450,17 @@ int main( int argc, char * argv[] )
 		cvInitFont(&l_font,CV_FONT_HERSHEY_DUPLEX,0.7,0.7);
 		l_stringstream << l_timer1.get_fps() << " fps";
 		cvPutText(lp_color,l_stringstream.str().c_str(),cvPoint(30,lp_color->height-30),&l_font,CV_RGB(0,255,0));
-					
+
 		cv::cv_show_image(lp_color,"runtime");
-		
+
 		std::cout << "fps: " << l_timer1.get_fps() << " num_of_harris: " << l_num_of_points << " inlier: " << l_inlier << "/" << l_gepard.size() << char(13) << std::flush;
 
 		int l_key = cvWaitKey(1);
-		
+
 		if( l_key == 111 )
 		{
 			l_one_break = !l_one_break;
-		}	
+		}
 		if( l_key == 27 )
 		{
 			break;
@@ -496,7 +492,3 @@ int main( int argc, char * argv[] )
 	}
 	return 0;
 }
-
-#endif
-
-

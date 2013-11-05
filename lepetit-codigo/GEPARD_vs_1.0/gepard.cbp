@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="gepard" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/gepard" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+					<Add directory="include" />
+					<Add directory="src" />
+					<Add directory="/usr/include" />
+					<Add directory="/usr/include/opencv" />
+					<Add directory="../resources/ESM/inc" />
+					<Add directory="/opt/intel/ipp/6.1.6.063/ia32/include" />
+				</Compiler>
+				<Linker>
+					<Add library="/usr/lib/libopencv_calib3d.so" />
+					<Add library="/usr/lib/libopencv_contrib.so" />
+					<Add library="/usr/lib/libopencv_core.so" />
+					<Add library="/usr/lib/libopencv_features2d.so" />
+					<Add library="/usr/lib/libopencv_flann.so" />
+					<Add library="/usr/lib/libopencv_gpu.so" />
+					<Add library="/usr/lib/libopencv_highgui.so" />
+					<Add library="/usr/lib/libopencv_imgproc.so" />
+					<Add library="/usr/lib/libopencv_legacy.so" />
+					<Add library="/usr/lib/libopencv_ml.so" />
+					<Add library="/usr/lib/libopencv_nonfree.so" />
+					<Add library="/usr/lib/libopencv_objdetect.so" />
+					<Add library="/usr/lib/libopencv_photo.so" />
+					<Add library="/usr/lib/libopencv_stitching.so" />
+					<Add library="/usr/lib/libopencv_ts.so" />
+					<Add library="/usr/lib/libopencv_video.so" />
+					<Add library="/usr/lib/libopencv_videostab.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libguide.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libimf.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libiomp5.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippac.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippacp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippacpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippacs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippact7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippacv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippacw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcc.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippccp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippccpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippccs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcct7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippccv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippccw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippch.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippchp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippchpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippchs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcht7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippchv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippchw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcore.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcv.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippcvw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdc.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdcp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdcpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdcs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdct7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdcv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdcw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdi.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdip8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdipx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdis8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdit7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdiv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippdiw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgen.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgenp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgenpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgens8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgent7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgenv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippgenw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippi.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippip8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippipx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippis8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippit7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippiv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippiw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippj.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippjw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippm.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippmp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippmpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippms8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippmt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippmv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippmw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippr.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipprw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libipps.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsc.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippscp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippscpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippscs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsct7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippscv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippscw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippspx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsr.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsrw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippss8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippst7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippsw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvc.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvcp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvcpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvcs8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvct7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvcv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvcw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvm.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvmp8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvmpx.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvms8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvmt7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvmv8.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libippvmw7.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libirc.so" />
+					<Add library="/opt/intel/ipp/6.1.6.063/ia32/sharedlib/libsvml.so" />
+					<Add library="/home/mbianchi/tesis/lepetit-codigo/resources/ESM/lib/ESMlib.a" />
+					<Add directory="/usr/lib" />
+					<Add directory="/usr/bin" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/gepard" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-msse2" />
+			<Add option="-lippi" />
+			<Add option="-lippcv" />
+			<Add option="-lippcore" />
+			<Add option="-lipps" />
+			<Add option="-lippm" />
+			<Add option="-lm" />
+		</Compiler>
+		<Unit filename="include/cv_camera.h" />
+		<Unit filename="include/cv_esm.h" />
+		<Unit filename="include/cv_gepard.h" />
+		<Unit filename="include/cv_harris.h" />
+		<Unit filename="include/cv_homography.h" />
+		<Unit filename="include/cv_hyper.h" />
+		<Unit filename="include/cv_pcabase.h" />
+		<Unit filename="include/cv_utilities.h" />
+		<Unit filename="src/cv_camera.cc" />
+		<Unit filename="src/cv_esm.cc" />
+		<Unit filename="src/cv_gepard.cc" />
+		<Unit filename="src/cv_harris.cc" />
+		<Unit filename="src/cv_homography.cc" />
+		<Unit filename="src/cv_hyper.cc" />
+		<Unit filename="src/cv_pcabase.cc" />
+		<Unit filename="src/cv_utilities.cc" />
+		<Unit filename="src/main_wil.cc" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

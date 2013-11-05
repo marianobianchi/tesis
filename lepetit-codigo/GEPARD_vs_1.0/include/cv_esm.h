@@ -32,7 +32,9 @@
 
 /******************************* includes ***********************************/
 
-#include "ESMlibry.h"
+extern "C" {
+    #include "ESMlibry.h"
+}
 
 #include "cv.h"
 #include "cxcore.h"
@@ -55,14 +57,14 @@ namespace cv
 /*************************** structs / typedefs *****************************/
 
 /********************************** classes *********************************/
-/** 
+/**
  * \class cv_esm
  * \brief esm is an intensity based tracker (by Selim Benhimane).
  * \author Stefan Hinterstoisser
  * \version 1.0
  * \date 2008
  * @author Stefan Hinterstoisser Copyright 2008 Munich
- */ 
+ */
 class cv_esm
 {
 public:
@@ -71,16 +73,16 @@ public:
 	~cv_esm();
 
 	bool learn(	IplImage * ap_image,
-				int a_ulrow, 
+				int a_ulrow,
 				int a_ulcol,
 				int a_height,
 				int a_width );
 
-	CvMat * track(	IplImage * ap_image, 
+	CvMat * track(	IplImage * ap_image,
 					CvMat * ap_rec,
 					int a_max_iter,
 					int a_prec );
-	
+
 	IplImage * get_cur_pattern( void );
 	IplImage * get_ref_pattern( void );
 
@@ -89,7 +91,7 @@ public:
 
 	float get_ncc( void );
 	CvMat * get_H( void );
-	
+
 protected:
 
 	int m_width;
@@ -98,7 +100,7 @@ protected:
 	bool m_mask_flag;
 	bool m_delete_flag;
 
-	trackStruct m_T; 
+	trackStruct m_T;
 
 	CvMat * mp_rec;
 	IplImage * mp_ref;

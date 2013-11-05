@@ -11,7 +11,7 @@
 
 /******************************* includes ***********************************/
 
-#include "cxtypes.h"
+#include "cxcore.h"
 #include "cv_hyper.h"
 #include "cv_homography.h"
 
@@ -86,7 +86,7 @@ void cv_hyper::clear( void )
 
 /****************************************************************************/
 
-void cv_hyper::set_parameters(	int a_nx, int a_ny, 
+void cv_hyper::set_parameters(	int a_nx, int a_ny,
 								int a_num_of_levels,
 								int a_max_motion,
 								int a_num_of_samples,
@@ -125,7 +125,7 @@ void cv_hyper::add_noise( CvMat * ap_vec )
 
 	float l_pow = rand()/(RAND_MAX+0.0)*0.1-0.05+1.0;
 
-	for( int l_i=0; l_i<ap_vec->rows; ++l_i ) 
+	for( int l_i=0; l_i<ap_vec->rows; ++l_i )
 	{
 		lp_v[l_i] = pow(lp_v[l_i],l_pow)+rand()/(RAND_MAX+0.0)*10.0-5.0;
 
@@ -137,7 +137,7 @@ void cv_hyper::add_noise( CvMat * ap_vec )
 /****************************************************************************/
 
 IplImage * cv_hyper::compute_gradient(	IplImage * ap_image,
-										int a_ulr, 
+										int a_ulr,
 										int a_ulc,
 										int a_height,
 										int a_width )
@@ -172,13 +172,13 @@ void cv_hyper::get_local_maximum(	IplImage * ap_image,
 {
 	float l_max = -10e10;
 
-	for( int l_r=a_row1-a_height/2; l_r<=a_row1+a_height/2; ++l_r ) 
+	for( int l_r=a_row1-a_height/2; l_r<=a_row1+a_height/2; ++l_r )
 	{
 		float * lp_row = ((float*)((ap_image)->imageData+(l_r)*(ap_image)->widthStep));
 
 		for( int l_c=a_col1-a_width/2; l_c<=a_col1+a_width/2; ++l_c )
 		{
-			if( lp_row[l_c]>l_max ) 
+			if( lp_row[l_c]>l_max )
 			{
 				l_max  = lp_row[l_c];
 				a_col2 = l_c;
@@ -193,7 +193,7 @@ void cv_hyper::get_local_maximum(	IplImage * ap_image,
 void cv_hyper::find_2d_points( IplImage * ap_image )
 {
 #define CV_GRAD
-#ifdef CV_GRAD	
+#ifdef CV_GRAD
 	int l_ulx = CV_MAT_ELEM(*mp_rec,float,0,0);
 	int l_uly = CV_MAT_ELEM(*mp_rec,float,1,0);
 	int l_lrx = CV_MAT_ELEM(*mp_rec,float,0,2);
@@ -201,10 +201,10 @@ void cv_hyper::find_2d_points( IplImage * ap_image )
 
 	int l_width  = l_lrx-l_ulx;
 	int l_height = l_lry-l_uly;
-	
+
 	const float l_stepx = float(l_width-2*m_border)/m_nx;
 	const float l_stepy = float(l_height-2*m_border)/m_ny;
-	
+
 	IplImage * lp_gradient = this->compute_gradient(ap_image,l_uly-1,l_ulx-1,l_height+2,l_width+2);
 
 	float l_var = 0.7;
@@ -233,7 +233,7 @@ void cv_hyper::find_2d_points( IplImage * ap_image )
 
 	int l_width  = l_lrx-l_ulx;
 	int l_height = l_lry-l_uly;
-	
+
 	const float l_stepx = l_width/(m_nx-1.0);
 	const float l_stepy = l_height/(m_ny-1.0);
 
@@ -251,7 +251,7 @@ void cv_hyper::find_2d_points( IplImage * ap_image )
 	}
 	return;
 #endif
-#undef CV_GRAD	
+#undef CV_GRAD
 }
 
 /****************************************************************************/
@@ -273,10 +273,10 @@ void cv_hyper::compute_as_level(	IplImage * ap_image,
 	CvMat * lp_yht = cvCreateMat(8,a_nx*a_ny,CV_32FC1);
 	CvMat * lp_inv = cvCreateMat(a_nx*a_ny,a_nx*a_ny,CV_32FC1);
 	CvMat * lp_int = cvCreateMat(m_nx*m_ny,1,CV_32F);
-	
+
 	int	l_n=0;
 
-	while( l_n<a_num_of_samples ) 
+	while( l_n<a_num_of_samples )
 	{
 		CvMat * lp_rec = cvCreateMat(3,4,CV_32FC1);
 		cvSet(lp_rec,cvRealScalar(1));
@@ -288,7 +288,7 @@ void cv_hyper::compute_as_level(	IplImage * ap_image,
 
 		//std::cerr << l_n << "," << l_amp << std::endl;
 
-		for( int l_i=0; l_i<4; ++l_i ) 
+		for( int l_i=0; l_i<4; ++l_i )
 		{
 			this->move(	CV_MAT_ELEM(*ap_rec,float,1,l_i),CV_MAT_ELEM(*ap_rec,float,0,l_i),
 						CV_MAT_ELEM(*lp_rec,float,1,l_i),CV_MAT_ELEM(*lp_rec,float,0,l_i),
@@ -300,7 +300,7 @@ void cv_hyper::compute_as_level(	IplImage * ap_image,
 			cvmSet(lp_y,l_i*2+1,l_n,CV_MAT_ELEM(*lp_rec,float,1,l_i)-CV_MAT_ELEM(*ap_rec,float,1,l_i));
 		}
 		CvMat * lp_hom = cv_homography::compute(lp_rec,ap_rec);
-		
+
 		if( lp_hom == NULL )
 		{
 			continue;
@@ -326,7 +326,7 @@ void cv_hyper::compute_as_level(	IplImage * ap_image,
 			cvmSet(lp_h,l_i,l_n,lp_int->data.fl[l_i]-ap_int->data.fl[l_i]);
 		}
 		++l_n;
-		
+
 		cvReleaseMat(&lp_pos);
 		cvReleaseMat(&lp_hom);
 		cvReleaseMat(&lp_rec);
@@ -360,11 +360,11 @@ void cv_hyper::compute_as_matrices( IplImage * ap_image,
 
 	#pragma omp parallel for shared(ap_image,a_nx,a_ny,a_num_of_samples, \
 	a_num_of_levels,a_max_motion,ap_rec,ap_pos,ap_int,ap_as) private(l_level)
-	
-	for( l_level=0; l_level<a_num_of_levels; ++l_level ) 
+
+	for( l_level=0; l_level<a_num_of_levels; ++l_level )
 	{
-		this->compute_as_level(	ap_image, 
-								ap_rec, 
+		this->compute_as_level(	ap_image,
+								ap_rec,
 								ap_pos,
 								ap_int,
 								ap_as,
@@ -387,14 +387,14 @@ void cv_hyper::learn(	IplImage * ap_image,
 
 	mp_pos = cvCreateMat(3,m_nx*m_ny,CV_32FC1);
 	mp_rec = cvCreateMat(3,4,CV_32FC1);
-	
+
 	cvSet(mp_pos,cvRealScalar(1));
 	cvCopy(ap_rec,mp_rec);
 
 	this->find_2d_points(ap_image);
 
 	mp_int = cvCreateMat(m_nx*m_ny,1,CV_32FC1);
-	
+
 	mp_as = new CvMat*[m_num_of_levels];
 	for( int l_level=0; l_level<m_num_of_levels; ++l_level )
 	{
@@ -430,9 +430,9 @@ CvMat * cv_hyper::track( IplImage * ap_image,
 	CvMat * lp_udf = cvCreateMat(8,1,CV_32FC1);
 	CvMat * lp_res = cvCreateMat(3,4,CV_32FC1);
 
-	for( int l_level=0; l_level<m_num_of_levels; ++l_level ) 
+	for( int l_level=0; l_level<m_num_of_levels; ++l_level )
 	{
-		for( int l_iter=0; l_iter<a_num_of_iters; ++l_iter ) 
+		for( int l_iter=0; l_iter<a_num_of_iters; ++l_iter )
 		{
 			CvMat * lp_pos = cvCreateMat(mp_pos->rows,mp_pos->cols,CV_32FC1);
 
@@ -454,30 +454,30 @@ CvMat * cv_hyper::track( IplImage * ap_image,
 					cvReleaseMat(&lp_udf);
 					cvReleaseMat(&lp_res);
 					cvReleaseMat(&lp_pos);
-					
+
 					return NULL;
 				}
 				lp_int->data.fl[l_i] = CV_IMAGE_ELEM(ap_image,float,l_row,l_col);
 			}
 			cv_normalize_mean_std(lp_int->data.fl,lp_int->rows);
-			
+
 			cvSub(lp_int,mp_int,lp_idf);
 			cv_mat_mul(mp_as[l_level],lp_idf,lp_udf);
 
 			CvMat * lp_rec = cvCreateMat(3,4,CV_32FC1);
 			cvCopy(mp_rec,lp_rec);
-			
+
 			CV_MAT_ELEM(*lp_rec,float,0,0) -= lp_udf->data.fl[0];
-			CV_MAT_ELEM(*lp_rec,float,1,0) -= lp_udf->data.fl[1]; 
-			CV_MAT_ELEM(*lp_rec,float,0,1) -= lp_udf->data.fl[2]; 
-			CV_MAT_ELEM(*lp_rec,float,1,1) -= lp_udf->data.fl[3]; 
-			CV_MAT_ELEM(*lp_rec,float,0,2) -= lp_udf->data.fl[4]; 
-			CV_MAT_ELEM(*lp_rec,float,1,2) -= lp_udf->data.fl[5]; 
-			CV_MAT_ELEM(*lp_rec,float,0,3) -= lp_udf->data.fl[6]; 
-			CV_MAT_ELEM(*lp_rec,float,1,3) -= lp_udf->data.fl[7]; 
+			CV_MAT_ELEM(*lp_rec,float,1,0) -= lp_udf->data.fl[1];
+			CV_MAT_ELEM(*lp_rec,float,0,1) -= lp_udf->data.fl[2];
+			CV_MAT_ELEM(*lp_rec,float,1,1) -= lp_udf->data.fl[3];
+			CV_MAT_ELEM(*lp_rec,float,0,2) -= lp_udf->data.fl[4];
+			CV_MAT_ELEM(*lp_rec,float,1,2) -= lp_udf->data.fl[5];
+			CV_MAT_ELEM(*lp_rec,float,0,3) -= lp_udf->data.fl[6];
+			CV_MAT_ELEM(*lp_rec,float,1,3) -= lp_udf->data.fl[7];
 
 			CvMat * lp_cur = cv_homography::compute(lp_rec,mp_rec);
-			
+
 			if( lp_cur == NULL )
 			{
 				cvReleaseMat(&lp_rec);
@@ -507,7 +507,7 @@ CvMat * cv_hyper::track( IplImage * ap_image,
 				l_norm += lp_hom->data.fl[l_j]*lp_hom->data.fl[l_j];
 			}
 			l_norm = sqrt(l_norm);
-			
+
 			for( int l_j=0; l_j<9; ++l_j )
 			{
 				lp_hom->data.fl[l_j] /= l_norm;
@@ -523,7 +523,7 @@ CvMat * cv_hyper::track( IplImage * ap_image,
 	cvReleaseMat(&lp_int);
 	cvReleaseMat(&lp_idf);
 	cvReleaseMat(&lp_udf);
-	
+
 	return lp_res;
 }
 
@@ -549,7 +549,7 @@ float cv_hyper::compute_ncc(	IplImage * ap_image,
 		{
 			cvReleaseMat(&lp_int);
 			cvReleaseMat(&lp_pos);
-			
+
 			return -1;
 		}
 		lp_int->data.fl[l_i] = CV_IMAGE_ELEM(ap_image,float,l_row,l_col);
@@ -563,7 +563,7 @@ float cv_hyper::compute_ncc(	IplImage * ap_image,
 
 	return l_ncc;
 }
-			
+
 /****************************************************************************/
 
 std::ofstream & cv_hyper::write( std::ofstream & a_os )
@@ -580,7 +580,7 @@ std::ofstream & cv_hyper::write( std::ofstream & a_os )
 	cv_write(a_os,mp_pos);
 	cv_write(a_os,mp_rec);
 	cv_write(a_os,mp_int);
-	
+
 	for( int l_i=0; l_i<m_num_of_levels; ++l_i )
 	{
 		cv_write(a_os,mp_as[l_i]);
@@ -606,7 +606,7 @@ std::ifstream & cv_hyper::read( std::ifstream & a_is )
 	mp_pos = cv_read(a_is);
 	mp_rec = cv_read(a_is);
 	mp_int = cv_read(a_is);
-	
+
 	mp_as = new CvMat*[m_num_of_levels];
 
 	for( int l_i=0; l_i<m_num_of_levels; ++l_i )
@@ -621,13 +621,13 @@ std::ifstream & cv_hyper::read( std::ifstream & a_is )
 bool cv_hyper::save( std::string a_name )
 {
 	std::ofstream l_file(a_name.c_str(),std::ofstream::out|std::ofstream::binary);
-	
+
 	if( l_file.fail() == true )
 	{
 		printf("cv_hyper: could not open for writing!");
 		return false;
 	}
-	this->write(l_file);	
+	this->write(l_file);
 
 	l_file.close();
 
@@ -639,13 +639,13 @@ bool cv_hyper::save( std::string a_name )
 bool cv_hyper::load( std::string a_name )
 {
 	std::ifstream l_file(a_name.c_str(),std::ifstream::in|std::ifstream::binary);
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		printf("cv_hyper: could not open for reading!");
 		return false;
 	}
-	this->read(l_file);	
+	this->read(l_file);
 
 	l_file.close();
 

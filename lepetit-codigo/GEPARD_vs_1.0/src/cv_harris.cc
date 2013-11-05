@@ -20,6 +20,15 @@
 #define  cv_cmp_features( f1, f2 )(*(f1) > *(f2))
 static CV_IMPLEMENT_QSORT( cv_sort_features, int *, cv_cmp_features )
 
+struct cv_sorter
+	{
+		bool operator()(const std::pair<int,CvPoint2D32f> & a_lhs,
+                        const std::pair<int,CvPoint2D32f> & a_rhs )
+		{
+			return a_lhs.first > a_rhs.first;
+		}
+	};
+
 /******************************** typedefs **********************************/
 
 typedef std::vector<std::pair<int,CvPoint2D32f> > cv_harris_container;
@@ -41,6 +50,8 @@ int		cv_harris::m_num_of_points = -1;
 int		cv_harris::m_num_of_iterations = 50;
 
 /****************************************************************************/
+
+
 
 CvMat * cv_harris::get_points(	IplImage * ap_image )
 {
@@ -137,14 +148,14 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
 	float *  lp_eig_data = (float *)(lp_corners->imageData);
 	float *  lp_tmp_data = (float *)(lp_dilated->imageData);
 	float ** lp_ptr_data = (float**)(lp_tempory->imageData);
-	
+
 	int l_eigstep = ap_image->widthStep/sizeof(float);
 	int l_tmpstep = lp_dilated->widthStep/sizeof(float);
-	
+
 	int l_height = ap_image->height;
 	int l_width  = ap_image->width;
 
-	int l_k = 0; 
+	int l_k = 0;
 	int l_y = 0;
 	int l_i = 0;
 	int l_x = 0;
@@ -154,7 +165,7 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
 	{
 		lp_eig_data += l_eigstep;
         lp_tmp_data += l_tmpstep;
-        
+
         for( l_x=1; l_x<l_width-1; ++l_x )
 		{
             float l_val = lp_eig_data[l_x];
@@ -174,13 +185,13 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
 		return NULL;
 	}
 	cv_sort_features( (int**)lp_ptr_data, l_k, 0 );
-		
+
 	int l_index = 0;
 	int l_min_dist = (a_radius*2+1)*(a_radius*2+1);
-	  
+
 	lp_eig_data = (float *)(lp_corners->imageData);
 	lp_tmp_data = (float *)(lp_dilated->imageData);
-	
+
 	std::vector< std::pair<float,float> > l_container;
 
 	l_container.reserve(l_k);
@@ -190,7 +201,7 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
 		long l_obs = (lp_ptr_data[l_i]-&lp_eig_data[0]);
 		int l_yy = l_obs/l_eigstep;
         int l_xx = (l_obs-l_yy*l_eigstep);
-		bool l_flag = true; 
+		bool l_flag = true;
 
 		if( l_min_dist != 0 )
 		{
@@ -214,7 +225,7 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
         }
 	}
 	CvMat * ap_points = NULL;
-	
+
 	if( l_index < a_num_of_points )
 	{
 		ap_points = cvCreateMat(3,l_index,CV_32FC1);
@@ -232,7 +243,7 @@ CvMat * cv_harris::get_points(	IplImage * ap_image,
 	cvReleaseImage( &lp_dilated );
 	cvReleaseImage( &lp_corners );
 	cvReleaseImage( &lp_tempory );
-	
+
 	return ap_points;
 }
 
@@ -280,14 +291,6 @@ CvMat * cv_harris::get_most_robust_points(	IplImage * ap_image,
 		cvReleaseMat(&l_pair.second);
 		cvReleaseMat(&lp_points);
 	}
-	struct cv_sorter
-	{
-		bool operator()(	std::pair<int,CvPoint2D32f> & a_lhs,
-							std::pair<int,CvPoint2D32f> & a_rhs )
-		{
-			return a_lhs.first > a_rhs.first;
-		}
-	};
 	int l_inside=0;
 
 	if( ap_mask == NULL )
@@ -315,7 +318,7 @@ CvMat * cv_harris::get_most_robust_points(	IplImage * ap_image,
 	{
 		cvReleaseImage(&lp_warped);
 		cvReleaseImage(&lp_masked);
-	
+
 		return NULL;
 	}
 	std::sort(l_container.begin(),l_container.end(),cv_sorter());
@@ -372,7 +375,7 @@ CvMat * cv_harris::get_most_robust_points(	IplImage * ap_image,
 	}
 	cvReleaseImage(&lp_warped);
 	cvReleaseImage(&lp_masked);
-	
+
 	return lp_points1;
 }
 
@@ -405,8 +408,8 @@ void cv_harris::backproject_and_match(	cv_harris_container & a_con,
 								a_con[l_j].second.x/a_con[l_j].first)+
 								SQR(CV_MAT_ELEM(*lp_points,float,1,l_i)-
 								a_con[l_j].second.y/a_con[l_j].first));
-			
-			if( l_distance < m_distance	&& 
+
+			if( l_distance < m_distance	&&
 				l_distance < l_min_distance )
 			{
 				l_taken_flag = true;
@@ -436,7 +439,7 @@ void cv_harris::backproject_and_match(	cv_harris_container & a_con,
 
 /****************************************************************************/
 
-IplImage * cv_harris::get_masked_image( IplImage * ap_image, 
+IplImage * cv_harris::get_masked_image( IplImage * ap_image,
 										IplImage * ap_mask )
 {
 	IplImage * lp_result = cvCreateImage(	cvGetSize(ap_image),
@@ -472,7 +475,7 @@ std::pair<CvMat*,CvMat*> cv_harris::get_random_transformation(	int a_row,
 	double l_lam2 = rand()/(RAND_MAX+0.0)*1.0+0.5;
 	double l_the  = rand()/(RAND_MAX+0.0)*360.0;
 	double l_phi  = rand()/(RAND_MAX+0.0)*180.0;
-	
+
 	l_the *= cv_pi/180.0;
 	l_phi *= cv_pi/180.0;
 
@@ -521,7 +524,7 @@ std::pair<CvMat*,CvMat*> cv_harris::get_random_transformation(	int a_row,
 
 	CV_MAT_ELEM(*lp_aff_mat,float,0,2) = l_bx;
 	CV_MAT_ELEM(*lp_aff_mat,float,1,2) = l_by;
-	
+
 	CV_MAT_ELEM(*lp_dst_mat,float,0,0) = CV_MAT_ELEM(*lp_aff_mat,float,0,0);
 	CV_MAT_ELEM(*lp_dst_mat,float,1,0) = CV_MAT_ELEM(*lp_aff_mat,float,1,0);
 	CV_MAT_ELEM(*lp_dst_mat,float,0,1) = CV_MAT_ELEM(*lp_aff_mat,float,0,1);

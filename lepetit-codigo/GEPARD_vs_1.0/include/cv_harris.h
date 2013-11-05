@@ -54,9 +54,9 @@ namespace cv
 /**************************** forward declarations **************************/
 
 /********************************** classes *********************************/
-/** 
- * \class cv_harris 
- * \brief This class provides basic functionallity for 
+/**
+ * \class cv_harris
+ * \brief This class provides basic functionallity for
  * \key/anchor point extraction.
  * \author Stefan Hinterstoisser
  * \version 1.0
@@ -100,15 +100,15 @@ protected:
 											int a_num_of_points,
 											double a_threshold,
 											double a_radius );
-	
+
 	static std::pair<CvMat*,CvMat*> get_random_transformation(	int a_row,
 																int a_col );
-	
+
 	static void backproject_and_match(	std::vector<std::pair<int,CvPoint2D32f> > & a_cont,
 										CvMat * ap_transformation,
 										CvMat * ap_points );
 
-	static IplImage * get_masked_image( IplImage * ap_image, 
+	static IplImage * get_masked_image( IplImage * ap_image,
 										IplImage * ap_mask );
 
 protected:
