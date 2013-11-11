@@ -27,13 +27,13 @@ using namespace cv;
 /****************************** constants ***********************************/
 
 /****************************** constructors ********************************/
-	
+
 cv_pcabase::cv_pcabase( void )
-{	
+{
 	m_pat_size			= 0.00;
 	m_sup_size			= 0.00;
 	m_num_of_samples	= 0.00;
-	
+
 	mp_pos				= NULL;
 	mp_pca_mean			= NULL;
 	mp_pca_base			= NULL;
@@ -44,7 +44,7 @@ cv_pcabase::cv_pcabase( void )
 
 	mp_k = cvCreateMat(3,3,CV_32FC1);
 }
-	
+
 /******************************* destructor *********************************/
 
 cv_pcabase::~cv_pcabase()
@@ -164,7 +164,7 @@ bool cv_pcabase::set_parameters(	CvMat * ap_k,
 	m_pat_size = a_pat_size;
 	m_sup_size = a_sup_size;
 	m_num_of_samples = a_num_of_samples;
-		
+
 	mp_pos = this->create_positions(m_nx,m_ny,m_pat_size);
 
 	mp_pca_mean = cvCreateMat(1,m_sup_size*m_sup_size,CV_32FC1);
@@ -178,9 +178,9 @@ bool cv_pcabase::set_parameters(	CvMat * ap_k,
 
 /****************************************************************************/
 
-bool cv_pcabase::add(	IplImage * ap_image, 
+bool cv_pcabase::add(	IplImage * ap_image,
 						IplImage * ap_mask,
-						int a_row, 
+						int a_row,
 						int a_col )
 {
 	CvMat * lp_patch = cvCreateMat(1,m_sup_size*m_sup_size,CV_32FC1);
@@ -210,19 +210,19 @@ bool cv_pcabase::add(	IplImage * ap_image,
 				cvReleaseMat(&lp_patch);
 				return false;
 			}
-			CV_MAT_ELEM(*lp_patch,float,0,l_index) = 
+			CV_MAT_ELEM(*lp_patch,float,0,l_index) =
 			CV_IMAGE_ELEM(ap_image,float,l_row,l_col);
 			++l_index;
 		}
 	}
 	cvAdd(mp_pca_mean,lp_patch,mp_pca_mean);
 	m_pca_samples.push_back(lp_patch);
-	
+
 	return true;
 }
 
 /****************************************************************************/
-	
+
 CvMat * cv_pcabase::compute_pca_base(	std::vector<CvMat*> & a_pca_samples,
 										CvMat * ap_pca_mean,
 										int a_num_of_pcas )
@@ -238,12 +238,12 @@ CvMat * cv_pcabase::compute_pca_base(	std::vector<CvMat*> & a_pca_samples,
 	cvScale(ap_pca_mean,ap_pca_mean,1.0/l_num);
 
 	CvMat * lp_data = cvCreateMat(l_dim,l_num,CV_32FC1);
-
 	for( int l_c=0; l_c<l_num; ++l_c )
 	{
+        std::cout << "compute_pca_base: " << l_c << "/" << l_num << std::endl;
 		for( int l_r=0; l_r<l_dim; ++l_r )
 		{
-			CV_MAT_ELEM(*lp_data,float,l_r,l_c) =	
+			CV_MAT_ELEM(*lp_data,float,l_r,l_c) =
 			CV_MAT_ELEM(*a_pca_samples[l_c],float,0,l_r)-
 			CV_MAT_ELEM(*ap_pca_mean,float,0,l_r);
 		}
@@ -255,12 +255,18 @@ CvMat * cv_pcabase::compute_pca_base(	std::vector<CvMat*> & a_pca_samples,
 
 	CvMat * lp_pca_base = cvCreateMat(a_num_of_pcas,l_dim,CV_32FC1);
 
+	std::cout << "compute_pca_base (svd): " << std::endl;
+
 	cvSVD(lp_data,lp_d,NULL,lp_v);
+
+	std::cout << "compute_pca_base (matmul): " << std::endl;
 	cvMatMul(lp_data,lp_v,lp_p);
+	std::cout << "compute_pca_base (transpose): " << std::endl;
 	cvTranspose(lp_p,lp_t);
-	
+
 	for( int l_r=0; l_r<lp_pca_base->rows; ++l_r )
 	{
+        std::cout << "compute_pca_base (seg for): " << l_r << "/" << lp_pca_base->rows << std::endl;
 		double l_norm=0;
 
 		for( int l_c=0; l_c<lp_t->cols; ++l_c )
@@ -311,7 +317,7 @@ void cv_pcabase::push_back_gep_mean(	CvMat * ap_all_base,
 
 	for( int l_i=0; l_i<ap_gep_mean->cols; ++l_i )
 	{
-		CV_MAT_ELEM(*ap_all_base,float,a_pca_index,l_offset+l_i) += 
+		CV_MAT_ELEM(*ap_all_base,float,a_pca_index,l_offset+l_i) +=
 		CV_MAT_ELEM(*ap_gep_mean,float,0,l_i);
 	}
 }
@@ -320,11 +326,11 @@ void cv_pcabase::push_back_gep_mean(	CvMat * ap_all_base,
 
 bool cv_pcabase::learn_base( int a_num_of_pcas )
 {
-	
+
 	mp_pca_base =  this->compute_pca_base(	m_pca_samples,
 											mp_pca_mean,
 											a_num_of_pcas );
-	if( mp_pca_base == NULL ) 
+	if( mp_pca_base == NULL )
 	{
 		printf("cv_pcabase.learn_base: mp_pca_base is NULL!");
 		return false;
@@ -333,13 +339,13 @@ bool cv_pcabase::learn_base( int a_num_of_pcas )
 
 	//std::cerr << "learn_base: " << mp_pca_base->cols << "," << mp_pca_base->rows << std::endl;
 	//std::cerr << "learn_base: " << mp_pos->cols  << "," << mp_pos->rows  << std::endl;
-	
+
 	cvReleaseMat(&mp_gep_base);
 
 	mp_gep_base = this->learn_gepard_base(	mp_pca_base,mp_pca_mean,
 											mp_pos,mp_k,m_gep_poses,
 											m_num_of_samples,
-											m_sup_size,m_pat_size );	
+											m_sup_size,m_pat_size );
 	return true;
 }
 
@@ -383,7 +389,9 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 	float l_sca_step[l_num_of_sca]	= {0.20};
 	float l_rot[l_num_of_rot]		= {0,30,60,90,120,150,180,210,240,270,300,330};
 	float l_rot_step[l_num_of_rot]  = {15,15,15,15,15,15,15,15,15,15,15,15};
-	
+
+	std::cout << "learn_gepard_base " << std::endl;
+
 
 	std::vector<std::pair<CvPoint3D32f,float> > l_views = this->get_views();
 
@@ -417,10 +425,10 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 
 	if( a_num_of_samples == 1 )
 	{
-		l_fac=0;	
+		l_fac=0;
 	}
 	else
-	{	
+	{
 		l_fac=1;
 	}
 	for( int l_si=0; l_si<l_num_of_sca; ++l_si )
@@ -451,7 +459,7 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 				CV_MAT_ELEM(*lp_ground_rec,float,1,2) -= a_sup_size/2;
 				CV_MAT_ELEM(*lp_ground_rec,float,0,3) -= a_sup_size/2;
 				CV_MAT_ELEM(*lp_ground_rec,float,1,3) -= a_sup_size/2;
-				
+
 				a_gep_poses.push_back(lp_ground_rec);
 
 				cvReleaseMat(&lp_ground_hom);
@@ -460,7 +468,7 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 				std::vector<CvMat*> l_homographies;
 				std::vector<float>	l_xtranslation;
 				std::vector<float>	l_ytranslation;
-				
+
 				for( int l_i=0; l_i<a_num_of_samples; ++l_i )
 				{
 					float l_orbit_angle = l_views[l_vi].second;
@@ -497,6 +505,7 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 					}
 					for( int l_t=0; l_t<l_homographies.size(); ++l_t )
 					{
+                        std::cout << "learn_gepard_base " << l_t << std::endl;
 						CvMat * lp_gep_pos = cvCreateMat(ap_pos->rows,ap_pos->cols,CV_32FC1);
 						cvCopy(ap_pos,lp_gep_pos);
 
@@ -509,7 +518,7 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 
 						cvMatMul(l_homographies[l_t],lp_gep_pos,lp_warp_pos);
 						cv_homogenize(lp_warp_pos);
-						
+
 						CvMat * lp_gep_int = this->get_train_intensity(lp_patch,lp_warp_pos,0,0);
 
 						cvScale(lp_gep_int,lp_gep_int,1.0/a_num_of_samples);
@@ -543,7 +552,7 @@ CvMat * cv_pcabase::learn_gepard_base(	CvMat * ap_pca_base,
 }
 
 /****************************************************************************/
-	
+
 cv_gepard * cv_pcabase::get_gepard( std::vector<CvMat*> & a_gep_poses,
 									CvMat * ap_gep_base,
 									CvMat * ap_pos,
@@ -561,7 +570,7 @@ cv_gepard * cv_pcabase::get_gepard( std::vector<CvMat*> & a_gep_poses,
 	lp_gepard->m_ny					= a_ny;
 	lp_gepard->m_size				= a_pat_size;
 	lp_gepard->m_num_of_samples		= a_num_of_samples;
-	
+
 	cvReleaseMat(&lp_gepard->mp_k);
 	cvReleaseMat(&lp_gepard->mp_pos);
 
@@ -588,9 +597,9 @@ cv_gepard * cv_pcabase::get_gepard( std::vector<CvMat*> & a_gep_poses,
 
 		lp_mean = this->get_back_gep_mean(lp_lin_comb,l_i);
 		cv_normalize_mean_std((float*)lp_mean->data.ptr,lp_mean->cols);
-		
+
 		lp_gepard->m_means[l_i] = lp_mean;
-		lp_gepard->m_poses[l_i] = lp_pose; 
+		lp_gepard->m_poses[l_i] = lp_pose;
 	}
 	cvReleaseMat(&lp_lin_comb);
 
@@ -632,7 +641,7 @@ cv_gepard	* cv_pcabase::get_tracker(	IplImage * ap_image,
 	CvMat * lp_alphas = this->get_pca_projection(mp_pca_base,lp_patch_src,a_num_of_pcas);
 	cvReleaseMat(&lp_patch_src);
 
-	
+
 
 /*
 
@@ -733,7 +742,7 @@ CvMat * cv_pcabase::get_lin_combination( CvMat * ap_pcas,
 
 /****************************************************************************/
 
-CvMat * cv_pcabase::get_patch(	IplImage * ap_image, 
+CvMat * cv_pcabase::get_patch(	IplImage * ap_image,
 								int a_sup_size,
 								int a_row,
 								int a_col )
@@ -768,17 +777,17 @@ CvMat * cv_pcabase::get_patch(	IplImage * ap_image,
 /****************************************************************************/
 
 IplImage * cv_pcabase::get_patch(	CvMat * ap_mat,
-									int a_sup_size, 
+									int a_sup_size,
 									int a_index )
 {
 	int l_r=0;
 	int l_c=0;
 
 	IplImage * lp_patch = cvCreateImage(cvSize(a_sup_size,a_sup_size),IPL_DEPTH_32F,1);
-	
+
 	#pragma omp parallel for private(l_r,l_c) \
 	shared(lp_patch,ap_mat,a_index,a_sup_size)
-	
+
 	for( l_r=0; l_r<a_sup_size; ++l_r )
 	{
 		for( l_c=0; l_c<a_sup_size; ++l_c )
@@ -792,7 +801,7 @@ IplImage * cv_pcabase::get_patch(	CvMat * ap_mat,
 
 /****************************************************************************/
 
-CvMat *	cv_pcabase::create_positions(	int a_nx, 
+CvMat *	cv_pcabase::create_positions(	int a_nx,
 										int a_ny,
 										int a_pat_size )
 {
@@ -896,18 +905,18 @@ CvMat * cv_pcabase::get_pose(	CvMat * ap_k,
 	CvMat * lp_tra1 = cvCreateMat(3,1,CV_32FC1);
 	CvMat * lp_norm = cvCreateMat(3,1,CV_32FC1);
 	CvMat * lp_raxis = cvCreateMat(3,1,CV_32FC1);
-	
+
 	double l_dist = 10e10;
 
 	cvSet(lp_id,cvRealScalar(0));
 	cvSet(lp_rod1,cvRealScalar(0));
 	cvSet(lp_rod2,cvRealScalar(0));
 	cvSet(lp_scale,cvRealScalar(0));
-	
+
 	CV_MAT_ELEM(*lp_norm,float,0,0) = 0;
 	CV_MAT_ELEM(*lp_norm,float,1,0) = 0;
 	CV_MAT_ELEM(*lp_norm,float,2,0) = 1;
-	
+
 	CV_MAT_ELEM(*lp_id,float,0,0) = 1;
 	CV_MAT_ELEM(*lp_id,float,1,1) = 1;
 	CV_MAT_ELEM(*lp_id,float,2,2) = 1;
@@ -932,21 +941,21 @@ CvMat * cv_pcabase::get_pose(	CvMat * ap_k,
 
 	cvCrossProduct(ap_v,lp_norm,lp_raxis);
 	cvNormalize(lp_raxis,lp_raxis);
-	
+
 	CV_MAT_ELEM(*lp_rod1,float,0,1) = -CV_MAT_ELEM(*lp_raxis,float,2,0);
 	CV_MAT_ELEM(*lp_rod1,float,0,2) =  CV_MAT_ELEM(*lp_raxis,float,1,0);
 	CV_MAT_ELEM(*lp_rod1,float,1,0) =  CV_MAT_ELEM(*lp_raxis,float,2,0);
 	CV_MAT_ELEM(*lp_rod1,float,1,2) = -CV_MAT_ELEM(*lp_raxis,float,0,0);
 	CV_MAT_ELEM(*lp_rod1,float,2,0) = -CV_MAT_ELEM(*lp_raxis,float,1,0);
 	CV_MAT_ELEM(*lp_rod1,float,2,1) =  CV_MAT_ELEM(*lp_raxis,float,0,0);
-	
+
 	CV_MAT_ELEM(*lp_rod2,float,0,1) = -CV_MAT_ELEM(*lp_norm,float,2,0);
 	CV_MAT_ELEM(*lp_rod2,float,0,2) =  CV_MAT_ELEM(*lp_norm,float,1,0);
 	CV_MAT_ELEM(*lp_rod2,float,1,0) =  CV_MAT_ELEM(*lp_norm,float,2,0);
 	CV_MAT_ELEM(*lp_rod2,float,1,2) = -CV_MAT_ELEM(*lp_norm,float,0,0);
 	CV_MAT_ELEM(*lp_rod2,float,2,0) = -CV_MAT_ELEM(*lp_norm,float,1,0);
 	CV_MAT_ELEM(*lp_rod2,float,2,1) =  CV_MAT_ELEM(*lp_norm,float,0,0);
-		
+
 	float l_angle1 = acos(cvDotProduct(ap_v,lp_norm)/(cvNorm(ap_v)*cvNorm(lp_norm)));
 	float l_angle2 = a_orientation*cv_pi/180.0;
 
@@ -1014,7 +1023,7 @@ CvMat * cv_pcabase::get_axis(	CvPoint3D32f & a_axis,
 	cvSet(lp_id,cvRealScalar(0));
 	cvSet(lp_rod1,cvRealScalar(0));
 	cvSet(lp_rod2,cvRealScalar(0));
-	
+
 	CV_MAT_ELEM(*lp_id,float,0,0) = 1;
 	CV_MAT_ELEM(*lp_id,float,1,1) = 1;
 	CV_MAT_ELEM(*lp_id,float,2,2) = 1;
@@ -1025,21 +1034,21 @@ CvMat * cv_pcabase::get_axis(	CvPoint3D32f & a_axis,
 
 	cvCrossProduct(lp_axis,lp_perp,lp_raxis);
 	cvNormalize(lp_raxis,lp_raxis);
-	
+
 	CV_MAT_ELEM(*lp_rod1,float,0,1) = -CV_MAT_ELEM(*lp_raxis,float,2,0);
 	CV_MAT_ELEM(*lp_rod1,float,0,2) =  CV_MAT_ELEM(*lp_raxis,float,1,0);
 	CV_MAT_ELEM(*lp_rod1,float,1,0) =  CV_MAT_ELEM(*lp_raxis,float,2,0);
 	CV_MAT_ELEM(*lp_rod1,float,1,2) = -CV_MAT_ELEM(*lp_raxis,float,0,0);
 	CV_MAT_ELEM(*lp_rod1,float,2,0) = -CV_MAT_ELEM(*lp_raxis,float,1,0);
 	CV_MAT_ELEM(*lp_rod1,float,2,1) =  CV_MAT_ELEM(*lp_raxis,float,0,0);
-	
+
 	CV_MAT_ELEM(*lp_rod2,float,0,1) = -CV_MAT_ELEM(*lp_axis,float,2,0);
 	CV_MAT_ELEM(*lp_rod2,float,0,2) =  CV_MAT_ELEM(*lp_axis,float,1,0);
 	CV_MAT_ELEM(*lp_rod2,float,1,0) =  CV_MAT_ELEM(*lp_axis,float,2,0);
 	CV_MAT_ELEM(*lp_rod2,float,1,2) = -CV_MAT_ELEM(*lp_axis,float,0,0);
 	CV_MAT_ELEM(*lp_rod2,float,2,0) = -CV_MAT_ELEM(*lp_axis,float,1,0);
 	CV_MAT_ELEM(*lp_rod2,float,2,1) =  CV_MAT_ELEM(*lp_axis,float,0,0);
-	
+
 	float l_angle1 = a_angle*cv_pi/180.0;
 	float l_angle2 = a_orientation*cv_pi/180.0;
 
@@ -1050,8 +1059,8 @@ CvMat * cv_pcabase::get_axis(	CvPoint3D32f & a_axis,
 	cvAdd(lp_id,lp_rot2,lp_rot2);
 
 	cvMatMul(lp_rot2,lp_rot1,lp_rot);
-	cvMatMul(lp_rot,lp_axis,lp_res);	
-	
+	cvMatMul(lp_rot,lp_axis,lp_res);
+
 	cvReleaseMat(&lp_id);
 	cvReleaseMat(&lp_rot);
 	cvReleaseMat(&lp_rod1);
@@ -1068,7 +1077,7 @@ CvMat * cv_pcabase::get_axis(	CvPoint3D32f & a_axis,
 /****************************************************************************/
 
 std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
-{	
+{
 	CvPoint3D32f l_v0;
 	CvPoint3D32f l_v1;
 	CvPoint3D32f l_v2;
@@ -1128,7 +1137,7 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 	l_views.push_back(std::pair<CvPoint3D32f,float>(l_v13,15.8587));
 	l_views.push_back(std::pair<CvPoint3D32f,float>(l_v14,15.8587));
 	l_views.push_back(std::pair<CvPoint3D32f,float>(l_v15,15.8587));
-	
+
 	float l_max_angle=0;
 
 	for( int l_i=0; l_i<l_views.size(); ++l_i )
@@ -1138,7 +1147,7 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 						 l_views[0].first.z*l_views[l_i].first.z)/
 						(sqrt(SQR(l_views[0].first.x)+SQR(l_views[0].first.y)+SQR(l_views[0].first.z))*
 						 sqrt(SQR(l_views[l_i].first.x)+SQR(l_views[l_i].first.y)+SQR(l_views[l_i].first.z)));
-	
+
 		l_angle = acos(l_angle)*180.0/cv_pi;
 
 		if( l_angle > l_max_angle )
@@ -1165,7 +1174,7 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 						 l_views[0].first.z*l_views[l_i].first.z)/
 						(sqrt(SQR(l_views[0].first.x)+SQR(l_views[0].first.y)+SQR(l_views[0].first.z))*
 						 sqrt(SQR(l_views[l_i].first.x)+SQR(l_views[l_i].first.y)+SQR(l_views[l_i].first.z)));
-	
+
 		l_angle = acos(l_angle)*180/cv_pi;
 
 		float l_new_angle = (l_angle/l_max_angle)*45*cv_pi/180.0;
@@ -1183,9 +1192,9 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 		CV_MAT_ELEM(*lp_rodriguez,float,2,0) = -l_norm.y;
 		CV_MAT_ELEM(*lp_rodriguez,float,2,1) =  l_norm.x;
 
-		CV_MAT_ELEM(*lp_identity,float,0,0) = 1; 
+		CV_MAT_ELEM(*lp_identity,float,0,0) = 1;
 		CV_MAT_ELEM(*lp_identity,float,0,1) = 0;
-		CV_MAT_ELEM(*lp_identity,float,0,2) = 0; 
+		CV_MAT_ELEM(*lp_identity,float,0,2) = 0;
 		CV_MAT_ELEM(*lp_identity,float,1,0) = 0;
 		CV_MAT_ELEM(*lp_identity,float,1,1) = 1;
 		CV_MAT_ELEM(*lp_identity,float,1,2) = 0;
@@ -1195,7 +1204,7 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 
 		CvMat * lp_rotation = cvCreateMat(3,3,CV_32FC1);
 		CvMat * lp_rot_sqr = cvCreateMat(3,3,CV_32FC1);
-	
+
 		cvMatMul(lp_rodriguez,lp_rodriguez,lp_rot_sqr);
 		cvAddWeighted(lp_rodriguez,sin(l_new_angle),lp_rot_sqr, 1.0-cos(l_new_angle),0,lp_rotation);
 		cvAdd(lp_identity,lp_rotation,lp_rotation);
@@ -1222,7 +1231,7 @@ std::vector<std::pair<CvPoint3D32f,float> > cv_pcabase::get_views( void )
 								 l_views[l_j].first.z*l_views[l_i].first.z)/
 								(sqrt(SQR(l_views[l_j].first.x)+SQR(l_views[l_j].first.y)+SQR(l_views[l_j].first.z))*
 								 sqrt(SQR(l_views[l_i].first.x)+SQR(l_views[l_i].first.y)+SQR(l_views[l_i].first.z)));
-			
+
 				l_angle = acos(l_angle)*180.0/cv_pi;
 
 				if( l_angle < l_min_angle )
@@ -1267,7 +1276,7 @@ CvMat *	cv_pcabase::get_train_intensity(	IplImage * ap_image,
 
 /****************************************************************************/
 
-float cv_pcabase::get_linear(	IplImage * ap_image, 
+float cv_pcabase::get_linear(	IplImage * ap_image,
 								double a_row,
 								double a_col )
 {
@@ -1275,7 +1284,7 @@ float cv_pcabase::get_linear(	IplImage * ap_image,
 	int l_ys0 = static_cast<int>(a_row);
 	int l_xs1 = l_xs0+1;
 	int l_ys1 = l_ys0+1;
-	
+
 	return (CV_IMAGE_ELEM(ap_image,float,l_ys0,l_xs0)*(l_xs1-a_col)+
 			CV_IMAGE_ELEM(ap_image,float,l_ys0,l_xs1)*(a_col-l_xs0))*
 		   (l_ys1-a_row) +
@@ -1296,7 +1305,7 @@ std::ofstream & cv_pcabase::write( std::ofstream & a_os )
 	a_os.write((char*)&m_sup_size,sizeof(m_sup_size));
 	a_os.write((char*)&l_num_of_poses,sizeof(l_num_of_poses));
 	a_os.write((char*)&m_num_of_samples,sizeof(m_num_of_samples));
-	
+
 	cv_write(a_os,mp_pca_base);
 	cv_write(a_os,mp_pca_mean);
 	cv_write(a_os,mp_gep_base);
@@ -1315,7 +1324,7 @@ std::ofstream & cv_pcabase::write( std::ofstream & a_os )
 std::ifstream & cv_pcabase::read( std::ifstream & a_is )
 {
 	this->clear();
-	
+
 	int l_num_of_poses=0;
 
 	a_is.read((char*)&m_nx,sizeof(m_nx));
@@ -1324,7 +1333,7 @@ std::ifstream & cv_pcabase::read( std::ifstream & a_is )
 	a_is.read((char*)&m_sup_size,sizeof(m_sup_size));
 	a_is.read((char*)&l_num_of_poses,sizeof(l_num_of_poses));
 	a_is.read((char*)&m_num_of_samples,sizeof(m_num_of_samples));
-	
+
 	mp_pca_base = cv_read(a_is);
 	mp_pca_mean = cv_read(a_is);
 	mp_gep_base = cv_read(a_is);
@@ -1346,13 +1355,13 @@ bool cv_pcabase::save( std::string a_name )
 	std::ofstream l_file(	a_name.c_str(),
 							std::ofstream::out |
 							std::ofstream::binary );
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		//printf("cv_pca_base: could not open file for writing!\n");
-		return false; 
+		return false;
 	}
-	this->write( l_file );	
+	this->write( l_file );
 
 	l_file.close();
 
@@ -1366,13 +1375,13 @@ bool cv_pcabase::load( std::string a_name )
 	std::ifstream l_file(	a_name.c_str(),
 							std::ifstream::in |
 							std::ifstream::binary );
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		//printf("cv_pca_base: could not open file for reading!\n");
 		return false;
 	}
-	this->read( l_file );	
+	this->read( l_file );
 
 	l_file.close();
 

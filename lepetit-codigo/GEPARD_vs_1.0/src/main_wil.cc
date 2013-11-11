@@ -45,7 +45,7 @@ void  draw_patch( IplImage * ap_image, CvMat * ap_image_points )
 
 int main( int argc, char * argv[] )
 {
-	std::string l_base_name    = "./base/basis";
+	std::string l_base_name    = "../base/basis";
 
 	CvMat * lp_k = cvCreateMat(3,3,CV_32FC1);
 
@@ -91,7 +91,7 @@ int main( int argc, char * argv[] )
 		{
 			std::stringstream l_string;
 
-			l_string << "./base/img" << l_i << ".jpg";
+			l_string << "../base/img" << l_i << ".jpg";
 
 			IplImage * lp_color_image = cv::cv_load_image(l_string.str());
 			IplImage * lp_gray_image = cv::cv_convert_color_to_gray(lp_color_image);
@@ -139,6 +139,7 @@ int main( int argc, char * argv[] )
 			std::cerr << "error: learning the base!" << std::endl;
 			return 0;
 		}
+
 		std::cerr << "- finished learning the base... "  << std::endl;
 		std::cerr << "try to save the base: ";
 
