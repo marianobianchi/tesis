@@ -11,7 +11,7 @@
 	"videoInput.h"
 	"cv_utilities.h"
 
-1333274934 /usr/include/opencv/cv.h
+1373456940 /usr/include/opencv/cv.h
 	"opencv2/core/core_c.h"
 	"opencv2/core/core.hpp"
 	"opencv2/imgproc/imgproc_c.h"
@@ -24,10 +24,10 @@
 	"opencv2/legacy/compat.hpp"
 	"opencv2/core/internal.hpp"
 
-1333275015 /usr/include/opencv2/core/core_c.h
+1373456940 /usr/include/opencv2/core/core_c.h
 	"opencv2/core/types_c.h"
 
-1334793261 /usr/include/opencv2/core/types_c.h
+1373456940 /usr/include/opencv2/core/types_c.h
 	<assert.h>
 	<stdlib.h>
 	<string.h>
@@ -98,7 +98,7 @@
 	<bits/mathinline.h>
 	<bits/math-finite.h>
 
-1335570396 /usr/include/opencv2/core/core.hpp
+1373456940 /usr/include/opencv2/core/core.hpp
 	"opencv2/core/types_c.h"
 	"opencv2/core/version.hpp"
 	<limits.h>
@@ -114,7 +114,7 @@
 	"opencv2/core/operations.hpp"
 	"opencv2/core/mat.hpp"
 
-1333275015 /usr/include/opencv2/core/version.hpp
+1373456940 /usr/include/opencv2/core/version.hpp
 
 1380552723 /usr/include/limits.h
 	<features.h>
@@ -123,54 +123,53 @@
 	<bits/posix2_lim.h>
 	<bits/xopen_lim.h>
 
-1335570396 /usr/include/opencv2/core/operations.hpp
+1373456940 /usr/include/opencv2/core/operations.hpp
 	<string.h>
 	<limits.h>
 	<ext/atomicity.h>
 	<bits/atomicity.h>
-	<windows.h>
 	<limits>
 
-1335355631 /usr/include/opencv2/core/mat.hpp
+1373456940 /usr/include/opencv2/core/mat.hpp
 	<limits.h>
 	<string.h>
 
-1333275027 /usr/include/opencv2/imgproc/imgproc_c.h
+1373456940 /usr/include/opencv2/imgproc/imgproc_c.h
 	"opencv2/core/core_c.h"
 	"opencv2/imgproc/types_c.h"
 
-1333275027 /usr/include/opencv2/imgproc/types_c.h
+1373456940 /usr/include/opencv2/imgproc/types_c.h
 	"opencv2/core/core_c.h"
 
-1335397642 /usr/include/opencv2/imgproc/imgproc.hpp
+1373456940 /usr/include/opencv2/imgproc/imgproc.hpp
 	"opencv2/core/core.hpp"
 	"opencv2/imgproc/types_c.h"
 
-1333275050 /usr/include/opencv2/video/tracking.hpp
+1373456940 /usr/include/opencv2/video/tracking.hpp
 	"opencv2/core/core.hpp"
-	"opencv2/imgproc/imgproc_c.h"
+	"opencv2/imgproc/imgproc.hpp"
 
-1335570398 /usr/include/opencv2/features2d/features2d.hpp
+1373456940 /usr/include/opencv2/features2d/features2d.hpp
 	"opencv2/core/core.hpp"
 	"opencv2/flann/miniflann.hpp"
 	<limits>
 
-1333275025 /usr/include/opencv2/flann/miniflann.hpp
+1373456940 /usr/include/opencv2/flann/miniflann.hpp
 	"opencv2/core/core.hpp"
 	"opencv2/flann/defines.h"
 
-1333275025 /usr/include/opencv2/flann/defines.h
+1373456940 /usr/include/opencv2/flann/defines.h
 	"config.h"
 
-1333275025 /usr/include/opencv2/flann/config.h
+1373456940 /usr/include/opencv2/flann/config.h
 
-1334103246 /usr/include/opencv2/flann/flann.hpp
+1373456940 /usr/include/opencv2/flann/flann.hpp
 	"opencv2/core/types_c.h"
 	"opencv2/core/core.hpp"
 	"opencv2/flann/flann_base.hpp"
 	"opencv2/flann/miniflann.hpp"
 
-1333275025 /usr/include/opencv2/flann/flann_base.hpp
+1373456940 /usr/include/opencv2/flann/flann_base.hpp
 	<vector>
 	<string>
 	<cassert>
@@ -181,12 +180,12 @@
 	"saving.h"
 	"all_indices.h"
 
-1333275025 /usr/include/opencv2/flann/general.h
+1373456940 /usr/include/opencv2/flann/general.h
 	"defines.h"
 	<stdexcept>
 	<cassert>
 
-1333275025 /usr/include/opencv2/flann/matrix.h
+1373456940 /usr/include/opencv2/flann/matrix.h
 	<stdio.h>
 	"general.h"
 
@@ -257,31 +256,32 @@
 	<endian.h>
 	<xlocale.h>
 
-1333275025 /usr/include/opencv2/flann/params.h
+1373456940 /usr/include/opencv2/flann/params.h
 	"any.h"
 	"general.h"
 	<iostream>
 	<map>
 
-1333275025 /usr/include/opencv2/flann/any.h
+1373456940 /usr/include/opencv2/flann/any.h
+	"defines.h"
 	<stdexcept>
 	<ostream>
 	<typeinfo>
 
-1333275025 /usr/include/opencv2/flann/saving.h
+1373456940 /usr/include/opencv2/flann/saving.h
 	<cstring>
 	<vector>
 	"general.h"
 	"nn_index.h"
 
-1333275025 /usr/include/opencv2/flann/nn_index.h
+1373456940 /usr/include/opencv2/flann/nn_index.h
 	<string>
 	"general.h"
 	"matrix.h"
 	"result_set.h"
 	"params.h"
 
-1333275025 /usr/include/opencv2/flann/result_set.h
+1373456940 /usr/include/opencv2/flann/result_set.h
 	<algorithm>
 	<cstring>
 	<iostream>
@@ -289,7 +289,7 @@
 	<set>
 	<vector>
 
-1333275025 /usr/include/opencv2/flann/all_indices.h
+1373456940 /usr/include/opencv2/flann/all_indices.h
 	"general.h"
 	"nn_index.h"
 	"kdtree_index.h"
@@ -301,7 +301,7 @@
 	"lsh_index.h"
 	"autotuned_index.h"
 
-1333275025 /usr/include/opencv2/flann/kdtree_index.h
+1373456940 /usr/include/opencv2/flann/kdtree_index.h
 	<algorithm>
 	<map>
 	<cassert>
@@ -316,33 +316,34 @@
 	"random.h"
 	"saving.h"
 
-1333275025 /usr/include/opencv2/flann/dynamic_bitset.h
+1373456940 /usr/include/opencv2/flann/dynamic_bitset.h
 	<boost/dynamic_bitset.hpp>
 	<limits.h>
 	"dist.h"
 
-1333275025 /usr/include/opencv2/flann/dist.h
+1373456940 /usr/include/opencv2/flann/dist.h
 	<cmath>
 	<cstdlib>
 	<string.h>
 	<stdint.h>
 	"defines.h"
+	"arm_neon.h"
 
-1333275025 /usr/include/opencv2/flann/heap.h
+1373456940 /usr/include/opencv2/flann/heap.h
 	<algorithm>
 	<vector>
 
-1333275025 /usr/include/opencv2/flann/allocator.h
+1373456940 /usr/include/opencv2/flann/allocator.h
 	<stdlib.h>
 	<stdio.h>
 
-1333275025 /usr/include/opencv2/flann/random.h
+1373456940 /usr/include/opencv2/flann/random.h
 	<algorithm>
 	<cstdlib>
 	<vector>
 	"general.h"
 
-1333275025 /usr/include/opencv2/flann/kdtree_single_index.h
+1373456940 /usr/include/opencv2/flann/kdtree_single_index.h
 	<algorithm>
 	<map>
 	<cassert>
@@ -356,7 +357,7 @@
 	"random.h"
 	"saving.h"
 
-1333275025 /usr/include/opencv2/flann/kmeans_index.h
+1373456940 /usr/include/opencv2/flann/kmeans_index.h
 	<algorithm>
 	<string>
 	<map>
@@ -374,22 +375,22 @@
 	"saving.h"
 	"logger.h"
 
-1333275025 /usr/include/opencv2/flann/logger.h
+1373456940 /usr/include/opencv2/flann/logger.h
 	<stdio.h>
 	<stdarg.h>
 	"defines.h"
 
-1333275025 /usr/include/opencv2/flann/composite_index.h
+1373456940 /usr/include/opencv2/flann/composite_index.h
 	"general.h"
 	"nn_index.h"
 	"kdtree_index.h"
 	"kmeans_index.h"
 
-1333275025 /usr/include/opencv2/flann/linear_index.h
+1373456940 /usr/include/opencv2/flann/linear_index.h
 	"general.h"
 	"nn_index.h"
 
-1333275025 /usr/include/opencv2/flann/hierarchical_clustering_index.h
+1373456940 /usr/include/opencv2/flann/hierarchical_clustering_index.h
 	<algorithm>
 	<string>
 	<map>
@@ -406,7 +407,7 @@
 	"random.h"
 	"saving.h"
 
-1333669571 /usr/include/opencv2/flann/lsh_index.h
+1373456940 /usr/include/opencv2/flann/lsh_index.h
 	<algorithm>
 	<cassert>
 	<cstring>
@@ -422,7 +423,7 @@
 	"random.h"
 	"saving.h"
 
-1333275025 /usr/include/opencv2/flann/lsh_table.h
+1373456940 /usr/include/opencv2/flann/lsh_table.h
 	<algorithm>
 	<iostream>
 	<iomanip>
@@ -434,7 +435,7 @@
 	"dynamic_bitset.h"
 	"matrix.h"
 
-1333275025 /usr/include/opencv2/flann/autotuned_index.h
+1373456940 /usr/include/opencv2/flann/autotuned_index.h
 	"general.h"
 	"nn_index.h"
 	"ground_truth.h"
@@ -447,11 +448,11 @@
 	"linear_index.h"
 	"logger.h"
 
-1333275025 /usr/include/opencv2/flann/ground_truth.h
+1373456940 /usr/include/opencv2/flann/ground_truth.h
 	"dist.h"
 	"matrix.h"
 
-1333275025 /usr/include/opencv2/flann/index_testing.h
+1373456940 /usr/include/opencv2/flann/index_testing.h
 	<cstring>
 	<cassert>
 	<cmath>
@@ -461,7 +462,7 @@
 	"logger.h"
 	"timer.h"
 
-1333275025 /usr/include/opencv2/flann/timer.h
+1373456940 /usr/include/opencv2/flann/timer.h
 	<time.h>
 
 1380552751 /usr/include/time.h
@@ -475,34 +476,38 @@
 	<bits/types.h>
 	<xlocale.h>
 
-1333275025 /usr/include/opencv2/flann/sampling.h
+1373456940 /usr/include/opencv2/flann/sampling.h
 	"matrix.h"
 	"random.h"
 
-1333275034 /usr/include/opencv2/calib3d/calib3d.hpp
+1373456940 /usr/include/opencv2/calib3d/calib3d.hpp
 	"opencv2/core/core.hpp"
 	"opencv2/features2d/features2d.hpp"
 
-1335570397 /usr/include/opencv2/objdetect/objdetect.hpp
+1373456940 /usr/include/opencv2/objdetect/objdetect.hpp
 	"opencv2/core/core.hpp"
 	<map>
 	<deque>
 
-1333275041 /usr/include/opencv2/legacy/compat.hpp
+1373456940 /usr/include/opencv2/legacy/compat.hpp
 	"opencv2/core/core_c.h"
 	"opencv2/imgproc/types_c.h"
 	<math.h>
 	<string.h>
 
-1333275015 /usr/include/opencv2/core/internal.hpp
+1373456940 /usr/include/opencv2/core/internal.hpp
 	<vector>
-	<windows.h>
+	"opencv2/core/core.hpp"
+	"opencv2/core/types_c.h"
 	<pthread.h>
 	"ipp.h"
 	"emmintrin.h"
 	"pmmintrin.h"
 	"tmmintrin.h"
-	"arm_neon.h"
+	<smmintrin.h>
+	<nmmintrin.h>
+	<immintrin.h>
+	<arm_neon.h>
 	"tbb/tbb_stddef.h"
 	"tbb/tbb.h"
 	"tbb/task.h"
@@ -1014,7 +1019,7 @@
 1314194165 /usr/include/tbb/task_scheduler_observer.h
 	"atomic.h"
 
-1333275015 /usr/include/opencv2/core/eigen.hpp
+1373456940 /usr/include/opencv2/core/eigen.hpp
 	"opencv2/core/core_c.h"
 	"opencv2/core/core.hpp"
 
@@ -1023,20 +1028,20 @@
 	<stddef.h>
 	<stdio.h>
 
-1333274934 /usr/include/opencv/cxcore.h
+1373456940 /usr/include/opencv/cxcore.h
 	"opencv2/core/core_c.h"
 	"opencv2/core/core.hpp"
 
-1333274934 /usr/include/opencv/highgui.h
+1373456940 /usr/include/opencv/highgui.h
 	"opencv2/core/core_c.h"
 	"opencv2/core/core.hpp"
 	"opencv2/highgui/highgui_c.h"
 	"opencv2/highgui/highgui.hpp"
 
-1335641344 /usr/include/opencv2/highgui/highgui_c.h
+1373456940 /usr/include/opencv2/highgui/highgui_c.h
 	"opencv2/core/core_c.h"
 
-1334015259 /usr/include/opencv2/highgui/highgui.hpp
+1373456940 /usr/include/opencv2/highgui/highgui.hpp
 	"opencv2/core/core.hpp"
 	"opencv2/highgui/highgui_c.h"
 
@@ -1090,7 +1095,7 @@
 	"highgui.h"
 	"cv_utilities.h"
 
-1333274934 /usr/include/opencv/cxmisc.h
+1373456940 /usr/include/opencv/cxmisc.h
 	"opencv2/core/internal.hpp"
 
 1264441572 source:/home/mbianchi/tesis/lepetit-codigo/GEPARD_vs_1.0/src/cv_homography.cc
@@ -1116,7 +1121,7 @@
 	"highgui.h"
 	"cv_utilities.h"
 
-1264441112 source:/home/mbianchi/tesis/lepetit-codigo/GEPARD_vs_1.0/src/cv_pcabase.cc
+1384114214 source:/home/mbianchi/tesis/lepetit-codigo/GEPARD_vs_1.0/src/cv_pcabase.cc
 	"cv_pcabase.h"
 	"cv_homography.h"
 	<vector>
