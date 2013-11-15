@@ -486,6 +486,8 @@ int main( int argc, char * argv[] )
 					continue;
 				}
 
+
+                /*** Si comento desde aca ***/
                 // Sigue a ese patron en la imagen utilizando ESM tracker
 				CvMat * lp_result1 = l_esm[l_i]->track(lp_mean,lp_result,10,1);
 
@@ -493,7 +495,8 @@ int main( int argc, char * argv[] )
 				cvCopy(lp_result1,lp_result);
 
 
-				cvReleaseMat(&lp_result1);
+                cvReleaseMat(&lp_result1);
+
 
 				if( l_esm[l_i]->get_ncc() < l_esm_ncc )
 				{
@@ -501,6 +504,8 @@ int main( int argc, char * argv[] )
 					cvReleaseMat(&lp_quad);
 					continue;
 				}
+				/*** Hasta aca, todo sigue funcionando, pero con HYPER en vez de con ESM ***/
+
 				if( cv::cv_homography_heuristic(lp_result,0.7,5) == false )
 				{
 					cvReleaseMat(&lp_result);
