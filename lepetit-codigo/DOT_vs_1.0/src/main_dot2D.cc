@@ -28,24 +28,31 @@
 //////////////////////////////////////////////////////////////////////////////
 
 
-#ifdef MAIN_DOT_2D
-
 #include "cv_dot_template.h"
 #include "cv_camera.h"
 #include "cv_esm.h"
 
 int main( int argc, char * argv[] )
 {
+    //the number of pixels the template is invariant to translation (set to 7 - you should leave it as it is)
 	const int l_T=7;
+
+	//width of the template in number of regions - if e.g. l_N=10 and l_T=7 the template width is 70 pixels
 	const int l_N=77/l_T;
+
+	//height of the template in number of regions - if e.g. l_M=10 and l_T=7 the template height is 70 pixels
 	const int l_M=77/l_T;
+
+	// Supongo que es el tamaño de la imagen
 	const int l_IN=640;
 	const int l_IM=480;
+
+	//number of regions unmasked - for small templates l_G=l_N*l_M. For larger templates tracking arbitrary shapes
+    // It might be set to a much lower number (in order to deal with changing background in case of non-rectangular shaped objects)
 	const int l_G=121;
 
 	int l_learn_thres=l_G*0.9;
 	int l_detect_thres=l_G*0.8;
-
 
 
 	cv::cv_dot_template<l_M,l_N,l_T,l_G> l_template(23);
@@ -101,6 +108,9 @@ int main( int argc, char * argv[] )
 			l_tra_col1 = l_x;
 			l_tra_row1 = l_y;
 		}
+
+		// Si el mouse está dentro de la ventana, dibuja
+		// el recuadro
 		if( l_tra_col1-l_template.get_width()/2 >= 0 ||
 			l_tra_row1-l_template.get_height()/2 >= 0 ||
 			l_tra_col1+l_template.get_width()/2 <= lp_gray->width-1 ||
@@ -111,12 +121,19 @@ int main( int argc, char * argv[] )
 			CvPoint l_pt3;
 			CvPoint l_pt4;
 
+            // punto de la esquina superior izquierda del recuadro
 			l_pt1.x = l_tra_col1-l_template.get_width()/2;
 			l_pt1.y = l_tra_row1-l_template.get_height()/2;
+
+            // punto de la esquina superior derecha del recuadro
 			l_pt2.x = l_tra_col1+l_template.get_width()/2;
 			l_pt2.y = l_tra_row1-l_template.get_height()/2;
+
+            // punto de la esquina inferior derecha del recuadro
 			l_pt3.x = l_tra_col1+l_template.get_width()/2;
 			l_pt3.y = l_tra_row1+l_template.get_height()/2;
+
+            // punto de la esquina inferior izquierda del recuadro
 			l_pt4.x = l_tra_col1-l_template.get_width()/2;
 			l_pt4.y = l_tra_row1+l_template.get_height()/2;
 
@@ -130,22 +147,35 @@ int main( int argc, char * argv[] )
 			cvLine(lp_color,l_pt3,l_pt4,CV_RGB(255,255,0),1);
 			cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,255,0),1);
 		}
+
+        // Si hizo click derecho (l_e == 2) y está dentro de la imagen
+        // (creo que l_x != -1 y l_y != -1 es eso), toma una nueva muestra
+        // (TOMA UN NUEVO TEMPLATE)
 		if(  l_x != -1 && l_y != -1 && l_e == 2 )
 		{
 			cv::cv_esm * lp_esm = new cv::cv_esm;
 
+			// Matriz de 3 filas x 4 columnas, de tipo float
 			CvMat * lp_result = cvCreateMat(3,4,CV_32F);
 			cvSet(lp_result,cvRealScalar(1));
 
+            //Fila 0 y 1, columna 0: son el punto izquierdo de arriba del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,0) = l_x-l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,0) = l_y-l_template.get_height()/2;
+
+			//Fila 0 y 1, columna 1: son el punto derecho de arriba del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,1) = l_x+l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,1) = l_y-l_template.get_height()/2;
+
+            //Fila 0 y 1, columna 2: son el punto derecho de abajo del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,2) = l_x+l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,2) = l_y+l_template.get_height()/2;
+
+            //Fila 0 y 1, columna 3: son el punto izquierdo de abajo del recuadro
 			CV_MAT_ELEM(*lp_result,float,0,3) = l_x-l_template.get_width()/2;
 			CV_MAT_ELEM(*lp_result,float,1,3) = l_y+l_template.get_height()/2;
 
+            // Toma un template de la imagen del recuadro
 			l_template.create_bit_list_fast(lp_mean,l_y,l_x,7,0.9);
 			l_template.cluster_heu(4);
 
@@ -159,6 +189,7 @@ int main( int argc, char * argv[] )
 		cv::cv_timer l_timer1;
 		cv::cv_timer l_timer2;
 		cv::cv_timer l_timer3;
+
 
 		l_timer0.start();
 		l_timer1.start();
@@ -191,6 +222,9 @@ int main( int argc, char * argv[] )
 			float * lp_max_val = new float[l_template.get_classes()];
 			float * lp_res_val = new float[l_template.get_classes()];
 
+
+            // Entiendo que lo que hace acá es buscar un template que matchee con
+            // alguna parte de la imagen
 			for( int l_j=0; l_j<l_template.get_classes(); ++l_j )
 			{
 				int l_counter = 0;
@@ -279,6 +313,7 @@ int main( int argc, char * argv[] )
 					{
 						if( l_esm_vec[l_j] != NULL )
 						{
+                            // lp_result es de 3 filas por 4 columnas
 							CvMat * lp_result = l_esm_vec[l_j]->track(lp_gray,l_cur_vec[l_j],10,10);
 
 							if( l_esm_vec[l_j]->get_ncc() > 0.85 )
@@ -318,10 +353,12 @@ int main( int argc, char * argv[] )
 		cv::cv_show_image(lp_color,"hallo1");
 		int l_key = cvWaitKey(1);
 
+        // Si se aprieta E
 		if( l_key == 101 )
 		{
 			l_show_esm = !l_show_esm;
 		}
+		// Si se aprieta I
 		if( l_key == 105 )
 		{
 			l_learn_onl = !l_learn_onl;
@@ -332,6 +369,8 @@ int main( int argc, char * argv[] )
 				l_template.cluster_heu(4);
 			}
 		}
+
+		// Si se aprieta D
 		if( l_key == 100 )
 		{
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
@@ -347,6 +386,7 @@ int main( int argc, char * argv[] )
 			l_template.clear_rec_list();
 			l_template.clear_cnt_list();
 		}
+		// Si se aprieta ESC
 		if( l_key == 27 )
 		{
 			for( int l_i=0; l_i<l_template.get_classes(); ++l_i )
@@ -374,6 +414,3 @@ int main( int argc, char * argv[] )
 	}
 	return 0;
 }
-
-#endif
-

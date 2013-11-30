@@ -38,7 +38,7 @@
 #include <vector>
 #include <list>
 
-#include "emmintrin.h" 
+#include "emmintrin.h"
 #include "ipp.h"
 
 #include "cv_utilities.h"
@@ -69,7 +69,7 @@ struct cv_candidate
 	int m_clu;
 	int m_cla;
 	int m_val;
-	
+
 	int m_row;
 	int m_col;
 };
@@ -128,7 +128,7 @@ struct cv_dot_list
 /**************************** forward declarations **************************/
 
 /********************************** classes *********************************/
-/** 
+/**
  * \class cv_dot_template
  * \brief This class provides functionallity for very fast gradient based template matching.
  * \It is published in CVPR 2010, San Francisco:
@@ -156,27 +156,27 @@ public:
 	std::vector<CvMat*> & get_rec( void ){ return m_rec; }
 	std::vector<IplImage*> & get_cnt( void ){ return m_cnt; }
 
-	std::pair<Ipp8u*,Ipp32f*> compute_gradients( IplImage * ap_img, int a_num_of_gradients=1 ); 
-	
+	std::pair<Ipp8u*,Ipp32f*> compute_gradients( IplImage * ap_img, int a_num_of_gradients=1 );
+
 	std::list<cv_candidate*> * online_process( Ipp8u * ap_img, int a_thres, int a_width, int a_height );
 	std::list<cv_candidate*> * process( Ipp8u * ap_img, int a_thres, int a_width, int a_height );
-	
+
 	cv_candidate * online_comp( Ipp8u * ap_pix, int a_thres );
 	cv_candidate * comp( Ipp8u * ap_pix, int a_thres );
 
 	void calibrate( IplImage * ap_image );
-		
+
 	void create_bit_list_fast( IplImage * ap_img, int a_row, int a_col, int a_grad_num, float a_thres );
 	void online_create_bit_list_fast( IplImage * ap_img, CvMat * ap_rec, int a_class, int a_grad_num, float a_thres );
-		
+
 	void cluster_heu( int a_max );
-		
+
 	void clear_clu_list( void );
 	void clear_bit_list( void );
 	void clear_rec_list( void );
 	void clear_cnt_list( void );
-			
-	void render(	IplImage * ap_img, IplImage * ap_msk, int a_row, 
+
+	void render(	IplImage * ap_img, IplImage * ap_msk, int a_row,
 					int a_col, int a_r=0, int a_b=255, int a_c=0 );
 
 	bool append( std::string a_name );
@@ -188,12 +188,12 @@ protected:
 	Ipp8u * create_template_fast( IplImage * ap_img, int a_grad_num, float a_thres );
 
 	IplImage * get_contour( IplImage * ap_image );
-	
+
 	Ipp16u cluster_bitcount( Ipp8u * ap_pix1, Ipp8u * ap_pix2 );
 	Ipp16u bitsets_bitcount( Ipp8u * ap_pix1 );
-	
+
 	void oring( Ipp8u * ap_pix1, Ipp8u * ap_pix2, Ipp8u * ap_res );
-	void add_bit_list( Ipp8u * ap_bit, int a_class ); 
+	void add_bit_list( Ipp8u * ap_bit, int a_class );
 	void transfer_bit_list( Ipp8u * ap_mem );
 	void compute_threshold( void );
 
@@ -214,7 +214,7 @@ protected:
 
 		while(a_n)
 		{
-			l_count += a_n & 0x1u;    
+			l_count += a_n & 0x1u;
 			a_n >>= 1;
 		}
 		return l_count;
@@ -225,11 +225,11 @@ protected:
 		for( unsigned int l_i=0; l_i<(0x1u<<16); ++l_i )
 		{
 			bits_set_in_16bit[l_i] = iterated_bitcount(l_i);
-		}	
+		}
 		for( unsigned int l_i=0; l_i<(0x1u<<16); ++l_i )
 		{
 			bits_unset_in_16bit[l_i] = 16-iterated_bitcount(l_i);
-		}	
+		}
 		return;
 	}
 
@@ -247,10 +247,10 @@ protected:
 	const float	m_min_norm;
 
 	Ipp8u	*	mp_mem;
-	
+
 	std::vector<CvMat*> m_rec;
 	std::vector<IplImage*> m_cnt;
-			
+
 	cv_dot_list * mp_start;
 	cv_dot_list * mp_cluster;
 };
@@ -292,7 +292,7 @@ template <int M, int N, int S, int G>
 void cv_dot_template<M,N,S,G>::add_bit_list( Ipp8u * ap_bit, int a_class )
 {
 	Ipp8u * lp_bit = ippsMalloc_8u(m_elem);
-	
+
 	m_clustered = false;
 
 	if( mp_start == NULL )
@@ -306,7 +306,7 @@ void cv_dot_template<M,N,S,G>::add_bit_list( Ipp8u * ap_bit, int a_class )
 		mp_start->mp_bit = lp_bit;
 
 		ippsCopy_8u(ap_bit,mp_start->mp_bit,m_elem);
-	
+
 		++m_templates;
 	}
 	else
@@ -325,7 +325,7 @@ void cv_dot_template<M,N,S,G>::add_bit_list( Ipp8u * ap_bit, int a_class )
 		lp_bit_list->mp_bit = lp_bit;
 
 		ippsCopy_8u(ap_bit,lp_bit_list->mp_bit,m_elem);
-	
+
 		lp_cur->mp_nxt = lp_bit_list;
 		++m_templates;
 	}
@@ -365,7 +365,7 @@ void cv_dot_template<M,N,S,G>::transfer_bit_list( Ipp8u * ap_mem )
 			ippsCopy_8u(lp_cur->mp_bit,lp_mem,m_elem);
 			lp_cur->mp_sta=lp_mem;
 			lp_mem+=m_elem;
-			
+
 			lp_cur = lp_cur->mp_flw;
 		}
 		lp_clu = lp_clu->mp_nxt;
@@ -373,7 +373,7 @@ void cv_dot_template<M,N,S,G>::transfer_bit_list( Ipp8u * ap_mem )
 
 #else
 	Ipp8u * lp_mem = ap_mem;
-	
+
 	cv_dot_list * lp_cur = mp_start;
 
 	while( lp_cur != NULL )
@@ -386,7 +386,7 @@ void cv_dot_template<M,N,S,G>::transfer_bit_list( Ipp8u * ap_mem )
 		ippsCopy_8u(lp_cur->mp_bit,lp_mem,m_elem);
 		lp_cur->mp_sta=lp_mem;
 		lp_mem+=m_elem;
-		
+
 		lp_cur = lp_cur->mp_nxt;
 	}
 #endif
@@ -454,9 +454,9 @@ void cv_dot_template<M,N,S,G>::cluster_heu( int a_max )
 	this->clear_clu_list();
 
 	mp_cluster = NULL;
-	
+
 	cv_dot_list * lp_cur = NULL;
-	
+
 	lp_cur = mp_start;
 
 	while( lp_cur != NULL )
@@ -469,8 +469,8 @@ void cv_dot_template<M,N,S,G>::cluster_heu( int a_max )
 
 	int  l_cluster_number = 1;
 	bool l_flag = true;
-	
-	while( l_flag ) 
+
+	while( l_flag )
 	{
 		int l_max = -1;
 		l_flag = false;
@@ -499,16 +499,16 @@ void cv_dot_template<M,N,S,G>::cluster_heu( int a_max )
 			int l_counter = 1;
 
 			cv_dot_list * lp_cluster = new cv_dot_list;
-			
+
 			lp_cur1->m_clu		= l_cluster_number;
 			lp_cluster->m_clu	= l_cluster_number;
 			lp_cluster->m_ind	= l_cluster_number;
 			lp_cluster->mp_bit  = ippsMalloc_8u(m_elem);
 			lp_cluster->mp_flw	= lp_cur1;
 			lp_cluster->mp_nxt	= NULL;
-			
+
 			ippsCopy_8u(lp_cur1->mp_bit,lp_cluster->mp_bit,m_elem);
-			
+
 			cv_dot_list * lp_ind1 = lp_cur1;
 
 			while( l_counter < a_max && l_end == false )
@@ -526,7 +526,7 @@ void cv_dot_template<M,N,S,G>::cluster_heu( int a_max )
 					{
 						Ipp16u l_val = cluster_bitcount(lp_cluster->mp_bit,lp_cur2->mp_bit);
 
-						if( l_val < l_min ) 
+						if( l_val < l_min )
 						{
 							l_min	= l_val;
 							l_end	= false;
@@ -569,7 +569,7 @@ void cv_dot_template<M,N,S,G>::cluster_heu( int a_max )
 
 	m_clustered = true;
 
-	this->transfer_bit_list(mp_mem);	
+	this->transfer_bit_list(mp_mem);
 
 	return;
 }
@@ -590,7 +590,7 @@ void cv_dot_template<M,N,S,G>::calibrate( IplImage * ap_image )
 
 	cvSobel(ap_image,lp_sobel_dx,1,0,3);
 	cvSobel(ap_image,lp_sobel_dy,0,1,3);
-	
+
 	cvCartToPolar(lp_sobel_dx,lp_sobel_dy,lp_sobel_mg);
 
 	ippiMax_32f_C1R(((float*)lp_sobel_mg->imageData)+
@@ -666,7 +666,7 @@ template <int M, int N, int S, int G>
 cv_candidate * cv_dot_template<M,N,S,G>::comp( Ipp8u * ap_pix, int a_thres )
 {
 	register __m128i l_zero = _mm_setzero_si128();
-	
+
 #ifndef NO_CLUSTERING
 
 	cv_candidate * lp_candidate = new cv_candidate;
@@ -677,13 +677,13 @@ cv_candidate * cv_dot_template<M,N,S,G>::comp( Ipp8u * ap_pix, int a_thres )
 	lp_candidate->m_val = 0;
 
 	Ipp16u l_max = 0;
-	
+
 	cv_dot_list * lp_clu = mp_cluster;
 
 	while( lp_clu != NULL )
 	{
 		int l_clu_val = energy_bitcount<(M*N-1)/16+1>(lp_clu->mp_sta,ap_pix,l_zero);
-	
+
 		if( l_clu_val >= a_thres && l_clu_val > l_max )
 		{
 			cv_dot_list * lp_cur = lp_clu->mp_flw;
@@ -691,7 +691,7 @@ cv_candidate * cv_dot_template<M,N,S,G>::comp( Ipp8u * ap_pix, int a_thres )
 			while( lp_cur != NULL )
 			{
 				int l_cur_val = energy_bitcount<(M*N-1)/16+1>(lp_cur->mp_sta,ap_pix,l_zero);
-			
+
 				if( l_cur_val > l_max && l_cur_val >= a_thres )
 				{
 					l_max  = l_cur_val;
@@ -715,17 +715,17 @@ cv_candidate * cv_dot_template<M,N,S,G>::comp( Ipp8u * ap_pix, int a_thres )
 	lp_candidate->m_val = 0;
 
 	Ipp16u l_max = 0;
-	
+
 	cv_dot_list * lp_cur = mp_start;
-	
+
 	while( lp_cur != NULL )
 	{
 		Ipp16u l_cur_val = energy_bitcount<(M*N-1)/16+1>(lp_cur->mp_sta,ap_pix,l_zero);
-	
+
 		if( l_cur_val >= a_thres && l_cur_val > l_max )
 		{
 			bool l_flag = false;
-						
+
 			l_max  = l_cur_val;
 
 			lp_candidate->m_ind = lp_cur->m_ind;
@@ -743,7 +743,7 @@ template <int M, int N, int S, int G>
 cv_candidate * cv_dot_template<M,N,S,G>::online_comp( Ipp8u * ap_pix, int a_thres )
 {
 	register __m128i l_zero = _mm_setzero_si128();
-	
+
 	cv_candidate * lp_candidate = new cv_candidate;
 
 	lp_candidate->m_ind = 0;
@@ -752,7 +752,7 @@ cv_candidate * cv_dot_template<M,N,S,G>::online_comp( Ipp8u * ap_pix, int a_thre
 	lp_candidate->m_val = 0;
 
 	Ipp16u l_max = 0;
-	
+
 	cv_dot_list * lp_cur = mp_start;
 
 	while( lp_cur != NULL )
@@ -762,7 +762,7 @@ cv_candidate * cv_dot_template<M,N,S,G>::online_comp( Ipp8u * ap_pix, int a_thre
 		if( l_cur_val >= a_thres && l_cur_val > l_max )
 		{
 			bool l_flag = false;
-						
+
 			lp_candidate->m_ind = lp_cur->m_ind;
 			lp_candidate->m_clu = lp_cur->m_clu;
 			lp_candidate->m_cla = lp_cur->m_cla;
@@ -779,7 +779,7 @@ void cv_dot_template<M,N,S,G>::oring( Ipp8u * ap_pix1, Ipp8u * ap_pix2, Ipp8u * 
 	__m128i * lp_val0 = (__m128i*)ap_res;
 	__m128i * lp_pix1 = (__m128i*)ap_pix1;
 	__m128i * lp_pix2 = (__m128i*)ap_pix2;
-	
+
 	for( int l_i=0; l_i<m_elem/16; ++l_i )
 	{
 		lp_val0[l_i] = _mm_or_si128(lp_pix1[l_i],lp_pix2[l_i]);
@@ -824,13 +824,13 @@ Ipp16u cv_dot_template<M,N,S,G>::bitsets_bitcount( Ipp8u * ap_pix1 )
 }
 
 template <int M, int N, int S, int G>
-std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::process(	Ipp8u * ap_img, 
+std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::process(	Ipp8u * ap_img,
 																int a_thres,
 																int a_width,
 																int a_height )
 {
 	std::list<cv_candidate*> * lp_list = new std::list<cv_candidate*>[m_classes];
-	
+
 	Ipp8u * lp_pix_row = ippsMalloc_8u(m_elem);
 	Ipp8u * lp_pix_col = ippsMalloc_8u(m_elem);
 
@@ -845,12 +845,12 @@ std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::process(	Ipp8u * ap_img,
 		for( int l_c=0; l_c<a_width-N; ++l_c )
 		{
 			cv_candidate * lp_candidate = this->comp(lp_pix_col,a_thres);
-		
+
 			if( lp_candidate->m_ind != 0 )
 			{
 				lp_candidate->m_col = l_c*S;
 				lp_candidate->m_row = l_r*S;
-				
+
 				lp_list[lp_candidate->m_cla].push_back(lp_candidate);
 			}
 			else
@@ -875,7 +875,7 @@ std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::online_process(	Ipp8u * ap_
 																		int a_height )
 {
 	std::list<cv_candidate*> * lp_list = new std::list<cv_candidate*>[m_classes];
-	
+
 	Ipp8u * lp_pix_row = ippsMalloc_8u(m_elem);
 	Ipp8u * lp_pix_col = ippsMalloc_8u(m_elem);
 
@@ -890,12 +890,12 @@ std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::online_process(	Ipp8u * ap_
 		for( int l_c=0; l_c<a_width-N; ++l_c )
 		{
 			cv_candidate * lp_candidate = this->online_comp(lp_pix_col,a_thres);
-			
+
 			if( lp_candidate->m_ind != 0 )
 			{
 				lp_candidate->m_col = l_c*S;
 				lp_candidate->m_row = l_r*S;
-				
+
 				lp_list[lp_candidate->m_cla].push_back(lp_candidate);
 			}
 			else
@@ -914,7 +914,7 @@ std::list<cv_candidate*> * cv_dot_template<M,N,S,G>::online_process(	Ipp8u * ap_
 }
 
 template <int M, int N, int S, int G>
-Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img, 
+Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 														int a_grad_num,
 														float a_thres )
 {
@@ -931,7 +931,7 @@ Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 
 	cvSobel(ap_img,lp_sobel_dx,1,0,3);
 	cvSobel(ap_img,lp_sobel_dy,0,1,3);
-	
+
 	cvCartToPolar(lp_sobel_dx,lp_sobel_dy,lp_sobel_mg,lp_sobel_ag,1);
 
 	Ipp32f * lp_strn_tmp	= ippsMalloc_32f(m_elem);
@@ -945,15 +945,15 @@ Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 	//because we start at the midpoint of the bin...
 	int l_off_x=1+S/2;
 	int l_off_y=1+S/2;
-	
+
 	int l_mstep = lp_sobel_mg->widthStep/sizeof(float);
 	int l_istep = ap_img->widthStep/sizeof(float);
-	
+
 	IppiSize l_size;
 
 	l_size.height = S;
 	l_size.width  = S;
-	
+
 	float l_divisor = 180.0/((m_bins-1));
 
 	float l_gmax_gra=0;
@@ -984,14 +984,14 @@ Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 					*lp_strn_ptr += l_lmax_gra;
 
 					if( l_lmax_gra > l_gmax_gra ) l_gmax_gra=l_lmax_gra;
-								
+
 					while( true )
 					{
 						float l_max;
 
 						int l_inx;
 						int l_iny;
-						
+
 						ippiMaxIndx_32f_C1R(((float*)lp_sobel_mg->imageData)+l_yall*l_mstep+l_xall,
 											lp_sobel_mg->widthStep,
 											l_size,
@@ -1002,21 +1002,21 @@ Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 						if( l_lmax_gra < m_min_norm )
 						{
 							*lp_peak_ptr |= 1 << (m_bins-1);
-														
+
 							break;
 						}
-						if( l_lmax_gra*a_thres > l_max || l_counter >= a_grad_num ) break; 
-						//if( l_lmax_gra-m_min_norm > l_max || l_counter >= a_grad_num ) break; 
-						//if( l_lmax_gra-m_min_norm > l_max  ) break; 
+						if( l_lmax_gra*a_thres > l_max || l_counter >= a_grad_num ) break;
+						//if( l_lmax_gra-m_min_norm > l_max || l_counter >= a_grad_num ) break;
+						//if( l_lmax_gra-m_min_norm > l_max  ) break;
 						//if( l_counter >= 1 ) break;
 
 						++l_counter;
 
 						int l_ang1 = (CV_IMAGE_ELEM(lp_sobel_ag,float,l_iny+l_yall,l_inx+l_xall)-0.5);
 						int l_bin1 = (l_ang1>=180.0?l_ang1-180.0:l_ang1)/l_divisor;
-						
+
 						*lp_peak_ptr |= 1 << l_bin1;
-						
+
 						l_xcord.push_back(l_inx+l_xall);
 						l_ycord.push_back(l_iny+l_yall);
 						l_val.push_back(l_max);
@@ -1059,20 +1059,20 @@ Ipp8u * cv_dot_template<M,N,S,G>::create_template_fast(	IplImage * ap_img,
 							&l_min,
 							&l_x,
 							&l_y);
-		
+
 		//for( int l_r=0; l_r<S; ++l_r )
 		//{
 		//	for( int l_c=0; l_c<S; ++l_c )
 		//	{
 		//		CV_IMAGE_ELEM(lp_mask,float,l_r+l_y*S,l_c+l_x*S) = 0;
 		//	}
-		//}		
+		//}
 		lp_strn_tmp[l_y*N+l_x] = 10e100;
 		lp_peak_tmp[l_y*N+l_x] = 0;
 	}
 	//cv::cv_show_image(lp_mask);
 	//cvReleaseImage(&lp_mask);
-	
+
 	cvReleaseImage(&lp_sobel_dx);
 	cvReleaseImage(&lp_sobel_dy);
 	cvReleaseImage(&lp_sobel_mg);
@@ -1093,10 +1093,10 @@ std::pair<Ipp8u*,Ipp32f*> cv_dot_template<M,N,S,G>::compute_gradients( IplImage 
 	IplImage * lp_sobel_dy = cvCreateImage(cvGetSize(ap_img),IPL_DEPTH_32F,1);
 	IplImage * lp_sobel_mg = cvCreateImage(cvGetSize(ap_img),IPL_DEPTH_32F,1);
 	IplImage * lp_sobel_ag = cvCreateImage(cvGetSize(ap_img),IPL_DEPTH_32F,1);
-	
+
 	cvSobel(ap_img,lp_sobel_dx,1,0,3);
 	cvSobel(ap_img,lp_sobel_dy,0,1,3);
-	
+
 	cvCartToPolar(lp_sobel_dx,lp_sobel_dy,lp_sobel_mg,lp_sobel_ag,1);
 
 	Ipp32f * lp_peak_mag = ippsMalloc_32f(lp_sobel_mg->width*lp_sobel_mg->height);
@@ -1112,7 +1112,7 @@ std::pair<Ipp8u*,Ipp32f*> cv_dot_template<M,N,S,G>::compute_gradients( IplImage 
 
 	int l_mstep = lp_sobel_mg->widthStep/sizeof(float);
 	int l_istep = ap_img->widthStep/sizeof(float);
-	
+
 	IppiSize l_size;
 
 	l_size.height = S;
@@ -1125,13 +1125,13 @@ std::pair<Ipp8u*,Ipp32f*> cv_dot_template<M,N,S,G>::compute_gradients( IplImage 
 		for( int l_c=0; l_c<m_width; ++l_c )
 		{
 			int l_counter = 0;
-			
+
 			while( l_counter < a_num_of_gradients )
 			{
 				float l_int_min;
 				float l_int_max;
 				float l_max;
-			
+
 				int l_inx;
 				int l_iny;
 
@@ -1157,7 +1157,7 @@ std::pair<Ipp8u*,Ipp32f*> cv_dot_template<M,N,S,G>::compute_gradients( IplImage 
 				CV_IMAGE_ELEM(lp_sobel_mg,float,l_iny+l_off_y,l_inx+l_off_x) = -1;
 
 				++l_counter;
-			}		
+			}
 			++lp_peak_ptr;
 			l_off_x += S;
 		}
@@ -1173,9 +1173,9 @@ std::pair<Ipp8u*,Ipp32f*> cv_dot_template<M,N,S,G>::compute_gradients( IplImage 
 }
 
 template <int M, int N, int S, int G>
-void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img, 
-														int a_row, 
-														int a_col, 
+void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
+														int a_row,
+														int a_col,
 														int a_grad_num,
 														float a_thres )
 {
@@ -1184,7 +1184,7 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 
 	//num_x+1 because we have to make it translation invariant...
 	IplImage * lp_img = cvCreateImage(cvSize((N+1)*S+2,(M+1)*S+2),IPL_DEPTH_32F,1);
-	
+
 	CvMat * lp_mat = cvCreateMat(3,3,CV_32F);
 	CvMat * lp_rot = cvCreateMat(2,3,CV_32F);
 	CvMat * lp_dst = cvCreateMat(3,3,CV_32F);
@@ -1204,7 +1204,7 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 			l_center.x = a_col;
 			l_center.y = a_row;
 			cv2DRotationMatrix(l_center,l_r,1.0,lp_rot);
-			
+
 			l_dst[0].x = 1-l_s;
 			l_dst[0].y = 1-l_s;
 			l_dst[1].x = S*(N+1)+1+l_s;
@@ -1224,7 +1224,7 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 			l_src[3].y = +l_sizey+a_row;
 
 			cvGetPerspectiveTransform(l_src,l_dst,lp_mat);
-						
+
 			CV_MAT_ELEM(*lp_tmp,float,0,0) = CV_MAT_ELEM(*lp_rot,float,0,0);
 			CV_MAT_ELEM(*lp_tmp,float,0,1) = CV_MAT_ELEM(*lp_rot,float,0,1);
 			CV_MAT_ELEM(*lp_tmp,float,0,2) = CV_MAT_ELEM(*lp_rot,float,0,2);
@@ -1234,7 +1234,7 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 			CV_MAT_ELEM(*lp_tmp,float,2,0) = 0;
 			CV_MAT_ELEM(*lp_tmp,float,2,1) = 0;
 			CV_MAT_ELEM(*lp_tmp,float,2,2) = 1;
-			
+
 			cvMatMul(lp_mat,lp_tmp,lp_dst);
 			cvWarpPerspective(ap_img,lp_img,lp_dst);
 
@@ -1259,7 +1259,7 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 			//cv::cv_show_image(lp_img);
 
 			Ipp8u * lp_template = create_template_fast(lp_img,a_grad_num,a_thres);
-			
+
 			this->add_bit_list(lp_template,m_classes);
 			m_rec.push_back(lp_war);
 
@@ -1276,12 +1276,12 @@ void cv_dot_template<M,N,S,G>::create_bit_list_fast(	IplImage * ap_img,
 	cvReleaseMat(&lp_tmp);
 
 	++m_classes;
-		
+
 	std::cerr << "num of templates: " << get_templates() <<  std::endl;
 }
 
 template <int M, int N, int S, int G>
-void cv_dot_template<M,N,S,G>::online_create_bit_list_fast(	IplImage * ap_img, 
+void cv_dot_template<M,N,S,G>::online_create_bit_list_fast(	IplImage * ap_img,
 															CvMat * ap_rec,
 															int a_class,
 															int a_grad_num,
@@ -1296,7 +1296,7 @@ void cv_dot_template<M,N,S,G>::online_create_bit_list_fast(	IplImage * ap_img,
 
 	//num_x+1 because we have to make it translation invariant...
 	IplImage * lp_img = cvCreateImage(cvSize((N+1)*S+2,(M+1)*S+2),IPL_DEPTH_32F,1);
-	
+
 	CvMat * lp_mat = cvCreateMat(3,3,CV_32F);
 	CvMat * lp_pts = cvCreateMat(3,4,CV_32F);
 	CvMat * lp_wpt = cvCreateMat(3,1,CV_32F);
@@ -1327,7 +1327,7 @@ void cv_dot_template<M,N,S,G>::online_create_bit_list_fast(	IplImage * ap_img,
 	cvGetPerspectiveTransform(l_dst,l_war,lp_mat);
 	cvMatMul(lp_mat,lp_pt,lp_wpt);
 	cv::cv_homogenize(lp_wpt);
-	
+
 	int l_col = CV_MAT_ELEM(*lp_wpt,float,0,0);
 	int l_row = CV_MAT_ELEM(*lp_wpt,float,1,0);
 
@@ -1342,7 +1342,7 @@ void cv_dot_template<M,N,S,G>::online_create_bit_list_fast(	IplImage * ap_img,
 
 	cvGetPerspectiveTransform(l_src,l_dst,lp_mat);
 	cvWarpPerspective(ap_img,lp_img,lp_mat);
-	
+
 	cvCopy(ap_rec,lp_pts);
 	CV_MAT_ELEM(*lp_pts,float,0,0) -= l_col-l_sizex;
 	CV_MAT_ELEM(*lp_pts,float,1,0) -= l_row-l_sizey;
@@ -1383,12 +1383,12 @@ IplImage * cv_dot_template<M,N,S,G>::get_contour( IplImage * ap_img )
 
 	cvSobel(ap_img,lp_sobel_dx,1,0,3);
 	cvSobel(ap_img,lp_sobel_dy,0,1,3);
-	
+
 	cvCartToPolar(lp_sobel_dx,lp_sobel_dy,lp_sobel_mg);
 	cvConvert(lp_sobel_mg,lp_sobel_mk2);
 
 	cvThreshold( lp_sobel_mk2,lp_sobel_mk3,40,255,CV_THRESH_BINARY);
-	
+
 	//cv::cv_show_image(lp_sobel_mk3,"hallo2");
 	//cvWaitKey(100);
 
@@ -1397,12 +1397,12 @@ IplImage * cv_dot_template<M,N,S,G>::get_contour( IplImage * ap_img )
 	cvReleaseImage(&lp_sobel_dx);
 	cvReleaseImage(&lp_sobel_dy);
 	cvReleaseImage(&lp_sobel_mg);
-	
+
 	return lp_sobel_mk3;
 }
 
 template <int M, int N, int S, int G>
-void cv_dot_template<M,N,S,G>::render(	IplImage * ap_img, 
+void cv_dot_template<M,N,S,G>::render(	IplImage * ap_img,
 										IplImage * ap_msk,
 										int a_row,
 										int a_col,
@@ -1437,7 +1437,7 @@ std::ofstream & cv_dot_template<M,N,S,G>::write( std::ofstream & a_os )
 	a_os.write((char*)&m_bins,sizeof(m_bins));
 
 	a_os.write((char*)&m_min_norm,sizeof(m_min_norm));
-	
+
 	for( int l_i=0; l_i<m_templates; ++l_i )
 	{
 		cv::cv_write(a_os,m_rec[l_i]);
@@ -1450,7 +1450,7 @@ std::ofstream & cv_dot_template<M,N,S,G>::write( std::ofstream & a_os )
 		int l_class = lp_cur->m_cla;
 
 		a_os.write((char*)&l_class,sizeof(l_class));
-		
+
 		for( int l_i=0; l_i<m_elem; ++l_i )
 		{
 			a_os.write((char*)&lp_cur->mp_bit[l_i],sizeof(lp_cur->mp_bit[l_i]));
@@ -1530,7 +1530,7 @@ std::ifstream & cv_dot_template<M,N,S,G>::append( std::ifstream & a_is )
 	a_is.read((char*)&l_templates,sizeof(l_templates));
 
 	//m_classes += l_classes;//if append not class
-	
+
 	a_is.read((char*)&m_elem,sizeof(m_elem));
 	a_is.read((char*)&m_bins,sizeof(m_bins));
 
@@ -1547,7 +1547,7 @@ std::ifstream & cv_dot_template<M,N,S,G>::append( std::ifstream & a_is )
 		m_cnt.push_back(lp_cnt);
 	}
 	int l_pre_classes = this->get_classes()-1;//if append not class
-	
+
 	for( int l_j=0; l_j<l_size; ++l_j )
 	{
 		int l_class;
@@ -1578,13 +1578,13 @@ bool cv_dot_template<M,N,S,G>::save( std::string a_name )
 	std::ofstream l_file(	a_name.c_str(),
 							std::ofstream::out |
 							std::ofstream::binary );
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		printf("cv_dot_template: could not open file for writing!\n");
-		return false; 
+		return false;
 	}
-	this->write( l_file );	
+	this->write( l_file );
 
 	l_file.close();
 
@@ -1599,13 +1599,13 @@ bool cv_dot_template<M,N,S,G>::load( std::string a_name )
 	std::ifstream l_file(	a_name.c_str(),
 							std::ifstream::in |
 							std::ifstream::binary );
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		printf("cv_dot_template: could not open file for reading!\n");
 		return false;
 	}
-	this->read( l_file );	
+	this->read( l_file );
 
 	l_file.close();
 
@@ -1620,13 +1620,13 @@ bool cv_dot_template<M,N,S,G>::append( std::string a_name )
 	std::ifstream l_file(	a_name.c_str(),
 							std::ifstream::in |
 							std::ifstream::binary );
-	
-	if( l_file.fail() == true ) 
+
+	if( l_file.fail() == true )
 	{
 		printf("cv_dot_template: could not open file for appending!\n");
 		return false;
 	}
-	this->append( l_file );	
+	this->append( l_file );
 
 	l_file.close();
 

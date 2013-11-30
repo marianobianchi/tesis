@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
 <CodeBlocks_layout_file>
 	<ActiveTarget name="Debug" />
-	<File name="include/cv_utilities.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/cv_harris.cc" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2073" topLine="26" />
+			<Cursor1 position="320" topLine="0" />
 		</Cursor>
 	</File>
 	<File name="src/cv_esm.cc" open="0" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -11,48 +11,27 @@
 			<Cursor1 position="8174" topLine="304" />
 		</Cursor>
 	</File>
-	<File name="src/cv_camera.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="1577" topLine="16" />
-		</Cursor>
-	</File>
 	<File name="src/main_wil.cc" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="15315" topLine="3" />
+			<Cursor1 position="11968" topLine="288" />
 		</Cursor>
 		<Folding>
 			<Collapse line="282" />
-			<Collapse line="331" />
 		</Folding>
-	</File>
-	<File name="include/cv_camera.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2491" topLine="41" />
-		</Cursor>
-	</File>
-	<File name="src/cv_utilities.cc" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="22463" topLine="916" />
-		</Cursor>
 	</File>
 	<File name="src/cv_gepard.cc" open="1" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9451" topLine="387" />
+			<Cursor1 position="9451" topLine="321" />
 		</Cursor>
 	</File>
-	<File name="include/cv_esm.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/cv_utilities.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="1234" topLine="74" />
+			<Cursor1 position="2073" topLine="26" />
 		</Cursor>
 	</File>
-	<File name="include/cv_pcabase.h" open="0" top="0" tabpos="7" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/cv_camera.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2667" topLine="69" />
-		</Cursor>
-	</File>
-	<File name="include/cv_gepard.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2958" topLine="69" />
+			<Cursor1 position="1577" topLine="16" />
 		</Cursor>
 	</File>
 	<File name="include/cv_hyper.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -60,19 +39,14 @@
 			<Cursor1 position="2403" topLine="12" />
 		</Cursor>
 	</File>
-	<File name="include/cv_homography.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/cv_gepard.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2341" topLine="68" />
+			<Cursor1 position="2998" topLine="43" />
 		</Cursor>
 	</File>
-	<File name="src/cv_harris.cc" open="0" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/cv_hyper.cc" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="320" topLine="0" />
-		</Cursor>
-	</File>
-	<File name="src/cv_pcabase.cc" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="2922" topLine="113" />
+			<Cursor1 position="426" topLine="9" />
 		</Cursor>
 	</File>
 	<File name="include/cv_harris.h" open="0" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -80,9 +54,34 @@
 			<Cursor1 position="3189" topLine="48" />
 		</Cursor>
 	</File>
-	<File name="src/cv_hyper.cc" open="0" top="0" tabpos="4" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/cv_homography.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="426" topLine="9" />
+			<Cursor1 position="2341" topLine="68" />
+		</Cursor>
+	</File>
+	<File name="src/cv_pcabase.cc" open="0" top="0" tabpos="8" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2922" topLine="113" />
+		</Cursor>
+	</File>
+	<File name="src/cv_utilities.cc" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="22463" topLine="916" />
+		</Cursor>
+	</File>
+	<File name="include/cv_pcabase.h" open="1" top="0" tabpos="5" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2808" topLine="72" />
+		</Cursor>
+	</File>
+	<File name="include/cv_esm.h" open="0" top="0" tabpos="6" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="1234" topLine="74" />
+		</Cursor>
+	</File>
+	<File name="include/cv_camera.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2491" topLine="41" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
