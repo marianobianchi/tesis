@@ -1,7 +1,4 @@
 
-
-
-
 #include "cv_dot_template.h"
 #include "cv_camera.h"
 
@@ -67,9 +64,7 @@ int get_key_and_act(int &l_thres,
     if( l_key == 101 )
     {
         l_show_esm = !l_show_esm;
-
     }
-
     // Si se aprieta I
     if( l_key == 105 )
     {
@@ -117,9 +112,10 @@ int get_key_and_act(int &l_thres,
 
         return false;
     }
+
     return true;
 
-};
+}
 
 
 template <int M, int N, int S, int G>
@@ -130,6 +126,7 @@ void draw_rectangle(cv::cv_dot_template<M,N,S,G> &l_template,
                     IplImage *lp_color,
                     bool l_show_rec)
 {
+
     // Si el mouse está dentro de la ventana, dibuja
     // el recuadro
     if( l_x-l_template.get_width()/2 >= 0 ||
@@ -173,7 +170,9 @@ void draw_rectangle(cv::cv_dot_template<M,N,S,G> &l_template,
             cvLine(lp_color,l_pt4,l_pt1,CV_RGB(255,0,0),1);
         }
     }
+
 }
+
 
 
 template <int M, int N, int S, int G>
@@ -282,6 +281,7 @@ int main( int argc, char * argv[] )
 		printf("main_dog: the camera could not be initalized!");
 		return 0;
 	}
+
 	while(user_wants_to_continue)
 	{
 		IplImage * lp_color = NULL;
@@ -303,7 +303,6 @@ int main( int argc, char * argv[] )
 		{
 			l_x = l_xx;
 			l_y = l_yy;
-
 		}
 		bool mouse_is_inside_the_window = (l_x != -1 && l_y != -1);
 
@@ -500,7 +499,7 @@ int main( int argc, char * argv[] )
 		else
 		{
 			std::cerr << "tim: " << (int)(l_timer_gradients.get_time()*1000) << "ms; fps: " << (int)l_timer_gradients.get_fps() << "fps ";
-			std::cerr << "pre: " << (int)(l_timer_computegradients.get_time()*1000) << "ms; pro: " << (int)(l_timer_process_gradients.get_time()*1000) << "ms ";
+			std::cerr << "pre: " << (int)(l_timer_computegradients.get_time()*1000) << "ms; pro: " << (int)(l_timer_process_gradients.get_time()*1000) << "ms; ";
 			std::cerr << " size: " << l_template.get_templates() << "    " << char(13) << std::flush;
 		}
 		cv::cv_show_image(lp_color,"hallo1");

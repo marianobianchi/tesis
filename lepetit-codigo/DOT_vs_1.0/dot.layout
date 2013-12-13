@@ -6,14 +6,9 @@
 			<Cursor1 position="0" topLine="39" />
 		</Cursor>
 	</File>
-	<File name="include/cv_esm.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="src/cv_camera.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="2673" topLine="83" />
-		</Cursor>
-	</File>
-	<File name="include/cv_utilities.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="63" />
+			<Cursor1 position="0" topLine="42" />
 		</Cursor>
 	</File>
 	<File name="src/cv_utilities.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
@@ -21,13 +16,15 @@
 			<Cursor1 position="0" topLine="57" />
 		</Cursor>
 	</File>
-	<File name="src/main_dot3D.cc" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+	<File name="include/cv_utilities.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="9518" topLine="383" />
+			<Cursor1 position="0" topLine="63" />
 		</Cursor>
-		<Folding>
-			<Collapse line="124" />
-		</Folding>
+	</File>
+	<File name="src/main_dot2D.cc" open="1" top="1" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="8886" topLine="271" />
+		</Cursor>
 	</File>
 	<File name="src/cv_esm.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
@@ -41,22 +38,26 @@
 			<Collapse line="94" />
 		</Folding>
 	</File>
+	<File name="src/main_dot3D.cc" open="1" top="0" tabpos="1" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="0" topLine="0" />
+		</Cursor>
+	</File>
+	<File name="include/cv_esm.h" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
+		<Cursor>
+			<Cursor1 position="2673" topLine="83" />
+		</Cursor>
+	</File>
 	<File name="include/cv_dot_template.h" open="1" top="0" tabpos="3" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
 		<Cursor>
-			<Cursor1 position="22342" topLine="874" />
-		</Cursor>
-	</File>
-	<File name="src/cv_camera.cc" open="0" top="0" tabpos="0" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="0" topLine="42" />
-		</Cursor>
-	</File>
-	<File name="src/main_dot2D.cc" open="1" top="0" tabpos="2" split="0" active="1" splitpos="0" zoom_1="0" zoom_2="0">
-		<Cursor>
-			<Cursor1 position="7075" topLine="171" />
+			<Cursor1 position="29637" topLine="1031" />
 		</Cursor>
 		<Folding>
-			<Collapse line="117" />
+			<Collapse line="97" />
+			<Collapse line="104" />
+			<Collapse line="110" />
+			<Collapse line="130" />
+			<Collapse line="142" />
 		</Folding>
 	</File>
 </CodeBlocks_layout_file>
