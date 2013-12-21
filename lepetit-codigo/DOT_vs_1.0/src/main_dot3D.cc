@@ -364,7 +364,6 @@ int main( int argc, char * argv[] )
 			for( int l_j=0; l_j<l_template.get_classes(); ++l_j )
 			{
 				int l_counter = 0;
-
 				int l_end_counter = (l_learn_onl? 1: 7);
 
 				lp_max_val[l_j]=0;
@@ -378,9 +377,18 @@ int main( int argc, char * argv[] )
 
 				for( std::list<cv::cv_candidate*>::iterator l_i=lp_list[l_j].begin(); l_i!=lp_list[l_j].end(); ++l_i )
 				{
+                    // Sigue hasta consumir lp_list o los primeros l_end_counter de lp_list, lo que ocurra primero
 					if( l_counter < l_end_counter )
 					{
 						CvMat * lp_rec = cvCreateMat(3,4,CV_32F);
+
+						// TODO:
+						// mp_rec se va completando a través del método create_bit_list_fast
+						// y entiendo que lo que guarda es la perspectiva del template que
+						// se está aprendiendo (¿la perspectiva con respecto a algo?)
+
+						// Pareciera que es lo que usa para detectar.
+						// En este programa creo que no hay tracking...
 						cvCopy(l_template.get_rec()[(*l_i)->m_ind-1],lp_rec);
 
 						CV_MAT_ELEM(*lp_rec,float,0,0) += (*l_i)->m_col;
@@ -392,11 +400,21 @@ int main( int argc, char * argv[] )
 						CV_MAT_ELEM(*lp_rec,float,0,3) += (*l_i)->m_col;
 						CV_MAT_ELEM(*lp_rec,float,1,3) += (*l_i)->m_row;
 
+                        // Entra solo en la primer iteración del for.
+                        // Me suena que toma al mejor candidato unicamente para esta parte
 						if( l_counter == 0 )
 						{
+
+                            // TODO: Si el m_val (¿valor de matching?) es mayor al deseado
 							if( (*l_i)->m_val >= l_detect_thres )
 							{
-								l_template.render(lp_color,l_template.get_cnt()[(*l_i)->m_ind-1],(*l_i)->m_row,(*l_i)->m_col);
+                                // TODO: Dibuja el contorno del objeto con verde ¿Por que anda si le faltan parámetros?
+								l_template.render(
+                                    lp_color,
+                                    l_template.get_cnt()[(*l_i)->m_ind-1],
+                                    (*l_i)->m_row,
+                                    (*l_i)->m_col
+                                );
 							}
 							lp_max_val[l_j] = (*l_i)->m_val;
 
@@ -405,8 +423,11 @@ int main( int argc, char * argv[] )
 								cv::cv_draw_poly(lp_color,lp_rec,3,255,255,255);
 								cv::cv_draw_poly(lp_color,lp_rec,1,0,0,0);
 							}
+
+
 							if( l_learn_onl == true )
 							{
+                                // Si el m_val del candidato está entre los umbrales de aprendizaje
 								if( lp_max_val[l_j] >= l_learn_thres_down &&
 									lp_max_val[l_j] < l_learn_thres_up )
 								{
@@ -417,6 +438,7 @@ int main( int argc, char * argv[] )
 
 									int l_off = 20;
 
+                                    // TODO: no entiendo que hace acá
 									for( int l_r=0; l_r<l_M*l_T+l_off*2; ++l_r )
 									{
 										for( int l_c=0; l_c<l_N*l_T+l_off*2; ++l_c )
@@ -428,7 +450,7 @@ int main( int argc, char * argv[] )
 												l_col < lp_gray->width &&
 												l_row < lp_gray->height )
 											{
-												float l_mag = *(l_img.second+l_row*lp_gray->width+l_col);
+												float l_mag = *(l_img.second+l_row*lp_gray->width+l_col);//TODO: ¿cómo accede a la imagen?
 
 												if( l_mag > 10 )
 												{

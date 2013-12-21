@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="797f6eb7-0905-4cc0-8c5e-4e6ac9d8c45a" kpf_version="5" name="tesis_tutoriales.komodoproject">
+<preference-set idref="797f6eb7-0905-4cc0-8c5e-4e6ac9d8c45a" id="project" preftype="project">
+  <string id="pythonExtraPaths">/usr/lib/python2.7/dist-packages</string>
+</preference-set>
+</project>

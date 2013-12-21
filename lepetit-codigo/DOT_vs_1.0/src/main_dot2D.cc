@@ -410,7 +410,13 @@ int main( int argc, char * argv[] )
 						{
 							if( l_counter == 0 )
 							{
-								l_template.render(lp_color,l_template.get_cnt()[(*l_i)->m_ind-1],(*l_i)->m_row,(*l_i)->m_col);
+                                // TODO: ver que hace esto. ¿Por que anda si le faltan parámetros?
+								l_template.render(
+                                    lp_color,
+                                    l_template.get_cnt()[(*l_i)->m_ind-1],
+                                    (*l_i)->m_row,
+                                    (*l_i)->m_col
+                                );
 
 								lp_max_val[l_j] = (*l_i)->m_val;
 								cv::cv_draw_poly(lp_color,lp_rec,3,255,255,255);
