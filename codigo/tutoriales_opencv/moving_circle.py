@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 
+import numpy as np
+import cv2
+
 def moving_circle():
     """
     Crea una tira de imagenes de un circulo moviendose
