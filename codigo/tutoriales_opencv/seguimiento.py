@@ -144,7 +144,7 @@ def seguir_circulo():
             True
         )
 
-
+# si son igual volver a detectar
         vieja_ubicacion = nueva_ubicacion
         print "Vieja Ubicacion: x={x} y={y}".format(x=vieja_ubicacion[0], y=vieja_ubicacion[1])
 
