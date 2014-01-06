@@ -77,10 +77,6 @@ def seguir_circulo():
         # Nueva ubicacion
         nueva_ubicacion = (fila_arriba, columna_izq)
 
-        import rpdb2
-        rpdb2.start_embedded_debugger("pass")
-
-
         # Seguimiento (busqueda/deteccion acotada)
         for x, y in espiral_desde((fila_arriba, columna_izq), tam_region, filas, columnas):
             col_izq = y
@@ -107,12 +103,14 @@ def seguir_circulo():
                 comp_imagenes = non_zeros
 
 
+        # Convierto a imagen a color para dibujar un cuadrado
+        color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
+        color_img[:,:,0] = img[:,:]
+        color_img[:,:,1] = img[:,:]
+        color_img[:,:,2] = img[:,:]
+
         # Cuadrado verde si hubo una coincidencia/cambio de lugar
         # Rojo si no hubo coincidencia alguna
-        color_img = np.zeros((3, filas, columnas))
-        color_img[0] = img[:,:]
-        color_img[1] = img[:,:]
-        color_img[2] = img[:,:]
         if nueva_ubicacion == (fila_arriba, columna_izq):
             color_img = dibujar_cuadrado(color_img, nueva_ubicacion, tam_region, color=(0,0,255))
         else:
