@@ -4,6 +4,9 @@
 from __future__ import unicode_literals
 
 
+import os
+
+
 import numpy as np
 import cv2
 
@@ -75,90 +78,129 @@ def ver_seguimiento(img,
             pass
 
 
-def seguir_circulo():
 
-    img_name = 'videos/moving_circle/mc_{i:03d}.jpg'
-    img = cv2.imread(img_name.format(i=0), cv2.IMREAD_GRAYSCALE)
+class ImageProvider(object):
+    """
+    Esta clase se va a encargar de proveer imágenes, ya sea provenientes
+    de un video o tiras de frames guardadas en el disco.
 
-    filas, columnas = img.shape
-
-    # Tamaño de la región de imagen que se usará para detectar y seguir
-    tam_region = 80 # Pixeles cada lado
-
-    # Detectar objeto: Cuadrado donde esta el objeto
-    vieja_ubicacion = (40, 40) # Fila, columna
-    nueva_ubicacion = vieja_ubicacion
-
-    # Este es el objeto a seguir
-    img_objeto = img[vieja_ubicacion[0]:vieja_ubicacion[0]+tam_region,
-                     vieja_ubicacion[1]:vieja_ubicacion[1]+tam_region]
-
-    # Mascara del objeto
-    mask = cv2.bitwise_not(img_objeto) # Da vuelta los valores (0->255 y 255->0)
+    Idea: copiar parte de la API de cv2.VideoCapture
+    """
+    def read(self):
+        """
+        Cada subclase implementa este método. Debe devolver una imagen
+        distinta cada vez, simulando los frames de un video.
+        """
+        pass
 
 
+class FramesAsVideo(ImageProvider):
 
-    for i in range(1, 100):
-        # Imagen en escala de grises
-        img = cv2.imread(img_name.format(i=i), cv2.IMREAD_GRAYSCALE)
+    def __init__(self, path):
+        """
+        La carpeta apuntada por 'path' debe contener solo imagenes que seran
+        devueltas por el metodo 'read'.
+        Se devolveran ordenadas alfabéticamente.
+        """
+        self.path = path
+        self.img_filenames = os.listdir(path)
+        self.img_filenames.sort()
+        self.img_filenames = [os.path.join(path, fn) for fn in self.img_filenames]
 
-        # Cantidad de pixeles distintos
-        comp_imagenes = filas * columnas
+    def read(self):
+        have_images = len(self.img_filenames) > 0
+        img = None
+        if have_images:
+            img = cv2.imread(self.img_filenames[0]) # guardo proxima imagen
+            self.img_filenames = self.img_filenames[1:] # quito la imagen de la lista
 
-        # Seguimiento (busqueda/deteccion acotada)
-        for x, y in espiral_desde(vieja_ubicacion, tam_region, filas, columnas):
-            col_izq = y
-            col_der = col_izq + tam_region
-            fil_arr = x
-            fil_aba = fil_arr + tam_region
+        return (have_images, img)
 
-            # Tomo una region de la imagen donde se busca el objeto
-            roi = img[fil_arr:fil_aba,col_izq:col_der]
 
-            # Si se quiere ver como va buscando, descomentar la siguiente linea
-            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
+class ObjectFollower(object):
 
-            # Hago una comparacion bit a bit de la imagen original
-            # Compara solo en la zona de la máscara y deja 0's en donde hay
-            # coincidencias y 255's en donde no coinciden
-            xor = cv2.bitwise_xor(img_objeto, roi, mask=mask)
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
 
-            # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-            non_zeros = cv2.countNonZero(xor)
+    def follow(self):
 
-            if non_zeros < comp_imagenes:
-                print "NUEVA UBICACION: x={x} y={y}".format(x=x, y=y)
-                # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
-                nueva_ubicacion = (x, y)
+        img_name = 'videos/moving_circle/mc_{i:03d}.jpg'
+        img = cv2.imread(img_name.format(i=0), cv2.IMREAD_GRAYSCALE)
 
-                # Actualizo la cantidad de pixeles distintos
-                comp_imagenes = non_zeros
+        filas, columnas = img.shape
 
-        # Muestro el seguimiento para hacer pruebas
-        ver_seguimiento(
-            img,
-            'Seguimiento',
-            nueva_ubicacion,
-            tam_region,
-            vieja_ubicacion,
-            True
-        )
+        # Tamaño de la región de imagen que se usará para detectar y seguir
+        tam_region = 80 # Pixeles cada lado
 
+        # Detectar objeto: Cuadrado donde esta el objeto
+        vieja_ubicacion = (40, 40) # Fila, columna
+        nueva_ubicacion = vieja_ubicacion
+
+        # Este es el objeto a seguir
+        img_objeto = img[vieja_ubicacion[0]:vieja_ubicacion[0]+tam_region,
+                         vieja_ubicacion[1]:vieja_ubicacion[1]+tam_region]
+
+        # Mascara del objeto
+        mask = cv2.bitwise_not(img_objeto) # Da vuelta los valores (0->255 y 255->0)
+
+
+
+        for i in range(1, 100):
+            # Imagen en escala de grises
+            img = cv2.imread(img_name.format(i=i), cv2.IMREAD_GRAYSCALE)
+
+            # Cantidad de pixeles distintos
+            comp_imagenes = filas * columnas
+
+            # Seguimiento (busqueda/deteccion acotada)
+            for x, y in espiral_desde(vieja_ubicacion, tam_region, filas, columnas):
+                col_izq = y
+                col_der = col_izq + tam_region
+                fil_arr = x
+                fil_aba = fil_arr + tam_region
+
+                # Tomo una region de la imagen donde se busca el objeto
+                roi = img[fil_arr:fil_aba,col_izq:col_der]
+
+                # Si se quiere ver como va buscando, descomentar la siguiente linea
+                # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
+
+                # Hago una comparacion bit a bit de la imagen original
+                # Compara solo en la zona de la máscara y deja 0's en donde hay
+                # coincidencias y 255's en donde no coinciden
+                xor = cv2.bitwise_xor(img_objeto, roi, mask=mask)
+
+                # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+                non_zeros = cv2.countNonZero(xor)
+
+                if non_zeros < comp_imagenes:
+                    print "NUEVA UBICACION: x={x} y={y}".format(x=x, y=y)
+                    # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
+                    nueva_ubicacion = (x, y)
+
+                    # Actualizo la cantidad de pixeles distintos
+                    comp_imagenes = non_zeros
+
+            # Muestro el seguimiento para hacer pruebas
+            ver_seguimiento(
+                img,
+                'Seguimiento',
+                nueva_ubicacion,
+                tam_region,
+                vieja_ubicacion,
+                True
+            )
 # si son igual volver a detectar
-        vieja_ubicacion = nueva_ubicacion
-        print "Vieja Ubicacion: x={x} y={y}".format(x=vieja_ubicacion[0], y=vieja_ubicacion[1])
+            vieja_ubicacion = nueva_ubicacion
+            print "Vieja Ubicacion: x={x} y={y}".format(x=vieja_ubicacion[0], y=vieja_ubicacion[1])
 
-
-
-
-
-
-
-
-
-    cv2.destroyAllWindows()
+        cv2.destroyAllWindows()
 
 
 
 if __name__ == '__main__':
-    seguir_circulo()
+    img_provider = FramesAsVideo('videos/moving_circle')
+
+    follower = ObjectFollower(img_provider)
+
+    follower.follow()

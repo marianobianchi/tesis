@@ -1,0 +1,36 @@
+Para usar la xtion hay que instalar 3 paquetes. 
+
+El link donde se pueden encontrar es http://www.openni.org/openni-sdk/openni-sdk-history-2/
+
+1) Bajar e instalar OpenNI (2.1.0)
+2) Bajar e instalar Sensor Driver (5.1.6.6)
+3) Bajar e instalar NiTE (2.0.0)
+
+NOTA: es importante respetar el orden de instalacion
+
+
+Para instalarlos, recomiendo descomprimir los tar en una carpeta llamada 
+"OpenNI" dentro de /opt/, y ejecutar el archivo install.sh. Hacer lo mismo
+con los otros 2 paquetes.
+
+
+Para verificar que la instalación fue bien, ejecutar el archivo NiViewer dentro
+de la carpeta /opt/<OpenNI_instalation_folder>/Tools
+
+
+------------- Copiado textual ----------------
+
+http://openni.org/Documentation/Tutorial/smpl_simple_view.html includes some 
+useful samples to start working on. You can get a better formatted version if 
+you install OpenNI on windows.
+
+
+If you haven’t heard of PCL, http://pointclouds.org/ provides a large set of 
+libraries on handling point clouds, and also a visualizer for viewing them in 
+3D. If you use PCL, it already provides an interface “OpenNIGrabber” to retrieve 
+point clouds or color point clouds.
+
+---------------------------------------------
+
+Sacado de http://computervisionblog.wordpress.com/2012/04/22/installing-asus-xtion-on-ubuntu/
+
