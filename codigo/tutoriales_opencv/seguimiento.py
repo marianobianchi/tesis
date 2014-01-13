@@ -86,10 +86,11 @@ class ImageProvider(object):
 
     Idea: copiar parte de la API de cv2.VideoCapture
     """
-    def read(self):
+    def read(self, gray=False):
         """
         Cada subclase implementa este método. Debe devolver una imagen
         distinta cada vez, simulando los frames de un video.
+        Si gray == True, debe devolver la imagen en escala de grises
         """
         pass
 
@@ -107,47 +108,92 @@ class FramesAsVideo(ImageProvider):
         self.img_filenames.sort()
         self.img_filenames = [os.path.join(path, fn) for fn in self.img_filenames]
 
-    def read(self):
+    def read(self, gray=False):
         have_images = len(self.img_filenames) > 0
         img = None
         if have_images:
-            img = cv2.imread(self.img_filenames[0]) # guardo proxima imagen
+            # guardo proxima imagen
+            if gray:
+                img = cv2.imread(self.img_filenames[0], cv2.IMREAD_GRAYSCALE)
+            else:
+                img = cv2.imread(self.img_filenames[0])
+
             self.img_filenames = self.img_filenames[1:] # quito la imagen de la lista
 
         return (have_images, img)
 
 
-class ObjectFollower(object):
+class ObjectDetectorAndFollower(object):
 
     def __init__(self, image_provider):
         self.img_provider = image_provider
 
+        # Object descriptors
+        self._obj_location = (40, 40)
+        self._obj_frame = None
+        self._obj_frame_mask = None
+
     def follow(self):
+        pass
 
-        img_name = 'videos/moving_circle/mc_{i:03d}.jpg'
-        img = cv2.imread(img_name.format(i=0), cv2.IMREAD_GRAYSCALE)
+    def object_frame_size(self):
+        """
+        Devuelve el tamaño de un lado del cuadrado que contiene al objeto
+        """
+        return 80
 
-        filas, columnas = img.shape
+    def object_location(self):
+        return self._obj_location
 
+    def detect_object(self, img):
         # Tamaño de la región de imagen que se usará para detectar y seguir
-        tam_region = 80 # Pixeles cada lado
+        tam_region = self.obj_follower.object_frame_size() # Pixeles cada lado
 
         # Detectar objeto: Cuadrado donde esta el objeto
-        vieja_ubicacion = (40, 40) # Fila, columna
-        nueva_ubicacion = vieja_ubicacion
+        ubicacion = self.obj_follower.object_location() # Fila, columna
 
         # Este es el objeto a seguir
-        img_objeto = img[vieja_ubicacion[0]:vieja_ubicacion[0]+tam_region,
-                         vieja_ubicacion[1]:vieja_ubicacion[1]+tam_region]
+        self._obj_frame = img[ubicacion[0]:ubicacion[0]+tam_region,
+                              ubicacion[1]:ubicacion[1]+tam_region]
 
         # Mascara del objeto
-        mask = cv2.bitwise_not(img_objeto) # Da vuelta los valores (0->255 y 255->0)
+        self._obj_frame_mask = cv2.bitwise_not(img_objeto) # Da vuelta los valores (0->255 y 255->0)
+
+        return tam_region, ubicacion, self._obj_frame
 
 
+class FollowingSchema(object):
 
-        for i in range(1, 100):
-            # Imagen en escala de grises
-            img = cv2.imread(img_name.format(i=i), cv2.IMREAD_GRAYSCALE)
+    def __init__(self, img_provider, obj_follower):
+        self.img_provider = img_provider
+        self.obj_follower = obj_follower
+
+    def run(self):
+
+        #########################
+        # Etapa de entrenamiento
+        #########################
+
+
+        ######################
+        # Etapa de detección
+        ######################
+
+        have_images, img = self.img_provider.read(gray=True)
+        filas, columnas = img.shape
+
+        tam_region, vieja_ubicacion, img_objeto = self.obj_follower.detect(img)
+        nueva_ubicacion = vieja_ubicacion
+
+
+        #######################
+        # Etapa de seguimiento
+        #######################
+
+        # Imagen en escala de grises
+        have_images, img = self.img_provider.read(gray=True)
+
+        while have_images:
 
             # Cantidad de pixeles distintos
             comp_imagenes = filas * columnas
@@ -195,13 +241,14 @@ class ObjectFollower(object):
             vieja_ubicacion = nueva_ubicacion
             print "Vieja Ubicacion: x={x} y={y}".format(x=vieja_ubicacion[0], y=vieja_ubicacion[1])
 
+            # Tomo una nueva imagen en escala de grises
+            have_images, img = self.img_provider.read(gray=True)
+
         cv2.destroyAllWindows()
 
 
 
 if __name__ == '__main__':
     img_provider = FramesAsVideo('videos/moving_circle')
-
     follower = ObjectFollower(img_provider)
-
-    follower.follow()
+    FollowingSchema(img_provider, follower).run()
