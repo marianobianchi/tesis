@@ -133,8 +133,11 @@ class ObjectDetectorAndFollower(object):
         self._obj_frame = None
         self._obj_frame_mask = None
 
-    def follow(self):
-        pass
+    def object_roi(self):
+        return self._obj_frame
+
+    def object_mask(self):
+        return self._obj_frame_mask
 
     def object_frame_size(self):
         """
@@ -145,21 +148,67 @@ class ObjectDetectorAndFollower(object):
     def object_location(self):
         return self._obj_location
 
-    def detect_object(self, img):
+    def set_object_location(self, location):
+        self._obj_location = location
+
+    def follow(self, img):
+
+        vieja_ubicacion = self.object_location()
+
+        filas, columnas = img.shape
+
+        # Cantidad de pixeles distintos
+        comp_imagenes = filas * columnas
+
+        # Seguimiento (busqueda/deteccion acotada)
+        for x, y in espiral_desde(self.object_location(), self.object_frame_size(), filas, columnas):
+            col_izq = y
+            col_der = col_izq + self.object_frame_size()
+            fil_arr = x
+            fil_aba = fil_arr + self.object_frame_size()
+
+            # Tomo una region de la imagen donde se busca el objeto
+            roi = img[fil_arr:fil_aba,col_izq:col_der]
+
+            # Si se quiere ver como va buscando, descomentar la siguiente linea
+            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
+
+            # Hago una comparacion bit a bit de la imagen original
+            # Compara solo en la zona de la máscara y deja 0's en donde hay
+            # coincidencias y 255's en donde no coinciden
+            xor = cv2.bitwise_xor(self.object_roi(), roi, mask=self.object_mask())
+
+            # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+            non_zeros = cv2.countNonZero(xor)
+
+            # Si hubo coincidencia
+            if non_zeros < comp_imagenes:
+                # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
+                self.set_object_location((x, y))
+
+                # Actualizo la cantidad de pixeles distintos
+                comp_imagenes = non_zeros
+
+        fue_exitoso = (vieja_ubicacion == self.object_location())
+        nueva_ubicacion = self.object_location if fue_exitoso else None
+
+        return fue_exitoso, nueva_ubicacion
+
+    def detect(self, img):
         # Tamaño de la región de imagen que se usará para detectar y seguir
-        tam_region = self.obj_follower.object_frame_size() # Pixeles cada lado
+        tam_region = self.object_frame_size() # Pixeles cada lado
 
         # Detectar objeto: Cuadrado donde esta el objeto
-        ubicacion = self.obj_follower.object_location() # Fila, columna
+        ubicacion = self.object_location() # Fila, columna
 
         # Este es el objeto a seguir
         self._obj_frame = img[ubicacion[0]:ubicacion[0]+tam_region,
                               ubicacion[1]:ubicacion[1]+tam_region]
 
         # Mascara del objeto
-        self._obj_frame_mask = cv2.bitwise_not(img_objeto) # Da vuelta los valores (0->255 y 255->0)
+        self._obj_frame_mask = cv2.bitwise_not(self.object_roi()) # Da vuelta los valores (0->255 y 255->0)
 
-        return tam_region, ubicacion, self._obj_frame
+        return tam_region, ubicacion, self.object_roi()
 
 
 class FollowingSchema(object):
@@ -180,11 +229,8 @@ class FollowingSchema(object):
         ######################
 
         have_images, img = self.img_provider.read(gray=True)
-        filas, columnas = img.shape
 
-        tam_region, vieja_ubicacion, img_objeto = self.obj_follower.detect(img)
-        nueva_ubicacion = vieja_ubicacion
-
+        tam_region, ultima_ubicacion, img_objeto = self.obj_follower.detect(img)
 
         #######################
         # Etapa de seguimiento
@@ -195,51 +241,21 @@ class FollowingSchema(object):
 
         while have_images:
 
-            # Cantidad de pixeles distintos
-            comp_imagenes = filas * columnas
+            fue_exitoso, nueva_ubicacion = self.obj_follower.follow(img)
 
-            # Seguimiento (busqueda/deteccion acotada)
-            for x, y in espiral_desde(vieja_ubicacion, tam_region, filas, columnas):
-                col_izq = y
-                col_der = col_izq + tam_region
-                fil_arr = x
-                fil_aba = fil_arr + tam_region
-
-                # Tomo una region de la imagen donde se busca el objeto
-                roi = img[fil_arr:fil_aba,col_izq:col_der]
-
-                # Si se quiere ver como va buscando, descomentar la siguiente linea
-                # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
-
-                # Hago una comparacion bit a bit de la imagen original
-                # Compara solo en la zona de la máscara y deja 0's en donde hay
-                # coincidencias y 255's en donde no coinciden
-                xor = cv2.bitwise_xor(img_objeto, roi, mask=mask)
-
-                # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-                non_zeros = cv2.countNonZero(xor)
-
-                if non_zeros < comp_imagenes:
-                    print "NUEVA UBICACION: x={x} y={y}".format(x=x, y=y)
-                    # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
-                    nueva_ubicacion = (x, y)
-
-                    # Actualizo la cantidad de pixeles distintos
-                    comp_imagenes = non_zeros
+            if not fue_exitoso:
+                tam_region, nueva_ubicacion, img_objeto = self.obj_follower.detect(img)
 
             # Muestro el seguimiento para hacer pruebas
-            ver_seguimiento(
-                img,
-                'Seguimiento',
-                nueva_ubicacion,
-                tam_region,
-                vieja_ubicacion,
-                True
-            )
+            ver_seguimiento(img,
+                            'Seguimiento',
+                            nueva_ubicacion,
+                            tam_region,
+                            ultima_ubicacion,
+                            True)
 
-            # TODO: si son igual volver a detectar
-            vieja_ubicacion = nueva_ubicacion
-            print "Vieja Ubicacion: x={x} y={y}".format(x=vieja_ubicacion[0], y=vieja_ubicacion[1])
+            # Guardo la ultima deteccion para dibujar el seguimiento
+            ultima_ubicacion = nueva_ubicacion
 
             # Tomo una nueva imagen en escala de grises
             have_images, img = self.img_provider.read(gray=True)
@@ -250,5 +266,5 @@ class FollowingSchema(object):
 
 if __name__ == '__main__':
     img_provider = FramesAsVideo('videos/moving_circle')
-    follower = ObjectFollower(img_provider)
+    follower = ObjectDetectorAndFollower(img_provider)
     FollowingSchema(img_provider, follower).run()
