@@ -6,7 +6,6 @@ from __future__ import unicode_literals
 
 import os
 
-
 import numpy as np
 import cv2
 
@@ -263,8 +262,59 @@ class FollowingSchema(object):
         cv2.destroyAllWindows()
 
 
+def seg_color():
+
+    cap = cv2.VideoCapture(0)
+
+    while(1):
+
+        # Take each frame
+        _, frame = cap.read()
+
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        # define range of orange color in HSV
+        # HSV from OpenCV valid values: (H:0-180, S:0-255, V:0-255)
+        # HSV from GIMP valid values: (H:0-360, S:0-100, V:0-100)
+        H = 21
+        S = 63
+        V = 100
+        lower_orange = np.array([(H/2)-10,int(S*2.55/2),int(V*2.55/2)])
+        upper_orange = np.array([(H/2)+10,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
+
+
+        # Threshold the HSV image to get only orange colors
+        mask = cv2.inRange(hsv, lower_orange, upper_orange)
+
+        # Threshold to remove outliers
+        mask = cv2.adaptiveThreshold(
+            src=mask,
+            maxValue=0,
+            adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+            thresholdType=cv2.THRESH_BINARY,
+            blockSize=11,
+            C=0,
+        )
+
+        # Bitwise-AND mask and original image
+        res = cv2.bitwise_and(frame, frame, mask=mask)
+
+        cv2.imshow('frame',frame)
+        cv2.imshow('mask',mask)
+        cv2.imshow('res',res)
+        k = cv2.waitKey(5) & 0xFF
+        if k == 27:
+            break
+
+    cv2.destroyAllWindows()
+
+
+
 
 if __name__ == '__main__':
-    img_provider = FramesAsVideo('videos/moving_circle')
-    follower = ObjectDetectorAndFollower(img_provider)
-    FollowingSchema(img_provider, follower).run()
+    #img_provider = FramesAsVideo('videos/moving_circle')
+    #follower = ObjectDetectorAndFollower(img_provider)
+    #FollowingSchema(img_provider, follower).run()
+
+    seg_color()
