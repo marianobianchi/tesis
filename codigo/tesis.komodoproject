@@ -2,6 +2,7 @@
 <!-- Komodo Project File - DO NOT EDIT -->
 <project id="797f6eb7-0905-4cc0-8c5e-4e6ac9d8c45a" kpf_version="5" name="tesis.komodoproject">
 <preference-set idref="797f6eb7-0905-4cc0-8c5e-4e6ac9d8c45a" id="project" preftype="project">
+  <string relative="path" id="import_dirname"></string>
   <string id="pythonExtraPaths">/usr/lib/python2.7/dist-packages</string>
 </preference-set>
 </project>

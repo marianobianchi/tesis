@@ -55,13 +55,14 @@ def ver_seguimiento(img,
                     vieja_ubicacion,
                     frenar=False):
 
-    filas, columnas = img.shape
-
-    # Convierto a imagen a color para dibujar un cuadrado
-    color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
-    color_img[:,:,0] = img[:,:]
-    color_img[:,:,1] = img[:,:]
-    color_img[:,:,2] = img[:,:]
+    if len(img.shape) == 2:
+        # Convierto a imagen a color para dibujar un cuadrado
+        color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
+        color_img[:,:,0] = img[:,:]
+        color_img[:,:,1] = img[:,:]
+        color_img[:,:,2] = img[:,:]
+    else:
+        color_img = img
 
     # Cuadrado verde si hubo una coincidencia/cambio de lugar
     # Rojo si no hubo coincidencia alguna
@@ -107,15 +108,12 @@ class FramesAsVideo(ImageProvider):
         self.img_filenames.sort()
         self.img_filenames = [os.path.join(path, fn) for fn in self.img_filenames]
 
-    def read(self, gray=False):
+    def read(self):
         have_images = len(self.img_filenames) > 0
         img = None
         if have_images:
             # guardo proxima imagen
-            if gray:
-                img = cv2.imread(self.img_filenames[0], cv2.IMREAD_GRAYSCALE)
-            else:
-                img = cv2.imread(self.img_filenames[0])
+            img = cv2.imread(self.img_filenames[0])
 
             self.img_filenames = self.img_filenames[1:] # quito la imagen de la lista
 
@@ -123,6 +121,11 @@ class FramesAsVideo(ImageProvider):
 
 
 class ObjectDetectorAndFollower(object):
+    """
+    Es la clase base para los primeros ejemplos sencillos.
+    Este caso base sirve para el video creado via opencv, el de la pelotita
+    negra (moving_circle)
+    """
 
     def __init__(self, image_provider):
         self.img_provider = image_provider
@@ -131,6 +134,7 @@ class ObjectDetectorAndFollower(object):
         self._obj_location = (40, 40)
         self._obj_frame = None
         self._obj_frame_mask = None
+        self._obj_frame_size = 80
 
     def object_roi(self):
         return self._obj_frame
@@ -142,7 +146,7 @@ class ObjectDetectorAndFollower(object):
         """
         Devuelve el tamaño de un lado del cuadrado que contiene al objeto
         """
-        return 80
+        return self._obj_frame_size
 
     def object_location(self):
         return self._obj_location
@@ -150,14 +154,30 @@ class ObjectDetectorAndFollower(object):
     def set_object_location(self, location):
         self._obj_location = location
 
+    def object_comparisson_base(self, img):
+        filas, columnas = len(img), len(img[0])
+        return filas * columnas
+
+    def object_comparisson(self, roi):
+        # Hago una comparacion bit a bit de la imagen original
+        # Compara solo en la zona de la máscara y deja 0's en donde hay
+        # coincidencias y 255's en donde no coinciden
+        xor = cv2.bitwise_xor(self.object_roi(), roi, mask=self.object_mask())
+
+        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+        return cv2.countNonZero(xor)
+
+    def is_best_match(self, new_value, old_value):
+        return new_value < old_value
+
     def follow(self, img):
 
         vieja_ubicacion = self.object_location()
 
-        filas, columnas = img.shape
+        filas, columnas = len(img), len(img[0])
 
         # Cantidad de pixeles distintos
-        comp_imagenes = filas * columnas
+        valor_comparativo = self.object_comparisson_base(img)
 
         # Seguimiento (busqueda/deteccion acotada)
         for x, y in espiral_desde(self.object_location(), self.object_frame_size(), filas, columnas):
@@ -172,26 +192,24 @@ class ObjectDetectorAndFollower(object):
             # Si se quiere ver como va buscando, descomentar la siguiente linea
             # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
 
-            # Hago una comparacion bit a bit de la imagen original
-            # Compara solo en la zona de la máscara y deja 0's en donde hay
-            # coincidencias y 255's en donde no coinciden
-            xor = cv2.bitwise_xor(self.object_roi(), roi, mask=self.object_mask())
-
-            # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-            non_zeros = cv2.countNonZero(xor)
+            nueva_comparacion = self.object_comparisson(roi)
 
             # Si hubo coincidencia
-            if non_zeros < comp_imagenes:
+            if self.is_best_match(nueva_comparacion, valor_comparativo):
                 # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
                 self.set_object_location((x, y))
 
-                # Actualizo la cantidad de pixeles distintos
-                comp_imagenes = non_zeros
+                # Actualizo el valor de la comparacion
+                valor_comparativo = nueva_comparacion
 
         fue_exitoso = (vieja_ubicacion == self.object_location())
         nueva_ubicacion = self.object_location if fue_exitoso else None
 
         return fue_exitoso, nueva_ubicacion
+
+    def calculate_mask(self, img):
+        # Da vuelta los valores (0->255 y 255->0)
+        return cv2.bitwise_not(img)
 
     def detect(self, img):
         # Tamaño de la región de imagen que se usará para detectar y seguir
@@ -205,9 +223,45 @@ class ObjectDetectorAndFollower(object):
                               ubicacion[1]:ubicacion[1]+tam_region]
 
         # Mascara del objeto
-        self._obj_frame_mask = cv2.bitwise_not(self.object_roi()) # Da vuelta los valores (0->255 y 255->0)
+        self._obj_frame_mask = self.calculate_mask(self.object_roi())
 
         return tam_region, ubicacion, self.object_roi()
+
+
+class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
+
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = (131, 495) # Fila, columna
+        self._obj_frame = None
+        self._obj_frame_mask = None
+        self._obj_frame_size = 76
+
+    def calculate_mask(self, img):
+        # Convert BGR to HSV
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        # define range of orange color in HSV
+        # HSV from OpenCV valid values: (H:0-180, S:0-255, V:0-255)
+        # HSV from GIMP valid values: (H:0-360, S:0-100, V:0-100)
+        H = 21
+        S = 63
+        V = 100
+        lower_orange = np.array([(H/2)-10,int(S*2.55/2),int(V*2.55/2)])
+        upper_orange = np.array([(H/2)+10,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
+
+
+        # Threshold the HSV image to get only orange colors
+        return cv2.inRange(hsv, lower_orange, upper_orange)
+
+    def object_comparisson_base(self, img):
+        return cv2.norm(img)
+
+    def object_comparisson(self, roi):
+        # Comparación simple: distancia euclideana
+        return cv2.norm(roi, self.object_roi(), mask=self.object_mask())
 
 
 class FollowingSchema(object):
@@ -227,7 +281,7 @@ class FollowingSchema(object):
         # Etapa de detección
         ######################
 
-        have_images, img = self.img_provider.read(gray=True)
+        have_images, img = self.img_provider.read()
 
         tam_region, ultima_ubicacion, img_objeto = self.obj_follower.detect(img)
 
@@ -235,8 +289,7 @@ class FollowingSchema(object):
         # Etapa de seguimiento
         #######################
 
-        # Imagen en escala de grises
-        have_images, img = self.img_provider.read(gray=True)
+        have_images, img = self.img_provider.read()
 
         while have_images:
 
@@ -257,7 +310,7 @@ class FollowingSchema(object):
             ultima_ubicacion = nueva_ubicacion
 
             # Tomo una nueva imagen en escala de grises
-            have_images, img = self.img_provider.read(gray=True)
+            have_images, img = self.img_provider.read()
 
         cv2.destroyAllWindows()
 
@@ -288,14 +341,28 @@ def seg_color():
         mask = cv2.inRange(hsv, lower_orange, upper_orange)
 
         # Threshold to remove outliers
-        mask = cv2.adaptiveThreshold(
-            src=mask,
-            maxValue=0,
-            adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-            thresholdType=cv2.THRESH_BINARY,
-            blockSize=11,
-            C=0,
+        #mask = cv2.adaptiveThreshold(
+        #    src=mask,
+        #    maxValue=255,
+        #    #adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        #    adaptiveMethod=cv2.ADAPTIVE_THRESH_MEAN_C,
+        #    thresholdType=cv2.THRESH_BINARY,
+        #    blockSize=301,
+        #    C=0,
+        #)
+
+        mask = cv2.GaussianBlur(
+            mask,
+            (5,5),
+            0
         )
+        retval, mask = cv2.threshold(
+            mask,
+            0,
+            255,
+            cv2.THRESH_BINARY+cv2.THRESH_OTSU
+        )
+
 
         # Bitwise-AND mask and original image
         res = cv2.bitwise_and(frame, frame, mask=mask)
@@ -310,11 +377,13 @@ def seg_color():
     cv2.destroyAllWindows()
 
 
+def seguir_pelota_monocromo():
+    img_provider = FramesAsVideo('videos/moving_circle')
+    follower = ObjectDetectorAndFollower(img_provider)
+    FollowingSchema(img_provider, follower).run()
 
 
 if __name__ == '__main__':
-    #img_provider = FramesAsVideo('videos/moving_circle')
-    #follower = ObjectDetectorAndFollower(img_provider)
-    #FollowingSchema(img_provider, follower).run()
-
-    seg_color()
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    follower = OrangeBallDetectorAndFollower(img_provider)
+    FollowingSchema(img_provider, follower).run()

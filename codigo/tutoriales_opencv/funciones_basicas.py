@@ -89,7 +89,7 @@ def write_video():
     out = cv2.VideoWriter(
         'output.avi', # Video file name
         fourcc, # Codec
-        20.0, # Frames por segundo
+        10.0, # Frames por segundo
         (width,height), # Tamaño de los frames
         True, # Flag de color. True = color, False = gris
     )
@@ -98,7 +98,7 @@ def write_video():
         ret, frame = cap.read()
 
         # Le aplicamos un efecto a la imagen
-        frame = cv2.flip(frame,0)
+        #frame = cv2.flip(frame,0)
 
         # Guardo el frame con efecto
         out.write(frame)
@@ -144,4 +144,4 @@ def draw_circle():
 
 
 if __name__ == '__main__':
-    pass
+    write_video()
