@@ -234,7 +234,7 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
         self.img_provider = image_provider
 
         # Object descriptors
-        self._obj_location = (131, 495) # Fila, columna
+        self._obj_location = (128, 492) # Fila, columna
         self._obj_frame = None
         self._obj_frame_mask = None
         self._obj_frame_size = 76
@@ -249,12 +249,24 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
         H = 21
         S = 63
         V = 100
-        lower_orange = np.array([(H/2)-10,int(S*2.55/2),int(V*2.55/2)])
-        upper_orange = np.array([(H/2)+10,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
+        lower_orange = np.array([(H/2)-15,int(S*2.55/2),int(V*2.55/2)])
+        upper_orange = np.array([(H/2)+15,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
 
 
         # Threshold the HSV image to get only orange colors
-        return cv2.inRange(hsv, lower_orange, upper_orange)
+        mask = cv2.inRange(hsv, lower_orange, upper_orange)
+
+        # Uso transformaciones morfologicas para limpiar un poco la mascara
+        # IMPORTANTE EL KERNEL. CON EL PRIMERO TERMINA MUY RAPIDO. CON LOS
+        # OTROS DOS FUNCIONA MAS TIEMPO
+        #kernel = np.ones((7,7), np.uint8)
+        #kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(6,6))
+        kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(10,10))
+
+        opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+        closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+
+        return closing
 
     def object_comparisson_base(self, img):
         return cv2.norm(img)
@@ -313,68 +325,6 @@ class FollowingSchema(object):
             have_images, img = self.img_provider.read()
 
         cv2.destroyAllWindows()
-
-
-def seg_color():
-
-    cap = cv2.VideoCapture(0)
-
-    while(1):
-
-        # Take each frame
-        _, frame = cap.read()
-
-        # Convert BGR to HSV
-        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
-        # define range of orange color in HSV
-        # HSV from OpenCV valid values: (H:0-180, S:0-255, V:0-255)
-        # HSV from GIMP valid values: (H:0-360, S:0-100, V:0-100)
-        H = 21
-        S = 63
-        V = 100
-        lower_orange = np.array([(H/2)-10,int(S*2.55/2),int(V*2.55/2)])
-        upper_orange = np.array([(H/2)+10,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
-
-
-        # Threshold the HSV image to get only orange colors
-        mask = cv2.inRange(hsv, lower_orange, upper_orange)
-
-        # Threshold to remove outliers
-        #mask = cv2.adaptiveThreshold(
-        #    src=mask,
-        #    maxValue=255,
-        #    #adaptiveMethod=cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-        #    adaptiveMethod=cv2.ADAPTIVE_THRESH_MEAN_C,
-        #    thresholdType=cv2.THRESH_BINARY,
-        #    blockSize=301,
-        #    C=0,
-        #)
-
-        mask = cv2.GaussianBlur(
-            mask,
-            (5,5),
-            0
-        )
-        retval, mask = cv2.threshold(
-            mask,
-            0,
-            255,
-            cv2.THRESH_BINARY+cv2.THRESH_OTSU
-        )
-
-
-        # Bitwise-AND mask and original image
-        res = cv2.bitwise_and(frame, frame, mask=mask)
-
-        cv2.imshow('frame',frame)
-        cv2.imshow('mask',mask)
-        cv2.imshow('res',res)
-        k = cv2.waitKey(5) & 0xFF
-        if k == 27:
-            break
-
-    cv2.destroyAllWindows()
 
 
 def seguir_pelota_monocromo():
