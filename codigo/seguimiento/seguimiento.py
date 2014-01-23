@@ -52,7 +52,7 @@ def ver_seguimiento(img,
                     frame_title,
                     nueva_ubicacion,
                     tam_region,
-                    vieja_ubicacion,
+                    no_hubo_cambio,
                     frenar=False):
 
     if len(img.shape) == 2:
@@ -66,7 +66,7 @@ def ver_seguimiento(img,
 
     # Cuadrado verde si hubo una coincidencia/cambio de lugar
     # Rojo si no hubo coincidencia alguna
-    if nueva_ubicacion == vieja_ubicacion:
+    if no_hubo_cambio:
         color_img = dibujar_cuadrado(color_img, nueva_ubicacion, tam_region, color=(0,0,255))
     else:
         color_img = dibujar_cuadrado(color_img, nueva_ubicacion, tam_region, color=(0,255,0))
@@ -190,7 +190,7 @@ class ObjectDetectorAndFollower(object):
             roi = img[fil_arr:fil_aba,col_izq:col_der]
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
-            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, vieja_ubicacion)
+            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, (x,y)==vieja_ubicacion)
 
             nueva_comparacion = self.object_comparisson(roi)
 
@@ -276,6 +276,68 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
         return cv2.norm(roi, self.object_roi(), mask=self.object_mask())
 
 
+class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
+
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = None # Fila, columna
+        self._obj_frame = None
+        self._obj_frame_mask = None
+        self._obj_frame_size = None
+
+    def detect(self, img):
+
+        # Filtro los objetos de color naranja de toda la imagen
+        cleaned_image_mask = self.calculate_mask(img)
+
+        # Calculo los contornos
+        contours, hierarchy = cv2.findContours(obj,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+        max_perimeter = 0
+        best_contour = None
+        for contour in contours:
+            # Busco el perímetro del contorno asumiendo que la forma es cerrada,
+            # es decir, que es algo solido y no una curva
+            perimeter = cv2.arcLength(contour, True)
+
+            if perimeter > max_perimeter:
+                max_perimeter = perimeter
+                best_contour = contour
+
+        if best_contour:
+
+            # Punta izquierda de arriba del rectangulo y alto y ancho
+            x, y, w, h = cv2.boundingRect(cnt)
+
+            # Tamaño de la región de imagen que se usará para detectar y seguir
+            tam_region = self._obj_frame_size = max(w, h)
+
+            # Detectar objeto: Cuadrado donde esta el objeto
+            ubicacion = self._obj_location = (x, y) # Fila, columna
+
+            # Este es el objeto a seguir
+            self._obj_frame = img[ubicacion[0]:ubicacion[0]+tam_region,
+                                  ubicacion[1]:ubicacion[1]+tam_region]
+
+            # Mascara del objeto
+            self._obj_frame_mask = self.calculate_mask(self.object_roi())
+
+            return tam_region, ubicacion, self.object_roi()
+
+        else:
+            # TODO: Ver que hacer.... Creo que conviene levantar una excepcion
+            return 0, (0,0), []
+
+    def object_comparisson_base(self, img):
+        return cv2.norm(img)
+
+    def object_comparisson(self, roi):
+        # Comparación simple: distancia euclideana
+        return cv2.norm(roi, self.object_roi(), mask=self.object_mask())
+
+
 class FollowingSchema(object):
 
     def __init__(self, img_provider, obj_follower):
@@ -315,7 +377,7 @@ class FollowingSchema(object):
                             'Seguimiento',
                             nueva_ubicacion,
                             tam_region,
-                            ultima_ubicacion,
+                            fue_exitoso,
                             True)
 
             # Guardo la ultima deteccion para dibujar el seguimiento
@@ -333,7 +395,61 @@ def seguir_pelota_monocromo():
     FollowingSchema(img_provider, follower).run()
 
 
-if __name__ == '__main__':
+def seguir_pelota_naranja():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollower(img_provider)
     FollowingSchema(img_provider, follower).run()
+
+
+
+if __name__ == '__main__':
+    # Capturo la imagen
+    vc = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    b, img = vc.read()
+
+    x_busco_desde = 120
+    y_busco_desde = 480
+    tam_region = 100
+    objimg = img[x_busco_desde:x_busco_desde+tam_region, y_busco_desde:y_busco_desde+tam_region]
+
+    hsv = cv2.cvtColor(objimg, cv2.COLOR_BGR2HSV)
+
+    # Defino threshold para el naranja
+    H = 21
+    S = 63
+    V = 100
+    lower_orange = np.array([(H/2)-15,int(S*2.55/2),int(V*2.55/2)])
+    upper_orange = np.array([(H/2)+15,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
+
+    # Tomo una mascara y aplico transformaciones morfologicas
+    mask = cv2.inRange(hsv, lower_orange, upper_orange)
+    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(20,20))
+    opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
+
+    #cv2.imshow('Imagen original', img)
+    #cv2.imshow('Imagen Objeto', objimg)
+    #cv2.imshow('Imagen mascara sin filtro', mask)
+    #cv2.imshow('Imagen mascara con filtro', closing)
+    #cv2.waitKey()
+
+    # Copio la mascara ya limpia y busco los contornos
+    obj = closing.copy()
+    contours, hierarchy = cv2.findContours(obj,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Me quedo con el primer contorno (debería buscar el de mayor perímetro o algo asi)
+    cnt = contours[0]
+
+    # Punta izquierda de arriba del rectangulo y alto y ancho
+    x, y, w, h = cv2.boundingRect(cnt)
+
+    dibujar_cuadrado(img, (x_busco_desde+x, y_busco_desde+y), max(w,h), (0,255,0))
+
+    objimg = cv2.cvtColor(objimg, cv2.COLOR_HSV2BGR)
+    dibujar_cuadrado(objimg, (x, y), max(w,h), (0,255,0))
+
+
+    cv2.imshow('Imagen con recuadro', img)
+    cv2.imshow('Mascara con recuadro', objimg)
+    cv2.waitKey()
+    cv2.destroyAllWindows()
