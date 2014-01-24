@@ -39,10 +39,6 @@ def espiral_desde((x, y), tam_region, filas, columnas):
         sum_y *= -2
 
 
-
-
-
-
 class ObjectDetectorAndFollower(object):
     """
     Es la clase base para los primeros ejemplos sencillos.
@@ -257,7 +253,61 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
             # TODO: Ver que hacer.... Creo que conviene levantar una excepcion
             return 0, (0,0), []
 
+    def follow(self, img):
+        """
+        IDEA (EN CASO QUE LAS IDEAS DE COMPARACION NO FUNCIONEN):
+        Acomodar todo para que la busqueda sea similar a la deteccion pero en
+        una superficie apenas mayor que la del "object_frame_size". Acualizar
+        en cada paso esta variable y la máscara del objeto, ademas de la
+        ubicacion que ya se hacia.
+        """
+        vieja_ubicacion = self.object_location()
+
+        filas, columnas = len(img), len(img[0])
+
+        # Cantidad de pixeles distintos
+        valor_comparativo = self.object_comparisson_base(img)
+
+        # Seguimiento (busqueda/deteccion acotada)
+        for x, y in espiral_desde(self.object_location(), self.object_frame_size(), filas, columnas):
+            col_izq = y
+            col_der = col_izq + self.object_frame_size()
+            fil_arr = x
+            fil_aba = fil_arr + self.object_frame_size()
+
+            # Tomo una region de la imagen donde se busca el objeto
+            roi = img[fil_arr:fil_aba,col_izq:col_der]
+
+            # Si se quiere ver como va buscando, descomentar la siguiente linea
+            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, (x,y)==vieja_ubicacion)
+
+            nueva_comparacion = self.object_comparisson(roi)
+
+            # Si hubo coincidencia
+            if self.is_best_match(nueva_comparacion, valor_comparativo):
+                # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
+                self.set_object_location((x, y))
+
+                # Actualizo el valor de la comparacion
+                valor_comparativo = nueva_comparacion
+
+        fue_exitoso = (vieja_ubicacion == self.object_location())
+        nueva_ubicacion = self.object_location if fue_exitoso else None
+
+        return fue_exitoso, nueva_ubicacion
+
     def object_comparisson(self, roi):
+        """
+        IDEA: asumiendo que queda en blanco la parte del objeto que estamos
+        buscando, comparar la cantidad de blancos entre el objeto guardado y
+        el objeto que se esta observando, permitiendo una cierta variacion.
+
+        NO se puede comparar roi con roi a lo bestia ya que son de tamaño
+        variable
+
+        IMPORTANTE: hay que ir actualizando el "object_roi" y el "object_mask"
+        en cada seguimiento/deteccion exitoso
+        """
         # Calculo la máscara del pedazo de imagen que estoy mirando
         roi_mask = self.calculate_mask(roi)
 
@@ -271,17 +321,6 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
 
 class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
     def object_comparisson(self, roi):
-        """
-        IDEA: asumiendo que queda en blanco la parte del objeto que estamos
-        buscando, comparar la cantidad de blancos entre el objeto guardado y
-        el objeto que se esta observando, permitiendo una cierta variacion.
-
-        NO se puede comparar roi con roi a lo bestia ya que son de tamaño
-        variable
-
-        IMPORTANTE: hay que ir actualizando el "object_roi" y el "object_mask"
-        en cada seguimiento/deteccion exitoso
-        """
         pass
 
 
