@@ -48,13 +48,8 @@ def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region, c
     return img
 
 
-def ver_seguimiento(img,
-                    frame_title,
-                    nueva_ubicacion,
-                    tam_region,
-                    no_hubo_cambio,
-                    frenar=False):
 
+def dibujar_seguimiento(img, ubicacion, tam_region, es_deteccion):
     if len(img.shape) == 2:
         # Convierto a imagen a color para dibujar un cuadrado
         color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
@@ -64,15 +59,28 @@ def ver_seguimiento(img,
     else:
         color_img = img
 
-    # Cuadrado verde si hubo una coincidencia/cambio de lugar
-    # Rojo si no hubo coincidencia alguna
-    if no_hubo_cambio:
-        color_img = dibujar_cuadrado(color_img, nueva_ubicacion, tam_region, color=(0,0,255))
+    # Cuadrado verde si proviene del seguimiento
+    # Rojo si proviene de una deteccion (ya sea porque se perdio el objeto o
+    # porque recien comienza el algoritmo)
+    if es_deteccion:
+        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,0,255))
     else:
-        color_img = dibujar_cuadrado(color_img, nueva_ubicacion, tam_region, color=(0,255,0))
+        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,255,0))
+
+    return color_img
+
+
+def ver_seguimiento(img,
+                    frame_title,
+                    ubicacion,
+                    tam_region,
+                    es_deteccion,
+                    frenar=False):
+
+    img_with_rectangle = dibujar_seguimiento(img, ubicacion, tam_region, es_deteccion)
 
     # Muestro el resultado y espero que se apriete la tecla q
-    cv2.imshow(frame_title, color_img)
+    cv2.imshow(frame_title, img_with_rectangle)
     if frenar:
         while cv2.waitKey(1) & 0xFF != ord('q'):
             pass
@@ -246,11 +254,11 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
         # define range of orange color in HSV
         # HSV from OpenCV valid values: (H:0-180, S:0-255, V:0-255)
         # HSV from GIMP valid values: (H:0-360, S:0-100, V:0-100)
-        H = 21
-        S = 63
-        V = 100
-        lower_orange = np.array([(H/2)-15,int(S*2.55/2),int(V*2.55/2)])
-        upper_orange = np.array([(H/2)+15,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
+        H = 35 # Del GIMP
+        S = 87 # Del GIMP
+        V = 100 # Del GIMP
+        lower_orange = np.array([int((H/2)-9), int(S*2.55/2), int(V*2.55/2)])
+        upper_orange = np.array([int((H/2)+9), min(int(S*2.55)*2, 255), min(int(V*2.55)*2, 255)])
 
 
         # Threshold the HSV image to get only orange colors
@@ -313,10 +321,10 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         if len(best_contour) > 0:
 
             # Punta izquierda de arriba del rectangulo y alto y ancho
-            x, y, w, h = cv2.boundingRect(best_contour)
+            y, x, w, h = cv2.boundingRect(best_contour)
 
             # Tamaño de la región de imagen que se usará para detectar y seguir
-            tam_region = self._obj_frame_size = max(w, h)
+            tam_region = self._obj_frame_size = min(w, h) # Uso el minimo ya que el maximo se puede ir de rango
 
             # Detectar objeto: Cuadrado donde esta el objeto
             ubicacion = self._obj_location = (x, y) # Fila, columna
@@ -334,9 +342,19 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
             # TODO: Ver que hacer.... Creo que conviene levantar una excepcion
             return 0, (0,0), []
 
-    def object_comparisson_base(self, img):
-        return cv2.norm(self.calculate_mask(img))
+    def object_comparisson(self, roi):
+        # Calculo la máscara del pedazo de imagen que estoy mirando
+        roi_mask = self.calculate_mask(roi)
 
+        # Calculo la máscara del objeto guardado
+        obj_mask = self.calculate_mask(self.object_roi())
+
+        # Comparación simple: distancia euclideana
+        return cv2.norm(roi_mask, obj_mask, mask=self.object_mask())
+
+
+
+class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
     def object_comparisson(self, roi):
         """
         IDEA: asumiendo que queda en blanco la parte del objeto que estamos
@@ -349,16 +367,9 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         IMPORTANTE: hay que ir actualizando el "object_roi" y el "object_mask"
         en cada seguimiento/deteccion exitoso
         """
+        pass
 
 
-        # Calculo la máscara del pedazo de imagen que estoy mirando
-        roi_mask = self.calculate_mask(roi)
-
-        # Calculo la máscara del objeto guardado
-        obj_mask = self.calculate_mask(self.object_roi())
-
-        # Comparación simple: distancia euclideana
-        return cv2.norm(roi_mask, obj_mask, mask=self.object_mask())
 
 
 class FollowingSchema(object):
@@ -388,7 +399,7 @@ class FollowingSchema(object):
                         ultima_ubicacion,
                         tam_region,
                         True,
-                        True)
+                        frenar=True)
 
 
         #######################
@@ -410,7 +421,7 @@ class FollowingSchema(object):
                             nueva_ubicacion,
                             tam_region,
                             fue_exitoso,
-                            True)
+                            frenar=True)
 
             # Guardo la ultima deteccion para dibujar el seguimiento
             ultima_ubicacion = nueva_ubicacion
