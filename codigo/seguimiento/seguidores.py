@@ -4,10 +4,12 @@
 from __future__ import unicode_literals
 
 
-import os
-
 import numpy as np
 import cv2
+
+from esquemas_seguimiento import FollowingSchema
+from observar_seguimiento import MuestraSeguimientoEnVivo
+from proveedores_de_imagenes import FramesAsVideo
 
 
 def espiral_desde((x, y), tam_region, filas, columnas):
@@ -37,95 +39,8 @@ def espiral_desde((x, y), tam_region, filas, columnas):
         sum_y *= -2
 
 
-def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region, color=(0,0,0)):
-    cv2.rectangle(
-        img,
-        (col_borde_sup_izq, fila_borde_sup_izq),
-        (col_borde_sup_izq+tam_region, fila_borde_sup_izq+tam_region),
-        color,
-        3
-    )
-    return img
 
 
-
-def dibujar_seguimiento(img, ubicacion, tam_region, es_deteccion):
-    if len(img.shape) == 2:
-        # Convierto a imagen a color para dibujar un cuadrado
-        color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
-        color_img[:,:,0] = img[:,:]
-        color_img[:,:,1] = img[:,:]
-        color_img[:,:,2] = img[:,:]
-    else:
-        color_img = img
-
-    # Cuadrado verde si proviene del seguimiento
-    # Rojo si proviene de una deteccion (ya sea porque se perdio el objeto o
-    # porque recien comienza el algoritmo)
-    if es_deteccion:
-        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,0,255))
-    else:
-        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,255,0))
-
-    return color_img
-
-
-def ver_seguimiento(img,
-                    frame_title,
-                    ubicacion,
-                    tam_region,
-                    es_deteccion,
-                    frenar=False):
-
-    img_with_rectangle = dibujar_seguimiento(img, ubicacion, tam_region, es_deteccion)
-
-    # Muestro el resultado y espero que se apriete la tecla q
-    cv2.imshow(frame_title, img_with_rectangle)
-    if frenar:
-        while cv2.waitKey(1) & 0xFF != ord('q'):
-            pass
-
-
-
-class ImageProvider(object):
-    """
-    Esta clase se va a encargar de proveer imágenes, ya sea provenientes
-    de un video o tiras de frames guardadas en el disco.
-
-    Idea: copiar parte de la API de cv2.VideoCapture
-    """
-    def read(self, gray=False):
-        """
-        Cada subclase implementa este método. Debe devolver una imagen
-        distinta cada vez, simulando los frames de un video.
-        Si gray == True, debe devolver la imagen en escala de grises
-        """
-        pass
-
-
-class FramesAsVideo(ImageProvider):
-
-    def __init__(self, path):
-        """
-        La carpeta apuntada por 'path' debe contener solo imagenes que seran
-        devueltas por el metodo 'read'.
-        Se devolveran ordenadas alfabéticamente.
-        """
-        self.path = path
-        self.img_filenames = os.listdir(path)
-        self.img_filenames.sort()
-        self.img_filenames = [os.path.join(path, fn) for fn in self.img_filenames]
-
-    def read(self):
-        have_images = len(self.img_filenames) > 0
-        img = None
-        if have_images:
-            # guardo proxima imagen
-            img = cv2.imread(self.img_filenames[0])
-
-            self.img_filenames = self.img_filenames[1:] # quito la imagen de la lista
-
-        return (have_images, img)
 
 
 class ObjectDetectorAndFollower(object):
@@ -372,132 +287,23 @@ class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
 
 
 
-class FollowingSchema(object):
-
-    def __init__(self, img_provider, obj_follower):
-        self.img_provider = img_provider
-        self.obj_follower = obj_follower
-
-    def run(self):
-
-        #########################
-        # Etapa de entrenamiento
-        #########################
-
-
-        ######################
-        # Etapa de detección
-        ######################
-
-        have_images, img = self.img_provider.read()
-
-        tam_region, ultima_ubicacion, img_objeto = self.obj_follower.detect(img)
-
-        # Muestro el seguimiento para hacer pruebas
-        ver_seguimiento(img,
-                        'Deteccion',
-                        ultima_ubicacion,
-                        tam_region,
-                        True,
-                        frenar=True)
-
-
-        #######################
-        # Etapa de seguimiento
-        #######################
-
-        have_images, img = self.img_provider.read()
-
-        while have_images:
-
-            fue_exitoso, nueva_ubicacion = self.obj_follower.follow(img)
-
-            if not fue_exitoso:
-                tam_region, nueva_ubicacion, img_objeto = self.obj_follower.detect(img)
-
-            # Muestro el seguimiento para hacer pruebas
-            ver_seguimiento(img,
-                            'Seguimiento',
-                            nueva_ubicacion,
-                            tam_region,
-                            fue_exitoso,
-                            frenar=True)
-
-            # Guardo la ultima deteccion para dibujar el seguimiento
-            ultima_ubicacion = nueva_ubicacion
-
-            # Tomo una nueva imagen en escala de grises
-            have_images, img = self.img_provider.read()
-
-        cv2.destroyAllWindows()
-
-
 def seguir_pelota_monocromo():
     img_provider = FramesAsVideo('videos/moving_circle')
     follower = ObjectDetectorAndFollower(img_provider)
-    FollowingSchema(img_provider, follower).run()
+    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 def seguir_pelota_naranja():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollower(img_provider)
-    FollowingSchema(img_provider, follower).run()
+    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
-
-def prueba_con_deteccion():
-    # Capturo la imagen
-    vc = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    b, img = vc.read()
-
-    x_busco_desde = 120
-    y_busco_desde = 480
-    tam_region = 100
-    objimg = img[x_busco_desde:x_busco_desde+tam_region, y_busco_desde:y_busco_desde+tam_region]
-
-    hsv = cv2.cvtColor(objimg, cv2.COLOR_BGR2HSV)
-
-    # Defino threshold para el naranja
-    H = 21
-    S = 63
-    V = 100
-    lower_orange = np.array([(H/2)-15,int(S*2.55/2),int(V*2.55/2)])
-    upper_orange = np.array([(H/2)+15,max(int(S*2.55)*2, 255),max(int(V*2.55)*2, 255)])
-
-    # Tomo una mascara y aplico transformaciones morfologicas
-    mask = cv2.inRange(hsv, lower_orange, upper_orange)
-    kernel = cv2.getStructuringElement(cv2.MORPH_CROSS,(20,20))
-    opening = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-    closing = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, kernel)
-
-    #cv2.imshow('Imagen original', img)
-    #cv2.imshow('Imagen Objeto', objimg)
-    #cv2.imshow('Imagen mascara sin filtro', mask)
-    #cv2.imshow('Imagen mascara con filtro', closing)
-    #cv2.waitKey()
-
-    # Copio la mascara ya limpia y busco los contornos
-    obj = closing.copy()
-    contours, hierarchy = cv2.findContours(obj,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Me quedo con el primer contorno (debería buscar el de mayor perímetro o algo asi)
-    cnt = contours[0]
-
-    # Punta izquierda de arriba del rectangulo y alto y ancho
-    x, y, w, h = cv2.boundingRect(cnt)
-
-    dibujar_cuadrado(img, (x_busco_desde+x, y_busco_desde+y), max(w,h), (0,255,0))
-
-    objimg = cv2.cvtColor(objimg, cv2.COLOR_HSV2BGR)
-    dibujar_cuadrado(objimg, (x, y), max(w,h), (0,255,0))
-
-
-    cv2.imshow('Imagen con recuadro', img)
-    cv2.imshow('Mascara con recuadro', objimg)
-    cv2.waitKey()
-    cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion2(img_provider)
-    FollowingSchema(img_provider, follower).run()
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
