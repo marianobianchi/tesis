@@ -293,7 +293,11 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         cleaned_image_mask = self.calculate_mask(img)
 
         # Calculo los contornos
-        contours, hierarchy = cv2.findContours(obj,cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        contours, hierarchy = cv2.findContours(
+            cleaned_image_mask,
+            cv2.RETR_LIST, # Forma en que se devuelven los contornos (jerarquia)
+            cv2.CHAIN_APPROX_SIMPLE # Cantidad de puntos del contorno
+        )
 
         max_perimeter = 0
         best_contour = None
@@ -306,10 +310,10 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
                 max_perimeter = perimeter
                 best_contour = contour
 
-        if best_contour:
+        if len(best_contour) > 0:
 
             # Punta izquierda de arriba del rectangulo y alto y ancho
-            x, y, w, h = cv2.boundingRect(cnt)
+            x, y, w, h = cv2.boundingRect(best_contour)
 
             # Tamaño de la región de imagen que se usará para detectar y seguir
             tam_region = self._obj_frame_size = max(w, h)
@@ -331,11 +335,30 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
             return 0, (0,0), []
 
     def object_comparisson_base(self, img):
-        return cv2.norm(img)
+        return cv2.norm(self.calculate_mask(img))
 
     def object_comparisson(self, roi):
+        """
+        IDEA: asumiendo que queda en blanco la parte del objeto que estamos
+        buscando, comparar la cantidad de blancos entre el objeto guardado y
+        el objeto que se esta observando, permitiendo una cierta variacion.
+
+        NO se puede comparar roi con roi a lo bestia ya que son de tamaño
+        variable
+
+        IMPORTANTE: hay que ir actualizando el "object_roi" y el "object_mask"
+        en cada seguimiento/deteccion exitoso
+        """
+
+
+        # Calculo la máscara del pedazo de imagen que estoy mirando
+        roi_mask = self.calculate_mask(roi)
+
+        # Calculo la máscara del objeto guardado
+        obj_mask = self.calculate_mask(self.object_roi())
+
         # Comparación simple: distancia euclideana
-        return cv2.norm(roi, self.object_roi(), mask=self.object_mask())
+        return cv2.norm(roi_mask, obj_mask, mask=self.object_mask())
 
 
 class FollowingSchema(object):
@@ -358,6 +381,15 @@ class FollowingSchema(object):
         have_images, img = self.img_provider.read()
 
         tam_region, ultima_ubicacion, img_objeto = self.obj_follower.detect(img)
+
+        # Muestro el seguimiento para hacer pruebas
+        ver_seguimiento(img,
+                        'Deteccion',
+                        ultima_ubicacion,
+                        tam_region,
+                        True,
+                        True)
+
 
         #######################
         # Etapa de seguimiento
@@ -401,8 +433,7 @@ def seguir_pelota_naranja():
     FollowingSchema(img_provider, follower).run()
 
 
-
-if __name__ == '__main__':
+def prueba_con_deteccion():
     # Capturo la imagen
     vc = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     b, img = vc.read()
@@ -453,3 +484,9 @@ if __name__ == '__main__':
     cv2.imshow('Mascara con recuadro', objimg)
     cv2.waitKey()
     cv2.destroyAllWindows()
+
+
+if __name__ == '__main__':
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    follower = OrangeBallDetectorAndFollowerVersion2(img_provider)
+    FollowingSchema(img_provider, follower).run()
