@@ -62,3 +62,20 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):
                 pass
+
+
+class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
+    def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
+        if len(img.shape) == 2:
+            # Convierto a imagen a color para dibujar un cuadrado
+            color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
+            color_img[:,:,0] = img[:,:]
+            color_img[:,:,1] = img[:,:]
+            color_img[:,:,2] = img[:,:]
+        else:
+            color_img = img
+
+        # Cuadrado azul
+        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(255,0,0))
+
+        return color_img

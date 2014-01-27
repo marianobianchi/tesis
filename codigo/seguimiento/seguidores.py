@@ -8,7 +8,7 @@ import numpy as np
 import cv2
 
 from esquemas_seguimiento import FollowingSchema
-from observar_seguimiento import MuestraSeguimientoEnVivo
+from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo)
 from proveedores_de_imagenes import FramesAsVideo
 
 
@@ -55,6 +55,12 @@ class ObjectDetectorAndFollower(object):
         self._obj_frame_mask = None
         self._obj_frame_size = 80
 
+    def set_object_descriptors(self, ubicacion, frame, mask, tam_region):
+        self._obj_location = ubicacion
+        self._obj_frame = frame
+        self._obj_frame_mask = mask
+        self._obj_frame_size = tam_region
+
     def object_roi(self):
         return self._obj_frame
 
@@ -92,6 +98,7 @@ class ObjectDetectorAndFollower(object):
     def follow(self, img):
 
         vieja_ubicacion = self.object_location()
+        nueva_ubicacion = None
 
         filas, columnas = len(img), len(img[0])
 
@@ -116,15 +123,15 @@ class ObjectDetectorAndFollower(object):
             # Si hubo coincidencia
             if self.is_best_match(nueva_comparacion, valor_comparativo):
                 # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
-                self.set_object_location((x, y))
+                nueva_ubicacion = (x, y)
 
                 # Actualizo el valor de la comparacion
                 valor_comparativo = nueva_comparacion
 
-        fue_exitoso = (vieja_ubicacion == self.object_location())
-        nueva_ubicacion = self.object_location if fue_exitoso else None
+        fue_exitoso = (vieja_ubicacion == nueva_ubicacion)
+        nueva_ubicacion = nueva_ubicacion if fue_exitoso else None
 
-        return fue_exitoso, nueva_ubicacion
+        return fue_exitoso, self.object_frame_size(), nueva_ubicacion, roi, self.object_mask()
 
     def calculate_mask(self, img):
         # Da vuelta los valores (0->255 y 255->0)
@@ -138,13 +145,13 @@ class ObjectDetectorAndFollower(object):
         ubicacion = self.object_location() # Fila, columna
 
         # Este es el objeto a seguir
-        self._obj_frame = img[ubicacion[0]:ubicacion[0]+tam_region,
-                              ubicacion[1]:ubicacion[1]+tam_region]
+        img_objeto = img[ubicacion[0]:ubicacion[0]+tam_region,
+                         ubicacion[1]:ubicacion[1]+tam_region]
 
         # Mascara del objeto
-        self._obj_frame_mask = self.calculate_mask(self.object_roi())
+        mask_objeto = self.calculate_mask(img_objeto)
 
-        return tam_region, ubicacion, self.object_roi()
+        return tam_region, ubicacion, img_objeto, mask_objeto
 
 
 class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
@@ -205,6 +212,14 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         self._obj_frame = None
         self._obj_frame_mask = None
         self._obj_frame_size = None
+        self._obj_comp_base = 0
+
+    def set_object_descriptors(self, ubicacion, frame, mask, tam_region):
+        self._obj_location = ubicacion
+        self._obj_frame = frame
+        self._obj_frame_mask = mask
+        self._obj_frame_size = tam_region
+        self._obj_comp_base = cv2.countNonZero(mask) / 2
 
     def detect(self, img):
 
@@ -235,19 +250,19 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
             y, x, w, h = cv2.boundingRect(best_contour)
 
             # Tamaño de la región de imagen que se usará para detectar y seguir
-            tam_region = self._obj_frame_size = min(w, h) # Uso el minimo ya que el maximo se puede ir de rango
+            tam_region = min(w, h) # Uso el minimo ya que el maximo se puede ir de rango
 
             # Detectar objeto: Cuadrado donde esta el objeto
-            ubicacion = self._obj_location = (x, y) # Fila, columna
+            ubicacion = (x, y) # Fila, columna
 
             # Este es el objeto a seguir
-            self._obj_frame = img[ubicacion[0]:ubicacion[0]+tam_region,
-                                  ubicacion[1]:ubicacion[1]+tam_region]
+            img_objeto = img[ubicacion[0]:ubicacion[0]+tam_region,
+                             ubicacion[1]:ubicacion[1]+tam_region]
 
             # Mascara del objeto
-            self._obj_frame_mask = self.calculate_mask(self.object_roi())
+            mask_objeto = self.calculate_mask(img_objeto)
 
-            return tam_region, ubicacion, self.object_roi()
+            return tam_region, ubicacion, img_objeto, mask_objeto
 
         else:
             # TODO: Ver que hacer.... Creo que conviene levantar una excepcion
@@ -261,40 +276,67 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         en cada paso esta variable y la máscara del objeto, ademas de la
         ubicacion que ya se hacia.
         """
+        # Descomentar si se quiere ver la busqueda
+        #img_copy = img.copy()
+
         vieja_ubicacion = self.object_location()
+        nueva_ubicacion = vieja_ubicacion
 
         filas, columnas = len(img), len(img[0])
+        tam_region = self.object_frame_size()
 
         # Cantidad de pixeles distintos
         valor_comparativo = self.object_comparisson_base(img)
 
         # Seguimiento (busqueda/deteccion acotada)
-        for x, y in espiral_desde(self.object_location(), self.object_frame_size(), filas, columnas):
+        for x, y in espiral_desde(self.object_location(), tam_region, filas, columnas):
             col_izq = y
-            col_der = col_izq + self.object_frame_size()
+            col_der = col_izq + tam_region
             fil_arr = x
-            fil_aba = fil_arr + self.object_frame_size()
+            fil_aba = fil_arr + tam_region
 
             # Tomo una region de la imagen donde se busca el objeto
             roi = img[fil_arr:fil_aba,col_izq:col_der]
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
-            # ver_seguimiento(img, 'Buscando el objeto', (x,y), tam_region, (x,y)==vieja_ubicacion)
+            #MuestraBusquedaEnVivo('Buscando el objeto').run(
+            #    img_copy,
+            #    (x, y),
+            #    tam_region,
+            #    None,
+            #    frenar=True,
+            #)
 
             nueva_comparacion = self.object_comparisson(roi)
 
             # Si hubo coincidencia
             if self.is_best_match(nueva_comparacion, valor_comparativo):
                 # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
-                self.set_object_location((x, y))
+                nueva_ubicacion = (x, y)
 
                 # Actualizo el valor de la comparacion
                 valor_comparativo = nueva_comparacion
 
-        fue_exitoso = (vieja_ubicacion == self.object_location())
-        nueva_ubicacion = self.object_location if fue_exitoso else None
 
-        return fue_exitoso, nueva_ubicacion
+        fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
+        nueva_ubicacion = nueva_ubicacion if fue_exitoso else None
+
+        if fue_exitoso:
+            # TODO: buscar ubicacion con la funcion de detectar
+
+            img_objeto = img[nueva_ubicacion[0]:nueva_ubicacion[0]+tam_region,
+                             nueva_ubicacion[1]:nueva_ubicacion[1]+tam_region]
+
+            mask_objeto = self.calculate_mask(img_objeto)
+        else:
+            img_objeto = mask_objeto = None
+
+        return fue_exitoso, tam_region, nueva_ubicacion, img_objeto, mask_objeto
+
+    def object_comparisson_base(self, img):
+        if self._obj_comp_base is None:
+            self._obj_comp_base = len(img) * len(img[0])
+        return self._obj_comp_base
 
     def object_comparisson(self, roi):
         """
@@ -311,12 +353,13 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
         # Calculo la máscara del pedazo de imagen que estoy mirando
         roi_mask = self.calculate_mask(roi)
 
-        # Calculo la máscara del objeto guardado
-        obj_mask = self.calculate_mask(self.object_roi())
+        # Hago una comparacion bit a bit de la imagen original
+        # Compara solo en la zona de la máscara y deja 0's en donde hay
+        # coincidencias y 255's en donde no coinciden
+        xor = cv2.bitwise_xor(self.object_mask(), roi_mask, mask=self.object_mask())
 
-        # Comparación simple: distancia euclideana
-        return cv2.norm(roi_mask, obj_mask, mask=self.object_mask())
-
+        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+        return cv2.countNonZero(xor)
 
 
 class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
