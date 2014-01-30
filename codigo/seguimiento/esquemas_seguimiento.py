@@ -25,13 +25,7 @@ class FollowingSchema(object):
 
         have_images, img = self.img_provider.read()
 
-        tam_region, ubicacion_inicial, img_objeto, mask_objeto = self.obj_follower.detect(img)
-        self.obj_follower.set_object_descriptors(
-            ubicacion_inicial,
-            img_objeto,
-            mask_objeto,
-            tam_region
-        )
+        tam_region, ubicacion_inicial = self.obj_follower.detect(img)
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(img, ubicacion_inicial, tam_region, False, frenar=True)
@@ -45,17 +39,10 @@ class FollowingSchema(object):
 
         while have_images:
 
-            fue_exitoso, tam_region, nueva_ubicacion, img_objeto, mask_objeto = self.obj_follower.follow(img)
+            fue_exitoso, tam_region, nueva_ubicacion = self.obj_follower.follow(img)
 
             if not fue_exitoso:
-                tam_region, nueva_ubicacion, img_objeto, mask_objeto = self.obj_follower.detect(img)
-
-            self.obj_follower.set_object_descriptors(
-                nueva_ubicacion,
-                img_objeto,
-                mask_objeto,
-                tam_region
-            )
+                tam_region, nueva_ubicacion = self.obj_follower.detect(img)
 
             # Muestro el seguimiento para hacer pruebas
             self.show_following.run(img, nueva_ubicacion, tam_region, fue_exitoso, frenar=True)
@@ -64,3 +51,4 @@ class FollowingSchema(object):
             have_images, img = self.img_provider.read()
 
         cv2.destroyAllWindows()
+        self.show_following.close()

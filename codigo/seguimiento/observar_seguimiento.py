@@ -51,6 +51,13 @@ class MuestraDelSeguimiento(object):
         """
         pass
 
+    def close(self):
+        """
+        En caso que se requiera tomar alguna medida al terminar de capturar las
+        imagenes, este es el metodo que se debe utilizar
+        """
+        pass
+
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
@@ -62,6 +69,34 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):
                 pass
+
+
+class GrabaSeguimientoEnArchivo(MuestraDelSeguimiento):
+
+    def __init__(self, nombre):
+        self.name = nombre
+        self.grabador = None
+
+    def run(self, img, ubicacion, tam_region, lo_siguio, frenar=False):
+        img_with_rectangle = self.dibujar_seguimiento(img, ubicacion, tam_region, lo_siguio)
+
+        if self.grabador is None:
+            # Defino el codec y armo el objeto VideoWriter
+            fourcc = cv2.cv.CV_FOURCC(b'X',b'V',b'I',b'D')
+
+            self.grabador = cv2.VideoWriter(
+                self.name, # Video file name
+                fourcc, # Codec
+                6.0, # Frames por segundo
+                (len(img[0]),len(img)), # Tamaño de los frames
+                True, # Flag de color. True = color, False = gris
+            )
+
+        self.grabador.write(img_with_rectangle)
+
+    def close(self):
+        if self.grabador is not None:
+            self.grabador.release()
 
 
 class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
