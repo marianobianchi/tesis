@@ -58,7 +58,7 @@ class ObjectDetectorAndFollower(object):
     def set_object_descriptors(self, ubicacion, tam_region, obj_descriptors):
         self._obj_location = ubicacion
         self._obj_frame_size = tam_region
-        self._obj_descriptors = obj_descriptors
+        self._obj_descriptors.update(obj_descriptors)
 
     def object_roi(self):
         return self._obj_descriptors['frame']
@@ -142,13 +142,13 @@ class ObjectDetectorAndFollower(object):
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_descriptors(img, nueva_ubicacion, tam_region)
+            self.upgrade_followed_descriptors(img, nueva_ubicacion, tam_region)
 
         # Devuelvo self.object_frame_size() porque puede cambiar en "upgrade_descriptors"
         # Idem con self.object_location()
         return fue_exitoso, self.object_frame_size(), self.object_location()
 
-    def upgrade_descriptors(self, img, ubicacion, tam_region):
+    def _upgrade_descriptors(self, img, ubicacion, tam_region):
         frame = img[ubicacion[0]:ubicacion[0]+tam_region,
                     ubicacion[1]:ubicacion[1]+tam_region]
         mask = self.calculate_mask(frame)
@@ -156,13 +156,19 @@ class ObjectDetectorAndFollower(object):
 
         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
 
+    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
+        self._upgrade_descriptors(img, ubicacion, tam_region)
+
+    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
+        self._upgrade_descriptors(img, ubicacion, tam_region)
+
     def calculate_mask(self, img):
         # Da vuelta los valores (0->255 y 255->0)
         return cv2.bitwise_not(img)
 
     def detect(self, img):
         # Los valores estan harcodeados en el __init__
-        self.upgrade_descriptors(img, self.object_location(), self.object_frame_size())
+        self.upgrade_detected_descriptors(img, self.object_location(), self.object_frame_size())
         return self.object_frame_size(), self.object_location()
 
 
@@ -268,7 +274,7 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
             tam_region = 0
             ubicacion = (0,0)
 
-        self.upgrade_descriptors(img, ubicacion, tam_region)
+        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
 
         return self.object_frame_size(), self.object_location()
 
@@ -300,52 +306,93 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
     """
     Comparacion por histograma usando Bhattacharyya
     """
-    def object_comparisson_base(self, img):
-        # TODO: ver que valor conviene poner. Esto es el umbral para la
-        # deteccion en el seguimiento
-        return 0.3
 
-    def object_comparisson(self, roi):
+    def saved_object_comparisson(self):
+        if 'hist' not in self._obj_descriptors:
+            obj = self.object_roi()
+            hist = self.calculate_histogram(obj)
+            self._obj_descriptors['hist'] = hist
+
+        return self._obj_descriptors['hist']
+
+    def calculate_histogram(self, roi):
         # Paso la imagen de BGR a HSV
         roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
         # Calculo el histograma del roi (para H y S)
-        roi_hist = cv2.calcHist(
+        hist = cv2.calcHist(
             [roi_hsv], # Imagen
             [0,1], # Canales
             None, # Mascara
             [256, 256], # Numero de bins para cada canal
-            ranges
+            [0,180,0,256], # Rangos válidos para los pixeles de cada canal
         )
 
+        return hist
+
+    def object_comparisson_base(self, img):
+        # TODO: ver que valor conviene poner. Esto es el umbral para la
+        # deteccion en el seguimiento
+        return 0.85
+
+    def object_comparisson(self, roi):
+        roi_hist = self.calculate_histogram(roi)
+
+        # TODO: ver como normalizar los histogramas
 
         # Tomo el histograma del objeto para comparar
-        obj_hist = self.object_descriptor()
+        obj_hist = self.saved_object_comparisson()
 
-    def upgrade_descriptors(self, img, ubicacion, tam_region):
-        frame = img[ubicacion[0]:ubicacion[0]+tam_region,
-                    ubicacion[1]:ubicacion[1]+tam_region]
-        mask = self.calculate_mask(frame)
-        obj_descriptors = {'frame': frame, 'mask': mask}
+        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
 
-        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
+        (super(OrangeBallDetectorAndFollowerVersion3, self)
+         .upgrade_detected_descriptors(img, ubicacion, tam_region))
 
-    #"""
-    #IDEA (EN CASO QUE LAS IDEAS DE COMPARACION NO FUNCIONEN):
-    #Acomodar todo para que la busqueda sea similar a la deteccion pero en
-    #una superficie apenas mayor que la del "object_frame_size". Acualizar
-    #en cada paso esta variable y la máscara del objeto, ademas de la
-    #ubicacion que ya se hacia.
-    #"""
-    #
+        # Actualizo el histograma
+        hist = self.calculate_histogram(self.object_roi())
+        self._obj_descriptors['hist'] = hist
 
+    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
+        """
+        IDEA: una vez encontrado el objeto, para tratar de mejorar su
+        ubicacion, hago una detección en un espacio reducido de la imagen.
+        La idea es duplicar el tamaño de la ventana y detectar ahi.
+        """
+        nuevo_x = max(ubicacion[0]-(tam_region/2), 0)
+        nuevo_y = max(ubicacion[1]-(tam_region/2), 0)
+        nuevo_tam = tam_region * 2
+
+        frame_donde_buscar = img[nuevo_x:nuevo_x+nuevo_tam,
+                                 nuevo_y:nuevo_y+nuevo_tam]
+
+
+
+        ###############
+        #from observar_seguimiento import dibujar_cuadrado
+        #nueva_img = dibujar_cuadrado(img)
+        #
+        #
+        ################
+
+
+        # Con la deteccion se actualizan algunos descriptores,
+        # pero se hace mal al correrlo en una parte de la imagen
+        tam_final, nueva_ubicacion = self.detect(frame_donde_buscar)
+
+        x_final = nuevo_x + nueva_ubicacion[0]
+        y_final = nuevo_y + nueva_ubicacion[1]
+
+        self._upgrade_descriptors(img, (x_final, y_final), tam_final)
+
+        # Actualizo el histograma
+        hist = self.calculate_histogram(self.object_roi())
+        self._obj_descriptors['hist'] = hist
 
 
 class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
     def object_comparisson(self, roi):
         pass
-
-
 
 
 def seguir_pelota_monocromo():
@@ -369,4 +416,7 @@ def seguir_pelota_naranja_version2():
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 if __name__ == '__main__':
-    seguir_pelota_naranja_version2()
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    follower = OrangeBallDetectorAndFollowerVersion3(img_provider)
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
