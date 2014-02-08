@@ -55,11 +55,10 @@ class ObjectDetectorAndFollower(object):
         self._obj_frame_size = 80
         self._obj_descriptors = {}
 
-    def set_object_descriptors(self, ubicacion, tam_region, obj_descriptors):
-        self._obj_location = ubicacion
-        self._obj_frame_size = tam_region
-        self._obj_descriptors.update(obj_descriptors)
 
+    ########################
+    # Descriptores comunes
+    ########################
     def object_roi(self):
         return self._obj_descriptors['frame']
 
@@ -75,10 +74,14 @@ class ObjectDetectorAndFollower(object):
     def object_location(self):
         return self._obj_location
 
-    def set_object_location(self, location):
-        self._obj_location = location
-
+    #########################
+    # Metodos de comparacion
+    #########################
     def object_comparisson_base(self, img):
+        """
+        Comparacion base: sirve como umbral para las comparaciones que se
+        realizan durante el seguimiento
+        """
         filas, columnas = len(img), len(img[0])
         return filas * columnas
 
@@ -94,6 +97,10 @@ class ObjectDetectorAndFollower(object):
     def is_best_match(self, new_value, old_value):
         return new_value < old_value
 
+
+    #####################################
+    # Esquema de seguimiento del objeto
+    #####################################
     def follow(self, img):
         # Descomentar si se quiere ver la busqueda
         #img_copy = img.copy()
@@ -148,6 +155,14 @@ class ObjectDetectorAndFollower(object):
         # Idem con self.object_location()
         return fue_exitoso, self.object_frame_size(), self.object_location()
 
+    ##########################
+    # Actualizar descriptores
+    ##########################
+    def set_object_descriptors(self, ubicacion, tam_region, obj_descriptors):
+        self._obj_location = ubicacion
+        self._obj_frame_size = tam_region
+        self._obj_descriptors.update(obj_descriptors)
+
     def _upgrade_descriptors(self, img, ubicacion, tam_region):
         frame = img[ubicacion[0]:ubicacion[0]+tam_region,
                     ubicacion[1]:ubicacion[1]+tam_region]
@@ -162,26 +177,23 @@ class ObjectDetectorAndFollower(object):
     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
         self._upgrade_descriptors(img, ubicacion, tam_region)
 
-    def calculate_mask(self, img):
-        # Da vuelta los valores (0->255 y 255->0)
-        return cv2.bitwise_not(img)
-
+    #######################
+    # Funcion de deteccion
+    #######################
     def detect(self, img):
         # Los valores estan harcodeados en el __init__
         self.upgrade_detected_descriptors(img, self.object_location(), self.object_frame_size())
         return self.object_frame_size(), self.object_location()
 
+    ##########################
+    # Funciones de cada clase
+    ##########################
+    def calculate_mask(self, img):
+        # Da vuelta los valores (0->255 y 255->0)
+        return cv2.bitwise_not(img)
 
-class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
 
-    def __init__(self, image_provider):
-        self.img_provider = image_provider
-
-        # Object descriptors
-        self._obj_location = (128, 492) # Fila, columna
-        self._obj_frame_size = 76
-        self._obj_descriptors = {}
-
+class CalculaMascaraPorColorNaranjaMixin(object):
     def calculate_mask(self, img):
         # Convert BGR to HSV
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
@@ -211,6 +223,11 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
 
         return closing
 
+
+class ComparacionPorDiferenciaCuadraticaMixin(object):
+    #########################
+    # Metodos de comparacion
+    #########################
     def object_comparisson_base(self, img):
         return cv2.norm(img)
 
@@ -219,16 +236,35 @@ class OrangeBallDetectorAndFollower(ObjectDetectorAndFollower):
         return cv2.norm(roi, self.object_roi(), mask=self.object_mask())
 
 
-class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
+class ComparacionPorCantidadDePixelesIgualesMixin(object):
+    def object_comparisson_base(self, img):
+        """
+        Idea: que a lo sumo encuentre 1/2 del objeto
+        """
+        return cv2.countNonZero(self.object_mask()) / 2
 
-    def __init__(self, image_provider):
-        self.img_provider = image_provider
+    def object_comparisson(self, roi):
+        """
+        Asumiendo que queda en blanco la parte del objeto que estamos
+        buscando, comparo la cantidad de blancos entre el objeto guardado y
+        el objeto que se esta observando.
+        """
+        # Calculo la máscara del pedazo de imagen que estoy mirando
+        roi_mask = self.calculate_mask(roi)
 
-        # Object descriptors
-        self._obj_location = None # Fila, columna
-        self._obj_frame_size = None
-        self._obj_descriptors = {}
+        # Hago una comparacion bit a bit de la imagen original
+        # Compara solo en la zona de la máscara y deja 0's en donde hay
+        # coincidencias y 255's en donde no coinciden
+        xor = cv2.bitwise_xor(self.object_mask(), roi_mask, mask=self.object_mask())
 
+        # Cuento la cantidad de nros distintos a 0 y me quedo con la mejor comparacion
+        return cv2.countNonZero(xor)
+
+
+class DeteccionDePelotaNaranjaPorContornosMixin(object):
+    #######################
+    # Funcion de deteccion
+    #######################
     def detect(self, img):
         # Filtro los objetos de color naranja de toda la imagen
         cleaned_image_mask = self.calculate_mask(img)
@@ -278,43 +314,34 @@ class OrangeBallDetectorAndFollowerVersion2(OrangeBallDetectorAndFollower):
 
         return self.object_frame_size(), self.object_location()
 
-    def object_comparisson_base(self, img):
-        """
-        Idea: que a lo sumo encuentre 1/2 del objeto
-        """
-        return cv2.countNonZero(self.object_mask()) / 2
 
-    def object_comparisson(self, roi):
-        """
-        Asumiendo que queda en blanco la parte del objeto que estamos
-        buscando, comparo la cantidad de blancos entre el objeto guardado y
-        el objeto que se esta observando.
-        """
-        # Calculo la máscara del pedazo de imagen que estoy mirando
-        roi_mask = self.calculate_mask(roi)
+class MatchingTemplateDetectionMixin(object):
+    def detect(self, img):
 
-        # Hago una comparacion bit a bit de la imagen original
-        # Compara solo en la zona de la máscara y deja 0's en donde hay
-        # coincidencias y 255's en donde no coinciden
-        xor = cv2.bitwise_xor(self.object_mask(), roi_mask, mask=self.object_mask())
+        template = self._obj_descriptors['template']
+        template_columnas, template_filas = len(template), len(template[0])
 
-        # Cuento la cantidad de nros distintos a 0 y me quedo con la mejor comparacion
-        return cv2.countNonZero(xor)
+        # Aplico el template Matching
+        res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
+
+        # TODO: Veo que me devuelve
+        cv2.imshow('Matching template image', res)
+        cv2.waitKey(0)
+
+        #TODO: fijarse el tamaño del template que esty devolviendo. Creo que se va de rango
+
+        # Busco la posición
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+        ubicacion = min_loc
+        tam_region = max(template_columnas, template_filas)
+
+        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
+
+        return self.object_frame_size(), self.object_location()
 
 
-class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion2):
-    """
-    Comparacion por histograma usando Bhattacharyya
-    """
-
-    def saved_object_comparisson(self):
-        if 'hist' not in self._obj_descriptors:
-            obj = self.object_roi()
-            hist = self.calculate_histogram(obj)
-            self._obj_descriptors['hist'] = hist
-
-        return self._obj_descriptors['hist']
-
+class CalculaHistogramaMixin(object):
     def calculate_histogram(self, roi):
         # Paso la imagen de BGR a HSV
         roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
@@ -329,6 +356,16 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
         )
 
         return hist
+
+
+class ComparacionDeHistogramasPorBhattacharyya(object):
+    def saved_object_comparisson(self):
+        if 'hist' not in self._obj_descriptors:
+            obj = self.object_roi()
+            hist = self.calculate_histogram(obj)
+            self._obj_descriptors['hist'] = hist
+
+        return self._obj_descriptors['hist']
 
     def object_comparisson_base(self, img):
         # TODO: ver que valor conviene poner. Esto es el umbral para la
@@ -345,6 +382,50 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
 
         return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
 
+
+class OrangeBallDetectorAndFollower(CalculaMascaraPorColorNaranjaMixin,
+                                    ComparacionPorDiferenciaCuadraticaMixin,
+                                    ObjectDetectorAndFollower):
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = (128, 492) # Fila, columna
+        self._obj_frame_size = 76
+        self._obj_descriptors = {}
+
+
+class OrangeBallDetectorAndFollowerVersion2(CalculaMascaraPorColorNaranjaMixin,
+                                            ComparacionPorCantidadDePixelesIgualesMixin,
+                                            DeteccionDePelotaNaranjaPorContornosMixin,
+                                            ObjectDetectorAndFollower):
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = None # Fila, columna
+        self._obj_frame_size = None
+        self._obj_descriptors = {}
+
+
+class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
+                                            ComparacionDeHistogramasPorBhattacharyya,
+                                            DeteccionDePelotaNaranjaPorContornosMixin,
+                                            ObjectDetectorAndFollower):
+    """
+    Comparacion por histograma usando Bhattacharyya
+    """
+    def __init__(self, image_provider):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = None # Fila, columna
+        self._obj_frame_size = None
+        self._obj_descriptors = {}
+
+    ##########################
+    # Actualizar descriptores
+    ##########################
     def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
         (super(OrangeBallDetectorAndFollowerVersion3, self)
          .upgrade_detected_descriptors(img, ubicacion, tam_region))
@@ -358,6 +439,9 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
         IDEA: una vez encontrado el objeto, para tratar de mejorar su
         ubicacion, hago una detección en un espacio reducido de la imagen.
         La idea es duplicar el tamaño de la ventana y detectar ahi.
+
+        TODO: Cambiar el esquema de la idea por una busqueda un poco más
+        exhaustiva alrededor del supuesto objeto encontrado
         """
         nuevo_x = max(ubicacion[0]-(tam_region/2), 0)
         nuevo_y = max(ubicacion[1]-(tam_region/2), 0)
@@ -365,16 +449,6 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
 
         frame_donde_buscar = img[nuevo_x:nuevo_x+nuevo_tam,
                                  nuevo_y:nuevo_y+nuevo_tam]
-
-
-
-        ###############
-        #from observar_seguimiento import dibujar_cuadrado
-        #nueva_img = dibujar_cuadrado(img)
-        #
-        #
-        ################
-
 
         # Con la deteccion se actualizan algunos descriptores,
         # pero se hace mal al correrlo en una parte de la imagen
@@ -390,9 +464,40 @@ class OrangeBallDetectorAndFollowerVersion3(OrangeBallDetectorAndFollowerVersion
         self._obj_descriptors['hist'] = hist
 
 
-class GeneralObjectDetectorAndFollower(ObjectDetectorAndFollower):
-    def object_comparisson(self, roi):
-        pass
+class ALittleGeneralObjectDetectorAndFollower(CalculaHistogramaMixin,
+                                              ComparacionDeHistogramasPorBhattacharyya,
+                                              MatchingTemplateDetectionMixin,
+                                              ObjectDetectorAndFollower):
+    def __init__(self, image_provider, template):
+        self.img_provider = image_provider
+
+        # Object descriptors
+        self._obj_location = None # Fila, columna
+        self._obj_frame_size = None
+        self._obj_descriptors = {
+            'template': template,
+        }
+
+    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
+
+        frame = img[ubicacion[0]:ubicacion[0]+tam_region,
+                    ubicacion[1]:ubicacion[1]+tam_region]
+
+        # Actualizo el histograma
+        hist = self.calculate_histogram(frame)
+
+        obj_descriptors = {'frame': frame, 'hist': hist}
+        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+
+    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
+        frame = img[ubicacion[0]:ubicacion[0]+tam_region,
+                    ubicacion[1]:ubicacion[1]+tam_region]
+
+        # Actualizo el histograma
+        hist = self.calculate_histogram(frame)
+
+        obj_descriptors = {'frame': frame, 'hist': hist}
+        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
 
 
 def seguir_pelota_monocromo():
@@ -415,8 +520,15 @@ def seguir_pelota_naranja_version2():
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
-if __name__ == '__main__':
+def seguir_pelota_naranja_version3():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion3(img_provider)
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+
+if __name__ == '__main__':
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
