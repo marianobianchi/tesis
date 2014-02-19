@@ -13,33 +13,6 @@ from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnViv
 from proveedores_de_imagenes import FramesAsVideo
 
 
-def espiral_desde((x, y), tam_region, filas, columnas):
-    sum_x = 2
-    sum_y = 2
-    for j in range(50):
-        # Hago 2 busquedas por cada nuevo X
-        x += sum_x/2
-        if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-            yield (x, y)
-
-        x += sum_x/2
-        if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-            yield (x, y)
-
-        sum_x *= -2
-
-        # Hago 2 busquedas por cada nuevo Y
-        y += sum_y/2
-        if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-            yield (x, y)
-
-        y += sum_y/2
-        if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-            yield (x, y)
-
-        sum_y *= -2
-
-
 class BusquedaEnEspiral(object):
     def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
         x, y = ultima_ubicacion
@@ -436,6 +409,9 @@ class CalculaHistogramaMixin(object):
         # Paso la imagen de BGR a HSV
         roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
+        # Aplico equalizacion de histograma en V (http://en.wikipedia.org/wiki/Histogram_equalization#Histogram_equalization_of_color_images)
+        roi_hsv[:,:,2] = cv2.equalizeHist(roi_hsv[:,:,2])
+
         # Calculo el histograma del roi (para H y S)
         hist = cv2.calcHist(
             [roi_hsv], # Imagen
@@ -525,7 +501,9 @@ class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
          .upgrade_detected_descriptors(img, ubicacion, tam_region))
 
         # Actualizo el histograma
-        hist = self.calculate_histogram(self.object_roi())
+        roi = self.object_roi()
+        roi = cv2.equalizeHist(roi)
+        hist = self.calculate_histogram(roi)
         self._obj_descriptors['hist'] = hist
 
     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
@@ -533,7 +511,9 @@ class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
          .upgrade_followed_descriptors(img, ubicacion, tam_region))
 
         # Actualizo el histograma
-        hist = self.calculate_histogram(self.object_roi())
+        roi = self.object_roi()
+        roi = cv2.equalizeHist(roi)
+        hist = self.calculate_histogram(roi)
         self._obj_descriptors['hist'] = hist
 
 
