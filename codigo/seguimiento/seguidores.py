@@ -40,6 +40,69 @@ def espiral_desde((x, y), tam_region, filas, columnas):
         sum_y *= -2
 
 
+class BusquedaEnEspiral(object):
+    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
+        x, y = ultima_ubicacion
+
+        sum_x = 2
+        sum_y = 2
+        for j in range(30):
+            # Hago 2 busquedas por cada nuevo X
+            x += sum_x/2
+            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                yield (x, y, tam_region)
+
+            x += sum_x/2
+            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                yield (x, y, tam_region)
+
+            sum_x *= -2
+
+            # Hago 2 busquedas por cada nuevo Y
+            y += sum_y/2
+            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                yield (x, y, tam_region)
+
+            y += sum_y/2
+            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                yield (x, y, tam_region)
+
+            sum_y *= -2
+
+
+class BusquedaEnEspiralCambiandoFrameSize(object):
+    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region_inicial, filas, columnas):
+        mitad_region = tam_region_inicial / 2
+        cuarto_de_region = tam_region_inicial / 4
+        for tam_region in [(mitad_region + (i*cuarto_de_region)) for i in range(5)]:
+            x, y = ultima_ubicacion
+
+            sum_x = 2
+            sum_y = 2
+            for j in range(10):
+                # Hago 2 busquedas por cada nuevo X
+                x += sum_x/2
+                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                    yield (x, y, tam_region)
+
+                x += sum_x/2
+                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                    yield (x, y, tam_region)
+
+                sum_x *= -2
+
+                # Hago 2 busquedas por cada nuevo Y
+                y += sum_y/2
+                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                    yield (x, y, tam_region)
+
+                y += sum_y/2
+                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
+                    yield (x, y, tam_region)
+
+                sum_y *= -2
+
+
 class ObjectDetectorAndFollower(object):
     """
     Es la clase base para los primeros ejemplos sencillos.
@@ -47,8 +110,9 @@ class ObjectDetectorAndFollower(object):
     negra (moving_circle)
     """
 
-    def __init__(self, image_provider):
+    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
+        self.tipo_de_busqueda = tipo_de_busqueda
 
         # Object descriptors
         self._obj_location = (40, 40)
@@ -97,25 +161,24 @@ class ObjectDetectorAndFollower(object):
     def is_best_match(self, new_value, old_value):
         return new_value < old_value
 
-
     #####################################
     # Esquema de seguimiento del objeto
     #####################################
-    def follow(self, img):
-        # Descomentar si se quiere ver la busqueda
-        #img_copy = img.copy()
-
-        vieja_ubicacion = self.object_location()
-        nueva_ubicacion = vieja_ubicacion
-
+    def simple_follow(self, img, ubicacion, valor_comparativo, tam_region_inicial):
+        """
+        Esta funcion es el esquema de seguimiento del objeto.
+        """
         filas, columnas = len(img), len(img[0])
-        tam_region = self.object_frame_size()
 
-        # Cantidad de pixeles distintos
-        valor_comparativo = self.object_comparisson_base(img)
+        nueva_ubicacion = ubicacion
+        nueva_comparacion = None
+        tam_region_final = tam_region_inicial
 
         # Seguimiento (busqueda/deteccion acotada)
-        for x, y in espiral_desde(self.object_location(), tam_region, filas, columnas):
+        for x, y, tam_region in self.tipo_de_busqueda.get_positions_and_framesizes(ubicacion,
+                                                                                   tam_region_inicial,
+                                                                                   filas,
+                                                                                   columnas):
             col_izq = y
             col_der = col_izq + tam_region
             fil_arr = x
@@ -143,13 +206,43 @@ class ObjectDetectorAndFollower(object):
                 # Actualizo el valor de la comparacion
                 valor_comparativo = nueva_comparacion
 
+                # Actualizo el tamaño de la region
+                tam_region_final = tam_region
+
+        return nueva_ubicacion, valor_comparativo, tam_region_final
+
+    def follow(self, img):
+        """
+        Esta funcion utiliza al esquema de seguimiento del objeto (simple_follow)
+        """
+        # Descomentar si se quiere ver la busqueda
+        #img_copy = img.copy()
+
+        vieja_ubicacion = self.object_location()
+        nueva_ubicacion = vieja_ubicacion
+
+        tam_region = self.object_frame_size()
+        tam_region_final = tam_region
+
+        # Cantidad de pixeles distintos
+        valor_comparativo = self.object_comparisson_base(img)
+
+        # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
+        # de la ultima mejor ubicacion del objeto encontrada
+        for i in range(3):
+            nueva_ubicacion, valor_comparativo, tam_region_final = self.simple_follow(
+                img,
+                nueva_ubicacion,
+                valor_comparativo,
+                tam_region_final
+            )
 
         fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
         nueva_ubicacion = nueva_ubicacion if fue_exitoso else None
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_followed_descriptors(img, nueva_ubicacion, tam_region)
+            self.upgrade_followed_descriptors(img, nueva_ubicacion, tam_region_final)
 
         # Devuelvo self.object_frame_size() porque puede cambiar en "upgrade_descriptors"
         # Idem con self.object_location()
@@ -229,7 +322,7 @@ class ComparacionPorDiferenciaCuadraticaMixin(object):
     # Metodos de comparacion
     #########################
     def object_comparisson_base(self, img):
-        return cv2.norm(img)
+        return 2000
 
     def object_comparisson(self, roi):
         # Comparación simple: distancia euclideana
@@ -319,21 +412,18 @@ class MatchingTemplateDetectionMixin(object):
     def detect(self, img):
 
         template = self._obj_descriptors['template']
-        template_columnas, template_filas = len(template), len(template[0])
+        template_filas, template_columnas = len(template), len(template[0])
 
         # Aplico el template Matching
         res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
 
-        # TODO: Veo que me devuelve
-        cv2.imshow('Matching template image', res)
-        cv2.waitKey(0)
-
-        #TODO: fijarse el tamaño del template que esty devolviendo. Creo que se va de rango
-
         # Busco la posición
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        ubicacion = min_loc
+        # min_loc tiene primero las columnas y despues las filas, entonces lo
+        # doy vuelta
+        ubicacion = (min_loc[1], min_loc[0])
+
         tam_region = max(template_columnas, template_filas)
 
         self.upgrade_detected_descriptors(img, ubicacion, tam_region)
@@ -370,7 +460,7 @@ class ComparacionDeHistogramasPorBhattacharyya(object):
     def object_comparisson_base(self, img):
         # TODO: ver que valor conviene poner. Esto es el umbral para la
         # deteccion en el seguimiento
-        return 0.85
+        return 0.6
 
     def object_comparisson(self, roi):
         roi_hist = self.calculate_histogram(roi)
@@ -386,8 +476,9 @@ class ComparacionDeHistogramasPorBhattacharyya(object):
 class OrangeBallDetectorAndFollower(CalculaMascaraPorColorNaranjaMixin,
                                     ComparacionPorDiferenciaCuadraticaMixin,
                                     ObjectDetectorAndFollower):
-    def __init__(self, image_provider):
+    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
+        self.tipo_de_busqueda = tipo_de_busqueda
 
         # Object descriptors
         self._obj_location = (128, 492) # Fila, columna
@@ -399,8 +490,9 @@ class OrangeBallDetectorAndFollowerVersion2(CalculaMascaraPorColorNaranjaMixin,
                                             ComparacionPorCantidadDePixelesIgualesMixin,
                                             DeteccionDePelotaNaranjaPorContornosMixin,
                                             ObjectDetectorAndFollower):
-    def __init__(self, image_provider):
+    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
+        self.tipo_de_busqueda = tipo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -410,13 +502,15 @@ class OrangeBallDetectorAndFollowerVersion2(CalculaMascaraPorColorNaranjaMixin,
 
 class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
                                             ComparacionDeHistogramasPorBhattacharyya,
+                                            CalculaMascaraPorColorNaranjaMixin,
                                             DeteccionDePelotaNaranjaPorContornosMixin,
                                             ObjectDetectorAndFollower):
     """
     Comparacion por histograma usando Bhattacharyya
     """
-    def __init__(self, image_provider):
+    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
+        self.tipo_de_busqueda = tipo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -468,8 +562,9 @@ class ALittleGeneralObjectDetectorAndFollower(CalculaHistogramaMixin,
                                               ComparacionDeHistogramasPorBhattacharyya,
                                               MatchingTemplateDetectionMixin,
                                               ObjectDetectorAndFollower):
-    def __init__(self, image_provider, template):
+    def __init__(self, image_provider, template, tipo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
+        self.tipo_de_busqueda = tipo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -496,7 +591,8 @@ class ALittleGeneralObjectDetectorAndFollower(CalculaHistogramaMixin,
         # Actualizo el histograma
         hist = self.calculate_histogram(frame)
 
-        obj_descriptors = {'frame': frame, 'hist': hist}
+        # TODO: actualizo el template?
+        obj_descriptors = {'frame': frame, 'hist': hist, 'template': frame}
         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
 
 
@@ -527,8 +623,9 @@ def seguir_pelota_naranja_version3():
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 if __name__ == '__main__':
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
-    follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template)
-    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    #img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    #template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    #follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    #muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    #FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    seguir_pelota_naranja_version3()
