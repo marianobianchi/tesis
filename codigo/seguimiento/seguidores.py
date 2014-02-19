@@ -508,7 +508,7 @@ class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
     """
     Comparacion por histograma usando Bhattacharyya
     """
-    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize()):
         self.img_provider = image_provider
         self.tipo_de_busqueda = tipo_de_busqueda
 
@@ -529,29 +529,8 @@ class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
         self._obj_descriptors['hist'] = hist
 
     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        """
-        IDEA: una vez encontrado el objeto, para tratar de mejorar su
-        ubicacion, hago una detección en un espacio reducido de la imagen.
-        La idea es duplicar el tamaño de la ventana y detectar ahi.
-
-        TODO: Cambiar el esquema de la idea por una busqueda un poco más
-        exhaustiva alrededor del supuesto objeto encontrado
-        """
-        nuevo_x = max(ubicacion[0]-(tam_region/2), 0)
-        nuevo_y = max(ubicacion[1]-(tam_region/2), 0)
-        nuevo_tam = tam_region * 2
-
-        frame_donde_buscar = img[nuevo_x:nuevo_x+nuevo_tam,
-                                 nuevo_y:nuevo_y+nuevo_tam]
-
-        # Con la deteccion se actualizan algunos descriptores,
-        # pero se hace mal al correrlo en una parte de la imagen
-        tam_final, nueva_ubicacion = self.detect(frame_donde_buscar)
-
-        x_final = nuevo_x + nueva_ubicacion[0]
-        y_final = nuevo_y + nueva_ubicacion[1]
-
-        self._upgrade_descriptors(img, (x_final, y_final), tam_final)
+        (super(OrangeBallDetectorAndFollowerVersion3, self)
+         .upgrade_followed_descriptors(img, ubicacion, tam_region))
 
         # Actualizo el histograma
         hist = self.calculate_histogram(self.object_roi())
@@ -623,9 +602,8 @@ def seguir_pelota_naranja_version3():
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 if __name__ == '__main__':
-    #img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    #template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
-    #follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
-    #muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    #FollowingSchema(img_provider, follower, muestra_seguimiento).run()
-    seguir_pelota_naranja_version3()
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
