@@ -409,17 +409,32 @@ class CalculaHistogramaMixin(object):
         # Paso la imagen de BGR a HSV
         roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
+        ###################################
+        # TODO: Ver por que falla al usar los 3 canales
+
         # Aplico equalizacion de histograma en V (http://en.wikipedia.org/wiki/Histogram_equalization#Histogram_equalization_of_color_images)
-        roi_hsv[:,:,2] = cv2.equalizeHist(roi_hsv[:,:,2])
+        #roi_hsv[:,:,2] = cv2.equalizeHist(roi_hsv[:,:,2])
+
+        #hist = cv2.calcHist(
+        #    [roi_hsv], # Imagen
+        #    [0,1,2], # Canales
+        #    None, # Mascara
+        #    [180, 256, 256], # Numero de bins para cada canal
+        #    [0,180,0,256,0,256], # Rangos válidos para los pixeles de cada canal
+        #)
+        ########################################
 
         # Calculo el histograma del roi (para H y S)
         hist = cv2.calcHist(
             [roi_hsv], # Imagen
             [0,1], # Canales
             None, # Mascara
-            [256, 256], # Numero de bins para cada canal
+            [180, 256], # Numero de bins para cada canal
             [0,180,0,256], # Rangos válidos para los pixeles de cada canal
         )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist)
 
         return hist
 
@@ -440,8 +455,6 @@ class ComparacionDeHistogramasPorBhattacharyya(object):
 
     def object_comparisson(self, roi):
         roi_hist = self.calculate_histogram(roi)
-
-        # TODO: ver como normalizar los histogramas
 
         # Tomo el histograma del objeto para comparar
         obj_hist = self.saved_object_comparisson()
@@ -563,6 +576,8 @@ def seguir_pelota_monocromo():
 
 
 def seguir_pelota_naranja():
+    """
+    """
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollower(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
@@ -570,20 +585,30 @@ def seguir_pelota_naranja():
 
 
 def seguir_pelota_naranja_version2():
+    """
+    """
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion2(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version3():
+    """
+    """
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion3(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
-if __name__ == '__main__':
+def seguir_pelota_naranja_version4():
+    """
+    Template matching y comparacion de histogramas
+    """
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
     follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+
+if __name__ == '__main__':
+    pass
