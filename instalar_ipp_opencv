@@ -1,8 +1,10 @@
 1. Instalar ipp
-    - Registrarse y bajar la versión 6.1.6.063: https://registrationcenter.intel.com/RegCenter/AutoGen.aspx?ProductID=1452&AccountID=&EmailID=&ProgramID=&RequestDt=&rm=NCOM&lang=
+    - Registrarse y bajar la versión 6.1.6.063: https://registrationcenter.intel.com/regcenter/RegisterSNInfo.aspx?dnld=t&SN=NDFB-XZKWLJ9N&EmailID=marianobianchi08@gmail.com&Sequence=1394533
     - Ejecutar el instalador como superuser
+    - SERIAL: NDFB-XZKWLJ9N
 
 2. Instalar opencv
+    - Instalar PCL (1.6 desde los repositorios de ubuntu... asi instala OpenNI tambien)
     - Descargar opencv (version 2.4.0)
     - Descomprimir y crear una carpeta adentro de la descomprimida llamada "build"
     - Instalar libgtk2.0 desde este link: http://www.ubuntuupdates.org/package/gnome_shell/raring/main/base/libgtk2.0-dev
