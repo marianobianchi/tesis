@@ -2,8 +2,6 @@ http://www.ipol.im/
 http://vision.middlebury.edu
 
 
-
-
 http://matplotlib.org/
 http://www.numpy.org/
 
