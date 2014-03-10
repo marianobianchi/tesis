@@ -24,6 +24,7 @@
             - Si se quiere instalar soporte para python, instalar python-dev y hacer 
               click en configurar otra vez. Asegurarse que la entrada "BUILD_opencv_python"
               esté seleccionada
+            - Elegir las opciones: "with TBB" y "BUILD_opencv_features2d" para que se pueda usar SURF y SIFT..
             - cmake_install_prefix = /usr/
         - Click en Generar
         - Ir por consola a la carpeta build y ejecutar "make"
