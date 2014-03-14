@@ -11,6 +11,7 @@ from esquemas_seguimiento import FollowingSchema
 from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
 from proveedores_de_imagenes import FramesAsVideo
+from metodos_comunes import *
 
 
 class BusquedaEnEspiral(object):
@@ -470,22 +471,47 @@ class CalculaSurfMixin(object):
 
         # Encontrar keypoints y descriptores
         keypoints, descriptors = surf.detectAndCompute(roi, None)
-
         return keypoints, descriptors
 
 
 
 class ComparacionDeSurfMixin(object):
+
+    def is_best_match(self, new_value, old_value):
+        return new_value > old_value
+
     def object_comparisson_base(self, img):
-        return self._obj_descriptors['template_descriptors']
+        """
+        Devuelve la cantidad minima de keypoints a matchear
+        """
+        return 1
 
     def object_comparisson(self, roi):
-        roi_hist = self.detect_features(roi)
+        """
 
-        # Tomo el histograma del objeto para comparar
-        obj_hist = self.saved_object_comparisson()
+        """
+        keypoints, descriptors = self.detect_features(roi)
+        good = []
 
-        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
+        if descriptors is not None:
+
+            # Tomo los keypoints y descriptores guardados
+            train_keypoints = self._obj_descriptors['keypoints']
+            train_descriptors = self._obj_descriptors['descriptors']
+
+
+            # Calcular matching entre descriptores
+            # BFMatcher with default params
+            bf = cv2.BFMatcher()
+            matches = bf.knnMatch(train_descriptors, descriptors, k=2)
+
+            if all([len(m) == 2 for m in matches]):
+                # Apply ratio test
+                for m,n in matches:
+                    if m.distance < 0.75*n.distance:
+                        good.append([m])
+
+        return len(good)
 
 
 class OrangeBallDetectorAndFollower(CalculaMascaraPorColorNaranjaMixin,
@@ -573,6 +599,8 @@ class ALittleGeneralObjectDetectorAndFollower(CalculaHistogramaMixin,
 
     def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
 
+        print "UBICACION:", ubicacion, tam_region
+
         frame = img[ubicacion[0]:ubicacion[0]+tam_region,
                     ubicacion[1]:ubicacion[1]+tam_region]
 
@@ -614,22 +642,14 @@ class TemplateMatchingAndSURFFollowing(CalculaSurfMixin,
         frame = img[ubicacion[0]:ubicacion[0]+tam_region,
                     ubicacion[1]:ubicacion[1]+tam_region]
 
-        # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
+        # Actualizo los keypoints y descriptores
+        kps, desc = self.detect_features(frame)
 
-        obj_descriptors = {'frame': frame, 'hist': hist}
+        obj_descriptors = {'frame': frame, 'keypoints': kps, 'descriptors': desc}
         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
 
     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        frame = img[ubicacion[0]:ubicacion[0]+tam_region,
-                    ubicacion[1]:ubicacion[1]+tam_region]
-
-        # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
-
-        # TODO: actualizo el template?
-        obj_descriptors = {'frame': frame, 'hist': hist, 'template': frame}
-        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
 
 
 def seguir_pelota_monocromo():
@@ -675,166 +695,13 @@ def seguir_pelota_naranja_version4():
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 
-def HISTORIAL_PARA_REVISAR():
-    """
-    Si mal no entiendo, cuando uno hace el matching, la primer imagen que
-    se le pasa es la de 'entrenamiento', es decir, la que conozco como
-    buena y la segunda es la 'query'. Cuando se hace el matching, este
-    devuelve una lista de matches que entre otras cosas tiene los indices
-    de los descriptores (o keypoints, no me queda claro) de cada imagen en
-    la comparacion.
-
-    Además, se debe hacer un matchKnn y hacer el filtro de la distancia:
-    m.distance < 0.75 n.distance
-    para (m, n) == matches[i]
-
-    ¿Que hago con los descriptores?
-    """
-    frame1 = cv2.imread('../videos/pelotita_naranja/frame_1.png')
-    frame2 = cv2.imread('../videos/pelotita_naranja/frame_2.png')
-
-    alto = len(frame1)
-    ancho = len(frame1[0])
-
-    frame3 = np.zeros((alto, ancho*2, 3), dtype=np.uint8)
-    frame3[:,:ancho] = frame1
-    frame3[:,ancho:] = frame2
-
-    cv2.imshow('Frame 3', frame3)
-    cv2.waitKey(1)
-
-
-    surf = cv2.SURF()
-
-    kp_train, des_train = surf.detectAndCompute(frame1, None)
-    kp_query, des_query = surf.detectAndCompute(frame2, None)
-
-
-    ## BFMatcher with default params
-    #bf = cv2.BFMatcher()
-    #matches = bf.knnMatch(des_train,des_query, k=2)
-    #
-    ## Apply ratio test
-    #good = []
-    #for m, n in matches:
-    #    if m.distance < 0.75*n.distance:
-    #        good.append([m])
-    #
-    #for m in good:
-    #
-    #
-    #
-    ## cv2.drawMatchesKnn expects list of lists as matches.
-    #img3 = cv2.drawMatchesKnn(img1,kp1,img2,kp2,good,flags=2)
-
-
-
-        #frame
-        #frame1
-        #frame1.copy()
-        #frame1 = frame1[1]
-        #frame2 = frame2[1]
-        #frame1.copy()
-        #f1c = frame1.copy()
-        #template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
-        #res_frame1 = cv2.matchTemplate(frame1, template, cv2.TM_SQDIFF_NORMED)
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_frame1)
-        #ubicacion_frame1 = (min_loc[1], min_loc[0])
-        #ubicacion_frame1
-        #template.shape
-        #width = height = 75
-        #res_frame2 = cv2.matchTemplate(frame2, template, cv2.TM_SQDIFF_NORMED)
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_frame1)
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res_frame2)
-        #ubicacion_frame2 = (min_loc[1], min_loc[0])
-        #ubicacion_frame2
-        #train_image = frame1[ubicacion_frame1[0]:ubicacion_frame1[0]+height, ubicacion_frame1[1]:ubicacion_frame1[1]+width]
-        #cv2.imshow('TI', train_image)
-        #cv2.waitKey()
-        #cv2.destroyAllWindows()
-        #query_image = frame2[ubicacion_frame2[0]:ubicacion_frame2[0]+height, ubicacion_frame2[1]:ubicacion_frame2[1]+width]
-        #cv2.imshow('QI', query_image)
-        #cv2.destroyAllWindows()
-        #cv2.waitKey()
-        #cv2.imshow('QI', query_image)
-        #cv2.waitKey()
-        #cv2.destroyAllWindows()
-        #cv2.imshow('QI', query_image)
-        #cv2.imshow('TI', query_image)
-        #cv2.destroyAllWindows()
-        #surf = cv2.SURF(400)
-        #kp_train, des_train = surf.detectAndCompute(train_image, None)
-        #kp_query, des_query = surf.detectAndCompute(query_image, None)
-        #bf = cv2.BFMatcher(cv2.NORM_L2, crossCheck=True)
-        #bf = cv2.BFMatcher()
-        #matches = bf.knnMatch(des_train, des_query, k=2)
-        #matches
-        #img_matching = cv2.drawMatchesKnn
-        #cv2.drawKeypoints??
-        #matches
-        #matches[0][0]
-        #m=matches[0][0]
-        #m.distance
-        #m.queryIdx
-        #m.trainIdx
-        #m.imgIdx
-        #n=matches[0][1]
-        #n.distance
-        #matches = bf.knnMatch(des_train, des_query, k=4)
-        #matches
-        #matches = bf.knnMatch(des_train, des_query, k=7)
-        #matches
-        #matches = bf.match(des_train, des_query)
-        #matches
-        #matches[0]
-        #matches[0].distance
-        #matches[1].distance
-        #matches[2].distance
-        #m = matches[0]
-        #m
-        #m.trainIdx
-        #m.queryIdx
-        #m.imgIdx
-        #des_query
-        #kp_query
-        #kp_query[0]
-        #kp=kp_query[0]
-        #kp.pt
-        #kp.size
-        #cv2.drawKeypoints??
-        #kps_img_train = cv2.drawKeypoints(train_image, kp_train)
-        #cv2.imshow('kps train', kps_img_train)
-        #cv2.waitKey()
-        #kps_img_query = cv2.drawKeypoints(query_image, kp_query)
-        #cv2.imshow('kps query', kps_img_query)
-        #cv2.waitKey()
-        #kp_query[0].pt
-        #kp_train[0].pt
-        #kp_query[1].pt
-        #kp_train[1].pt
-        #kp_query[2].pt
-        #kp_train[2].pt
-        #matches
-        #matches[0]
-        #matches[0].
-        #m=matches[0]
-        #m.imgIdx
-        #m=matches[1]
-        #m.imgIdx
-        #m=matches[2]
-        #m.imgIdx
-        #m=matches[0]
-        #m.queryIdx
-        #m=matches[2]
-        #m.queryIdx
-        #m=matches[1]
-        #m.queryIdx
-        #m.trainIdx
-        #m=matches[2]
-        #m.trainIdx
-        #kp_train[matches[0].trainIdx]
-        #kp_train[matches[0].trainIdx].pt
-        #kp_query[matches[0].queryIdx].pt
 
 if __name__ == '__main__':
-    HISTORIAL_PARA_REVISAR()
+    #keypoint_matching_entre_dos_imagenes()
+
+
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    follower = TemplateMatchingAndSURFFollowing(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
