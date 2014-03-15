@@ -12,69 +12,8 @@ from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnViv
                                   GrabaSeguimientoEnArchivo)
 from proveedores_de_imagenes import FramesAsVideo
 from metodos_comunes import *
+from metodos_de_busqueda import *
 
-
-class BusquedaEnEspiral(object):
-    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
-        x, y = ultima_ubicacion
-
-        sum_x = 2
-        sum_y = 2
-        for j in range(30):
-            # Hago 2 busquedas por cada nuevo X
-            x += sum_x/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            x += sum_x/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            sum_x *= -2
-
-            # Hago 2 busquedas por cada nuevo Y
-            y += sum_y/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            y += sum_y/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            sum_y *= -2
-
-
-class BusquedaEnEspiralCambiandoFrameSize(object):
-    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region_inicial, filas, columnas):
-        mitad_region = tam_region_inicial / 2
-        cuarto_de_region = tam_region_inicial / 4
-        for tam_region in [(mitad_region + (i*cuarto_de_region)) for i in range(5)]:
-            x, y = ultima_ubicacion
-
-            sum_x = 2
-            sum_y = 2
-            for j in range(10):
-                # Hago 2 busquedas por cada nuevo X
-                x += sum_x/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
-
-                x += sum_x/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
-
-                sum_x *= -2
-
-                # Hago 2 busquedas por cada nuevo Y
-                y += sum_y/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
-
-                y += sum_y/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
-
-                sum_y *= -2
 
 
 class ObjectDetectorAndFollower(object):
@@ -84,9 +23,9 @@ class ObjectDetectorAndFollower(object):
     negra (moving_circle)
     """
 
-    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = (40, 40)
@@ -149,7 +88,7 @@ class ObjectDetectorAndFollower(object):
         tam_region_final = tam_region_inicial
 
         # Seguimiento (busqueda/deteccion acotada)
-        for x, y, tam_region in self.tipo_de_busqueda.get_positions_and_framesizes(ubicacion,
+        for x, y, tam_region in self.metodo_de_busqueda.get_positions_and_framesizes(ubicacion,
                                                                                    tam_region_inicial,
                                                                                    filas,
                                                                                    columnas):
@@ -517,9 +456,9 @@ class ComparacionDeSurfMixin(object):
 class OrangeBallDetectorAndFollower(CalculaMascaraPorColorNaranjaMixin,
                                     ComparacionPorDiferenciaCuadraticaMixin,
                                     ObjectDetectorAndFollower):
-    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = (128, 492) # Fila, columna
@@ -531,9 +470,9 @@ class OrangeBallDetectorAndFollowerVersion2(CalculaMascaraPorColorNaranjaMixin,
                                             ComparacionPorCantidadDePixelesIgualesMixin,
                                             DeteccionDePelotaNaranjaPorContornosMixin,
                                             ObjectDetectorAndFollower):
-    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -549,9 +488,9 @@ class OrangeBallDetectorAndFollowerVersion3(CalculaHistogramaMixin,
     """
     Comparacion por histograma usando Bhattacharyya
     """
-    def __init__(self, image_provider, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize()):
+    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -586,9 +525,9 @@ class ALittleGeneralObjectDetectorAndFollower(CalculaHistogramaMixin,
                                               ComparacionDeHistogramasPorBhattacharyya,
                                               MatchingTemplateDetectionMixin,
                                               ObjectDetectorAndFollower):
-    def __init__(self, image_provider, template, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, template, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -626,9 +565,9 @@ class TemplateMatchingAndSURFFollowing(CalculaSurfMixin,
                                        ComparacionDeSurfMixin,
                                        MatchingTemplateDetectionMixin,
                                        ObjectDetectorAndFollower):
-    def __init__(self, image_provider, template, tipo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, template, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
-        self.tipo_de_busqueda = tipo_de_busqueda
+        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Object descriptors
         self._obj_location = None # Fila, columna
@@ -690,7 +629,7 @@ def seguir_pelota_naranja_version4():
     """
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
-    follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
@@ -702,6 +641,6 @@ if __name__ == '__main__':
 
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
-    follower = TemplateMatchingAndSURFFollowing(img_provider, template, tipo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()

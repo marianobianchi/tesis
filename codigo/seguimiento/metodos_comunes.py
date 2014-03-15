@@ -7,6 +7,18 @@ import numpy as np
 import cv2
 
 
+
+def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region, color=(0,0,0)):
+    cv2.rectangle(
+        img,
+        (col_borde_sup_izq, fila_borde_sup_izq),
+        (col_borde_sup_izq+tam_region, fila_borde_sup_izq+tam_region),
+        color,
+        3
+    )
+    return img
+
+
 def pegar_fotos(foto1, foto2):
     """
     Pega dos fotos, una a la izquierda y la otra a la derecha y devuelve la

@@ -7,17 +7,9 @@ from __future__ import unicode_literals
 import numpy as np
 import cv2
 
+from metodos_comunes import dibujar_cuadrado
 
 
-def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region, color=(0,0,0)):
-    cv2.rectangle(
-        img,
-        (col_borde_sup_izq, fila_borde_sup_izq),
-        (col_borde_sup_izq+tam_region, fila_borde_sup_izq+tam_region),
-        color,
-        3
-    )
-    return img
 
 
 class MuestraDelSeguimiento(object):
