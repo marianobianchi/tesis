@@ -7,7 +7,7 @@ from __future__ import unicode_literals
 import numpy as np
 import cv2
 
-from esquemas_seguimiento import FollowingSchema
+from esquemas_generales import GeneralSchema
 from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
 from proveedores_de_imagenes import FramesAsVideo
@@ -16,22 +16,66 @@ from metodos_de_busqueda import *
 
 
 
+class MovingCircleDetector(object):
+    def detect(self, img):
+        return 80, (40, 40)
+
+
+class MovingCircleFollower(object):
+    def __init__(self, descriptors):
+        self.descriptors = descriptors
+
+    def object_comparisson_base(self, img):
+        """
+        Comparacion base: sirve como umbral para las comparaciones que se
+        realizan durante el seguimiento
+        """
+        filas, columnas = len(img), len(img[0])
+        return filas * columnas
+
+    def object_comparisson(self, roi):
+        # Hago una comparacion bit a bit de la imagen original
+        # Compara solo en la zona de la máscara y deja 0's en donde hay
+        # coincidencias y 255's en donde no coinciden
+        xor = cv2.bitwise_xor(self.descriptors['frame'], roi, mask=self.descriptors['mask'])
+
+        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+        return cv2.countNonZero(xor)
+
+    def is_best_match(self, new_value, old_value):
+        return new_value < old_value
+
+    def calculate_mask(self, img):
+        # Da vuelta los valores (0->255 y 255->0)
+        return cv2.bitwise_not(img)
+
+    def upgrade_descriptors(self, img, nueva_ubicacion, tam_region_final):
+        descriptors = self.descriptors
+        frame = img[ubicacion[0]:ubicacion[0]+tam_region,
+                    ubicacion[1]:ubicacion[1]+tam_region]
+        mask = self.calculate_mask(frame)
+        obj_descriptors = {
+            'location': nueva_ubicacion,
+            'frame_size': tam_region_final,
+            'frame': frame,
+            'mask': mask,
+        }
+        descriptors.update({obj_descriptors})
+        return descriptors
+
+
 class ObjectDetectorAndFollower(object):
     """
-    Es la clase base para los primeros ejemplos sencillos.
-    Este caso base sirve para el video creado via opencv, el de la pelotita
-    negra (moving_circle)
+    Clase base para deteccion y seguimiento
     """
 
-    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, clase_detectora, clase_seguidora, metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
         self.metodo_de_busqueda = metodo_de_busqueda
+        self.clase_detectora = clase_detectora
+        self.clase_seguidora = clase_seguidora
 
-        # Object descriptors
-        self._obj_location = (40, 40)
-        self._obj_frame_size = 80
         self._obj_descriptors = {}
-
 
     ########################
     # Descriptores comunes
@@ -46,120 +90,30 @@ class ObjectDetectorAndFollower(object):
         """
         Devuelve el tamaño de un lado del cuadrado que contiene al objeto
         """
-        return self._obj_frame_size
+        return self._obj_descriptors['frame_size']
 
     def object_location(self):
-        return self._obj_location
+        return self._obj_descriptors['location']
+
+    def descriptores(self):
+        return self._obj_descriptors
+
 
     #########################
-    # Metodos de comparacion
+    # Funcion de seguimiento
     #########################
-    def object_comparisson_base(self, img):
-        """
-        Comparacion base: sirve como umbral para las comparaciones que se
-        realizan durante el seguimiento
-        """
-        filas, columnas = len(img), len(img[0])
-        return filas * columnas
-
-    def object_comparisson(self, roi):
-        # Hago una comparacion bit a bit de la imagen original
-        # Compara solo en la zona de la máscara y deja 0's en donde hay
-        # coincidencias y 255's en donde no coinciden
-        xor = cv2.bitwise_xor(self.object_roi(), roi, mask=self.object_mask())
-
-        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-        return cv2.countNonZero(xor)
-
-    def is_best_match(self, new_value, old_value):
-        return new_value < old_value
-
-    #####################################
-    # Esquema de seguimiento del objeto
-    #####################################
-    def simple_follow(self, img, ubicacion, valor_comparativo, tam_region_inicial):
-        """
-        Esta funcion es el esquema de seguimiento del objeto.
-        """
-        filas, columnas = len(img), len(img[0])
-
-        nueva_ubicacion = ubicacion
-        nueva_comparacion = None
-        tam_region_final = tam_region_inicial
-
-        # Seguimiento (busqueda/deteccion acotada)
-        for x, y, tam_region in self.metodo_de_busqueda.get_positions_and_framesizes(ubicacion,
-                                                                                   tam_region_inicial,
-                                                                                   filas,
-                                                                                   columnas):
-            col_izq = y
-            col_der = col_izq + tam_region
-            fil_arr = x
-            fil_aba = fil_arr + tam_region
-
-            # Tomo una region de la imagen donde se busca el objeto
-            roi = img[fil_arr:fil_aba,col_izq:col_der]
-
-            # Si se quiere ver como va buscando, descomentar la siguiente linea
-            #MuestraBusquedaEnVivo('Buscando el objeto').run(
-            #    img_copy,
-            #    (x, y),
-            #    tam_region,
-            #    None,
-            #    frenar=True,
-            #)
-
-            nueva_comparacion = self.object_comparisson(roi)
-
-            # Si hubo coincidencia
-            if self.is_best_match(nueva_comparacion, valor_comparativo):
-                # Nueva ubicacion del objeto (esquina superior izquierda del cuadrado)
-                nueva_ubicacion = (x, y)
-
-                # Actualizo el valor de la comparacion
-                valor_comparativo = nueva_comparacion
-
-                # Actualizo el tamaño de la region
-                tam_region_final = tam_region
-
-        return nueva_ubicacion, valor_comparativo, tam_region_final
-
     def follow(self, img):
-        """
-        Esta funcion utiliza al esquema de seguimiento del objeto (simple_follow)
-        """
-        # Descomentar si se quiere ver la busqueda
-        #img_copy = img.copy()
+        following_schema = FollowingSchema(self)
 
-        vieja_ubicacion = self.object_location()
-        nueva_ubicacion = vieja_ubicacion
-
-        tam_region = self.object_frame_size()
-        tam_region_final = tam_region
-
-        # Cantidad de pixeles distintos
-        valor_comparativo = self.object_comparisson_base(img)
-
-        # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
-        # de la ultima mejor ubicacion del objeto encontrada
-        for i in range(3):
-            nueva_ubicacion, valor_comparativo, tam_region_final = self.simple_follow(
-                img,
-                nueva_ubicacion,
-                valor_comparativo,
-                tam_region_final
-            )
-
-        fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
-        nueva_ubicacion = nueva_ubicacion if fue_exitoso else None
+        fue_exitoso, nueva_ubicacion, tam_region_final = following_schema.follow(img)
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_followed_descriptors(img, nueva_ubicacion, tam_region_final)
+            seguidor = self.clase_seguidora(self.descriptores())
+            nuevos_descriptores = seguidor.upgrade_descriptors(img, nueva_ubicacion, tam_region_final)
+            self._obj_descriptors = nuevos_descriptores
 
-        # Devuelvo self.object_frame_size() porque puede cambiar en "upgrade_descriptors"
-        # Idem con self.object_location()
-        return fue_exitoso, self.object_frame_size(), self.object_location()
+        return fue_exitoso, self.object_location(), self.object_frame_size()
 
     ##########################
     # Actualizar descriptores
@@ -180,23 +134,14 @@ class ObjectDetectorAndFollower(object):
     def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
         self._upgrade_descriptors(img, ubicacion, tam_region)
 
-    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        self._upgrade_descriptors(img, ubicacion, tam_region)
 
     #######################
     # Funcion de deteccion
     #######################
     def detect(self, img):
-        # Los valores estan harcodeados en el __init__
-        self.upgrade_detected_descriptors(img, self.object_location(), self.object_frame_size())
-        return self.object_frame_size(), self.object_location()
-
-    ##########################
-    # Funciones de cada clase
-    ##########################
-    def calculate_mask(self, img):
-        # Da vuelta los valores (0->255 y 255->0)
-        return cv2.bitwise_not(img)
+        frame_size, location = self.detector.detect()
+        self.upgrade_detected_descriptors(img, location, frame_size)
+        return frame_size, location
 
 
 class CalculaMascaraPorColorNaranjaMixin(object):
@@ -595,7 +540,7 @@ def seguir_pelota_monocromo():
     img_provider = FramesAsVideo('videos/moving_circle')
     follower = ObjectDetectorAndFollower(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 def seguir_pelota_naranja():
@@ -604,7 +549,7 @@ def seguir_pelota_naranja():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollower(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 def seguir_pelota_naranja_version2():
@@ -613,7 +558,7 @@ def seguir_pelota_naranja_version2():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion2(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version3():
     """
@@ -621,7 +566,7 @@ def seguir_pelota_naranja_version3():
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion3(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version4():
     """
@@ -631,7 +576,7 @@ def seguir_pelota_naranja_version4():
     template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
     follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 
@@ -643,4 +588,4 @@ if __name__ == '__main__':
     template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
     follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    GeneralSchema(img_provider, follower, muestra_seguimiento).run()
