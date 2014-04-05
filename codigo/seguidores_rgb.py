@@ -7,12 +7,15 @@ from __future__ import unicode_literals
 import numpy as np
 import cv2
 
-from esquemas_seguimiento import FollowingSchema
-from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
+
+from seguimiento_common.esquemas_seguimiento import FollowingSchema
+from seguimiento_common.observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
-from proveedores_de_imagenes import FramesAsVideo
+from seguimiento_common.proveedores_de_imagenes import FramesAsVideo
+from seguimiento_common.metodos_de_busqueda import *
+
 from metodos_comunes import *
-from metodos_de_busqueda import *
+
 
 
 
@@ -413,7 +416,6 @@ class CalculaSurfMixin(object):
         return keypoints, descriptors
 
 
-
 class ComparacionDeSurfMixin(object):
 
     def is_best_match(self, new_value, old_value):
@@ -633,14 +635,17 @@ def seguir_pelota_naranja_version4():
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
+def seguir_pelota_naranja_version5():
+    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 if __name__ == '__main__':
-    #keypoint_matching_entre_dos_imagenes()
-
-
     img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    template = cv2.imread('../videos/pelotita_naranja_webcam/template_bocanariz.jpg')
     follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()

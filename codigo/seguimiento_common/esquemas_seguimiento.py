@@ -25,11 +25,17 @@ class FollowingSchema(object):
 
         have_images, img = self.img_provider.read()
 
-        tam_region, ubicacion_inicial = self.obj_follower.detect(img)
+        fue_exitoso, tam_region, ubicacion_inicial = self.obj_follower.detect(img)
+        # TODO: Hacer algo cuando la deteccion no es exitosa
 
         # Muestro el seguimiento para hacer pruebas
-        self.show_following.run(img, ubicacion_inicial, tam_region, False, frenar=True)
-
+        self.show_following.run(
+            img,
+            ubicacion_inicial,
+            tam_region,
+            False, # fue_exitoso
+            frenar=True,
+        )
 
         #######################
         # Etapa de seguimiento
