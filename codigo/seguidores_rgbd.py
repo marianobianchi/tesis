@@ -11,7 +11,7 @@ import cv2
 from seguimiento_common.esquemas_seguimiento import FollowingSchema
 from seguimiento_common.observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
-from seguimiento_common.proveedores_de_imagenes import FramesAsVideo
+from seguimiento_common.proveedores_de_imagenes import FramesAsVideo, GrayFramesAsVideo
 from seguimiento_common.metodos_de_busqueda import *
 
 from metodos_comunes import *
@@ -324,7 +324,7 @@ class SimpleCircleDetector(Detector):
 
 
 if __name__ == '__main__':
-    img_provider = FramesAsVideo('videos/moving_circle')
+    img_provider = GrayFramesAsVideo('videos/moving_circle')
     detector = SimpleCircleDetector()
     compare = SimpleCircleCompare()
     follower = Follower(img_provider, detector, compare)

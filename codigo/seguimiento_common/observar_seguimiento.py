@@ -20,6 +20,7 @@ class MuestraDelSeguimiento(object):
     def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
         if len(img.shape) == 2:
             # Convierto a imagen a color para dibujar un cuadrado
+            filas, columnas = img.shape
             color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
             color_img[:,:,0] = img[:,:]
             color_img[:,:,1] = img[:,:]
@@ -95,6 +96,7 @@ class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
     def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
         if len(img.shape) == 2:
             # Convierto a imagen a color para dibujar un cuadrado
+            filas, columnas = img.shape
             color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
             color_img[:,:,0] = img[:,:]
             color_img[:,:,1] = img[:,:]
