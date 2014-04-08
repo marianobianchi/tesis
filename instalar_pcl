@@ -1,0 +1,12 @@
+Descargar y compilar PCL version 1.7.1
+
+Descargar python-pcl (probado con la versión 0.1). Cuando se intente instalar, 
+puede tirar un error de compilación así:
+
+/usr/bin/ld: cannot find -lflann_cpp-gd
+
+Si ese es el caso, correr este comando:
+
+sudo cp /usr/lib/libflann_cpp.so /usr/lib/libflann_cpp-gd.so
+
+Y volver a instalar python-pcl
