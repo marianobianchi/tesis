@@ -17,63 +17,10 @@ from seguimiento_common.metodos_de_busqueda import *
 from metodos_comunes import *
 
 
-class Compare(object):
-    """
-    Es la clase que se encarga de hacer las comparaciones al momento de
-    realizar el seguimiento para poder decidir a donde se movio el objeto
-    """
-    def __init__(self):
-        self._descriptors = {}
-        self._img = None
 
-    def update(self, img, descriptors):
-        self._img = img
-        self._descriptors.update(descriptors)
-
-    def calculate_descriptors(self, img, ubicacion, tam_region):
-        """
-        Calcula los descriptores en base al objeto encontrado para que
-        los almacene el Follower
-        """
-        pass
-
-    def base_comparisson(self):
-        """
-        Comparacion base: sirve como umbral para las comparaciones que se
-        realizan durante el seguimiento
-        """
-        pass
-
-    def comparisson(self, roi):
-        pass
-
-    def is_best_match(self, new_value, old_value):
-        pass
-
-
-class Detector(object):
-    """
-    Es la clase que se encarga de detectar el objeto buscado
-    """
-    def __init__(self):
-        self._descriptors = {}
-        self._img = None
-
-    def update(self, img, descriptors):
-        self._img = img
-        self._descriptors.update(descriptors)
-
-    def calculate_descriptors(self, img, ubicacion, tam_region):
-        """
-        Calcula los descriptores en base al objeto encontrado para que
-        los almacene el Follower
-        """
-        pass
-
-    def detect(self):
-        pass
-
-
+#####################
+# Objetos seguidores
+#####################
 class Follower(object):
     """
     Es la clase base para los seguidores.
@@ -251,6 +198,91 @@ class Follower(object):
         return fue_exitoso, tam_region, location
 
 
+class FollowerWithStaticDetection(Follower):
+    #######################
+    # Funcion de deteccion
+    #######################
+
+
+    def detect(self, img, nframe):
+        # Actualizo descriptores e imagen en detector
+        descriptors = self.descriptors()
+        descriptors.update({'nframe': nframe})
+        self.detector.update(img, descriptors)
+
+        # Detectar
+        fue_exitoso, tam_region, location = self.detector.detect()
+
+        if fue_exitoso:
+            # Calculo y actualizo los descriptores con los valores encontrados
+            self.upgrade_detected_descriptors(img, location, tam_region)
+            tam_region = self.object_frame_size()
+            location = self.object_location()
+
+        return fue_exitoso, tam_region, location
+
+
+
+################################
+# Clases para detectar y seguir
+################################
+class Compare(object):
+    """
+    Es la clase que se encarga de hacer las comparaciones al momento de
+    realizar el seguimiento para poder decidir a donde se movio el objeto
+    """
+    def __init__(self):
+        self._descriptors = {}
+        self._img = None
+
+    def update(self, img, descriptors):
+        self._img = img
+        self._descriptors.update(descriptors)
+
+    def calculate_descriptors(self, img, ubicacion, tam_region):
+        """
+        Calcula los descriptores en base al objeto encontrado para que
+        los almacene el Follower
+        """
+        pass
+
+    def base_comparisson(self):
+        """
+        Comparacion base: sirve como umbral para las comparaciones que se
+        realizan durante el seguimiento
+        """
+        pass
+
+    def comparisson(self, roi):
+        pass
+
+    def is_best_match(self, new_value, old_value):
+        pass
+
+
+class Detector(object):
+    """
+    Es la clase que se encarga de detectar el objeto buscado
+    """
+    def __init__(self):
+        self._descriptors = {}
+        self._img = None
+
+    def update(self, img, descriptors):
+        self._img = img
+        self._descriptors.update(descriptors)
+
+    def calculate_descriptors(self, img, ubicacion, tam_region):
+        """
+        Calcula los descriptores en base al objeto encontrado para que
+        los almacene el Follower
+        """
+        pass
+
+    def detect(self):
+        pass
+
+
 class SimpleCircleCompare(Compare):
     def calculate_descriptors(self, img, ubicacion, tam_region):
         """
@@ -323,11 +355,43 @@ class SimpleCircleDetector(Detector):
         return mask
 
 
-if __name__ == '__main__':
+
+class StaticDetector(Detector):
+    """
+    Esta clase se encarga de definir la ubicación del objeto buscado en la
+    imagen valiendose de los datos provistos por la base de datos RGBD.
+    Los datos se encuentran almacenados en un archivo ".mat".
+    """
+    def __init__(self, matfile_path, obj_rgbd_name):
+        super(StaticDetector, self).__init__()
+        # self._matfile = MatlabOpen(matfile_path)
+        # self._obj_rgbd_name = obj_rgbd_name
+        pass
+
+    def detect(self):
+        # nframe = self._descriptors['nframe']
+        # self._matfile[nframe][self._obj_rgbd_name]
+        pass
+
+
+
+
+
+def seguir_pelota_negra():
     img_provider = GrayFramesAsVideo('videos/moving_circle')
     detector = SimpleCircleDetector()
     compare = SimpleCircleCompare()
     follower = Follower(img_provider, detector, compare)
+
+    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+
+
+if __name__ == '__main__':
+    img_provider = GrayFramesAsVideo('videos/moving_circle')
+    detector = StaticDetector()
+    compare = Compare()
+    follower = FollowerWithStaticDetection(img_provider, detector, compare)
 
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
     FollowingSchema(img_provider, follower, muestra_seguimiento).run()
