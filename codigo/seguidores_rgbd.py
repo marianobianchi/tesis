@@ -205,6 +205,10 @@ class FollowerWithStaticDetection(Follower):
 
 
     def detect(self, img, nframe):
+        """
+        nframe es el numero de frame del video en el que se está haciendo la
+        deteccion
+        """
         # Actualizo descriptores e imagen en detector
         descriptors = self.descriptors()
         descriptors.update({'nframe': nframe})
