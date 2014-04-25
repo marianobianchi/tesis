@@ -10,3 +10,8 @@ Si ese es el caso, correr este comando:
 sudo cp /usr/lib/libflann_cpp.so /usr/lib/libflann_cpp-gd.so
 
 Y volver a instalar python-pcl
+
+
+Para visualizar archivos pcd utilizar este comando: pcl_viewer <FILENAME>
+
+Si no funciona, instalar libboost-all-dev
