@@ -28,5 +28,5 @@ for i=1:cant_frames
     
     pcloud_reshaped(unique(rows),:) = [];
     
-    savePcd(tmp_outfilename, pcloud);
+    savePcd(tmp_outfilename, pcloud_reshaped);
 end
