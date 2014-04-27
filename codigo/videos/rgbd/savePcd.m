@@ -60,10 +60,10 @@ function savePcd(fname, points, binmode)
     % find the attributes of the point cloud
     if ndims(points) == 2
         % unorganized point cloud
-        npoints = size(points, 1);
+        npoints = size(points, 2);
         width = npoints;
         height  = 1;
-        nfields = size(points, 2);
+        nfields = size(points, 1);
     else
         width = size(points, 2);
         height  = size(points, 1);
@@ -76,6 +76,11 @@ function savePcd(fname, points, binmode)
     end
     
     switch nfields
+        case 3
+            fields = 'x y z';
+            count = '1 1 1';
+            typ = 'F F F';
+            siz = '4 4 4';
         case 6
             fields = 'x y z rgb';
             count = '1 1 1 1';
@@ -95,12 +100,6 @@ function savePcd(fname, points, binmode)
                 typ = 'F F F F';
             end
             siz = '4 4 4 4';
-        otherwise
-            fields = 'x y z';
-            count = '1 1 1';
-            typ = 'F F F';
-            siz = '4 4 4';
-            
     end
     
     % write the PCD file header
@@ -143,12 +142,13 @@ function savePcd(fname, points, binmode)
         % Write ASCII format data
         fprintf(fp, 'DATA ascii\n');
         
-        if nfields == 7 || nfields == 6
-            % colored points
-            fprintf(fp, '%f %f %f %d\n', points);
-        else
+        if nfields == 3
             % uncolored points
             fprintf(fp, '%f %f %f\n', points);
+        else
+            % colored points
+            
+            fprintf(fp, '%f %f %f %d\n', points);
         end
         
     else

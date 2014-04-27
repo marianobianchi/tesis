@@ -73,7 +73,7 @@ class FollowingSchemaCountingFrames(FollowingSchema):
         # Etapa de detección
         ######################
 
-        have_images, img = self.img_provider.read()
+        have_images, img, pcd = self.img_provider.read()
 
         fue_exitoso, tam_region, ubicacion_inicial = self.obj_follower.detect(img, nframe=self.img_provider.nframe())
         # TODO: Hacer algo cuando la deteccion no es exitosa
@@ -91,7 +91,7 @@ class FollowingSchemaCountingFrames(FollowingSchema):
         # Etapa de seguimiento
         #######################
 
-        have_images, img = self.img_provider.read()
+        have_images, img, pcd = self.img_provider.read()
 
         while have_images:
 
@@ -104,7 +104,7 @@ class FollowingSchemaCountingFrames(FollowingSchema):
             self.show_following.run(img, nueva_ubicacion, tam_region, fue_exitoso, frenar=True)
 
             # Tomo una nueva imagen en escala de grises
-            have_images, img = self.img_provider.read()
+            have_images, img, pcd = self.img_provider.read()
 
         cv2.destroyAllWindows()
         self.show_following.close()

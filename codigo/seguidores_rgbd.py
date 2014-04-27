@@ -6,12 +6,16 @@ from __future__ import unicode_literals
 
 import numpy as np
 import cv2
+import scipy.io
 
 
-from seguimiento_common.esquemas_seguimiento import FollowingSchema
+from seguimiento_common.esquemas_seguimiento import (FollowingSchema,
+                                                     FollowingSchemaCountingFrames)
 from seguimiento_common.observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
-from seguimiento_common.proveedores_de_imagenes import FramesAsVideo, GrayFramesAsVideo
+from seguimiento_common.proveedores_de_imagenes import (FramesAsVideo,
+                                                        GrayFramesAsVideo,
+                                                        DepthFramesAsVideo)
 from seguimiento_common.metodos_de_busqueda import *
 
 from metodos_comunes import *
@@ -248,20 +252,20 @@ class Compare(object):
         Calcula los descriptores en base al objeto encontrado para que
         los almacene el Follower
         """
-        pass
+        return {}
 
     def base_comparisson(self):
         """
         Comparacion base: sirve como umbral para las comparaciones que se
         realizan durante el seguimiento
         """
-        pass
+        return 0
 
     def comparisson(self, roi):
-        pass
+        return 0
 
     def is_best_match(self, new_value, old_value):
-        pass
+        return False
 
 
 class Detector(object):
@@ -368,17 +372,30 @@ class StaticDetector(Detector):
     """
     def __init__(self, matfile_path, obj_rgbd_name):
         super(StaticDetector, self).__init__()
-        # self._matfile = MatlabOpen(matfile_path)
-        # self._obj_rgbd_name = obj_rgbd_name
-        pass
+        self._matfile = scipy.io.loadmat(matfile_path)
+        self._obj_rgbd_name = obj_rgbd_name
 
     def detect(self):
-        # nframe = self._descriptors['nframe']
-        # self._matfile[nframe][self._obj_rgbd_name]
-        pass
+        nframe = self._descriptors['nframe']
+        objs = self._matfile[0][nframe][0]
+
+        fue_exitoso = False
+        tam_region = 0
+        location = (0,0)
+
+        for obj in objs:
+            if obj[0][0] == self._obj_rgbd_name:
+                fue_exitoso = True
+                location = (obj[0][2], obj[0][4])
+                tam_region = max(obj[0][3]-obj[0][2], obj[0][5]-obj[0][4])
+                break
+
+        #TODO: ver que conviene devolver
+        return fue_exitoso, tam_region, location
 
 
-
+class DumbDepthCompare(Compare):
+    pass
 
 
 def seguir_pelota_negra():
@@ -392,10 +409,10 @@ def seguir_pelota_negra():
 
 
 if __name__ == '__main__':
-    img_provider = GrayFramesAsVideo('videos/moving_circle')
-    detector = StaticDetector()
-    compare = Compare()
+    img_provider = DepthFramesAsVideo('videos/rgbd/scenes/','desk','1') # path, objname, number
+    detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat', 'coffee_mug')
+    compare = DumbDepthCompare()
     follower = FollowerWithStaticDetection(img_provider, detector, compare)
 
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    FollowingSchemaCountingFrames(img_provider, follower, muestra_seguimiento).run()
