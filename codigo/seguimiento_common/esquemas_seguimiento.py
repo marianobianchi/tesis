@@ -98,7 +98,7 @@ class FollowingSchemaCountingFrames(FollowingSchema):
             fue_exitoso, tam_region, nueva_ubicacion = self.obj_follower.follow(img)
 
             if not fue_exitoso:
-                tam_region, nueva_ubicacion = self.obj_follower.detect(img, nframe=self.img_provider.nframe())
+                fue_exitoso, tam_region, nueva_ubicacion = self.obj_follower.detect(img, nframe=self.img_provider.nframe())
 
             # Muestro el seguimiento para hacer pruebas
             self.show_following.run(img, nueva_ubicacion, tam_region, fue_exitoso, frenar=True)

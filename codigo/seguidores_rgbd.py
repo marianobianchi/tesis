@@ -285,7 +285,7 @@ class Detector(object):
         Calcula los descriptores en base al objeto encontrado para que
         los almacene el Follower
         """
-        pass
+        return {}
 
     def detect(self):
         pass
@@ -372,11 +372,12 @@ class StaticDetector(Detector):
     """
     def __init__(self, matfile_path, obj_rgbd_name):
         super(StaticDetector, self).__init__()
-        self._matfile = scipy.io.loadmat(matfile_path)
+        self._matfile = scipy.io.loadmat(matfile_path)['bboxes']
         self._obj_rgbd_name = obj_rgbd_name
 
     def detect(self):
         nframe = self._descriptors['nframe']
+
         objs = self._matfile[0][nframe][0]
 
         fue_exitoso = False
@@ -386,8 +387,8 @@ class StaticDetector(Detector):
         for obj in objs:
             if obj[0][0] == self._obj_rgbd_name:
                 fue_exitoso = True
-                location = (obj[0][2], obj[0][4])
-                tam_region = max(obj[0][3]-obj[0][2], obj[0][5]-obj[0][4])
+                location = (obj[2][0][0], obj[4][0][0])
+                tam_region = max(obj[3][0][0]-obj[2][0][0], obj[5][0][0]-obj[4][0][0])
                 break
 
         #TODO: ver que conviene devolver

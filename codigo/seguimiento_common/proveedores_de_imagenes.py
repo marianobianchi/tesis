@@ -128,4 +128,7 @@ class DepthFramesAsVideo(ImageProvider):
         """
         Returns the last frame number that was read
         """
-        return self.next_frame_number - 1
+        # -1 cause we save the next frame number
+        # -1 because frames start count from 1 but python lists first element
+        # is 0
+        return self.next_frame_number - 1 - 1
