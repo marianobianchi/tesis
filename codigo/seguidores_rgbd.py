@@ -15,7 +15,7 @@ from seguimiento_common.observar_seguimiento import (MuestraSeguimientoEnVivo, M
                                   GrabaSeguimientoEnArchivo)
 from seguimiento_common.proveedores_de_imagenes import (FramesAsVideo,
                                                         GrayFramesAsVideo,
-                                                        DepthFramesAsVideo)
+                                                        RGBDDatabaseFramesAsVideo)
 from seguimiento_common.metodos_de_busqueda import *
 
 from metodos_comunes import *
@@ -410,7 +410,7 @@ def seguir_pelota_negra():
 
 
 if __name__ == '__main__':
-    img_provider = DepthFramesAsVideo('videos/rgbd/scenes/','desk','1') # path, objname, number
+    img_provider = RGBDDatabaseFramesAsVideo('videos/rgbd/scenes/','desk','1') # path, objname, number
     detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat', 'coffee_mug')
     compare = DumbDepthCompare()
     follower = FollowerWithStaticDetection(img_provider, detector, compare)

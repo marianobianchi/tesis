@@ -61,7 +61,7 @@ class GrayFramesAsVideo(FramesAsVideo):
         return img
 
 
-class DepthFramesAsVideo(ImageProvider):
+class RGBDDatabaseFramesAsVideo(ImageProvider):
     def __init__(self, path, objname, number):
         path = os.path.join(path, objname)
         path = os.path.join(path, objname + '_' + number)
@@ -106,23 +106,19 @@ class DepthFramesAsVideo(ImageProvider):
         img_filename = os.path.join(self.path, fname_no_extension + '.png')
         img = cv2.imread(img_filename, cv2.IMREAD_COLOR)
 
-        pcd_filename = os.path.join(self.path, fname_no_extension + '.pcd')
-        pcd = pcl.PointCloud()
-        pcd.from_file(pcd_filename)
-
-        return img, pcd
+        return img
 
     def read(self):
         have_images = self.next_frame_number <= self.last_frame_number
         img = None
-        pcd = None
+
         if have_images:
             # guardo proxima imagen
-            img, pcd = self._actual_read(self.next_frame_number)
+            img = self._actual_read(self.next_frame_number)
 
             self.next_frame_number +=1
 
-        return (have_images, img, pcd)
+        return (have_images, img)
 
     def nframe(self):
         """
