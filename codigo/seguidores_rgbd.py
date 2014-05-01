@@ -388,6 +388,11 @@ class StaticDetector(Detector):
             if obj[0][0] == self._obj_rgbd_name:
                 fue_exitoso = True
                 location = (obj[2][0][0], obj[4][0][0])
+                print "Frame {n}: (top, left)=({t},{l})".format(
+                    n=nframe,
+                    t=location[0],
+                    l=location[1],
+                )
                 tam_region = max(obj[3][0][0]-obj[2][0][0], obj[5][0][0]-obj[4][0][0])
                 break
 
