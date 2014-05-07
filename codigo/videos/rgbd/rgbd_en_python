@@ -1,0 +1,10 @@
+
+Ejemplo de como levantar en python los archivos _depth.png de la base de datos:
+
+im=cv2.imread('videos/rgbd/scenes/desk/desk_1/desk_1_5_depth.png', cv2.cv.CV_16U)
+
+
+
+Slice filas y columnas:
+
+new_im=im[202:319,2:145]

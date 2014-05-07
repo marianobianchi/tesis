@@ -1,8 +1,6 @@
 #include <iostream>
 
-//#include <pcl/io/pcd_io.h>
-//#include <pcl/point_types.h>
-//#include <pcl/registration/icp.h>
+#include <pcl/registration/icp.h>
 
 #include "read_pcd.h"
 #include "mixin_icp_matrixtransform/pcl_transformation.h"
@@ -18,15 +16,23 @@ int main (int argc, char** argv)
      * REVISAR: que valor setear como "depth"
      **/
     // Datos sacados del archivo desk_1.mat
-    std::string cloud_in_filename  = "../../videos/rgbd/scenes/desk/desk_1/desk_1_5.pcd";
-    std::string cloud_out_filename = "../../videos/rgbd/scenes/desk/desk_1/desk_1_6.pcd";
-    int im_x_left = 2;
-    int im_x_right = 145;
-    int im_y_top = 202;
-    int im_y_bottom = 319;
+    std::string cloud_in_filename  = "../videos/rgbd/scenes/desk/desk_1/desk_1_5.pcd";
+    std::string cloud_out_filename = "../videos/rgbd/scenes/desk/desk_1/desk_1_6.pcd";
+    int im_y_left = 2;
+    int im_y_right = 145;
+    int im_x_top = 202;
+    int im_x_bottom = 319;
     
     // TODO: debería buscarlo en el archivo ../../videos/rgbd/scenes/desk/desk_1/desk_1_5_depth.png
-    float depth = 1.0; 
+    float depth = 0.4858; // promedio de la profundidad
+    
+    std::pair<float,float> cloudXY_topleft_corner = from_flat_to_cloud(im_x_top, im_y_left, depth);
+    std::pair<float,float> cloudXY_bottomright_corner = from_flat_to_cloud(im_x_bottom, im_y_right, depth);
+    
+    float x_lower_limit;
+    float x_upper_limit;
+    float y_lower_limit;
+    float y_upper_limit;
     
     
     /**
@@ -51,10 +57,24 @@ int main (int argc, char** argv)
      * Filtros
      **/
     
+    // Define  x and y limits around the object
+    x_lower_limit = cloudXY_topleft_corner.first;
+    x_upper_limit = cloudXY_bottomright_corner.first;
+    y_lower_limit = cloudXY_topleft_corner.second;
+    y_upper_limit = cloudXY_bottomright_corner.second;
+    
     // Filter points corresponding to the object being followed
     filter_cloud(         cloud_in, filtered_cloud_in, "x", x_lower_limit, x_upper_limit);
     filter_cloud(filtered_cloud_in, filtered_cloud_in, "y", y_lower_limit, y_upper_limit);
     //filter_cloud(filtered_cloud_in, filtered_cloud_in, "z", z_lower_limit, z_upper_limit);
+    
+    
+    // Define  x and y limits for the zone to search the object
+    // In this case, we look on a box 4 times the size of the original
+    x_lower_limit = cloudXY_topleft_corner.first - ( (x_upper_limit - x_lower_limit) * 4);
+    x_upper_limit = cloudXY_bottomright_corner.first + ( (x_upper_limit - x_lower_limit) * 4);
+    y_lower_limit = cloudXY_topleft_corner.second - ( (y_upper_limit - y_lower_limit) * 4);
+    y_upper_limit = cloudXY_bottomright_corner.second + ( (y_upper_limit - y_lower_limit) * 4);
     
     // Filter points corresponding to the zone where the object being followed is supposed to be
     filter_cloud(         cloud_out, filtered_cloud_out, "x", x_lower_limit, x_upper_limit);

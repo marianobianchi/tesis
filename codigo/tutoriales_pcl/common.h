@@ -1,3 +1,4 @@
+#include <pcl/filters/passthrough.h>
 
 
 std::pair<float,float> from_flat_to_cloud(int imX, int imY, float depth){
