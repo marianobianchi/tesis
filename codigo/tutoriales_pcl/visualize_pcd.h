@@ -8,6 +8,30 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 
+void show_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr pcloud){
+    // Creo el visualizador
+    pcl::visualization::PCLVisualizer viewer ("PointCloud Visualization");
+
+    // Creo un handler de color
+	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> pcloud_color_handler (pcloud, 0, 0, 0); // R,G,B colors
+	
+    // Agrego la nube de puntos al visualizador con el handler de color
+    viewer.addPointCloud (pcloud, pcloud_color_handler, "pcloud");
+
+    // Adds 3D axes describing a coordinate system to screen at 0,0,0. 
+    viewer.addCoordinateSystem (1.0, 0);
+    
+    // Setting background to a dark grey
+	viewer.setBackgroundColor(0.95, 0.95, 0.95, 0); 
+    
+    // Setea opciones de rendering (property, prop_value, cloud_id)
+	viewer.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "pcloud");
+    
+    while (!viewer.wasStopped ()) { // Display the visualiser untill 'q' key is pressed
+		viewer.spinOnce ();
+	}
+}
+
 
 void show_transformation(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud, Eigen::Matrix4f transformation_matrix)
 {

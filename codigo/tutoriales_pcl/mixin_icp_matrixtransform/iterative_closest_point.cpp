@@ -4,7 +4,7 @@
 #include <pcl/registration/icp.h>
 
 #include "../read_pcd.h"
-#include "pcl_transformation.h"
+#include "../visualize_pcd.h"
 
 int main (int argc, char** argv)
 {
