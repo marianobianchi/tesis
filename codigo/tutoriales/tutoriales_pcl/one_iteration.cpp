@@ -14,14 +14,17 @@ int main (int argc, char** argv)
 {
     
     /**
-     * Primero seteo valores fijos sacados del ground truth
+     * Dada una imagen en profundidad y la ubicación de un objeto
+     * en coordenadas sobre la imagen en profundidad, obtengo la nube
+     * de puntos correspondiente a esas coordenadas y me quedo
+     * unicamente con los valores máximos y mínimos de las coordenadas
+     * "x" e "y" de dicha nube
      * 
      * REVISAR: creo que para PCL "x" corresponde a las columnas e "y" a las filas
      **/
     
     std::string depth_filename = "../videos/rgbd/scenes/desk/desk_1/desk_1_5_depth.png";    
-    std::string cloud_in_filename  = "../videos/rgbd/scenes/desk/desk_1/desk_1_5.pcd";
-    std::string cloud_out_filename = "../videos/rgbd/scenes/desk/desk_1/desk_1_7.pcd";
+    
     
     // Datos sacados del archivo desk_1.mat para el frame 5
     int im_c_left = 1;
@@ -49,6 +52,8 @@ int main (int argc, char** argv)
     float c_left_limit   =  10.0;
     float c_right_limit  = -10.0;
     
+    // TODO: paralelizar estos "for" usando funciones de OpenCV o PCL o lo que sea
+    // Hint: que "from_flat_to_cloud" reciba una matriz (la imagen) directamente
     for(int r=im_r_top; r<=im_r_bottom; r++){
         for(int c=im_c_left; c<=im_c_right; c++){
             depth = image.at<unsigned short int>(r,c);
@@ -66,14 +71,13 @@ int main (int argc, char** argv)
         }
     }
     
-    std::cout << "left limit -0.4612 <==> " << c_left_limit << std::endl;
-    std::cout << "right limit -0.1611 <==> " << c_right_limit << std::endl;
-    std::cout << "top limit -0.0600 <==> " << r_top_limit << std::endl;
-    std::cout << "bottom limit 0.0895 <==> " << r_bottom_limit << std::endl;
     
     /**
      * Levanto las nubes de puntos
      **/
+     
+    std::string cloud_in_filename  = "../videos/rgbd/scenes/desk/desk_1/desk_1_5.pcd";
+    std::string cloud_out_filename = "../videos/rgbd/scenes/desk/desk_1/desk_1_7.pcd";
     
     // Source clouds
     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
@@ -90,16 +94,15 @@ int main (int argc, char** argv)
     read_pcd(cloud_out_filename, cloud_out);
     
     /**
-     * Filtros
+     * Filtro la nube "fuente" segun los valores obtenidos al inicio,
+     * filtro la nube "destino" quedandome solo con puntos (x,y,z)
+     * "cercanos" a la ubicacion del objeto en la nube "fuente"
      **/
     
     // Filter points corresponding to the object being followed
     filter_cloud(         cloud_in, filtered_cloud_in, "y", r_top_limit, r_bottom_limit);
     filter_cloud(filtered_cloud_in, filtered_cloud_in, "x", c_left_limit, c_right_limit);
-    //filter_cloud(filtered_cloud_in, filtered_cloud_in, "z", z_lower_limit, z_upper_limit);
-    
-    show_cloud(filtered_cloud_in);
-    
+    //filter_cloud(filtered_cloud_in, filtered_cloud_in, "z", z_lower_limit, z_upper_limit);    
     
     // Define row and column limits for the zone to search the object
     // In this case, we look on a box N times the size of the original
@@ -115,7 +118,7 @@ int main (int argc, char** argv)
     //filter_cloud(filtered_cloud_out, filtered_cloud_out, "z", z_lower_limit, z_upper_limit);
     
     /**
-     * ICP
+     * Calculo ICP
      **/
     // Calculate icp transformation
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;

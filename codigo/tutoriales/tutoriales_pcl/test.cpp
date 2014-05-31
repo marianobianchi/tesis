@@ -17,12 +17,11 @@ void test_flat_and_cloud_conversion(){
     pair<int, int> flatXY;
     
     unsigned short int depth = 1300;
-    pair<int, int> topleft(100,38);
     
     for(int i=0;i<480;i++){
         for(int j=0;j<640;j++){
-            cloudXY = from_flat_to_cloud(i, j, depth, topleft);
-            flatXY = from_cloud_to_flat(cloudXY.first, cloudXY.second, depth, topleft);
+            cloudXY = from_flat_to_cloud(i, j, depth);
+            flatXY = from_cloud_to_flat(cloudXY.first, cloudXY.second, depth);
             
             assert((flatXY.first -1) <= i <= (flatXY.first +1));
             assert((flatXY.second -1) <= j <= (flatXY.second +1));
