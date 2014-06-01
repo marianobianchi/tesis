@@ -9,14 +9,8 @@
 #include "seguimiento_common/rgbd.h"
 #include "icp_following.h"
 
-void follow ()
+DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_fname, std::string source_cloud_fname, std::string target_cloud_fname)
 {
-    // Datos sacados del archivo desk_1.mat para el frame 5
-    int im_c_left = 1;
-    int im_c_right = 144;
-    int im_r_top = 201;
-    int im_r_bottom = 318;
-    
     
     /**
      * Dada una imagen en profundidad y la ubicación de un objeto
@@ -28,11 +22,7 @@ void follow ()
      * REVISAR: creo que para PCL "x" corresponde a las columnas e "y" a las filas
      **/
      
-    DoubleFloatPair rows_cols_limits = from_flat_to_cloud_limits(
-        IntPair(im_r_top, im_c_left), //topleft,
-        IntPair(im_r_bottom, im_c_right), //bottomright,
-        "videos/rgbd/scenes/desk/desk_1/desk_1_5_depth.png"// depth_filename
-    );    
+    DoubleFloatPair rows_cols_limits = from_flat_to_cloud_limits(top_left, bottom_right, depth_fname);    
     
     /**
      * Levanto las nubes de puntos
@@ -42,23 +32,20 @@ void follow ()
     float r_bottom_limit = rows_cols_limits.first.second;
     float c_left_limit = rows_cols_limits.second.first;
     float c_right_limit = rows_cols_limits.second.second;
-     
-    std::string cloud_in_filename  = "videos/rgbd/scenes/desk/desk_1/desk_1_5.pcd";
-    std::string cloud_out_filename = "videos/rgbd/scenes/desk/desk_1/desk_1_7.pcd";
     
     // Source clouds
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud_in (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_source_cloud (new pcl::PointCloud<pcl::PointXYZ>);
     
     // Target clouds
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_out (new pcl::PointCloud<pcl::PointXYZ>);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_cloud_out (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr filtered_target_cloud (new pcl::PointCloud<pcl::PointXYZ>);
     
     // Fill in the CloudIn data
-    read_pcd(cloud_in_filename, cloud_in);
+    read_pcd(source_cloud_fname, source_cloud);
     
     // Fill in the CloudOut data
-    read_pcd(cloud_out_filename, cloud_out);
+    read_pcd(target_cloud_fname, target_cloud);
     
     /**
      * Filtro la nube "fuente" segun los valores obtenidos al inicio,
@@ -69,9 +56,9 @@ void follow ()
      **/
     
     // Filter points corresponding to the object being followed
-    filter_cloud(         cloud_in, filtered_cloud_in, "y", r_top_limit, r_bottom_limit);
-    filter_cloud(filtered_cloud_in, filtered_cloud_in, "x", c_left_limit, c_right_limit);
-    //filter_cloud(filtered_cloud_in, filtered_cloud_in, "z", z_lower_limit, z_upper_limit);    
+    filter_cloud(         source_cloud, filtered_source_cloud, "y", r_top_limit, r_bottom_limit);
+    filter_cloud(filtered_source_cloud, filtered_source_cloud, "x", c_left_limit, c_right_limit);
+    //filter_cloud(filtered_source_cloud, filtered_source_cloud, "z", z_lower_limit, z_upper_limit);    
     
     // Define row and column limits for the zone to search the object
     // In this case, we look on a box N times the size of the original
@@ -82,17 +69,17 @@ void follow ()
     c_right_limit = c_right_limit + ( (c_right_limit - c_left_limit) * N);
     
     // Filter points corresponding to the zone where the object being followed is supposed to be
-    filter_cloud(         cloud_out, filtered_cloud_out, "y", r_top_limit, r_bottom_limit);
-    filter_cloud(filtered_cloud_out, filtered_cloud_out, "x", c_left_limit, c_right_limit);
-    //filter_cloud(filtered_cloud_out, filtered_cloud_out, "z", z_lower_limit, z_upper_limit);
+    filter_cloud(         target_cloud, filtered_target_cloud, "y", r_top_limit, r_bottom_limit);
+    filter_cloud(filtered_target_cloud, filtered_target_cloud, "x", c_left_limit, c_right_limit);
+    //filter_cloud(filtered_target_cloud, filtered_target_cloud, "z", z_lower_limit, z_upper_limit);
     
     /**
      * Calculo ICP
      **/
     // Calculate icp transformation
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(filtered_cloud_in);
-    icp.setInputTarget(filtered_cloud_out);
+    icp.setInputSource(filtered_source_cloud);
+    icp.setInputTarget(filtered_target_cloud);
     pcl::PointCloud<pcl::PointXYZ> Final;
     icp.align(Final);
     
@@ -121,9 +108,6 @@ void follow ()
         if(flat_xy.second < col_left_limit) col_left_limit = flat_xy.second;
         if(flat_xy.second > col_right_limit) col_right_limit = flat_xy.second;
     }
-                  
-    std::cout << "Top = "    << row_top_limit << std::endl;
-    std::cout << "Bottom = " << row_bottom_limit << std::endl;
-    std::cout << "Left = "   << col_left_limit << std::endl;
-    std::cout << "Right = "  << col_right_limit << std::endl;
+    
+    return DoubleIntPair(IntPair(row_top_limit, row_bottom_limit), IntPair(col_left_limit, col_right_limit));
 }
