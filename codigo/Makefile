@@ -8,16 +8,22 @@ VISUALIZATION_FLAGS = -lvtkCommon -lvtkFiltering -lpcl_visualization -lvtkRender
 OPENCV_INCLUDES = -I/usr/include/opencv
 OPENCV_FLAGS = -lopencv_core -lopencv_highgui
 
+PYTHON_INCLUDE = -I/usr/include/python2.7
+BOOST_LIB = -lboost_python
+
 NO_WARNINGS = -Wno-deprecated
 
-all: main
+all: icp_follow.so
 
 
-main: main.cpp icp_following.o seguimiento_common/rgbd.o
-	c++ $(NO_WARNINGS) $^ -o $@ $(ICP_INCLUDES) $(VISUALIZATION_INCLUDES) $(OPENCV_INCLUDES) $(ICP_FLAGS) $(VISUALIZATION_FLAGS) $(OPENCV_FLAGS)
+icp_follow.so: main.o icp_following.o seguimiento_common/rgbd.o
+	c++ -shared $^ $(BOOST_LIB) -o $@ $(ICP_FLAGS) $(VISUALIZATION_FLAGS) $(OPENCV_FLAGS)
+
+main.o: main.cpp
+	c++ $(NO_WARNINGS) -c $^ -o $@ $(ICP_INCLUDES) $(VISUALIZATION_INCLUDES) $(OPENCV_INCLUDES) $(PYTHON_INCLUDE)
 	
-icp_following.o: icp_following.cpp 
-	c++ $(NO_WARNINGS) -c $^ -o $@ $(ICP_INCLUDES)
+icp_following.o: icp_following.cpp
+	c++ $(NO_WARNINGS) -c $^ -o $@ $(ICP_INCLUDES) $(PYTHON_INCLUDE)
 
 seguimiento_common/rgbd.o:
 	$(MAKE) -C seguimiento_common

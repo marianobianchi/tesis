@@ -160,9 +160,34 @@ void filter_cloud(  pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_in,
 
 
 
+/**
+ * Exporto todo a python
+ **/
 
-
+#include <boost/python.hpp>
+#include <boost/python/module.hpp>
+#include <boost/python/def.hpp>
 
 void export_all_rgbd(){
-
+    using namespace boost::python;
+    
+    class_<IntPair>("IntPair")
+        .def(init<int,int>())
+        .def_readwrite("first", &IntPair::first)
+        .def_readwrite("second", &IntPair::second);
+    
+    class_<FloatPair>("FloatPair")
+        .def(init<float,float>())
+        .def_readwrite("first", &FloatPair::first)
+        .def_readwrite("second", &FloatPair::second);
+    
+    class_<DoubleIntPair>("DoubleIntPair")
+        .def(init<IntPair,IntPair>())
+        .def_readwrite("first", &DoubleIntPair::first)
+        .def_readwrite("second", &DoubleIntPair::second);
+    
+    class_<DoubleFloatPair>("DoubleFloatPair")
+        .def(init<FloatPair,FloatPair>())
+        .def_readwrite("first", &DoubleFloatPair::first)
+        .def_readwrite("second", &DoubleFloatPair::second);
 }

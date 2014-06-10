@@ -111,3 +111,23 @@ DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_
     
     return DoubleIntPair(IntPair(row_top_limit, row_bottom_limit), IntPair(col_left_limit, col_right_limit));
 }
+
+
+
+/**
+ * Exporto todo a python
+ * */
+
+#include <boost/python.hpp>
+#include <boost/python/module.hpp>
+#include <boost/python/def.hpp>
+
+
+void export_follow(){
+    
+    using namespace boost::python;
+
+    def("follow", follow);
+    
+}
+
