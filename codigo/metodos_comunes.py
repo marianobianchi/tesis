@@ -1,18 +1,17 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
-from __future__ import unicode_literals
+#coding=utf-8
+
+from __future__ import (unicode_literals, division)
 
 import numpy as np
 import cv2
 
 
-
-def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region, color=(0,0,0)):
+def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,
+                                                        color=(0, 0, 0)):
     cv2.rectangle(
         img,
         (col_borde_sup_izq, fila_borde_sup_izq),
-        (col_borde_sup_izq+tam_region, fila_borde_sup_izq+tam_region),
+        (col_borde_sup_izq + tam_region, fila_borde_sup_izq + tam_region),
         color,
         3
     )
@@ -29,9 +28,9 @@ def pegar_fotos(foto1, foto2):
     alto = len(foto1)
     ancho = len(foto1[0])
 
-    foto3 = np.zeros((alto, ancho*2, 3), dtype=foto1.dtype)
-    foto3[:,:ancho] = foto1
-    foto3[:,ancho:] = foto2
+    foto3 = np.zeros((alto, ancho * 2, 3), dtype=foto1.dtype)
+    foto3[:, :ancho] = foto1
+    foto3[:, ancho:] = foto2
     return foto3
 
 
