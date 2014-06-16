@@ -9,7 +9,7 @@ import scipy.io
 
 
 from seguimiento_common.esquemas_seguimiento import (
-    FollowingSchema, FollowingSchemaCountingFrames
+    SimpleFollowingSchema, FollowingSchemaCountingFrames
 )
 from seguimiento_common.observar_seguimiento import MuestraSeguimientoEnVivo
 from seguimiento_common.proveedores_de_imagenes import (
@@ -35,7 +35,7 @@ class Follower(object):
     """
 
     def __init__(self, image_provider, detector, compare,
-                                    metodo_de_busqueda=BusquedaEnEspiral()):
+                 metodo_de_busqueda=BusquedaEnEspiral()):
         self.img_provider = image_provider
         self.metodo_de_busqueda = metodo_de_busqueda
 
@@ -59,12 +59,6 @@ class Follower(object):
         })
         return desc
 
-    #def object_roi(self):
-    #    return self._obj_descriptors['frame']
-    #
-    #def object_mask(self):
-    #    return self._obj_descriptors['mask']
-
     def object_frame_size(self):
         """
         Devuelve el tamaño de un lado del cuadrado que contiene al objeto
@@ -78,7 +72,7 @@ class Follower(object):
     # Esquema de seguimiento del objeto
     #####################################
     def simple_follow(self, img, ubicacion, valor_comparativo,
-                                            tam_region_inicial):
+                      tam_region_inicial):
         """
         Esta funcion es el esquema de seguimiento del objeto.
         """
@@ -210,7 +204,7 @@ class Follower(object):
         return fue_exitoso, tam_region, location
 
 
-class FollowerWithStaticDetection(Follower):
+class FollowerWithFrameCount(Follower):
     #######################
     # Funcion de deteccion
     #######################
@@ -398,6 +392,44 @@ class DumbDepthCompare(Compare):
     pass
 
 
+class ICPCompare(Compare):
+
+    def calculate_descriptors(self, img, ubicacion, tam_region):
+        desc = {}
+
+        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
+                    ubicacion[1]:ubicacion[1] + tam_region]
+
+        desc['frame'] = frame
+        desc['mask'] = self.calculate_mask(frame)
+        return desc
+
+    def base_comparisson(self):
+        return 0
+
+    def comparisson(self, roi):
+        # Hago una comparacion bit a bit de la imagen original
+        # Compara solo en la zona de la máscara y deja 0's en donde hay
+        # coincidencias y 255's en donde no coinciden
+        past_obj_roi = self._descriptors['frame']
+
+        mask = self._descriptors['mask']
+
+        xor = cv2.bitwise_xor(past_obj_roi, roi, mask=mask)
+
+        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
+        return cv2.countNonZero(xor)
+
+    def is_best_match(self, new_value, old_value):
+        return new_value < old_value
+
+    def calculate_mask(self, img):
+        # Da vuelta los valores (0->255 y 255->0)
+        mask = cv2.bitwise_not(img)
+        return mask
+
+
+
 def seguir_pelota_negra():
     img_provider = GrayFramesAsVideo('videos/moving_circle')
     detector = SimpleCircleDetector()
@@ -405,7 +437,27 @@ def seguir_pelota_negra():
     follower = Follower(img_provider, detector, compare)
 
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
+
+
+def prueba_de_deteccion_estatica():
+    img_provider = RGBDDatabaseFramesAsVideo(
+        'videos/rgbd/scenes/', 'desk', '1'
+    )  # path, objname, number
+    detector = StaticDetector(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
+    compare = DumbDepthCompare()
+    follower = FollowerWithFrameCount(img_provider, detector, compare)
+
+    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+
+    SimpleFollowingSchemaCountingFrames(
+        img_provider,
+        follower,
+        muestra_seguimiento
+    ).run()
 
 
 if __name__ == '__main__':
@@ -416,8 +468,8 @@ if __name__ == '__main__':
         'videos/rgbd/scenes/desk/desk_1.mat',
         'coffee_mug'
     )
-    compare = DumbDepthCompare()
-    follower = FollowerWithStaticDetection(img_provider, detector, compare)
+    compare = ICPCompare()
+    follower = FollowerWithFrameCount(img_provider, detector, compare)
 
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
 
