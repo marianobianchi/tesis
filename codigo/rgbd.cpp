@@ -190,4 +190,11 @@ void export_all_rgbd(){
         .def(init<FloatPair,FloatPair>())
         .def_readwrite("first", &DoubleFloatPair::first)
         .def_readwrite("second", &DoubleFloatPair::second);
+    
+    class_<ICPResult>("ICPResult")
+        .def_readwrite("has_converged", &ICPResult::has_converged)
+        .def_readwrite("score", &ICPResult::score)
+        .def_readwrite("size", &ICPResult::size)
+        .def_readwrite("top", &ICPResult::top)
+        .def_readwrite("left", &ICPResult::left);
 }

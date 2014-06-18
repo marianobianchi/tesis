@@ -20,7 +20,7 @@ if __name__ == '__main__':
 
 
     # DoubleIntPair
-    topbottom_leftright = follow(
+    icp_result = follow(
         topleft,
         bottomright,
         depth_fname,
@@ -29,10 +29,10 @@ if __name__ == '__main__':
     )
 
     print("Top should be 186, but is", end=' ')
-    print(str(topbottom_leftright.first.first))
+    print(str(icp_result.top))
     print("Bottom should be 295, but is", end=' ')
-    print(str(topbottom_leftright.first.second))
+    print(str(icp_result.top + icp_result.size))
     print("Left should be 95, but is", end=' ')
-    print(str(topbottom_leftright.second.first))
+    print(str(icp_result.left))
     print("Right should be 221, but is", end=' ')
-    print(str(topbottom_leftright.second.second))
+    print(str(icp_result.left + icp_result.size))

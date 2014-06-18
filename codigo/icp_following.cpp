@@ -9,7 +9,7 @@
 #include "rgbd.h"
 #include "icp_following.h"
 
-DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_fname, std::string source_cloud_fname, std::string target_cloud_fname)
+ICPResult follow (IntPair top_left, IntPair bottom_right, std::string depth_fname, std::string source_cloud_fname, std::string target_cloud_fname)
 {
     
     /**
@@ -83,12 +83,6 @@ DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_
     pcl::PointCloud<pcl::PointXYZ> Final;
     icp.align(Final);
     
-    // Show some results from icp
-    std::cout << "has converged: " << icp.hasConverged() << std::endl;
-    std::cout << "score: " << icp.getFitnessScore() << std::endl;
-    
-    
-    
     /**
      * Busco los limites en el dominio de las filas y columnas del RGB
      * */
@@ -109,7 +103,16 @@ DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_
         if(flat_xy.second > col_right_limit) col_right_limit = flat_xy.second;
     }
     
-    return DoubleIntPair(IntPair(row_top_limit, row_bottom_limit), IntPair(col_left_limit, col_right_limit));
+    ICPResult res;
+    res.has_converged = icp.hasConverged();
+    res.score = icp.getFitnessScore();
+    int width = col_right_limit - col_left_limit;
+    int height = row_bottom_limit - row_top_limit;
+    res.size = width > height? width: height;
+    res.top = row_top_limit;
+    res.left = col_left_limit;
+    
+    return res;
 }
 
 

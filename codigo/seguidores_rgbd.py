@@ -10,6 +10,7 @@ import scipy.io
 
 from esquemas_seguimiento import NameBasedFollowingScheme
 from proveedores_de_imagenes import FrameNamesAndImageProvider
+from icp_follow import *
 
 
 #####################
@@ -98,7 +99,7 @@ class Follower(object):
         self.set_object_descriptors(ubicacion, tam_region, desc)
 
     def upgrade_followed_descriptors(self, ubicacion, tam_region):
-        desc = self.compare.calculate_descriptors(ubicacion, tam_region)
+        desc = self.finder.calculate_descriptors(ubicacion, tam_region)
         self.set_object_descriptors(ubicacion, tam_region, desc)
 
 
@@ -242,7 +243,6 @@ class StaticDetector(Detector):
                                  int(obj[5][0][0]) - int(obj[4][0][0]))
                 break
 
-        #TODO: ver que conviene devolver
         msg = "Fue exitoso: {fe} \nUbicación: {u}\n".format(
             fe=fue_exitoso,
             u=location,
@@ -253,40 +253,41 @@ class StaticDetector(Detector):
 
 class ICPFinder(Finder):
 
-    def calculate_descriptors(self, img, ubicacion, tam_region):
-        desc = {}
+    def find(self):
+        size = self._descriptors['size']
+        im_c_left = self._descriptors['location'][1]
+        im_c_right = im_c_left + size
+        im_r_top = self._descriptors['location'][0]
+        im_r_bottom = im_r_top + size
 
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
+        topleft = IntPair(im_r_top, im_c_left)
+        bottomright = IntPair(im_r_bottom, im_c_right)
 
-        desc['frame'] = frame
-        desc['mask'] = self.calculate_mask(frame)
-        return desc
+        depth_fname = str(self._descriptors['source_depth_fname'])
+        source_cloud_fname = str(self._descriptors['source_pcd_fname'])
+        target_cloud_fname = str(self._descriptors['target_pcd_fname'])
 
-    def base_comparisson(self):
-        return 0
+        icp_result = follow(
+            topleft,
+            bottomright,
+            depth_fname,
+            source_cloud_fname,
+            target_cloud_fname
+        )
 
-    def comparisson(self, roi):
-        # Hago una comparacion bit a bit de la imagen original
-        # Compara solo en la zona de la máscara y deja 0's en donde hay
-        # coincidencias y 255's en donde no coinciden
-        past_obj_roi = self._descriptors['frame']
+        fue_exitoso = icp_result.has_converged
+        tam_region = icp_result.size
+        location = (icp_result.top, icp_result.left)
 
-        mask = self._descriptors['mask']
+        print('##########################')
+        print('Frame {n} (ICP):'.format(n=self._descriptors['nframe']+1))
+        msg = "Fue exitoso: {fe} \nUbicación: {u}\n".format(
+            fe=fue_exitoso,
+            u=location,
+        )
+        print(msg)
 
-        xor = cv2.bitwise_xor(past_obj_roi, roi, mask=mask)
-
-        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-        return cv2.countNonZero(xor)
-
-    def is_best_match(self, new_value, old_value):
-        return new_value < old_value
-
-    def calculate_mask(self, img):
-        # Da vuelta los valores (0->255 y 255->0)
-        mask = cv2.bitwise_not(img)
-        return mask
-
+        return fue_exitoso, tam_region, location
 
 
 def prueba_de_deteccion_estatica():
@@ -310,4 +311,20 @@ def prueba_de_deteccion_estatica():
 
 
 if __name__ == '__main__':
-    prueba_de_deteccion_estatica()
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', 'desk', '1'
+    )  # path, objname, number
+
+    detector = StaticDetector(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
+
+    finder = ICPFinder()
+
+    follower = Follower(img_provider, detector, finder)
+
+    NameBasedFollowingScheme(
+        img_provider,
+        follower
+    ).run()
