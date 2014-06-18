@@ -49,7 +49,7 @@ class MuestraDelSeguimiento(object):
         En caso que se requiera tomar alguna medida al terminar de capturar las
         imagenes, este es el metodo que se debe utilizar
         """
-        pass
+        cv2.destroyAllWindows()
 
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):

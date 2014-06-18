@@ -8,16 +8,8 @@ import cv2
 import scipy.io
 
 
-from seguimiento_common.esquemas_seguimiento import (
-    SimpleFollowingSchema, FollowingSchemaCountingFrames
-)
-from seguimiento_common.observar_seguimiento import MuestraSeguimientoEnVivo
-from seguimiento_common.proveedores_de_imagenes import (
-    GrayFramesAsVideo, RGBDDatabaseFramesAsVideo
-)
-from seguimiento_common.metodos_de_busqueda import *
-
-from metodos_comunes import *
+from esquemas_seguimiento import NameBasedFollowingScheme
+from proveedores_de_imagenes import FrameNamesAndImageProvider
 
 
 #####################
@@ -28,20 +20,16 @@ class Follower(object):
     Es la clase base para los seguidores.
 
     Almacena los descriptores que son utilizados y actualizados por el detector
-    de objetos y por el seguidor.
-
-    Es conocido por el esquema de seguimiento que se encarga de utilizarlo como
-    corresponde para lograr el objetivo final.
+    de objetos y por el buscador.
     """
 
-    def __init__(self, image_provider, detector, compare,
-                 metodo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, detector, finder):
+
         self.img_provider = image_provider
-        self.metodo_de_busqueda = metodo_de_busqueda
 
         # Following helpers
         self.detector = detector
-        self.compare = compare
+        self.finder = finder
 
         # Object descriptors
         self._obj_location = (0, 0)  # (Fila, columna)
@@ -56,118 +44,46 @@ class Follower(object):
         desc.update({
             'location': self._obj_location,
             'size': self._obj_frame_size,
+            'nframe': self.img_provider.current_frame_number(),
         })
         return desc
 
-    def object_frame_size(self):
-        """
-        Devuelve el tamaño de un lado del cuadrado que contiene al objeto
-        """
-        return self._obj_frame_size
+    #######################
+    # Funcion de deteccion
+    #######################
+    def detect(self, name_dict):
+        # Actualizo descriptores e imagen en detector
+        self.detector.update(name_dict, self.descriptors())
 
-    def object_location(self):
-        return self._obj_location
-
-    #####################################
-    # Esquema de seguimiento del objeto
-    #####################################
-    def simple_follow(self, img, ubicacion, valor_comparativo,
-                      tam_region_inicial):
-        """
-        Esta funcion es el esquema de seguimiento del objeto.
-        """
-        filas, columnas = len(img), len(img[0])
-
-        nueva_ubicacion = ubicacion
-        nueva_comparacion = None
-        tam_region_final = tam_region_inicial
-
-        # Seguimiento (busqueda/deteccion acotada)
-        for x, y, tam_region in (self.metodo_de_busqueda
-                                 .get_positions_and_framesizes(
-                                     ubicacion,
-                                     tam_region_inicial,
-                                     filas,
-                                     columnas)):
-            col_izq = y
-            col_der = col_izq + tam_region
-            fil_arr = x
-            fil_aba = fil_arr + tam_region
-
-            # Tomo una region de la imagen donde se busca el objeto
-            roi = img[fil_arr:fil_aba, col_izq:col_der]
-
-            # Si se quiere ver como va buscando, descomentar la siguiente linea
-            #MuestraBusquedaEnVivo('Buscando el objeto').run(
-            #    img_copy,
-            #    (x, y),
-            #    tam_region,
-            #    None,
-            #    frenar=True,
-            #)
-
-            nueva_comparacion = self.compare.comparisson(roi)
-
-            # Si hubo coincidencia
-            if self.compare.is_best_match(nueva_comparacion, valor_comparativo):
-                # Nueva ubicacion del objeto (esq. superior izq. del cuadrado)
-                nueva_ubicacion = (x, y)
-
-                # Actualizo el valor de la comparacion
-                valor_comparativo = nueva_comparacion
-
-                # Actualizo el tamaño de la region
-                tam_region_final = tam_region
-
-        return nueva_ubicacion, valor_comparativo, tam_region_final
-
-    def follow(self, img):
-        """
-        Esta funcion utiliza al esquema de seguimiento del objeto
-        (simple_follow)
-        """
-        # Descomentar si se quiere ver la busqueda
-        #img_copy = img.copy()
-
-        vieja_ubicacion = self.object_location()
-        nueva_ubicacion = vieja_ubicacion
-
-        tam_region = self.object_frame_size()
-        tam_region_final = tam_region
-
-        # Actualizo descriptores e imagen en comparador
-        self.compare.update(img, self.descriptors())
-
-        # Valor comparativo base
-        valor_comparativo = self.compare.base_comparisson()
-
-        # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
-        # de la ultima mejor ubicacion del objeto encontrada
-        for i in range(3):
-            nueva_ubicacion, valor_comparativo, tam_region_final = (
-                self.simple_follow(
-                    img,
-                    nueva_ubicacion,
-                    valor_comparativo,
-                    tam_region_final
-                )
-            )
-
-        fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
-        nueva_ubicacion = nueva_ubicacion if fue_exitoso else None
+        # Detectar
+        fue_exitoso, tam_region, location = self.detector.detect()
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_followed_descriptors(
-                img,
-                nueva_ubicacion,
-                tam_region_final
-            )
+            self.upgrade_detected_descriptors(location, tam_region)
+            tam_region = self.descriptors()['size']
+            location = self.descriptors()['location']
 
-        # Devuelvo self.object_frame_size() porque puede cambiar en
-        # "upgrade_descriptors"
-        # Idem con self.object_location()
-        return fue_exitoso, self.object_frame_size(), self.object_location()
+        return fue_exitoso, tam_region, location
+
+    ######################
+    # Funcion de busqueda
+    ######################
+    def follow(self, name_dict):
+        # Actualizo descriptores e imagen en comparador
+        self.finder.update(name_dict, self.descriptors())
+
+        # Busco el objeto
+        fue_exitoso, tam_region, location = self.finder.find()
+
+        if fue_exitoso:
+            # Calculo y actualizo los descriptores con los valores encontrados
+            self.upgrade_followed_descriptors(location, tam_region)
+            tam_region = self.descriptors()['size']
+            location = self.descriptors()['location']
+
+        return fue_exitoso, tam_region, location
+
 
     ##########################
     # Actualizar descriptores
@@ -177,77 +93,30 @@ class Follower(object):
         self._obj_frame_size = tam_region
         self._obj_descriptors.update(obj_descriptors)
 
-    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
-        desc = self.detector.calculate_descriptors(img, ubicacion, tam_region)
+    def upgrade_detected_descriptors(self, ubicacion, tam_region):
+        desc = self.detector.calculate_descriptors(ubicacion, tam_region)
         self.set_object_descriptors(ubicacion, tam_region, desc)
 
-    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        desc = self.compare.calculate_descriptors(img, ubicacion, tam_region)
+    def upgrade_followed_descriptors(self, ubicacion, tam_region):
+        desc = self.compare.calculate_descriptors(ubicacion, tam_region)
         self.set_object_descriptors(ubicacion, tam_region, desc)
-
-    #######################
-    # Funcion de deteccion
-    #######################
-    def detect(self, img):
-        # Actualizo descriptores e imagen en detector
-        self.detector.update(img, self.descriptors())
-
-        # Detectar
-        fue_exitoso, tam_region, location = self.detector.detect()
-
-        if fue_exitoso:
-            # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_detected_descriptors(img, location, tam_region)
-            tam_region = self.object_frame_size()
-            location = self.object_location()
-
-        return fue_exitoso, tam_region, location
-
-
-class FollowerWithFrameCount(Follower):
-    #######################
-    # Funcion de deteccion
-    #######################
-
-    def detect(self, img, nframe):
-        """
-        nframe es el numero de frame del video en el que se está haciendo la
-        deteccion
-        """
-        # Actualizo descriptores e imagen en detector
-        descriptors = self.descriptors()
-        descriptors.update({'nframe': nframe})
-        self.detector.update(img, descriptors)
-
-        # Detectar
-        fue_exitoso, tam_region, location = self.detector.detect()
-
-        if fue_exitoso:
-            # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_detected_descriptors(img, location, tam_region)
-            tam_region = self.object_frame_size()
-            location = self.object_location()
-
-        return fue_exitoso, tam_region, location
 
 
 ################################
-# Clases para detectar y seguir
+# Clases para detectar y buscar
 ################################
-class Compare(object):
+class Finder(object):
     """
-    Es la clase que se encarga de hacer las comparaciones al momento de
-    realizar el seguimiento para poder decidir a donde se movio el objeto
+    Es la clase que se encarga de buscar el objeto
     """
     def __init__(self):
         self._descriptors = {}
-        self._img = None
 
-    def update(self, img, descriptors):
-        self._img = img
+    def update(self, name_dict, descriptors):
         self._descriptors.update(descriptors)
+        self._descriptors.update(name_dict)
 
-    def calculate_descriptors(self, img, ubicacion, tam_region):
+    def calculate_descriptors(self, ubicacion, tam_region):
         """
         Calcula los descriptores en base al objeto encontrado para que
         los almacene el Follower
@@ -267,6 +136,58 @@ class Compare(object):
     def is_best_match(self, new_value, old_value):
         return False
 
+    #####################################
+    # Esquema de seguimiento del objeto
+    #####################################
+    def find(self):
+        return (False, 0, (0, 0))
+
+    #def simple_follow(self,
+    #                  name_dict,
+    #                  ubicacion,
+    #                  valor_comparativo,
+    #                  tam_region_inicial):
+    #    """
+    #    Esta funcion es el esquema de seguimiento del objeto.
+    #    """
+    #    filas, columnas = self.img_provider.image_size()
+    #
+    #    nueva_ubicacion = ubicacion
+    #    nueva_comparacion = None
+    #    tam_region_final = tam_region_inicial
+    #
+    #    # Seguimiento (busqueda/deteccion acotada)
+    #    for fila, columna, tam_region in (self.metodo_de_busqueda
+    #                                      .get_positions_and_framesizes(
+    #                                        ubicacion,
+    #                                        tam_region_inicial,
+    #                                        filas,
+    #                                        columnas)):
+    #
+    #        # Si se quiere ver como va buscando, descomentar la siguiente linea
+    #        #MuestraBusquedaEnVivo('Buscando el objeto').run(
+    #        #    img_copy,
+    #        #    (x, y),
+    #        #    tam_region,
+    #        #    None,
+    #        #    frenar=True,
+    #        #)
+    #
+    #        nueva_comparacion = self.compare.comparisson(fila, columna, tam_region)
+    #
+    #        # Si hubo coincidencia
+    #        if self.compare.is_best_match(nueva_comparacion, valor_comparativo):
+    #            # Nueva ubicacion del objeto (esq. superior izq. del cuadrado)
+    #            nueva_ubicacion = (fila, columna)
+    #
+    #            # Actualizo el valor de la comparacion
+    #            valor_comparativo = nueva_comparacion
+    #
+    #            # Actualizo el tamaño de la region
+    #            tam_region_final = tam_region
+    #
+    #    return nueva_ubicacion, valor_comparativo, tam_region_final
+
 
 class Detector(object):
     """
@@ -274,13 +195,12 @@ class Detector(object):
     """
     def __init__(self):
         self._descriptors = {}
-        self._img = None
 
-    def update(self, img, descriptors):
-        self._img = img
-        self._descriptors.update(descriptors)
+    def update(self, name_dict, desc):
+        self._descriptors.update(name_dict)
+        self._descriptors.update(desc)
 
-    def calculate_descriptors(self, img, ubicacion, tam_region):
+    def calculate_descriptors(self, ubicacion, tam_region):
         """
         Calcula los descriptores en base al objeto encontrado para que
         los almacene el Follower
@@ -290,65 +210,6 @@ class Detector(object):
     def detect(self):
         pass
 
-
-class SimpleCircleCompare(Compare):
-    def calculate_descriptors(self, img, ubicacion, tam_region):
-        desc = {}
-
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
-
-        desc['frame'] = frame
-        desc['mask'] = self.calculate_mask(frame)
-        return desc
-
-    def base_comparisson(self):
-        filas, columnas = len(self._img), len(self._img[0])
-        return filas * columnas
-
-    def comparisson(self, roi):
-        # Hago una comparacion bit a bit de la imagen original
-        # Compara solo en la zona de la máscara y deja 0's en donde hay
-        # coincidencias y 255's en donde no coinciden
-        past_obj_roi = self._descriptors['frame']
-
-        mask = self._descriptors['mask']
-
-        xor = cv2.bitwise_xor(past_obj_roi, roi, mask=mask)
-
-        # Cuento la cantidad de 0's y me quedo con la mejor comparacion
-        return cv2.countNonZero(xor)
-
-    def is_best_match(self, new_value, old_value):
-        return new_value < old_value
-
-    def calculate_mask(self, img):
-        # Da vuelta los valores (0->255 y 255->0)
-        mask = cv2.bitwise_not(img)
-        return mask
-
-
-class SimpleCircleDetector(Detector):
-    def calculate_descriptors(self, img, ubicacion, tam_region):
-        desc = {}
-
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
-
-        desc['frame'] = frame
-        desc['mask'] = self.calculate_mask(frame)
-        return desc
-
-    def detect(self):
-        fue_exitoso = True
-        tam_region = 80
-        ubicacion = (40, 40)
-        return fue_exitoso, tam_region, ubicacion
-
-    def calculate_mask(self, img):
-        # Da vuelta los valores (0->255 y 255->0)
-        mask = cv2.bitwise_not(img)
-        return mask
 
 
 class StaticDetector(Detector):
@@ -371,28 +232,26 @@ class StaticDetector(Detector):
         tam_region = 0
         location = (0, 0)
 
+        print('##########################')
+        print('Frame {n}:'.format(n=nframe+1))
         for obj in objs:
             if obj[0][0] == self._obj_rgbd_name:
                 fue_exitoso = True
                 location = (int(obj[2][0][0]), int(obj[4][0][0]))
-                print "Frame {n}: (top, left)=({t},{l})".format(
-                    n=nframe,
-                    t=location[0],
-                    l=location[1],
-                )
                 tam_region = max(int(obj[3][0][0]) - int(obj[2][0][0]),
                                  int(obj[5][0][0]) - int(obj[4][0][0]))
                 break
 
         #TODO: ver que conviene devolver
+        msg = "Fue exitoso: {fe} \nUbicación: {u}\n".format(
+            fe=fue_exitoso,
+            u=location,
+        )
+        print(msg)
         return fue_exitoso, tam_region, location
 
 
-class DumbDepthCompare(Compare):
-    pass
-
-
-class ICPCompare(Compare):
+class ICPFinder(Finder):
 
     def calculate_descriptors(self, img, ubicacion, tam_region):
         desc = {}
@@ -430,51 +289,25 @@ class ICPCompare(Compare):
 
 
 
-def seguir_pelota_negra():
-    img_provider = GrayFramesAsVideo('videos/moving_circle')
-    detector = SimpleCircleDetector()
-    compare = SimpleCircleCompare()
-    follower = Follower(img_provider, detector, compare)
-
-    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
-
-
 def prueba_de_deteccion_estatica():
-    img_provider = RGBDDatabaseFramesAsVideo(
+    img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/', 'desk', '1'
     )  # path, objname, number
+
     detector = StaticDetector(
         'videos/rgbd/scenes/desk/desk_1.mat',
         'coffee_mug'
     )
-    compare = DumbDepthCompare()
-    follower = FollowerWithFrameCount(img_provider, detector, compare)
 
-    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+    finder = Finder()
 
-    SimpleFollowingSchemaCountingFrames(
+    follower = Follower(img_provider, detector, finder)
+
+    NameBasedFollowingScheme(
         img_provider,
-        follower,
-        muestra_seguimiento
+        follower
     ).run()
 
 
 if __name__ == '__main__':
-    img_provider = RGBDDatabaseFramesAsVideo(
-        'videos/rgbd/scenes/', 'desk', '1'
-    )  # path, objname, number
-    detector = StaticDetector(
-        'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
-    )
-    compare = ICPCompare()
-    follower = FollowerWithFrameCount(img_provider, detector, compare)
-
-    muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-
-    FollowingSchemaCountingFrames(
-        img_provider,
-        follower,
-        muestra_seguimiento
-    ).run()
+    prueba_de_deteccion_estatica()

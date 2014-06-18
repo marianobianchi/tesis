@@ -5,8 +5,8 @@
 
 #include <boost/python.hpp>
 
-#include "seguimiento_common/tipos_basicos.h"
-#include "seguimiento_common/rgbd.h"
+#include "tipos_basicos.h"
+#include "rgbd.h"
 #include "icp_following.h"
 
 BOOST_PYTHON_MODULE(icp_follow)

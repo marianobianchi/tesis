@@ -5,8 +5,8 @@
 
 #include <pcl/registration/icp.h>
 
-#include "seguimiento_common/tipos_basicos.h"
-#include "seguimiento_common/rgbd.h"
+#include "tipos_basicos.h"
+#include "rgbd.h"
 #include "icp_following.h"
 
 DoubleIntPair follow (IntPair top_left, IntPair bottom_right, std::string depth_fname, std::string source_cloud_fname, std::string target_cloud_fname)
