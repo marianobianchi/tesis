@@ -9,6 +9,7 @@ import scipy.io
 
 
 from esquemas_seguimiento import NameBasedFollowingScheme
+from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider
 from icp_follow import *
 
@@ -233,8 +234,6 @@ class StaticDetector(Detector):
         tam_region = 0
         location = (0, 0)
 
-        print('##########################')
-        print('Frame {n}:'.format(n=nframe+1))
         for obj in objs:
             if obj[0][0] == self._obj_rgbd_name:
                 fue_exitoso = True
@@ -243,12 +242,7 @@ class StaticDetector(Detector):
                                  int(obj[5][0][0]) - int(obj[4][0][0]))
                 break
 
-        msg = "Fue exitoso: {fe} \nUbicación: {u}\n".format(
-            fe=fue_exitoso,
-            u=location,
-        )
-        print(msg)
-        return fue_exitoso, tam_region, location
+        return fue_exitoso, tam_region, location #location=(fila, columna)
 
 
 class ICPFinder(Finder):
@@ -279,14 +273,6 @@ class ICPFinder(Finder):
         tam_region = icp_result.size
         location = (icp_result.top, icp_result.left)
 
-        print('##########################')
-        print('Frame {n} (ICP):'.format(n=self._descriptors['nframe']+1))
-        msg = "Fue exitoso: {fe} \nUbicación: {u}\n".format(
-            fe=fue_exitoso,
-            u=location,
-        )
-        print(msg)
-
         return fue_exitoso, tam_region, location
 
 
@@ -304,13 +290,16 @@ def prueba_de_deteccion_estatica():
 
     follower = Follower(img_provider, detector, finder)
 
+    show_following = MuestraSeguimientoEnVivo('Deteccion estatica - Sin seguidor')
+
     NameBasedFollowingScheme(
         img_provider,
-        follower
+        follower,
+        show_following,
     ).run()
 
 
-if __name__ == '__main__':
+def prueba_seguimiento_ICP():
     img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/', 'desk', '1'
     )  # path, objname, number
@@ -324,7 +313,13 @@ if __name__ == '__main__':
 
     follower = Follower(img_provider, detector, finder)
 
+    show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
+
     NameBasedFollowingScheme(
         img_provider,
-        follower
+        follower,
+        show_following,
     ).run()
+
+if __name__ == '__main__':
+    prueba_seguimiento_ICP()

@@ -17,7 +17,8 @@ class MuestraDelSeguimiento(object):
     def __init__(self, nombre):
         self.name = nombre
 
-    def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
+    def dibujar_seguimiento(self, img, ubicacion, tam_region, fue_exitoso,
+                            es_deteccion):
         if len(img.shape) == 2:
             # Convierto a imagen a color para dibujar un cuadrado
             filas, columnas = img.shape
@@ -31,14 +32,16 @@ class MuestraDelSeguimiento(object):
         # Cuadrado verde si proviene del seguimiento
         # Rojo si proviene de una deteccion (ya sea porque se perdio el objeto o
         # porque recien comienza el algoritmo)
-        if not lo_siguio:
-            color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,0,255))
-        else:
-            color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,255,0))
+        if fue_exitoso:
+            if es_deteccion:
+                color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,0,255))
+            else:
+                color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,255,0))
 
         return color_img
 
-    def run(self, img, nombre, ubicacion, tam_region, lo_siguio, frenar=False):
+    def run(self, img, ubicacion, tam_region, fue_exitoso, es_deteccion,
+                frenar=True):
         """
         Deben implementarlo las subclases
         """
@@ -54,8 +57,16 @@ class MuestraDelSeguimiento(object):
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
-    def run(self, img, ubicacion, tam_region, lo_siguio, frenar=False):
-        img_with_rectangle = self.dibujar_seguimiento(img, ubicacion, tam_region, lo_siguio)
+    def run(self, img, ubicacion, tam_region, fue_exitoso, es_deteccion,
+                frenar=True):
+        print "Fila:", ubicacion[0], "Columna:", ubicacion[1]
+        img_with_rectangle = self.dibujar_seguimiento(
+            img,
+            ubicacion,
+            tam_region,
+            fue_exitoso,
+            es_deteccion,
+        )
 
         # Muestro el resultado y espero que se apriete la tecla q
         cv2.imshow(self.name, img_with_rectangle)
@@ -64,47 +75,47 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
                 pass
 
 
-class GrabaSeguimientoEnArchivo(MuestraDelSeguimiento):
-
-    def __init__(self, nombre):
-        self.name = nombre
-        self.grabador = None
-
-    def run(self, img, ubicacion, tam_region, lo_siguio, frenar=False):
-        img_with_rectangle = self.dibujar_seguimiento(img, ubicacion, tam_region, lo_siguio)
-
-        if self.grabador is None:
-            # Defino el codec y armo el objeto VideoWriter
-            fourcc = cv2.cv.CV_FOURCC(b'X',b'V',b'I',b'D')
-
-            self.grabador = cv2.VideoWriter(
-                self.name, # Video file name
-                fourcc, # Codec
-                6.0, # Frames por segundo
-                (len(img[0]),len(img)), # Tamaño de los frames
-                True, # Flag de color. True = color, False = gris
-            )
-
-        self.grabador.write(img_with_rectangle)
-
-    def close(self):
-        if self.grabador is not None:
-            self.grabador.release()
-
-
-class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
-    def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
-        if len(img.shape) == 2:
-            # Convierto a imagen a color para dibujar un cuadrado
-            filas, columnas = img.shape
-            color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
-            color_img[:,:,0] = img[:,:]
-            color_img[:,:,1] = img[:,:]
-            color_img[:,:,2] = img[:,:]
-        else:
-            color_img = img
-
-        # Cuadrado azul
-        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(255,0,0))
-
-        return color_img
+#class GrabaSeguimientoEnArchivo(MuestraDelSeguimiento):
+#
+#    def __init__(self, nombre):
+#        self.name = nombre
+#        self.grabador = None
+#
+#    def run(self, img, ubicacion, tam_region, lo_siguio, frenar=False):
+#        img_with_rectangle = self.dibujar_seguimiento(img, ubicacion, tam_region, lo_siguio)
+#
+#        if self.grabador is None:
+#            # Defino el codec y armo el objeto VideoWriter
+#            fourcc = cv2.cv.CV_FOURCC(b'X',b'V',b'I',b'D')
+#
+#            self.grabador = cv2.VideoWriter(
+#                self.name, # Video file name
+#                fourcc, # Codec
+#                6.0, # Frames por segundo
+#                (len(img[0]),len(img)), # Tamaño de los frames
+#                True, # Flag de color. True = color, False = gris
+#            )
+#
+#        self.grabador.write(img_with_rectangle)
+#
+#    def close(self):
+#        if self.grabador is not None:
+#            self.grabador.release()
+#
+#
+#class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
+#    def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
+#        if len(img.shape) == 2:
+#            # Convierto a imagen a color para dibujar un cuadrado
+#            filas, columnas = img.shape
+#            color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
+#            color_img[:,:,0] = img[:,:]
+#            color_img[:,:,1] = img[:,:]
+#            color_img[:,:,2] = img[:,:]
+#        else:
+#            color_img = img
+#
+#        # Cuadrado azul
+#        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(255,0,0))
+#
+#        return color_img

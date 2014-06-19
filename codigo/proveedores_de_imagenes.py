@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 
 import os
+import cv2
 
 
 class FrameNamesAndImageProvider(object):
@@ -109,6 +110,12 @@ class FrameNamesAndImageProvider(object):
 
     def target_img(self):
         img_filename = self.current()['target_rgb_fname']
+        img = cv2.imread(img_filename, cv2.IMREAD_COLOR)
+        return img
+
+    def source_img(self):
+        img_filename = self.current()['source_rgb_fname']
+        print img_filename
         img = cv2.imread(img_filename, cv2.IMREAD_COLOR)
         return img
 
