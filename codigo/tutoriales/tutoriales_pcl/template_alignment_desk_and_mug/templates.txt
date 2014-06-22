@@ -1,0 +1,10 @@
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_1.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_2.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_3.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_4.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_5.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_6.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_7.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_8.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_9.pcd
+../tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_10.pcd
