@@ -11,7 +11,7 @@ import scipy.io
 from esquemas_seguimiento import NameBasedFollowingScheme
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider
-from icp_follow import *
+from cpp.icp_follow import *
 
 
 #####################

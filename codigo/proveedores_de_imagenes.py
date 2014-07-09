@@ -115,7 +115,6 @@ class FrameNamesAndImageProvider(object):
 
     def source_img(self):
         img_filename = self.current()['source_rgb_fname']
-        print img_filename
         img = cv2.imread(img_filename, cv2.IMREAD_COLOR)
         return img
 

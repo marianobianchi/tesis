@@ -57,19 +57,24 @@ class MuestraDelSeguimiento(object):
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
-    def run(self, img, ubicacion, tam_region, fue_exitoso, es_deteccion,
+    def run(self, img_list, ubicacion, tam_region, fue_exitoso, es_deteccion,
                 frenar=True):
-        print "Fila:", ubicacion[0], "Columna:", ubicacion[1]
-        img_with_rectangle = self.dibujar_seguimiento(
-            img,
-            ubicacion,
-            tam_region,
-            fue_exitoso,
-            es_deteccion,
-        )
 
-        # Muestro el resultado y espero que se apriete la tecla q
-        cv2.imshow(self.name, img_with_rectangle)
+        if type(img_list) is not list:
+            img_list = [img_list]
+
+        for img in img_list:
+            img_with_rectangle = self.dibujar_seguimiento(
+                img,
+                ubicacion,
+                tam_region,
+                fue_exitoso,
+                es_deteccion,
+            )
+
+            # Muestro el resultado y espero que se apriete la tecla q
+            cv2.imshow(self.name, img_with_rectangle)
+
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):
                 pass

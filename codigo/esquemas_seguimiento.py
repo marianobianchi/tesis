@@ -32,7 +32,7 @@ class NameBasedFollowingScheme(object):
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(
-            img=self.img_name_provider.source_img(),
+            img_list=self.img_name_provider.source_img(),
             ubicacion=ubicacion_inicial,
             tam_region=tam_region,
             fue_exitoso=fue_exitoso,
@@ -48,12 +48,13 @@ class NameBasedFollowingScheme(object):
             # Tomo el siguiente elemento
             name_dict = self.img_name_provider.next()
 
-            fue_exitoso, tam_region, nueva_ubicacion = (
-                self.obj_follower.follow(name_dict)
-            )
             es_deteccion = False
+            if fue_exitoso:
+                fue_exitoso, tam_region, nueva_ubicacion = (
+                self.obj_follower.follow(name_dict)
+                )
 
-            if not fue_exitoso:
+            else:
                 es_deteccion = True
                 fue_exitoso, tam_region, nueva_ubicacion = (
                     self.obj_follower.detect(name_dict)
@@ -61,7 +62,7 @@ class NameBasedFollowingScheme(object):
 
             # Muestro el seguimiento
             self.show_following.run(
-                img=self.img_name_provider.source_img(),
+                img_list=self.img_name_provider.source_img(),
                 ubicacion=nueva_ubicacion,
                 tam_region=tam_region,
                 fue_exitoso=fue_exitoso,
