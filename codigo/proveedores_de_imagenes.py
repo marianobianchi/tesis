@@ -5,6 +5,9 @@ from __future__ import unicode_literals
 
 import os
 import cv2
+import numpy as np
+
+from cpp.depth_to_rgb import *
 
 
 class FrameNamesAndImageProvider(object):
@@ -130,3 +133,20 @@ class FrameNamesAndImageProvider(object):
             return self.next_frame_number - 1 - 1
         else:
             return self.next_frame_number - 1
+
+
+class DepthAndRGBImageProvider(FrameNamesAndImageProvider):
+    def source_img(self):
+        rgb_img = super(DepthAndRGBImageProvider, self).source_img()
+        depth_filename = self.current()['source_depth_fname']
+        depth_img = cv2.imread(depth_filename, cv2.IMREAD_ANYDEPTH)
+
+        height = len(depth_img)
+        width = len(depth_img[0])
+        rgbdepth_img = np.zeros((height, width,3), np.uint8)
+        for r in range(height):
+            for c in range(width):
+                char_rgb = depth_to_rgb(int(depth_img[r][c]))
+                rgbdepth_img[r][c] = [char_rgb.blue, char_rgb.green, char_rgb.red]
+
+        return rgb_img, rgbdepth_img

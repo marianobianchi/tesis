@@ -56,4 +56,17 @@ figure
 plot3(repcloud(:,1), repcloud(:,3), repcloud(:,2)*-1, '.')
 grid on
 
+%%
+source = readPcd('objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_1.pcd');
+figure
+plot3(source(:,1), source(:,2), source(:,3), '.')
+grid on
+
+target = readPcd('objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_4.pcd');
+figure
+plot3(target(:,1), target(:,2), target(:,3), '.')
+grid on
+
+
+
 

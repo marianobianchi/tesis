@@ -61,9 +61,9 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
                 frenar=True):
 
         if type(img_list) is not list:
-            img_list = [img_list]
+            img_list = list(img_list)
 
-        for img in img_list:
+        for i, img in enumerate(img_list):
             img_with_rectangle = self.dibujar_seguimiento(
                 img,
                 ubicacion,
@@ -73,7 +73,7 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
             )
 
             # Muestro el resultado y espero que se apriete la tecla q
-            cv2.imshow(self.name, img_with_rectangle)
+            cv2.imshow(self.name + unicode(i), img_with_rectangle)
 
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):

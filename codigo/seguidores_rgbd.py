@@ -10,7 +10,8 @@ import scipy.io
 
 from esquemas_seguimiento import NameBasedFollowingScheme
 from observar_seguimiento import MuestraSeguimientoEnVivo
-from proveedores_de_imagenes import FrameNamesAndImageProvider
+from proveedores_de_imagenes import (FrameNamesAndImageProvider,
+                                     DepthAndRGBImageProvider)
 from cpp.icp_follow import *
 
 
@@ -300,7 +301,7 @@ def prueba_de_deteccion_estatica():
 
 
 def prueba_seguimiento_ICP():
-    img_provider = FrameNamesAndImageProvider(
+    img_provider = DepthAndRGBImageProvider(
         'videos/rgbd/scenes/', 'desk', '1'
     )  # path, objname, number
 
