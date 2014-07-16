@@ -9,8 +9,8 @@ import cv2
 
 class NameBasedFollowingScheme(object):
 
-    def __init__(self, img_name_provider, obj_follower, show_following):
-        self.img_name_provider = img_name_provider
+    def __init__(self, img_provider, obj_follower, show_following):
+        self.img_provider = img_provider
         self.obj_follower = obj_follower
         self.show_following = show_following
 
@@ -23,16 +23,14 @@ class NameBasedFollowingScheme(object):
         # Etapa de detección
         ######################
 
-        name_dict = self.img_name_provider.next()
-
         fue_exitoso, tam_region, ubicacion_inicial = (
-            self.obj_follower.detect(name_dict)
+            self.obj_follower.detect()
         )
         # TODO: Hacer algo cuando la deteccion no es exitosa
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(
-            img_list=self.img_name_provider.source_img(),
+            img_list=self.img_provider,
             ubicacion=ubicacion_inicial,
             tam_region=tam_region,
             fue_exitoso=fue_exitoso,
@@ -44,25 +42,25 @@ class NameBasedFollowingScheme(object):
         # Etapa de seguimiento
         #######################
 
-        while self.img_name_provider.have_images():
-            # Tomo el siguiente elemento
-            name_dict = self.img_name_provider.next()
+        while self.img_provider.have_images():
+            # Adelanto un frame
+            self.img_provider.next()
 
             es_deteccion = False
             if fue_exitoso:
                 fue_exitoso, tam_region, nueva_ubicacion = (
-                self.obj_follower.follow(name_dict)
+                self.obj_follower.follow()
                 )
 
             else:
                 es_deteccion = True
                 fue_exitoso, tam_region, nueva_ubicacion = (
-                    self.obj_follower.detect(name_dict)
+                    self.obj_follower.detect()
                 )
 
             # Muestro el seguimiento
             self.show_following.run(
-                img_list=self.img_name_provider.source_img(),
+                img_list=self.img_provider,
                 ubicacion=nueva_ubicacion,
                 tam_region=tam_region,
                 fue_exitoso=fue_exitoso,

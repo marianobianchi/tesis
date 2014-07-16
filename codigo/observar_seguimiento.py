@@ -40,7 +40,7 @@ class MuestraDelSeguimiento(object):
 
         return color_img
 
-    def run(self, img, ubicacion, tam_region, fue_exitoso, es_deteccion,
+    def run(self, img_provider, ubicacion, tam_region, fue_exitoso, es_deteccion,
                 frenar=True):
         """
         Deben implementarlo las subclases
@@ -57,11 +57,10 @@ class MuestraDelSeguimiento(object):
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
-    def run(self, img_list, ubicacion, tam_region, fue_exitoso, es_deteccion,
+    def run(self, img_provider, ubicacion, tam_region, fue_exitoso, es_deteccion,
                 frenar=True):
 
-        if type(img_list) is not list:
-            img_list = list(img_list)
+        img_list = img_provider.image_list()
 
         for i, img in enumerate(img_list):
             img_with_rectangle = self.dibujar_seguimiento(

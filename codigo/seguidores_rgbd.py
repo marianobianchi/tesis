@@ -9,9 +9,9 @@ import scipy.io
 
 
 from esquemas_seguimiento import NameBasedFollowingScheme
+from metodos_comunes import (from_flat_to_cloud, filter_cloud)
 from observar_seguimiento import MuestraSeguimientoEnVivo
-from proveedores_de_imagenes import (FrameNamesAndImageProvider,
-                                     DepthAndRGBImageProvider)
+from proveedores_de_imagenes import FrameNamesAndImageProvider
 from cpp.icp_follow import *
 
 
@@ -47,16 +47,15 @@ class Follower(object):
         desc.update({
             'location': self._obj_location,
             'size': self._obj_frame_size,
-            'nframe': self.img_provider.current_frame_number(),
         })
         return desc
 
     #######################
     # Funcion de deteccion
     #######################
-    def detect(self, name_dict):
+    def detect(self):
         # Actualizo descriptores e imagen en detector
-        self.detector.update(name_dict, self.descriptors())
+        self.detector.update(self.descriptors())
 
         # Detectar
         fue_exitoso, tam_region, location = self.detector.detect()
@@ -72,9 +71,9 @@ class Follower(object):
     ######################
     # Funcion de busqueda
     ######################
-    def follow(self, name_dict):
+    def follow(self):
         # Actualizo descriptores e imagen en comparador
-        self.finder.update(name_dict, self.descriptors())
+        self.finder.update(self.descriptors())
 
         # Busco el objeto
         fue_exitoso, tam_region, location = self.finder.find()
@@ -115,9 +114,8 @@ class Finder(object):
     def __init__(self):
         self._descriptors = {}
 
-    def update(self, name_dict, descriptors):
+    def update(self, descriptors):
         self._descriptors.update(descriptors)
-        self._descriptors.update(name_dict)
 
     def calculate_descriptors(self, ubicacion, tam_region):
         """
@@ -145,52 +143,6 @@ class Finder(object):
     def find(self):
         return (False, 0, (0, 0))
 
-    #def simple_follow(self,
-    #                  name_dict,
-    #                  ubicacion,
-    #                  valor_comparativo,
-    #                  tam_region_inicial):
-    #    """
-    #    Esta funcion es el esquema de seguimiento del objeto.
-    #    """
-    #    filas, columnas = self.img_provider.image_size()
-    #
-    #    nueva_ubicacion = ubicacion
-    #    nueva_comparacion = None
-    #    tam_region_final = tam_region_inicial
-    #
-    #    # Seguimiento (busqueda/deteccion acotada)
-    #    for fila, columna, tam_region in (self.metodo_de_busqueda
-    #                                      .get_positions_and_framesizes(
-    #                                        ubicacion,
-    #                                        tam_region_inicial,
-    #                                        filas,
-    #                                        columnas)):
-    #
-    #        # Si se quiere ver como va buscando, descomentar la siguiente linea
-    #        #MuestraBusquedaEnVivo('Buscando el objeto').run(
-    #        #    img_copy,
-    #        #    (x, y),
-    #        #    tam_region,
-    #        #    None,
-    #        #    frenar=True,
-    #        #)
-    #
-    #        nueva_comparacion = self.compare.comparisson(fila, columna, tam_region)
-    #
-    #        # Si hubo coincidencia
-    #        if self.compare.is_best_match(nueva_comparacion, valor_comparativo):
-    #            # Nueva ubicacion del objeto (esq. superior izq. del cuadrado)
-    #            nueva_ubicacion = (fila, columna)
-    #
-    #            # Actualizo el valor de la comparacion
-    #            valor_comparativo = nueva_comparacion
-    #
-    #            # Actualizo el tamaño de la region
-    #            tam_region_final = tam_region
-    #
-    #    return nueva_ubicacion, valor_comparativo, tam_region_final
-
 
 class Detector(object):
     """
@@ -199,8 +151,7 @@ class Detector(object):
     def __init__(self):
         self._descriptors = {}
 
-    def update(self, name_dict, desc):
-        self._descriptors.update(name_dict)
+    def update(self, desc):
         self._descriptors.update(desc)
 
     def calculate_descriptors(self, ubicacion, tam_region):
@@ -213,6 +164,17 @@ class Detector(object):
     def detect(self):
         pass
 
+
+
+class FollowerWithStaticDetection(Follower):
+    def descriptors(self):
+        desc = super(StaticFollower, self).descriptors()
+        desc.update({
+            'nframe': self.img_provider.current_frame_number(),
+            'depth_img': self.img_provider.depth_img(),
+            'pcd': self.img_provider.pcd(),
+        })
+        return desc
 
 
 class StaticDetector(Detector):
@@ -245,30 +207,64 @@ class StaticDetector(Detector):
 
         return fue_exitoso, tam_region, location #location=(fila, columna)
 
+    def calculate_descriptors(self, ubicacion, tam_region):
+        """
+        Obtengo la nube de puntos correspondiente a la ubicacion y region
+        pasadas por parametro.
+        """
+        depth_img = self._descriptors['depth_img']
+
+        rows_cols_limits = from_flat_to_cloud_limits(
+            ubicacion,
+            (ubicacion[0] + tam_region, ubicacion[1] + tam_region),
+            depth_img,
+        );
+
+        r_top_limit = rows_cols_limits.first.first;
+        r_bottom_limit = rows_cols_limits.first.second;
+        c_left_limit = rows_cols_limits.second.first;
+        c_right_limit = rows_cols_limits.second.second;
+
+        cloud = self._descriptors['pcd']
+
+        cloud = filter_cloud(cloud, "y", r_top_limit, r_bottom_limit)
+        cloud = filter_cloud(cloud, "x", c_left_limit, c_right_limit)
+
+        return {'object_cloud': cloud}
+
 
 class ICPFinder(Finder):
 
     def find(self):
-        size = self._descriptors['size']
-        im_c_left = self._descriptors['location'][1]
-        im_c_right = im_c_left + size
-        im_r_top = self._descriptors['location'][0]
-        im_r_bottom = im_r_top + size
+        #TODO: filter target_cloud (por ejemplo, una zona 4 veces mayor)
+        #size = self._descriptors['size']
+        #im_c_left = self._descriptors['location'][1]
+        #im_c_right = im_c_left + size
+        #im_r_top = self._descriptors['location'][0]
+        #im_r_bottom = im_r_top + size
+        #
+        #topleft = IntPair(im_r_top, im_c_left)
+        #bottomright = IntPair(im_r_bottom, im_c_right)
 
-        topleft = IntPair(im_r_top, im_c_left)
-        bottomright = IntPair(im_r_bottom, im_c_right)
+        # CODIGO DE C++
+        #// Define row and column limits for the zone to search the object
+        #// In this case, we look on a box N times the size of the original
+        #int N = 4;
+        #r_top_limit = r_top_limit - ( (r_bottom_limit - r_top_limit) * N);
+        #r_bottom_limit = r_bottom_limit + ( (r_bottom_limit - r_top_limit) * N);
+        #c_left_limit = c_left_limit - ( (c_right_limit - c_left_limit) * N);
+        #c_right_limit = c_right_limit + ( (c_right_limit - c_left_limit) * N);
+        #
+        #// Filter points corresponding to the zone where the object being followed is supposed to be
+        #filter_cloud(         target_cloud, filtered_target_cloud, "y", r_top_limit, r_bottom_limit);
+        #filter_cloud(filtered_target_cloud, filtered_target_cloud, "x", c_left_limit, c_right_limit);
 
-        depth_fname = str(self._descriptors['source_depth_fname'])
-        source_cloud_fname = str(self._descriptors['source_pcd_fname'])
-        target_cloud_fname = str(self._descriptors['target_pcd_fname'])
 
-        icp_result = follow(
-            topleft,
-            bottomright,
-            depth_fname,
-            source_cloud_fname,
-            target_cloud_fname
-        )
+
+        object_cloud = self._descriptors['object_cloud']
+        target_cloud = self._descriptors['pcd']
+
+        icp_result = follow(object_cloud, target_cloud)
 
         fue_exitoso = icp_result.has_converged
         tam_region = icp_result.size
