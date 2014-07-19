@@ -105,15 +105,15 @@ def from_flat_to_cloud(imR, imC, depth):
     cols_center = 320
 
     # focal distance
-    constant = 570.3;
+    constant = 570.3
 
     # move the coordinate (0,0) from the top-left corner to the center of the plane
     cloud_row = cloud_row - rows_center
     cloud_col = cloud_col - cols_center
 
     # calculate cloud
-    cloud_row = cloud_row * depth / constant / 1000;
-    cloud_col = cloud_col * depth / constant / 1000;
+    cloud_row = cloud_row * depth / constant / 1000
+    cloud_col = cloud_col * depth / constant / 1000
 
     return FloatPair(cloud_row, cloud_col)
 
@@ -185,18 +185,18 @@ def filter_cloud(cloud, field_name, lower_limit, upper_limit):
     pass_through_filter.set_filter_limits(lower_limit, upper_limit)
 
     # Filter
-    return pass_through_filter.filter();
+    return pass_through_filter.filter()
 
 #########
 # TESTS #
 #########
 def test_flat_and_cloud_conversion():
-    depth = 1300;
+    depth = 1300
 
     for i in range(0, 480):
         for j in range(0, 640):
-            cloudXY = from_flat_to_cloud(i, j, depth);
-            flatXY = from_cloud_to_flat(cloudXY.first, cloudXY.second, depth);
+            cloudXY = from_flat_to_cloud(i, j, depth)
+            flatXY = from_cloud_to_flat(cloudXY.first, cloudXY.second, depth)
 
             if not ((flatXY.first -1) <= i <= (flatXY.first +1)):
                 print flatXY.first -1

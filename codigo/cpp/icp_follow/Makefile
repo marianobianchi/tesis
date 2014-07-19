@@ -32,4 +32,5 @@ rgbd.o: rgbd.cpp
 	c++ $(NO_WARNINGS) -c $^ -o $@ $(OPENCV_INCLUDES) $(ICP_INCLUDES) $(PYTHON_INCLUDE)
 
 clean:
-	rm -f *.o main
+	rm -f *.o main icp_follow.so
+	rm ../icp_follow.so

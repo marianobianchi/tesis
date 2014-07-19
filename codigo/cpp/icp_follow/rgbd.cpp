@@ -70,7 +70,5 @@ void export_all_rgbd(){
     class_<ICPResult>("ICPResult")
         .def_readwrite("has_converged", &ICPResult::has_converged)
         .def_readwrite("score", &ICPResult::score)
-        .def_readwrite("size", &ICPResult::size)
-        .def_readwrite("top", &ICPResult::top)
-        .def_readwrite("left", &ICPResult::left);
+        .def_readwrite("cloud", &ICPResult::cloud);
 }

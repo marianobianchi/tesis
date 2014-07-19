@@ -58,11 +58,13 @@ class Follower(object):
         self.detector.update(self.descriptors())
 
         # Detectar
-        fue_exitoso, tam_region, location = self.detector.detect()
+        fue_exitoso, descriptors = self.detector.detect()
+        tam_region = 0
+        location = (0,0)
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_detected_descriptors(location, tam_region)
+            self.upgrade_detected_descriptors(descriptors)
             tam_region = self.descriptors()['size']
             location = self.descriptors()['location']
 
@@ -76,11 +78,13 @@ class Follower(object):
         self.finder.update(self.descriptors())
 
         # Busco el objeto
-        fue_exitoso, tam_region, location = self.finder.find()
+        fue_exitoso, descriptors = self.finder.find()
+        tam_region = 0
+        location = (0,0)
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
-            self.upgrade_followed_descriptors(location, tam_region)
+            self.upgrade_followed_descriptors(descriptors)
             tam_region = self.descriptors()['size']
             location = self.descriptors()['location']
 
@@ -90,18 +94,18 @@ class Follower(object):
     ##########################
     # Actualizar descriptores
     ##########################
-    def set_object_descriptors(self, ubicacion, tam_region, obj_descriptors):
-        self._obj_location = ubicacion
-        self._obj_frame_size = tam_region
+    def set_object_descriptors(self, obj_descriptors):
+        self._obj_location = obj_descriptors.pop('location')
+        self._obj_frame_size = obj_descriptors.pop('size')
         self._obj_descriptors.update(obj_descriptors)
 
-    def upgrade_detected_descriptors(self, ubicacion, tam_region):
-        desc = self.detector.calculate_descriptors(ubicacion, tam_region)
-        self.set_object_descriptors(ubicacion, tam_region, desc)
+    def upgrade_detected_descriptors(self, descriptors):
+        desc = self.detector.calculate_descriptors(descriptors)
+        self.set_object_descriptors(desc)
 
-    def upgrade_followed_descriptors(self, ubicacion, tam_region):
-        desc = self.finder.calculate_descriptors(ubicacion, tam_region)
-        self.set_object_descriptors(ubicacion, tam_region, desc)
+    def upgrade_followed_descriptors(self, descriptors):
+        desc = self.finder.calculate_descriptors(descriptors)
+        self.set_object_descriptors(desc)
 
 
 ################################
@@ -168,7 +172,7 @@ class Detector(object):
 
 class FollowerWithStaticDetection(Follower):
     def descriptors(self):
-        desc = super(StaticFollower, self).descriptors()
+        desc = super(FollowerWithStaticDetection, self).descriptors()
         desc.update({
             'nframe': self.img_provider.current_frame_number(),
             'depth_img': self.img_provider.depth_img(),
@@ -205,32 +209,42 @@ class StaticDetector(Detector):
                                  int(obj[5][0][0]) - int(obj[4][0][0]))
                 break
 
-        return fue_exitoso, tam_region, location #location=(fila, columna)
+        detected_descriptors = {
+            'size': tam_region,
+            'location': location, #location=(fila, columna)
+        }
 
-    def calculate_descriptors(self, ubicacion, tam_region):
+        return fue_exitoso, detected_descriptors
+
+    def calculate_descriptors(self, detected_descriptors):
         """
         Obtengo la nube de puntos correspondiente a la ubicacion y region
         pasadas por parametro.
         """
+        ubicacion = detected_descriptors['location']
+        tam_region = detected_descriptors['size']
+
         depth_img = self._descriptors['depth_img']
 
         rows_cols_limits = from_flat_to_cloud_limits(
             ubicacion,
             (ubicacion[0] + tam_region, ubicacion[1] + tam_region),
             depth_img,
-        );
+        )
 
-        r_top_limit = rows_cols_limits.first.first;
-        r_bottom_limit = rows_cols_limits.first.second;
-        c_left_limit = rows_cols_limits.second.first;
-        c_right_limit = rows_cols_limits.second.second;
+        r_top_limit = rows_cols_limits.first.first
+        r_bottom_limit = rows_cols_limits.first.second
+        c_left_limit = rows_cols_limits.second.first
+        c_right_limit = rows_cols_limits.second.second
 
         cloud = self._descriptors['pcd']
 
         cloud = filter_cloud(cloud, "y", r_top_limit, r_bottom_limit)
         cloud = filter_cloud(cloud, "x", c_left_limit, c_right_limit)
 
-        return {'object_cloud': cloud}
+        detected_descriptors.update({'object_cloud': cloud})
+
+        return detected_descriptors
 
 
 class ICPFinder(Finder):
@@ -266,6 +280,39 @@ class ICPFinder(Finder):
 
         icp_result = follow(object_cloud, target_cloud)
 
+
+        #TODO: guardar/hacer algo con la nube de puntos y calcular:
+        # tamaño del cuadrado que contiene al objeto y la posicion de la esq
+        # superior izquierda
+
+        # /**
+        # * Busco los limites en el dominio de las filas y columnas del RGB
+        # * */
+        #int col_left_limit = 639;
+        #int col_right_limit = 0;
+        #int row_top_limit = 479;
+        #int row_bottom_limit = 0;
+        #
+        #IntPair flat_xy;
+        #
+        #for (int i = 0; i < Final.points.size (); i++){
+        #    flat_xy = from_cloud_to_flat(Final.points[i].y, Final.points[i].x, Final.points[i].z);
+        #
+        #    if(flat_xy.first < row_top_limit) row_top_limit = flat_xy.first;
+        #    if(flat_xy.first > row_bottom_limit) row_bottom_limit = flat_xy.first;
+        #
+        #    if(flat_xy.second < col_left_limit) col_left_limit = flat_xy.second;
+        #    if(flat_xy.second > col_right_limit) col_right_limit = flat_xy.second;
+        #}
+
+        #int width = col_right_limit - col_left_limit;
+        #int height = row_bottom_limit - row_top_limit;
+        #res.size = width > height? width: height;
+        #res.top = row_top_limit;
+        #res.left = col_left_limit;
+
+
+
         fue_exitoso = icp_result.has_converged
         tam_region = icp_result.size
         location = (icp_result.top, icp_result.left)
@@ -285,7 +332,7 @@ def prueba_de_deteccion_estatica():
 
     finder = Finder()
 
-    follower = Follower(img_provider, detector, finder)
+    follower = FollowerWithStaticDetection(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo('Deteccion estatica - Sin seguidor')
 
@@ -319,4 +366,5 @@ def prueba_seguimiento_ICP():
     ).run()
 
 if __name__ == '__main__':
-    prueba_seguimiento_ICP()
+    #prueba_seguimiento_ICP()
+    prueba_de_deteccion_estatica()

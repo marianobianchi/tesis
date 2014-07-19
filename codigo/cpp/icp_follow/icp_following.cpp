@@ -20,37 +20,15 @@ ICPResult follow (pcl::PointCloud<pcl::PointXYZ>::Ptr object_cloud,
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
     icp.setInputSource(object_cloud);
     icp.setInputTarget(target_cloud);
-    pcl::PointCloud<pcl::PointXYZ> Final;
-    icp.align(Final);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
+    icp.align(*final);
 
-    /**
-     * Busco los limites en el dominio de las filas y columnas del RGB
-     * */
-    int col_left_limit = 639;
-    int col_right_limit = 0;
-    int row_top_limit = 479;
-    int row_bottom_limit = 0;
 
-    IntPair flat_xy;
 
-    for (int i = 0; i < Final.points.size (); i++){
-        flat_xy = from_cloud_to_flat(Final.points[i].y, Final.points[i].x, Final.points[i].z);
-
-        if(flat_xy.first < row_top_limit) row_top_limit = flat_xy.first;
-        if(flat_xy.first > row_bottom_limit) row_bottom_limit = flat_xy.first;
-
-        if(flat_xy.second < col_left_limit) col_left_limit = flat_xy.second;
-        if(flat_xy.second > col_right_limit) col_right_limit = flat_xy.second;
-    }
-
-    ICPResult res;
+    ICPResult res;//(icp.hasConverged(), icp.getFitnessScore(), final);
     res.has_converged = icp.hasConverged();
     res.score = icp.getFitnessScore();
-    int width = col_right_limit - col_left_limit;
-    int height = row_bottom_limit - row_top_limit;
-    res.size = width > height? width: height;
-    res.top = row_top_limit;
-    res.left = col_left_limit;
+    res.cloud = final;
 
     return res;
 }

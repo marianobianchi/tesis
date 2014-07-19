@@ -14,4 +14,5 @@ depth2RGB.o: depth2RGB.cpp
 	c++ $(NO_WARNINGS) -c $^ -o $@ $(INCLUDES)
 
 clean:
-	rm -f *.o
+	rm -f *.o *.so
+	rm -f ../depth_to_rgb.so
