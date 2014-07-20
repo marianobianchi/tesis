@@ -85,9 +85,9 @@ class FrameNamesAndImageProvider(object):
         img = cv2.imread(fname, cv2.IMREAD_COLOR)
         return img
 
-    def depth_img(self):
+    def rgbdepth_img(self):
         fname = self.depth_fname()
-        depth_img = cv2.imread(depth_filename, cv2.IMREAD_ANYDEPTH)
+        depth_img = cv2.imread(fname, cv2.IMREAD_ANYDEPTH)
 
         height = len(depth_img)
         width = len(depth_img[0])
@@ -98,6 +98,11 @@ class FrameNamesAndImageProvider(object):
                 rgbdepth_img[r][c] = [char_rgb.blue, char_rgb.green, char_rgb.red]
 
         return rgbdepth_img
+
+    def depth_img(self):
+        fname = self.depth_fname()
+        depth_img = cv2.imread(fname, cv2.IMREAD_ANYDEPTH)
+        return depth_img
 
     def pcd(self):
         fname = self.pcd_fname()

@@ -30,7 +30,7 @@ class NameBasedFollowingScheme(object):
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(
-            img_list=self.img_provider,
+            img_provider=self.img_provider,
             ubicacion=ubicacion_inicial,
             tam_region=tam_region,
             fue_exitoso=fue_exitoso,
@@ -60,7 +60,7 @@ class NameBasedFollowingScheme(object):
 
             # Muestro el seguimiento
             self.show_following.run(
-                img_list=self.img_provider,
+                img_provider=self.img_provider,
                 ubicacion=nueva_ubicacion,
                 tam_region=tam_region,
                 fue_exitoso=fue_exitoso,

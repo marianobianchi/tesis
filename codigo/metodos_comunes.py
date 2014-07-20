@@ -154,8 +154,9 @@ def from_flat_to_cloud_limits(topleft, bottomright, depth_img):
 
     # TODO: paralelizar estos "for" usando funciones de OpenCV o PCL o lo que sea
     # Hint: que "from_flat_to_cloud" reciba una matriz (la imagen) directamente
-    for r in range(topleft.first, bottomright.first + 1):
-        for c in range(topleft.second, bottomright.second + 1):
+
+    for r in range(topleft[0], bottomright[0] + 1):
+        for c in range(topleft[1], bottomright[1] + 1):
             depth = depth_img[r][c]
 
             cloudRC = from_flat_to_cloud(r, c, depth)

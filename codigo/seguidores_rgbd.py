@@ -9,7 +9,7 @@ import scipy.io
 
 
 from esquemas_seguimiento import NameBasedFollowingScheme
-from metodos_comunes import (from_flat_to_cloud, filter_cloud)
+from metodos_comunes import (from_flat_to_cloud_limits, filter_cloud)
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider
 from cpp.icp_follow import *
@@ -167,7 +167,6 @@ class Detector(object):
 
     def detect(self):
         pass
-
 
 
 class FollowerWithStaticDetection(Follower):
