@@ -1,16 +1,11 @@
 #include <iostream>
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/highgui/highgui.hpp>
-
 #include <pcl/registration/icp.h>
 
-#include "tipos_basicos.h"
-#include "rgbd.h"
 #include "icp_following.h"
 
-ICPResult follow (pcl::PointCloud<pcl::PointXYZ>::Ptr object_cloud,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud)
+ICPResult follow (boost::python::object source_cloud,
+                  boost::python::object target_cloud)
 {
     /**
      * Calculo ICP
@@ -18,7 +13,7 @@ ICPResult follow (pcl::PointCloud<pcl::PointXYZ>::Ptr object_cloud,
 
     // Calculate icp transformation
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
-    icp.setInputSource(object_cloud);
+    icp.setInputSource(source_cloud);
     icp.setInputTarget(target_cloud);
     pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
     icp.align(*final);

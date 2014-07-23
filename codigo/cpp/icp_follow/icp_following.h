@@ -1,9 +1,12 @@
 #ifndef __ICP_FOLLOWING__
 #define __ICP_FOLLOWING__
 
+#include <boost/shared_ptr.hpp>
 
-ICPResult follow (pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
-                  pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud);
+#include "tipos_basicos.h"
+
+ICPResult follow (boost::python::object source_cloud,
+                  boost::python::object target_cloud);
 
 void export_follow();
 

@@ -5,8 +5,6 @@ from __future__ import (unicode_literals, division)
 import numpy as np
 import cv2
 
-from cpp.icp_follow import (IntPair, FloatPair, DoubleFloatPair)
-
 
 def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,
                                                         color=(0, 0, 0)):
@@ -94,7 +92,7 @@ def from_flat_to_cloud(imR, imC, depth):
 
     # return something invalid if depth is zero
     if depth == 0:
-        return FloatPair(-10000, -10000)
+        return (-10000.0, -10000.0)
 
     # cloud coordinates
     cloud_row = float(imR)
@@ -115,7 +113,7 @@ def from_flat_to_cloud(imR, imC, depth):
     cloud_row = cloud_row * depth / constant / 1000
     cloud_col = cloud_col * depth / constant / 1000
 
-    return FloatPair(cloud_row, cloud_col)
+    return (cloud_row, cloud_col)
 
 
 def from_cloud_to_flat(cloud_row, cloud_col, depth):
@@ -134,7 +132,7 @@ def from_cloud_to_flat(cloud_row, cloud_col, depth):
     imR = imR + rows_center
     imC = imC + cols_center
 
-    return IntPair(imR, imC)
+    return (imR, imC)
 
 
 def from_flat_to_cloud_limits(topleft, bottomright, depth_img):
@@ -161,21 +159,21 @@ def from_flat_to_cloud_limits(topleft, bottomright, depth_img):
 
             cloudRC = from_flat_to_cloud(r, c, depth)
 
-            if cloudRC.first != -10000 and cloudRC.first < r_top_limit:
-                r_top_limit = cloudRC.first
+            if cloudRC[0] != -10000 and cloudRC[0] < r_top_limit:
+                r_top_limit = cloudRC[0]
 
-            if cloudRC.first != -10000 and cloudRC.first > r_bottom_limit:
-                r_bottom_limit = cloudRC.first
+            if cloudRC[0] != -10000 and cloudRC[0] > r_bottom_limit:
+                r_bottom_limit = cloudRC[0]
 
-            if cloudRC.second != -10000 and cloudRC.second < c_left_limit:
-                c_left_limit = cloudRC.second
+            if cloudRC[1] != -10000 and cloudRC[1] < c_left_limit:
+                c_left_limit = cloudRC[1]
 
-            if cloudRC.second != -10000 and cloudRC.second > c_right_limit:
-                c_right_limit = cloudRC.second
+            if cloudRC[1] != -10000 and cloudRC[1] > c_right_limit:
+                c_right_limit = cloudRC[1]
 
-    top_bottom = FloatPair(r_top_limit, r_bottom_limit)
-    left_right = FloatPair(c_left_limit, c_right_limit)
-    res = DoubleFloatPair(top_bottom, left_right)
+    top_bottom = (r_top_limit, r_bottom_limit)
+    left_right = (c_left_limit, c_right_limit)
+    res = (top_bottom, left_right)
     return res
 
 
@@ -197,15 +195,30 @@ def test_flat_and_cloud_conversion():
     for i in range(0, 480):
         for j in range(0, 640):
             cloudXY = from_flat_to_cloud(i, j, depth)
-            flatXY = from_cloud_to_flat(cloudXY.first, cloudXY.second, depth)
+            flatXY = from_cloud_to_flat(cloudXY[0], cloudXY[1], depth)
 
-            if not ((flatXY.first -1) <= i <= (flatXY.first +1)):
-                print flatXY.first -1
+            if not ((flatXY[0] -1) <= i <= (flatXY[0] +1)):
+                print flatXY[0] -1
                 print i
-                print flatXY.first +1
+                print flatXY[0] +1
                 raise Exception('Falla la fila')
-            if not ((flatXY.second -1) <= j <= (flatXY.second +1)):
-                print flatXY.second -1
+            if not ((flatXY[1] -1) <= j <= (flatXY[1] +1)):
+                print flatXY[1] -1
                 print j
-                print flatXY.second +1
+                print flatXY[1] +1
                 raise Exception('Falla la columna')
+
+
+
+def measure_time(func):
+    """
+    Decorador que imprime en pantalla el tiempo que tarda en ejecutarse
+    una funcion
+    """
+    def inner(*args, **kwargs):
+        start_time = time.time()
+        val = func(*args, **kwargs)
+        end_time = time.time()
+        print func.__name__, "took", end_time - start_time, "to finish"
+        return val
+    return inner

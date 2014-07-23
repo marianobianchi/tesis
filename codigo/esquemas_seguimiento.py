@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 
 import cv2
-
+import time
 
 
 class FollowingScheme(object):
@@ -22,9 +22,12 @@ class FollowingScheme(object):
         ######################
         # Etapa de detección
         ######################
+        a=time.time()
         fue_exitoso, tam_region, ubicacion_inicial = (
             self.obj_follower.detect()
         )
+        b=time.time()
+        print "Tardó",b-a, "segundos en detectar"
         # TODO: Hacer algo cuando la deteccion no es exitosa
 
         # Muestro el seguimiento para hacer pruebas
@@ -47,15 +50,21 @@ class FollowingScheme(object):
 
             es_deteccion = False
             if fue_exitoso:
+                a=time.time()
                 fue_exitoso, tam_region, nueva_ubicacion = (
                     self.obj_follower.follow()
                 )
+                b=time.time()
+                print "Tardó",b-a, "segundos en seguir"
 
             if not fue_exitoso:
                 es_deteccion = True
+                a=time.time()
                 fue_exitoso, tam_region, nueva_ubicacion = (
                     self.obj_follower.detect()
                 )
+                b=time.time()
+                print "Tardó",b-a, "segundos en detectar"
 
             # Muestro el seguimiento
             self.show_following.run(
