@@ -111,7 +111,7 @@ class FrameNamesAndImageProvider(object):
         return pc
 
     def image_list(self):
-        return [self.rgb_img(), self.depth_img()]
+        return [self.rgb_img()]#, self.rgbdepth_img()]
 
     def next(self):
         self.next_frame_number += 1

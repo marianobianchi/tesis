@@ -49,10 +49,10 @@ class NameBasedFollowingScheme(object):
             es_deteccion = False
             if fue_exitoso:
                 fue_exitoso, tam_region, nueva_ubicacion = (
-                self.obj_follower.follow()
+                    self.obj_follower.follow()
                 )
 
-            else:
+            if not fue_exitoso:
                 es_deteccion = True
                 fue_exitoso, tam_region, nueva_ubicacion = (
                     self.obj_follower.detect()

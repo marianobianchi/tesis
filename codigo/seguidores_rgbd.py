@@ -145,7 +145,7 @@ class Finder(object):
     # Esquema de seguimiento del objeto
     #####################################
     def find(self):
-        return (False, 0, (0, 0))
+        return (False, {})
 
 
 class Detector(object):
