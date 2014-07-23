@@ -7,7 +7,7 @@ import cv2
 
 
 
-class NameBasedFollowingScheme(object):
+class FollowingScheme(object):
 
     def __init__(self, img_provider, obj_follower, show_following):
         self.img_provider = img_provider
@@ -22,7 +22,6 @@ class NameBasedFollowingScheme(object):
         ######################
         # Etapa de detección
         ######################
-
         fue_exitoso, tam_region, ubicacion_inicial = (
             self.obj_follower.detect()
         )
