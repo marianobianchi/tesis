@@ -6,8 +6,8 @@ from __future__ import unicode_literals
 import os
 import cv2
 import numpy as np
-import pcl
 
+from cpp.my_pcl import read_pcd
 from cpp.depth_to_rgb import *
 
 
@@ -29,7 +29,8 @@ class FrameNamesAndImageProvider(object):
             if frame_number > last_frame_number:
                 last_frame_number = frame_number
 
-        self.next_frame_number = 1
+        print "CORREGIR INICIO"
+        self.next_frame_number = 4
         self.last_frame_number = last_frame_number
 
     def _get_fnumber(self, fname):
@@ -106,8 +107,7 @@ class FrameNamesAndImageProvider(object):
 
     def pcd(self):
         fname = self.pcd_fname()
-        pc = pcl.PointCloud()
-        pc.from_file(fname)
+        pc = read_pcd(str(fname))
         return pc
 
     def image_list(self):

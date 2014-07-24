@@ -3,13 +3,6 @@
 from __future__ import (unicode_literals, division)
 
 
-from esquemas_seguimiento import FollowingScheme
-from metodos_comunes import (from_flat_to_cloud_limits, filter_cloud)
-from observar_seguimiento import MuestraSeguimientoEnVivo
-
-from cpp.icp_follow import *
-
-
 #####################
 # Objetos seguidores
 #####################
@@ -162,4 +155,3 @@ class Detector(object):
 
     def detect(self):
         pass
-
