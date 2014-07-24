@@ -40,10 +40,10 @@ class FollowingScheme(object):
         # Etapa de seguimiento
         #######################
 
-        while self.img_provider.have_images():
-            # Adelanto un frame
-            self.img_provider.next()
+        # Adelanto un frame
+        self.img_provider.next()
 
+        while self.img_provider.have_images():
             es_deteccion = False
             if fue_exitoso:
                 fue_exitoso, tam_region, nueva_ubicacion = (
@@ -55,7 +55,6 @@ class FollowingScheme(object):
                 fue_exitoso, tam_region, nueva_ubicacion = (
                     self.obj_follower.detect()
                 )
-                }
             # Muestro el seguimiento
             self.show_following.run(
                 img_provider=self.img_provider,
@@ -65,5 +64,8 @@ class FollowingScheme(object):
                 es_deteccion=es_deteccion,
                 frenar=True,
             )
+
+            # Adelanto un frame
+            self.img_provider.next()
 
         self.show_following.close()

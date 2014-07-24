@@ -2,6 +2,8 @@
 
 from __future__ import (unicode_literals, division)
 
+import time
+
 import numpy as np
 import cv2
 
@@ -222,3 +224,17 @@ def measure_time(func):
         print func.__name__, "took", end_time - start_time, "to finish"
         return val
     return inner
+
+
+class Timer(object):
+    def __init__(self, func_name):
+        self.func_name = func_name
+
+    def __enter__(self):
+        self.start = time.time()
+        return self
+
+    def __exit__(self, *args):
+        self.end = time.time()
+        self.interval = self.end - self.start
+        print self.func_name, "took", self.end - self.start, "to finish"

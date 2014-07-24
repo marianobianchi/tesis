@@ -6,9 +6,11 @@ from __future__ import (unicode_literals, division)
 from cpp.my_pcl import (icp, filter_cloud, points, get_point)
 from detector_estatico_sin_deteccion import StaticDetector
 from esquemas_seguimiento import FollowingScheme
-from metodos_comunes import (from_flat_to_cloud_limits, from_cloud_to_flat)
+from metodos_comunes import (from_flat_to_cloud_limits, from_cloud_to_flat,
+                             measure_time, Timer)
 from observar_seguimiento import MuestraSeguimientoEnVivo
-from proveedores_de_imagenes import FrameNamesAndImageProvider
+from proveedores_de_imagenes import (FrameNamesAndImageProvider,
+                                     FrameNamesAndImageProviderPreCharged)
 from seguidores_rgbd import (Follower, Finder)
 
 
@@ -58,11 +60,13 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
 class ICPFinder(Finder):
 
     def find(self):
+
+        # Obtengo pcd's y depth
         object_cloud = self._descriptors['object_cloud']
         target_cloud = self._descriptors['pcd']
         depth_img = self._descriptors['depth_img']
 
-        #TODO: filter target_cloud (por ejemplo, una zona 4 veces mayor)
+        # Get frame size and location (in RGB image)
         size = self._descriptors['size']
         im_c_left = self._descriptors['location'][1]
         im_c_right = im_c_left + size
@@ -72,12 +76,13 @@ class ICPFinder(Finder):
         topleft = (im_r_top, im_c_left)
         bottomright = (im_r_bottom, im_c_right)
 
+        # Get location in point cloud
         rows_cols_limits = from_flat_to_cloud_limits(topleft, bottomright, depth_img)
-
         r_top_limit = rows_cols_limits[0][0]
         r_bottom_limit = rows_cols_limits[0][1]
         c_left_limit = rows_cols_limits[1][0]
         c_right_limit = rows_cols_limits[1][1]
+
 
         # TODO: se puede hacer una busqueda mejor, en espiral o algo asi
         #       tomando como valor de comparacion el score que devuelve ICP
@@ -96,7 +101,8 @@ class ICPFinder(Finder):
         filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
 
         # Calculate ICP
-        icp_result = icp(object_cloud, target_cloud)
+        with Timer('ICP') as t:
+            icp_result = icp(object_cloud, target_cloud)
 
         fue_exitoso = icp_result.has_converged
         descriptors = {}
@@ -145,7 +151,8 @@ class ICPFinder(Finder):
 
 
 def prueba_seguimiento_ICP():
-    img_provider = FrameNamesAndImageProvider(
+    #img_provider = FrameNamesAndImageProvider(
+    img_provider = FrameNamesAndImageProviderPreCharged(
         'videos/rgbd/scenes/', 'desk', '1'
     )  # path, objname, number
 
@@ -165,14 +172,6 @@ def prueba_seguimiento_ICP():
         follower,
         show_following,
     ).run()
-
-
-# HACER mi propia clase "cloud" en C++ y exportarla a python con los
-# siguientes metodos:
-# 1- el constructor recibe el nombre del archivo y levanta el pcd
-# 2- "filter_cloud" que filtra la nube
-# CAMBIAR el nombre del metodo "follow" por "icp"
-# Ademas hacer que "icp" se calcule recibiendo 2 de estos objetos "cloud"
 
 
 if __name__ == '__main__':

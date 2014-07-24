@@ -3,7 +3,9 @@
 #Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
 from __future__ import unicode_literals
 
+import sys
 import os
+
 import cv2
 import numpy as np
 
@@ -21,7 +23,6 @@ class FrameNamesAndImageProvider(object):
 
         # get the number of frames available
         filenames = os.listdir(path)
-
         last_frame_number = 1
 
         for filename in filenames:
@@ -29,9 +30,12 @@ class FrameNamesAndImageProvider(object):
             if frame_number > last_frame_number:
                 last_frame_number = frame_number
 
-        print "CORREGIR INICIO"
-        self.next_frame_number = 4
-        self.last_frame_number = last_frame_number
+        # Set initial and last frame number
+        print "CAMBIAR INICIO"
+        self.offset_frame_count = 55
+        self.next_frame_number = self.offset_frame_count
+        print "CAMBIAR FIN"
+        self.last_frame_number = 59#last_frame_number
 
     def _get_fnumber(self, fname):
         parts = fname.split('.')[0].split('_')
@@ -125,3 +129,29 @@ class FrameNamesAndImageProvider(object):
         Gives numbers from 0 to #frames-1
         """
         return self.next_frame_number - 1
+
+
+class FrameNamesAndImageProviderPreCharged(FrameNamesAndImageProvider):
+    def __init__(self, path, objname, number):
+        (super(FrameNamesAndImageProviderPreCharged, self)
+         .__init__(path, objname, number))
+
+        self._pcd_images = []
+
+        total_files = self.last_frame_number - self.next_frame_number + 1
+
+        for i in range(self.next_frame_number, self.last_frame_number + 1):
+            sys.stdout.write(
+                "Reading pcd file number " +
+                str(i - self.offset_frame_count + 1) +
+                "/" +
+                str(total_files) +
+                "\r"
+            )
+            sys.stdout.flush()
+            fname = self._frame_fname(i)
+            pc = read_pcd(str(fname))
+            self._pcd_images.append(pc)
+
+    def pcd(self):
+        return self._pcd_images[self.next_frame_number - self.offset_frame_count]
