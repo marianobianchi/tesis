@@ -22,13 +22,9 @@ class FollowingScheme(object):
         ######################
         # Etapa de detección
         ######################
-        a=time.time()
         fue_exitoso, tam_region, ubicacion_inicial = (
             self.obj_follower.detect()
         )
-        b=time.time()
-        print "Tardó",b-a, "segundos en detectar"
-        # TODO: Hacer algo cuando la deteccion no es exitosa
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(

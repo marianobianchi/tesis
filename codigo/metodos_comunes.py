@@ -116,7 +116,7 @@ def from_flat_to_cloud(imR, imC, depth):
     return (cloud_row, cloud_col)
 
 
-def from_cloud_to_flat(cloud_row, cloud_col, depth):
+def from_cloud_to_flat(cloud_row, cloud_col, float_depth):
     # images size is 640 COLS x 480 ROWS
     rows_center = 240
     cols_center = 320
@@ -125,8 +125,8 @@ def from_cloud_to_flat(cloud_row, cloud_col, depth):
     constant = 570.3
 
     # inverse of cloud calculation
-    imR = int(cloud_row / depth * constant * 1000)
-    imC = int(cloud_col / depth * constant * 1000)
+    imR = int(cloud_row / float_depth * constant)
+    imC = int(cloud_col / float_depth * constant)
 
 
     imR = imR + rows_center
@@ -195,7 +195,7 @@ def test_flat_and_cloud_conversion():
     for i in range(0, 480):
         for j in range(0, 640):
             cloudXY = from_flat_to_cloud(i, j, depth)
-            flatXY = from_cloud_to_flat(cloudXY[0], cloudXY[1], depth)
+            flatXY = from_cloud_to_flat(cloudXY[0], cloudXY[1], depth / 1000)
 
             if not ((flatXY[0] -1) <= i <= (flatXY[0] +1)):
                 print flatXY[0] -1

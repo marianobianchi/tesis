@@ -111,10 +111,6 @@ class ICPFinder(Finder):
             row_top_limit = filas - 1
             row_bottom_limit = 0
 
-            import rpdb2
-            rpdb2.start_embedded_debugger("pass")
-
-
             for i in range(points(icp_result.cloud)):
                 point_xyz = get_point(icp_result.cloud, i)
                 c = point_xyz.x
