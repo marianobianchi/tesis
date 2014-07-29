@@ -18,6 +18,7 @@ class FollowingScheme(object):
         #########################
         # Etapa de entrenamiento
         #########################
+        self.obj_follower.train()
 
         ######################
         # Etapa de detección

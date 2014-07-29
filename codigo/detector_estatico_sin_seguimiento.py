@@ -59,7 +59,7 @@ class StaticDetector(Detector):
 
 def prueba_de_deteccion_estatica():
     img_provider = FrameNamesAndImageProvider(
-        'videos/rgbd/scenes/', 'desk', '1'
+        'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
     detector = StaticDetector(

@@ -38,6 +38,12 @@ class Follower(object):
         })
         return desc
 
+    ###########################
+    # Funcion de entrenamiento
+    ###########################
+    def train(self):
+        pass
+
     #######################
     # Funcion de deteccion
     #######################

@@ -1,18 +1,63 @@
 #include "icp_following.h"
 
 ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
-              pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud)
+              pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud,
+              ICPDefaults &icp_defaults)
 {
     /**
      * Calculate ICP transformation
      **/
     pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+
+
+    // Set the max correspondence distance (in meters)
+    icp.setMaxCorrespondenceDistance(icp_defaults.max_corr_dist);
+
+    // Ejemplo: 50
+    icp.setMaximumIterations(icp_defaults.max_iter);
+
+    // Ejemplo: 1e-8
+    icp.setTransformationEpsilon(icp_defaults.transf_epsilon);
+
+    // Ejemplo: 1
+    icp.setEuclideanFitnessEpsilon(icp_defaults.euc_fit);
+
+
+
+    icp.setRANSACIterations(icp_defaults.ran_iter);
+    icp.setRANSACOutlierRejectionThreshold(icp_defaults.ran_out_rej);
+
+
+    if(icp_defaults.show_values){
+
+        // SET DIFFERENT PARAMETERS
+        std::cout << "ICP EPSILON DEFAULT = ";
+        std::cout << icp.getEuclideanFitnessEpsilon() << std::endl;
+
+        std::cout << "MAX CORR DISTANCE DEFAULT = ";
+        std::cout << icp.getMaxCorrespondenceDistance() << std::endl;
+
+        std::cout << "MAX ITERATIONS DEFAULT = ";
+        std::cout << icp.getMaximumIterations() << std::endl;
+
+        std::cout << "TRANSF EPSILON DEFAULT = ";
+        std::cout << icp.getTransformationEpsilon() << std::endl;
+
+        std::cout << "RANSAC ITERATIONS DEFAULT = ";
+        std::cout << icp.getRANSACIterations() << std::endl;
+
+        std::cout << "RANSAC OUTLIER REJECTION THRESHOLD DEFAULT = ";
+        std::cout << icp.getRANSACOutlierRejectionThreshold() << std::endl;
+
+        // setTransformationEstimation (SVD, point to plane, etc)
+    }
+
     icp.setInputSource(source_cloud);
     icp.setInputTarget(target_cloud);
     pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
     icp.align(*final);
 
-    ICPResult res;//(icp.hasConverged(), icp.getFitnessScore(), final);
+    ICPResult res;
     res.has_converged = icp.hasConverged();
     res.score = icp.getFitnessScore();
     res.cloud = final;
@@ -32,6 +77,10 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr read_pcd(std::string pcd_filename)
     }
 
     return cloud;
+}
+
+void save_pcd(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string fname){
+    pcl::io::savePCDFileBinary(fname, *cloud);
 }
 
 
@@ -86,19 +135,29 @@ BOOST_PYTHON_MODULE(my_pcl)
         .def_readonly("y", &pcl::PointXYZ::y)
         .def_readonly("z", &pcl::PointXYZ::z);
 
+    class_<ICPDefaults>("ICPDefaults")
+        .def(init<>())
+        .def_readwrite("euc_fit", &ICPDefaults::euc_fit)
+        .def_readwrite("max_corr_dist", &ICPDefaults::max_corr_dist)
+        .def_readwrite("max_iter", &ICPDefaults::max_iter)
+        .def_readwrite("transf_epsilon", &ICPDefaults::transf_epsilon)
+        .def_readwrite("ran_iter", &ICPDefaults::ran_iter)
+        .def_readwrite("ran_out_rej", &ICPDefaults::ran_out_rej)
+        .def_readwrite("show_values", &ICPDefaults::show_values);
+
     // Funciones basicas
     def("read_pcd", read_pcd);
+    def("save_pcd", save_pcd);
     def("filter_cloud", filter_cloud);
 
     // Funciones que son de la clase PointCloud pero las manejo sueltas
     def("points", points);
     def("get_point", get_point);
 
-
     class_<ICPResult>("ICPResult")
         .def_readonly("has_converged", &ICPResult::has_converged)
         .def_readonly("score", &ICPResult::score)
-        .def_readonly("cloud", &ICPResult::cloud);
+        .def_readwrite("cloud", &ICPResult::cloud);
 
     def("icp", icp);
 

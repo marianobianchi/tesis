@@ -3,7 +3,7 @@
 
 from __future__ import (unicode_literals, division)
 
-from cpp.my_pcl import (icp, filter_cloud, points, get_point)
+from cpp.my_pcl import (icp, filter_cloud, points, get_point, save_pcd)
 from detector_estatico_sin_deteccion import StaticDetector
 from esquemas_seguimiento import FollowingScheme
 from metodos_comunes import (from_flat_to_cloud_limits, from_cloud_to_flat,
@@ -12,6 +12,7 @@ from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import (FrameNamesAndImageProvider,
                                      FrameNamesAndImageProviderPreCharged)
 from seguidores_rgbd import (Follower, Finder)
+
 
 
 class FollowerWithStaticDetectionAndPCD(Follower):
@@ -58,6 +59,41 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
 
 
 class ICPFinder(Finder):
+    # TODO: se puede hacer una busqueda mejor, en espiral o algo asi
+    #       tomando como valor de comparacion el score que devuelve ICP
+    @measure_time
+    def simple_follow(self,
+                      r_top_limit,
+                      r_bottom_limit,
+                      c_left_limit,
+                      c_right_limit,
+                      object_cloud,
+                      target_cloud):
+        """
+        Tomando como centro el centro del cuadrado que contiene al objeto
+        en el frame anterior, busco el mismo objeto en una zona 4 veces mayor
+        a la original.
+        """
+        # Define row and column limits for the zone to search the object
+        # In this case, we look on a box N times the size of the original
+        n = 2
+        r_top_limit = r_top_limit - ( (r_bottom_limit - r_top_limit) * n)
+        r_bottom_limit = r_bottom_limit + ( (r_bottom_limit - r_top_limit) * n)
+        c_left_limit = c_left_limit - ( (c_right_limit - c_left_limit) * n)
+        c_right_limit = c_right_limit + ( (c_right_limit - c_left_limit) * n)
+
+        # Filter points corresponding to the zone where the object being
+        # followed is supposed to be
+        filter_cloud(target_cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
+        filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
+
+        # Calculate ICP
+        icp_result = icp(object_cloud, target_cloud)
+        save_pcd(object_cloud, str('A_object_cloud.pcd'))
+        save_pcd(target_cloud, str('A_target_cloud.pcd'))
+        save_pcd(icp_result.cloud, str('A_transformed_model_cloud.pcd'))
+
+        return icp_result
 
     def find(self):
 
@@ -83,26 +119,14 @@ class ICPFinder(Finder):
         c_left_limit = rows_cols_limits[1][0]
         c_right_limit = rows_cols_limits[1][1]
 
-
-        # TODO: se puede hacer una busqueda mejor, en espiral o algo asi
-        #       tomando como valor de comparacion el score que devuelve ICP
-
-        # Define row and column limits for the zone to search the object
-        # In this case, we look on a box N times the size of the original
-        n = 4
-        r_top_limit = r_top_limit - ( (r_bottom_limit - r_top_limit) * n)
-        r_bottom_limit = r_bottom_limit + ( (r_bottom_limit - r_top_limit) * n)
-        c_left_limit = c_left_limit - ( (c_right_limit - c_left_limit) * n)
-        c_right_limit = c_right_limit + ( (c_right_limit - c_left_limit) * n)
-
-        # Filter points corresponding to the zone where the object being
-        # followed is supposed to be
-        filter_cloud(target_cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
-        filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
-
-        # Calculate ICP
-        with Timer('ICP') as t:
-            icp_result = icp(object_cloud, target_cloud)
+        icp_result = self.simple_follow(
+            r_top_limit,
+            r_bottom_limit,
+            c_left_limit,
+            c_right_limit,
+            object_cloud,
+            target_cloud,
+        )
 
         fue_exitoso = icp_result.has_converged
         descriptors = {}
@@ -153,7 +177,7 @@ class ICPFinder(Finder):
 def prueba_seguimiento_ICP():
     #img_provider = FrameNamesAndImageProvider(
     img_provider = FrameNamesAndImageProviderPreCharged(
-        'videos/rgbd/scenes/', 'desk', '1'
+        'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
     detector = StaticDetectorWithPCDFiltering(

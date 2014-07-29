@@ -14,15 +14,21 @@ from cpp.depth_to_rgb import *
 
 
 class FrameNamesAndImageProvider(object):
-    def __init__(self, path, objname, number):
-        path = os.path.join(path, objname)
-        path = os.path.join(path, objname + '_' + number)
-        self.path = path
-        self.objname = objname
-        self.number = number
+    def __init__(self, scene_path, scene, scene_number, obj_path, obj, obj_number):
+        scene_path = os.path.join(scene_path, scene)
+        scene_path = os.path.join(scene_path, scene + '_' + scene_number)
+        self.scene_path = scene_path
+        self.scene = scene
+        self.scene_number = scene_number
+
+        obj_path = os.path.join(obj_path, obj)
+        obj_path = os.path.join(obj_path, obj + '_' + obj_number)
+        self.obj_path = obj_path
+        self.obj = obj
+        self.obj_number = obj_number
 
         # get the number of frames available
-        filenames = os.listdir(path)
+        filenames = os.listdir(scene_path)
         last_frame_number = 1
 
         for filename in filenames:
@@ -35,7 +41,24 @@ class FrameNamesAndImageProvider(object):
         self.offset_frame_count = 55
         self.next_frame_number = self.offset_frame_count
         print "CAMBIAR FIN"
-        self.last_frame_number = 59#last_frame_number
+        self.last_frame_number = 56#last_frame_number
+
+    def _obj_fname(self, obj_scene_number=1, frame_number=1, suffix='.pcd'):
+        generic_fname = '{obj}_{obj_number}_{obj_scene_number}_{frame_number}{suffix}'
+
+        fname = generic_fname.format(
+            obj=self.obj,
+            obj_number=self.obj_number,
+            obj_scene_number=obj_scene_number,
+            frame_number=frame_number,
+            suffix=suffix,
+        )
+        return os.path.join(self.obj_path, fname)
+
+    def obj_pcd(self, n=1):
+        fname = self._obj_fname(frame_number=n)
+        pc = read_pcd(str(fname))
+        return pc
 
     def _get_fnumber(self, fname):
         parts = fname.split('.')[0].split('_')
@@ -52,16 +75,16 @@ class FrameNamesAndImageProvider(object):
 
     def _frame_fname(self, nframe, is_depth=False, is_rgb=False):
 
-        generic_fname = '{objname}_{number}_{nframe}'
+        generic_fname = '{scene}_{scene_number}_{nframe}'
         if is_depth:
             generic_fname += '_depth'
 
         fname_no_extension = generic_fname.format(
-            objname=self.objname,
-            number=self.number,
+            scene=self.scene,
+            scene_number=self.scene_number,
             nframe=nframe,
         )
-        fname = os.path.join(self.path, fname_no_extension)
+        fname = os.path.join(self.scene_path, fname_no_extension)
         if is_depth or is_rgb:
             fname += '.png'
         else:
@@ -132,9 +155,9 @@ class FrameNamesAndImageProvider(object):
 
 
 class FrameNamesAndImageProviderPreCharged(FrameNamesAndImageProvider):
-    def __init__(self, path, objname, number):
+    def __init__(self, scene_path, scene, scene_number, obj_path, obj, obj_number):
         (super(FrameNamesAndImageProviderPreCharged, self)
-         .__init__(path, objname, number))
+         .__init__(scene_path, scene, scene_number, obj_path, obj, obj_number))
 
         self._pcd_images = []
 
@@ -152,6 +175,7 @@ class FrameNamesAndImageProviderPreCharged(FrameNamesAndImageProvider):
             fname = self._frame_fname(i)
             pc = read_pcd(str(fname))
             self._pcd_images.append(pc)
+        sys.stdout.write('\n')
 
     def pcd(self):
         return self._pcd_images[self.next_frame_number - self.offset_frame_count]
