@@ -1,0 +1,1 @@
+./gicp ~/tesis/codigo/pruebas_guardadas/desk_1_55_a_56_coffee_mug/object_cloud.pcd -mi 50 -re 3 -mcd 2 -ef 1e-10 -r x -pi 2

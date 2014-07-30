@@ -1,0 +1,1 @@
+./gicp ~/tesis/codigo/videos/rgbd/objs/coffee_mug/coffee_mug_5/coffee_mug_5_1_55.pcd -mi 50 -re 1 -te 1e-10 -r y
