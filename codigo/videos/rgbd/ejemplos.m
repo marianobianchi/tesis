@@ -69,4 +69,19 @@ grid on
 
 
 
+%%
+% Levanto y muestro el PCD recortado de una escena
+% FUNCIONA OK
+data2 = readPcd('../../pruebas_guardadas/desk_1_55_a_56_coffee_mug/object_cloud.pcd');
 
+
+
+data_aligned = data2;
+data_aligned(:,1) = data2(:,1) - mean(data2(not(isnan(data2(:,1))),1));
+%data_aligned(:,2) = data2(:,2) - mean(data2(not(isnan(data2(:,2))),1));
+%data_aligned(:,3) = data2(:,3) - mean(data2(not(isnan(data2(:,3))),1));
+
+
+figure
+plot3(data_aligned(:,1), data_aligned(:,2), data_aligned(:,3), '.')
+grid on

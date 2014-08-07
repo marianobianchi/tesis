@@ -14,7 +14,7 @@ line = [];
 format = [];
 headerLength = 0;
 IS_NEW = true;
-while length(line) < 4 | ~strcmp(line(1:4),'DATA')
+while length(line) < 4 || ~strcmp(line(1:4),'DATA')
    line = fgetl(fid);
    if ~ischar(line)
       % end of file reached before finished parsing. No data
@@ -71,7 +71,7 @@ if isBinary && IS_NEW
          if strcmp(format{j},'%d') 
             pt = fread(fid,1,'uint32');
          else
-            pt = fread(fid,1,'float');
+            pt = fread(fid,1,'float32');
          end
          data(i,j) = pt;
       end

@@ -20,7 +20,7 @@ ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
     icp.setTransformationEpsilon(icp_defaults.transf_epsilon);
 
     // Ejemplo: 1
-    icp.setEuclideanFitnessEpsilon(icp_defaults.euc_fit);
+    ic(icp_defaults.euc_fit);
 
 
 

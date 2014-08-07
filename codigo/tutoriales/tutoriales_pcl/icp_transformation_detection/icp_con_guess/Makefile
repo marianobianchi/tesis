@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/cmake-gui
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping
+CMAKE_SOURCE_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/icp_transformation_detection/icp_con_guess
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build
+CMAKE_BINARY_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/icp_transformation_detection/icp_con_guess
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -72,9 +72,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/icp_transformation_detection/icp_con_guess/CMakeFiles /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/icp_transformation_detection/icp_con_guess/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/icp_transformation_detection/icp_con_guess/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -102,41 +102,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named correspondence_grouping
+# Target rules for targets named icp_con_guess
 
 # Build rule for target.
-correspondence_grouping: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 correspondence_grouping
-.PHONY : correspondence_grouping
+icp_con_guess: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 icp_con_guess
+.PHONY : icp_con_guess
 
 # fast build rule for target.
-correspondence_grouping/fast:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/build
-.PHONY : correspondence_grouping/fast
+icp_con_guess/fast:
+	$(MAKE) -f CMakeFiles/icp_con_guess.dir/build.make CMakeFiles/icp_con_guess.dir/build
+.PHONY : icp_con_guess/fast
 
-correspondence_grouping.o: correspondence_grouping.cpp.o
-.PHONY : correspondence_grouping.o
+icp_con_guess.o: icp_con_guess.cpp.o
+.PHONY : icp_con_guess.o
 
 # target to build an object file
-correspondence_grouping.cpp.o:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.o
-.PHONY : correspondence_grouping.cpp.o
+icp_con_guess.cpp.o:
+	$(MAKE) -f CMakeFiles/icp_con_guess.dir/build.make CMakeFiles/icp_con_guess.dir/icp_con_guess.cpp.o
+.PHONY : icp_con_guess.cpp.o
 
-correspondence_grouping.i: correspondence_grouping.cpp.i
-.PHONY : correspondence_grouping.i
+icp_con_guess.i: icp_con_guess.cpp.i
+.PHONY : icp_con_guess.i
 
 # target to preprocess a source file
-correspondence_grouping.cpp.i:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.i
-.PHONY : correspondence_grouping.cpp.i
+icp_con_guess.cpp.i:
+	$(MAKE) -f CMakeFiles/icp_con_guess.dir/build.make CMakeFiles/icp_con_guess.dir/icp_con_guess.cpp.i
+.PHONY : icp_con_guess.cpp.i
 
-correspondence_grouping.s: correspondence_grouping.cpp.s
-.PHONY : correspondence_grouping.s
+icp_con_guess.s: icp_con_guess.cpp.s
+.PHONY : icp_con_guess.s
 
 # target to generate assembly for a file
-correspondence_grouping.cpp.s:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.s
-.PHONY : correspondence_grouping.cpp.s
+icp_con_guess.cpp.s:
+	$(MAKE) -f CMakeFiles/icp_con_guess.dir/build.make CMakeFiles/icp_con_guess.dir/icp_con_guess.cpp.s
+.PHONY : icp_con_guess.cpp.s
 
 # Help Target
 help:
@@ -144,12 +144,12 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... correspondence_grouping"
 	@echo "... edit_cache"
+	@echo "... icp_con_guess"
 	@echo "... rebuild_cache"
-	@echo "... correspondence_grouping.o"
-	@echo "... correspondence_grouping.i"
-	@echo "... correspondence_grouping.s"
+	@echo "... icp_con_guess.o"
+	@echo "... icp_con_guess.i"
+	@echo "... icp_con_guess.s"
 .PHONY : help
 
 

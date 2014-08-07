@@ -42,10 +42,10 @@ EQUALS = =
 CMAKE_EDIT_COMMAND = /usr/bin/cmake-gui
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping
+CMAKE_SOURCE_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/alignment_prerejective/pcds
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build
+CMAKE_BINARY_DIR = /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/alignment_prerejective/pcds
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -72,9 +72,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/alignment_prerejective/pcds/CMakeFiles /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/alignment_prerejective/pcds/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/correspondence_grouping/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/mbianchi/tesis/codigo/tutoriales/tutoriales_pcl/alignment_prerejective/pcds/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -102,41 +102,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named correspondence_grouping
+# Target rules for targets named transform
 
 # Build rule for target.
-correspondence_grouping: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 correspondence_grouping
-.PHONY : correspondence_grouping
+transform: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 transform
+.PHONY : transform
 
 # fast build rule for target.
-correspondence_grouping/fast:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/build
-.PHONY : correspondence_grouping/fast
+transform/fast:
+	$(MAKE) -f CMakeFiles/transform.dir/build.make CMakeFiles/transform.dir/build
+.PHONY : transform/fast
 
-correspondence_grouping.o: correspondence_grouping.cpp.o
-.PHONY : correspondence_grouping.o
+transform.o: transform.cpp.o
+.PHONY : transform.o
 
 # target to build an object file
-correspondence_grouping.cpp.o:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.o
-.PHONY : correspondence_grouping.cpp.o
+transform.cpp.o:
+	$(MAKE) -f CMakeFiles/transform.dir/build.make CMakeFiles/transform.dir/transform.cpp.o
+.PHONY : transform.cpp.o
 
-correspondence_grouping.i: correspondence_grouping.cpp.i
-.PHONY : correspondence_grouping.i
+transform.i: transform.cpp.i
+.PHONY : transform.i
 
 # target to preprocess a source file
-correspondence_grouping.cpp.i:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.i
-.PHONY : correspondence_grouping.cpp.i
+transform.cpp.i:
+	$(MAKE) -f CMakeFiles/transform.dir/build.make CMakeFiles/transform.dir/transform.cpp.i
+.PHONY : transform.cpp.i
 
-correspondence_grouping.s: correspondence_grouping.cpp.s
-.PHONY : correspondence_grouping.s
+transform.s: transform.cpp.s
+.PHONY : transform.s
 
 # target to generate assembly for a file
-correspondence_grouping.cpp.s:
-	$(MAKE) -f CMakeFiles/correspondence_grouping.dir/build.make CMakeFiles/correspondence_grouping.dir/correspondence_grouping.cpp.s
-.PHONY : correspondence_grouping.cpp.s
+transform.cpp.s:
+	$(MAKE) -f CMakeFiles/transform.dir/build.make CMakeFiles/transform.dir/transform.cpp.s
+.PHONY : transform.cpp.s
 
 # Help Target
 help:
@@ -144,12 +144,12 @@ help:
 	@echo "... all (the default if no target is provided)"
 	@echo "... clean"
 	@echo "... depend"
-	@echo "... correspondence_grouping"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... correspondence_grouping.o"
-	@echo "... correspondence_grouping.i"
-	@echo "... correspondence_grouping.s"
+	@echo "... transform"
+	@echo "... transform.o"
+	@echo "... transform.i"
+	@echo "... transform.s"
 .PHONY : help
 
 
