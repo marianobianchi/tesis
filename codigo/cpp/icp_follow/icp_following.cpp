@@ -1,13 +1,13 @@
 #include "icp_following.h"
 
-ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
-              pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud,
+ICPResult icp(PointCloud3D::Ptr source_cloud,
+              PointCloud3D::Ptr target_cloud,
               ICPDefaults &icp_defaults)
 {
     /**
      * Calculate ICP transformation
      **/
-    pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
+    pcl::IterativeClosestPoint<Point3D, Point3D> icp;
 
 
     // Set the max correspondence distance (in meters)
@@ -20,9 +20,7 @@ ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
     icp.setTransformationEpsilon(icp_defaults.transf_epsilon);
 
     // Ejemplo: 1
-    ic(icp_defaults.euc_fit);
-
-
+    icp.setEuclideanFitnessEpsilon(icp_defaults.euc_fit);
 
     icp.setRANSACIterations(icp_defaults.ran_iter);
     icp.setRANSACOutlierRejectionThreshold(icp_defaults.ran_out_rej);
@@ -54,7 +52,7 @@ ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
 
     icp.setInputSource(source_cloud);
     icp.setInputTarget(target_cloud);
-    pcl::PointCloud<pcl::PointXYZ>::Ptr final (new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloud3D::Ptr final (new PointCloud3D);
     icp.align(*final);
 
     ICPResult res;
@@ -66,11 +64,11 @@ ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
 }
 
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr read_pcd(std::string pcd_filename)
+PointCloud3D::Ptr read_pcd(std::string pcd_filename)
 {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+    PointCloud3D::Ptr cloud(new PointCloud3D);
 
-    if (pcl::io::loadPCDFile<pcl::PointXYZ> (pcd_filename, *cloud) == -1) //* load the file
+    if (pcl::io::loadPCDFile<Point3D> (pcd_filename, *cloud) == -1) //* load the file
     {
         PCL_ERROR ("Couldn't read file\n");
         throw;
@@ -79,18 +77,18 @@ pcl::PointCloud<pcl::PointXYZ>::Ptr read_pcd(std::string pcd_filename)
     return cloud;
 }
 
-void save_pcd(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::string fname){
+void save_pcd(PointCloud3D::Ptr cloud, std::string fname){
     pcl::io::savePCDFileBinary(fname, *cloud);
 }
 
 
-void filter_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+void filter_cloud(PointCloud3D::Ptr cloud,
                   const std::string & field_name,
                   const float & lower_limit,
                   const float & upper_limit)
 {
     // Create the filtering object
-    pcl::PassThrough<pcl::PointXYZ> pass;
+    pcl::PassThrough<Point3D> pass;
 
     pass.setInputCloud(cloud);
     pass.setFilterFieldName(field_name);
@@ -100,12 +98,12 @@ void filter_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
     pass.filter(*cloud);
 }
 
-int points(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+int points(PointCloud3D::Ptr cloud)
 {
     return cloud->points.size();
 }
 
-pcl::PointXYZ get_point(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int i)
+Point3D get_point(PointCloud3D::Ptr cloud, int i)
 {
     return cloud->points[i];
 }
@@ -125,15 +123,15 @@ BOOST_PYTHON_MODULE(my_pcl)
      * */
 
     // Comparto el shared_ptr
-    boost::python::register_ptr_to_python< boost::shared_ptr<pcl::PointCloud<pcl::PointXYZ> > >();
+    boost::python::register_ptr_to_python< boost::shared_ptr<PointCloud3D > >();
 
     // Comparto la clase point cloud
-    class_<pcl::PointCloud<pcl::PointXYZ> >("PointCloudXYZ");
+    class_<PointCloud3D >("PointCloudXYZ");
 
-    class_<pcl::PointXYZ>("PointXYZ")
-        .def_readonly("x", &pcl::PointXYZ::x)
-        .def_readonly("y", &pcl::PointXYZ::y)
-        .def_readonly("z", &pcl::PointXYZ::z);
+    class_<Point3D>("PointXYZ")
+        .def_readonly("x", &Point3D::x)
+        .def_readonly("y", &Point3D::y)
+        .def_readonly("z", &Point3D::z);
 
     class_<ICPDefaults>("ICPDefaults")
         .def(init<>())

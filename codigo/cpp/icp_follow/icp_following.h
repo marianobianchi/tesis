@@ -13,6 +13,12 @@
 
 
 /*
+ * Define types
+ * */
+typedef pcl::PointXYZ Point3D;
+typedef pcl::PointCloud<Point3D> PointCloud3D;
+
+/*
  * Includes para exportar a python
  * */
 #include <boost/python.hpp>
@@ -21,7 +27,7 @@
 struct ICPResult {
     bool has_converged; // was found by icp?
     float score;        // icp score
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud;
+    pcl::PointCloud<Point3D>::Ptr cloud;
 };
 
 struct ICPDefaults {
@@ -46,23 +52,23 @@ struct ICPDefaults {
 };
 
 
-ICPResult icp(pcl::PointCloud<pcl::PointXYZ>::Ptr source_cloud,
-              pcl::PointCloud<pcl::PointXYZ>::Ptr target_cloud,
+ICPResult icp(PointCloud3D::Ptr source_cloud,
+              PointCloud3D::Ptr target_cloud,
               ICPDefaults &icp_defaults);
 
 
-pcl::PointCloud<pcl::PointXYZ>::Ptr read_pcd(std::string pcd_filename);
-void save_pcd(pcl::PointCloud<pcl::PointXYZ>::Ptr, std::string fname);
+PointCloud3D::Ptr read_pcd(std::string pcd_filename);
+void save_pcd(PointCloud3D::Ptr, std::string fname);
 
 
-void filter_cloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud,
+void filter_cloud(PointCloud3D::Ptr cloud,
                   const std::string & field_name,
                   const float & lower_limit,
                   const float & upper_limit);
 
 
-int points(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-pcl::PointXYZ get_point(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, int i);
+int points(PointCloud3D::Ptr cloud);
+Point3D get_point(PointCloud3D::Ptr cloud, int i);
 
 
 #endif //__ICP_FOLLOWING__

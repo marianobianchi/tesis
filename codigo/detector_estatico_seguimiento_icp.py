@@ -89,9 +89,6 @@ class ICPFinder(Finder):
 
         # Calculate ICP
         icp_result = icp(object_cloud, target_cloud)
-        save_pcd(object_cloud, str('A_object_cloud.pcd'))
-        save_pcd(target_cloud, str('A_target_cloud.pcd'))
-        save_pcd(icp_result.cloud, str('A_transformed_model_cloud.pcd'))
 
         return icp_result
 
@@ -105,9 +102,9 @@ class ICPFinder(Finder):
         # Get frame size and location (in RGB image)
         size = self._descriptors['size']
         im_c_left = self._descriptors['location'][1]
-        im_c_right = im_c_left + size
+        im_c_right = min(im_c_left + size, len(depth_img[0]) - 1)
         im_r_top = self._descriptors['location'][0]
-        im_r_bottom = im_r_top + size
+        im_r_bottom = min(im_r_top + size, len(depth_img) - 1)
 
         topleft = (im_r_top, im_c_left)
         bottomright = (im_r_bottom, im_c_right)

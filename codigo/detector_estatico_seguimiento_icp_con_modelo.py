@@ -6,8 +6,7 @@ from __future__ import (unicode_literals, division)
 from cpp.my_pcl import (points, filter_cloud, icp, ICPDefaults, save_pcd)
 
 from esquemas_seguimiento import FollowingScheme
-from metodos_comunes import (from_flat_to_cloud_limits, from_cloud_to_flat,
-                             measure_time, Timer)
+from metodos_comunes import (measure_time, Timer)
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProviderPreCharged
 from seguidores_rgbd import (Follower, Finder)
@@ -15,12 +14,51 @@ from detector_estatico_seguimiento_icp import (
     FollowerWithStaticDetectionAndPCD, StaticDetectorWithPCDFiltering,
     ICPFinder,
 )
+from cpp.alignment_prerejective import (align, APDefaults)
 
 
 class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
     def train(self):
         obj_model = self.img_provider.obj_pcd()
         self._obj_descriptors.update({'obj_model': obj_model})
+
+
+class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
+    def calculate_descriptors(self, detected_descriptors):
+        """
+        Obtengo la nube de puntos correspondiente a la ubicacion y region
+        pasadas por parametro.
+        """
+        detected_descriptors = (
+            super(StaticDetectorWithModelAlignment, self)
+            .calculate_descriptors(detected_descriptors)
+        )
+
+        model_cloud = self._descriptors['obj_model']
+        detected_cloud = detected_descriptors['object_cloud']
+
+        # Calculate ICP
+        icp_defaults = ICPDefaults()
+        icp_defaults.euc_fit = 1e-15
+        icp_defaults.max_corr_dist = 3
+        icp_defaults.max_iter = 50
+        icp_defaults.transf_epsilon = 1e-15
+        icp_result = icp(model_cloud, detected_cloud, icp_defaults)
+
+        if icp_result.has_converged:
+            ap_defaults = APDefaults()
+            ap_result = align(model_cloud, icp_result.cloud, ap_defaults)
+            ap_defaults.show_values = True
+            ap_result = align(ap_result.cloud, detected_cloud, ap_defaults)
+
+            if ap_result.has_converged:
+                path = 'pruebas_guardadas/detector_con_modelo/'
+                save_pcd(ap_result.cloud, str(path + 'deteccion_ap.pcd'))
+
+                detected_descriptors['object_cloud'] = ap_result.cloud
+                detected_descriptors['obj_model'] = ap_result.cloud
+
+        return detected_descriptors
 
 
 class ICPFinderWithModel(ICPFinder):
@@ -51,46 +89,29 @@ class ICPFinderWithModel(ICPFinder):
 
         model_cloud = self._descriptors['obj_model']
 
+
+        nframe = self._descriptors['nframe']
+        path = 'pruebas_guardadas/detector_con_modelo/'
+        save_pcd(model_cloud, str(path + 'modelo_{i}.pcd'.format(i=nframe)))
+        save_pcd(object_cloud, str(path + 'source_{i}.pcd'.format(i=nframe)))
+        save_pcd(target_cloud, str(path + 'target_{i}.pcd'.format(i=nframe)))
+
         # Calculate ICP
         icp_defaults = ICPDefaults()
         icp_result = icp(object_cloud, target_cloud, icp_defaults)
 
-        print "Convergió el primero?", icp_result.has_converged, "(",icp_result.score,")"
-        save_pcd(object_cloud, str('object_cloud.pcd'))
-        save_pcd(target_cloud, str('target_cloud.pcd'))
-        save_pcd(icp_result.cloud, str('transformed_object.pcd'))
+        save_pcd(icp_result.cloud, str(path + 'icp_{i}.pcd'.format(i=nframe)))
 
         if icp_result.has_converged:
-            icp_defaults.max_corr_dist = 4
-            icp_defaults.max_iter = 50
-            icp_defaults.transf_epsilon = 1e-12
-            icp_defaults.euc_fit = 1e-12
-            #icp_defaults.ran_iter = 1000000000
-            #icp_defaults.ran_out_rej = 0.5e-100
-            #icp_defaults.show_values = True
+            ap_defaults = APDefaults()
+            #ap_defaults.show_values = True
+            aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
 
-            found_model_cloud = model_cloud
-            last_converged_icp = None
-            for i in range(30):
-                new_icp_result = icp(found_model_cloud, icp_result.cloud, icp_defaults)
-                print "Convergió {i}?".format(i=i), new_icp_result.has_converged, "(",new_icp_result.score,")"
-                if new_icp_result.has_converged:
-                    if last_converged_icp is None:
-                        last_converged_icp = new_icp_result
-                    found_model_cloud = new_icp_result.cloud
-                    if new_icp_result.score <= last_converged_icp.score:
-                        last_converged_icp = new_icp_result
+            if aligned_prerejective_result.has_converged:
+                save_pcd(aligned_prerejective_result.cloud, str(path + 'ap_{i}.pcd'.format(i=nframe)))
+                return aligned_prerejective_result
 
-                if icp_defaults.max_corr_dist > 0.04:
-                    icp_defaults.max_corr_dist /= 2.0
-
-            print "Score de la ultima que convergió:", last_converged_icp.score
-            save_pcd(model_cloud, str('model.pcd'))
-            save_pcd(last_converged_icp.cloud, str('posta.pcd'))
-
-            return last_converged_icp
-
-        return first_icp_result
+        return icp_result
 
 
 def prueba_seguimiento_ICP_con_modelo():
@@ -98,7 +119,7 @@ def prueba_seguimiento_ICP_con_modelo():
         'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    detector = StaticDetectorWithPCDFiltering(
+    detector = StaticDetectorWithModelAlignment(
         'videos/rgbd/scenes/desk/desk_1.mat',
         'coffee_mug'
     )

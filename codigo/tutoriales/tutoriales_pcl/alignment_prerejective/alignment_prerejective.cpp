@@ -16,6 +16,8 @@
 #include <pcl/visualization/pcl_visualizer.h>
 
 // Types
+typedef pcl::PointXYZ Point3D;
+typedef pcl::PointCloud<Point3D> PointCloud3D;
 typedef pcl::PointNormal PointNT;
 typedef pcl::PointCloud<PointNT> PointCloudT;
 typedef pcl::FPFHSignature33 FeatureT;
@@ -43,6 +45,9 @@ void showHelp(char * program_name)
 int main (int argc, char **argv)
 {
     // Point clouds
+    PointCloud3D::Ptr loaded_object (new PointCloud3D);
+    PointCloud3D::Ptr loaded_scene (new PointCloud3D);
+    
     PointCloudT::Ptr object (new PointCloudT);
     PointCloudT::Ptr object_aligned (new PointCloudT);
     PointCloudT::Ptr scene (new PointCloudT);
@@ -59,16 +64,16 @@ int main (int argc, char **argv)
   
     // Load object and scene
     pcl::console::print_highlight ("Loading point clouds...\n");
-    if (pcl::io::loadPCDFile<PointNT> (argv[1], *object) < 0 ||
-        pcl::io::loadPCDFile<PointNT> (argv[2], *scene) < 0)
+    if (pcl::io::loadPCDFile<Point3D> (argv[1], *loaded_object) < 0 ||
+        pcl::io::loadPCDFile<Point3D> (argv[2], *loaded_scene) < 0)
     {
         pcl::console::print_error ("Error loading object/scene file!\n");
         return (1);
     }
-  
+    
     // Downsample
     pcl::console::print_highlight ("Downsampling...\n");
-    pcl::VoxelGrid<PointNT> grid;
+    pcl::VoxelGrid<Point3D> grid;
     
     float leaf = 0.005f;
     if(pcl::console::find_argument(argc, argv, "-leaf") != -1){
@@ -77,10 +82,28 @@ int main (int argc, char **argv)
     std::cout << "leaf = " << leaf << std::endl;
     
     grid.setLeafSize (leaf, leaf, leaf);
-    grid.setInputCloud (object);
-    grid.filter (*object);
-    grid.setInputCloud (scene);
-    grid.filter (*scene);
+    grid.setInputCloud (loaded_object);
+    grid.filter (*loaded_object);
+    grid.setInputCloud (loaded_scene);
+    grid.filter (*loaded_scene);
+    
+    // Converting from PointXYZ to PointNormal
+     pcl::console::print_highlight ("Converting...\n");
+    
+    object->points.resize(loaded_object->size());
+    for (size_t i = 0; i < loaded_object->points.size(); i++) {
+        object->points[i].x = loaded_object->points[i].x;
+        object->points[i].y = loaded_object->points[i].y;
+        object->points[i].z = loaded_object->points[i].z;
+    }
+    
+    scene->points.resize(loaded_scene->size());
+    for (size_t i = 0; i < loaded_scene->points.size(); i++) {
+        scene->points[i].x = loaded_scene->points[i].x;
+        scene->points[i].y = loaded_scene->points[i].y;
+        scene->points[i].z = loaded_scene->points[i].z;
+    }
+    
 
     // Estimate normals for object
     pcl::console::print_highlight ("Estimating object normals...\n");
