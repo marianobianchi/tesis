@@ -43,18 +43,26 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         icp_defaults.max_corr_dist = 3
         icp_defaults.max_iter = 50
         icp_defaults.transf_epsilon = 1e-15
+
+        path = 'pruebas_guardadas/detector_con_modelo/'
+        save_pcd(detected_cloud, str(path + 'detected.pcd'))
+
         icp_result = icp(model_cloud, detected_cloud, icp_defaults)
+
+
+        path = 'pruebas_guardadas/detector_con_modelo/'
+        save_pcd(icp_result.cloud, str(path + 'icp_modelo_cubo.pcd'))
 
         if icp_result.has_converged:
             ap_defaults = APDefaults()
-            ap_result = align(model_cloud, icp_result.cloud, ap_defaults)
+            ap_defaults.simil_threshold = 0.1
+            ap_defaults.inlier_fraction = 0.7
             ap_defaults.show_values = True
-            ap_result = align(ap_result.cloud, detected_cloud, ap_defaults)
+            ap_result = align(icp_result.cloud, detected_cloud, ap_defaults)
+            save_pcd(ap_result.cloud, str(path + 'ap_modelo_icp.pcd'))
+
 
             if ap_result.has_converged:
-                path = 'pruebas_guardadas/detector_con_modelo/'
-                save_pcd(ap_result.cloud, str(path + 'deteccion_ap.pcd'))
-
                 detected_descriptors['object_cloud'] = ap_result.cloud
                 detected_descriptors['obj_model'] = ap_result.cloud
 
