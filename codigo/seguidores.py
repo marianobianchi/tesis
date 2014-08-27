@@ -103,7 +103,7 @@ class FollowerWithStaticDetection(Follower):
     def descriptors(self):
         desc = super(FollowerWithStaticDetection, self).descriptors()
         desc.update({
-            'nframe': self.img_provider.current_frame_number(),
+            'nframe': self.img_provider.next_frame_number,
         })
         return desc
 

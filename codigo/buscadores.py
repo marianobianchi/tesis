@@ -200,6 +200,9 @@ class ICPFinderWithModel(ICPFinder):
         filter_cloud(target_cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
         filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
 
+        # TODO: ver http://docs.pointclouds.org/1.7.0/crop__box_8h_source.html
+        # TODO: ver http://www.pcl-users.org/How-to-use-Crop-Box-td3888183.html
+
         model_cloud = self._descriptors['obj_model']
 
         nframe = self._descriptors['nframe']

@@ -147,12 +147,6 @@ class FrameNamesAndImageProvider(object):
         img = self.rgb_img()
         return len(img), len(img[0]) # filas, columnas
 
-    def current_frame_number(self):
-        """
-        Gives numbers from 0 to #frames-1
-        """
-        return self.next_frame_number - 1
-
 
 class FrameNamesAndImageProviderPreCharged(FrameNamesAndImageProvider):
     def __init__(self, scene_path, scene, scene_number, obj_path, obj, obj_number):
