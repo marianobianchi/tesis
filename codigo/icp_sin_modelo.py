@@ -4,7 +4,7 @@
 from __future__ import (unicode_literals, division)
 
 from cpp.my_pcl import (icp, filter_cloud, points, get_point, save_pcd)
-from detector_estatico_sin_seguimiento import StaticDetector
+from deteccion_estatica import StaticDetector
 from esquemas_seguimiento import FollowingScheme
 from metodos_comunes import (from_flat_to_cloud_limits, from_cloud_to_flat,
                              measure_time, Timer)

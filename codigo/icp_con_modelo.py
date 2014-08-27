@@ -4,17 +4,16 @@
 from __future__ import (unicode_literals, division)
 
 from cpp.my_pcl import (points, filter_cloud, icp, ICPDefaults, save_pcd)
+from cpp.alignment_prerejective import (align, APDefaults)
 
 from esquemas_seguimiento import FollowingScheme
 from metodos_comunes import (measure_time, Timer)
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProviderPreCharged
-from seguidores_rgbd import (Follower, Finder)
-from detector_estatico_seguimiento_icp import (
+from icp_sin_modelo import (
     FollowerWithStaticDetectionAndPCD, StaticDetectorWithPCDFiltering,
     ICPFinder,
 )
-from cpp.alignment_prerejective import (align, APDefaults)
 
 
 class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
@@ -43,15 +42,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         icp_defaults.max_corr_dist = 3
         icp_defaults.max_iter = 50
         icp_defaults.transf_epsilon = 1e-15
-
-        path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(detected_cloud, str(path + 'detected.pcd'))
-
         icp_result = icp(model_cloud, detected_cloud, icp_defaults)
-
-
-        path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(icp_result.cloud, str(path + 'icp_modelo_cubo.pcd'))
 
         if icp_result.has_converged:
             ap_defaults = APDefaults()
@@ -59,8 +50,6 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             ap_defaults.inlier_fraction = 0.7
             ap_defaults.show_values = True
             ap_result = align(icp_result.cloud, detected_cloud, ap_defaults)
-            save_pcd(ap_result.cloud, str(path + 'ap_modelo_icp.pcd'))
-
 
             if ap_result.has_converged:
                 detected_descriptors['object_cloud'] = ap_result.cloud
@@ -79,16 +68,24 @@ class ICPFinderWithModel(ICPFinder):
                       target_cloud):
         """
         Tomando como centro el centro del cuadrado que contiene al objeto
-        en el frame anterior, busco el mismo objeto en una zona 4 veces mayor
+        en el frame anterior, busco el mismo objeto en una zona N veces mayor
         a la original.
         """
         # Define row and column limits for the zone to search the object
         # In this case, we look on a box N times the size of the original
+        # i.e: if height is 1 and i want a box 2 times bigger and centered
+        # on the center of the original box, i have to substract 0.5 times the
+        # height to the top of the box and add the same amount to the bottom
         n = 2
-        r_top_limit = r_top_limit - ( (r_bottom_limit - r_top_limit) * n)
-        r_bottom_limit = r_bottom_limit + ( (r_bottom_limit - r_top_limit) * n)
-        c_left_limit = c_left_limit - ( (c_right_limit - c_left_limit) * n)
-        c_right_limit = c_right_limit + ( (c_right_limit - c_left_limit) * n)
+
+        factor = 0.5 * (n - 1)
+        height = r_bottom_limit - r_top_limit
+        width = c_right_limit - c_left_limit
+
+        r_top_limit -= height * factor
+        r_bottom_limit += height * factor
+        c_left_limit -= width * factor
+        c_right_limit += width * factor
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
@@ -97,29 +94,33 @@ class ICPFinderWithModel(ICPFinder):
 
         model_cloud = self._descriptors['obj_model']
 
-
         nframe = self._descriptors['nframe']
         path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(model_cloud, str(path + 'modelo_{i}.pcd'.format(i=nframe)))
-        save_pcd(object_cloud, str(path + 'source_{i}.pcd'.format(i=nframe)))
         save_pcd(target_cloud, str(path + 'target_{i}.pcd'.format(i=nframe)))
 
         # Calculate ICP
         icp_defaults = ICPDefaults()
         icp_result = icp(object_cloud, target_cloud, icp_defaults)
-
         save_pcd(icp_result.cloud, str(path + 'icp_{i}.pcd'.format(i=nframe)))
 
-        if icp_result.has_converged:
-            ap_defaults = APDefaults()
-            #ap_defaults.show_values = True
-            aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
-
-            if aligned_prerejective_result.has_converged:
-                save_pcd(aligned_prerejective_result.cloud, str(path + 'ap_{i}.pcd'.format(i=nframe)))
-                return aligned_prerejective_result
+        #if icp_result.has_converged:
+        #    ap_defaults = APDefaults()
+        #    ap_defaults.simil_threshold = 0.1
+        #    ap_defaults.inlier_fraction = 0.7
+        #    #ap_defaults.show_values = True
+        #    aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
+        #
+        #    if aligned_prerejective_result.has_converged:
+        #        return aligned_prerejective_result
 
         return icp_result
+
+    def calculate_descriptors(self, detected_descriptors):
+        detected_descriptors = (super(ICPFinderWithModel, self)
+                                .calculate_descriptors(detected_descriptors))
+        detected_descriptors['obj_model'] = detected_descriptors['object_cloud']
+        return detected_descriptors
+
 
 
 def prueba_seguimiento_ICP_con_modelo():
