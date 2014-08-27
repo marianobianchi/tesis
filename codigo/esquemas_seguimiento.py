@@ -1,10 +1,6 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
-from __future__ import unicode_literals
+#coding=utf-8
 
-import cv2
-import time
+from __future__ import unicode_literals
 
 
 class FollowingScheme(object):

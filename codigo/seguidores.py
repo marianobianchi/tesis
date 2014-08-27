@@ -3,9 +3,6 @@
 from __future__ import (unicode_literals, division)
 
 
-#####################
-# Objetos seguidores
-#####################
 class Follower(object):
     """
     Es la clase base para los seguidores.
@@ -102,62 +99,26 @@ class Follower(object):
         self.set_object_descriptors(desc)
 
 
-################################
-# Clases para detectar y buscar
-################################
-class Finder(object):
-    """
-    Es la clase que se encarga de buscar el objeto
-    """
-    def __init__(self):
-        self._descriptors = {}
-
-    def update(self, descriptors):
-        self._descriptors.update(descriptors)
-
-    def calculate_descriptors(self, desc):
-        """
-        Calcula los descriptores en base al objeto encontrado para que
-        los almacene el Follower
-        """
+class FollowerWithStaticDetection(Follower):
+    def descriptors(self):
+        desc = super(FollowerWithStaticDetection, self).descriptors()
+        desc.update({
+            'nframe': self.img_provider.current_frame_number(),
+        })
         return desc
 
-    def base_comparisson(self):
-        """
-        Comparacion base: sirve como umbral para las comparaciones que se
-        realizan durante el seguimiento
-        """
-        return 0
 
-    def comparisson(self, roi):
-        return 0
-
-    def is_best_match(self, new_value, old_value):
-        return False
-
-    #####################################
-    # Esquema de seguimiento del objeto
-    #####################################
-    def find(self):
-        return (False, {})
-
-
-class Detector(object):
-    """
-    Es la clase que se encarga de detectar el objeto buscado
-    """
-    def __init__(self):
-        self._descriptors = {}
-
-    def update(self, desc):
-        self._descriptors.update(desc)
-
-    def calculate_descriptors(self, desc):
-        """
-        Calcula los descriptores en base al objeto encontrado para que
-        los almacene el Follower
-        """
+class FollowerWithStaticDetectionAndPCD(FollowerWithStaticDetection):
+    def descriptors(self):
+        desc = super(FollowerWithStaticDetectionAndPCD, self).descriptors()
+        desc.update({
+            'depth_img': self.img_provider.depth_img(),
+            'pcd': self.img_provider.pcd(),
+        })
         return desc
 
-    def detect(self):
-        pass
+
+class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
+    def train(self):
+        obj_model = self.img_provider.obj_pcd()
+        self._obj_descriptors.update({'obj_model': obj_model})
