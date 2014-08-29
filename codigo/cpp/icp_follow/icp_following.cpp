@@ -108,6 +108,22 @@ Point3D get_point(PointCloud3D::Ptr cloud, int i)
     return cloud->points[i];
 }
 
+MinMax3D get_min_max3D(PointCloud3D::Ptr cloud){
+    Point3D min;
+    Point3D max;
+    pcl::getMinMax3D(*cloud, min, max);
+    
+    MinMax3D minmax;
+    minmax.min_x = min.x;
+    minmax.min_y = min.y;
+    minmax.min_z = min.z;
+    minmax.max_x = max.x;
+    minmax.max_y = max.y;
+    minmax.max_z = max.z;
+    
+    return minmax;
+}
+
 /*
  * Exporto todo a python
  * */
@@ -158,5 +174,15 @@ BOOST_PYTHON_MODULE(my_pcl)
         .def_readwrite("cloud", &ICPResult::cloud);
 
     def("icp", icp);
+    
+    class_<MinMax3D>("MinMax3D")
+        .def_readonly("min_x", &MinMax3D::min_x)
+        .def_readonly("min_y", &MinMax3D::min_y)
+        .def_readonly("min_z", &MinMax3D::min_z)
+        .def_readonly("max_x", &MinMax3D::max_x)
+        .def_readonly("max_y", &MinMax3D::max_y)
+        .def_readonly("max_z", &MinMax3D::max_z);
+
+    def("get_min_max", get_min_max3D);
 
 }

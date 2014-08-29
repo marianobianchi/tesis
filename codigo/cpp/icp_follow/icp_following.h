@@ -9,6 +9,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/registration/icp.h>
+#include <pcl/common/common.h>
 #include <pcl/common/transforms.h>
 
 
@@ -70,5 +71,16 @@ void filter_cloud(PointCloud3D::Ptr cloud,
 int points(PointCloud3D::Ptr cloud);
 Point3D get_point(PointCloud3D::Ptr cloud, int i);
 
+
+struct MinMax3D {
+    float min_x;
+    float max_x;
+    float min_y;
+    float max_y;
+    float min_z;
+    float max_z;
+};
+
+MinMax3D get_min_max3D(PointCloud3D::Ptr cloud);
 
 #endif //__ICP_FOLLOWING__
