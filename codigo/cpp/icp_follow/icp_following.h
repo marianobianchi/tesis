@@ -11,6 +11,7 @@
 #include <pcl/registration/icp.h>
 #include <pcl/common/common.h>
 #include <pcl/common/transforms.h>
+#include <pcl/visualization/pcl_visualizer.h>
 
 
 /*
@@ -18,6 +19,8 @@
  * */
 typedef pcl::PointXYZ Point3D;
 typedef pcl::PointCloud<Point3D> PointCloud3D;
+
+typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D;
 
 /*
  * Includes para exportar a python

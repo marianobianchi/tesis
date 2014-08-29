@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 import scipy.io
 
-from cpp.my_pcl import filter_cloud, icp, ICPDefaults #  save_pcd
+from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits
@@ -122,23 +122,29 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         model_cloud = self._descriptors['obj_model']
         detected_cloud = detected_descriptors['object_cloud']
 
-        # Calculate ICP
-        icp_defaults = ICPDefaults()
-        icp_defaults.euc_fit = 1e-15
-        icp_defaults.max_corr_dist = 3
-        icp_defaults.max_iter = 50
-        icp_defaults.transf_epsilon = 1e-15
-        icp_result = icp(model_cloud, detected_cloud, icp_defaults)
 
-        if icp_result.has_converged:
-            ap_defaults = APDefaults()
-            ap_defaults.simil_threshold = 0.1
-            ap_defaults.inlier_fraction = 0.7
-            ap_defaults.show_values = True
-            ap_result = align(icp_result.cloud, detected_cloud, ap_defaults)
+        # Calculate alignment prerejective
+        ap_defaults = APDefaults()
+        ap_defaults.max_ransac_iters = 10000
+        ap_defaults.nearest_features_used = 3
+        ap_defaults.simil_threshold = 0.1
+        ap_defaults.inlier_threshold = 1.5
+        ap_defaults.inlier_fraction = 0.7
+        #ap_defaults.show_values = True
+        ap_result = align(model_cloud, detected_cloud, ap_defaults)
 
-            if ap_result.has_converged:
-                detected_descriptors['object_cloud'] = ap_result.cloud
-                detected_descriptors['obj_model'] = ap_result.cloud
+        if ap_result.has_converged:
+            # Calculate ICP
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-15
+            icp_defaults.max_corr_dist = 3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-15
+            # icp_defaults.show_values = True
+            icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
+
+            if icp_result.has_converged:
+                detected_descriptors['object_cloud'] = icp_result.cloud
+                detected_descriptors['obj_model'] = icp_result.cloud
 
         return detected_descriptors

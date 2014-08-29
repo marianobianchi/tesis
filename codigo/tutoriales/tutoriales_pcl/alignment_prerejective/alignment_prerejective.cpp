@@ -33,11 +33,43 @@ void showHelp(char * program_name)
     std::cout << "-h:  Show this help." << std::endl;
     std::cout << "-leaf:  Downsample leaf" << std::endl;
     std::cout << "-mi:  Max. RANSAC iterations" << std::endl;
-    std::cout << "-sn:  Number of points to sample for generating/prerejecting a pose" << std::endl;
-    std::cout << "-fn:  Number of nearest features to use" << std::endl;
-    std::cout << "-st:  Polygonal edge length similarity threshold" << std::endl;
+    std::cout << "-sn:  Number of points to sample for generating/prerejecting a pose (setNumberOfSamples)" << std::endl;
+    std::cout << "-fn:  Number of nearest features to use (setCorrespondenceRandomness)" << std::endl;
+    std::cout << "-st:  Polygonal edge length similarity threshold (setSimilarityThreshold)" << std::endl;
     std::cout << "-it:  Inlier threshold" << std::endl;
     std::cout << "-if:  Required inlier fraction for accepting a pose hypothesis" << std::endl;
+    
+    /*
+     * 
+     * Number of samples - setNumberOfSamples (): The number of point correspondences to sample 
+     *                     between the object and the scene. At minimum, 3 points are required 
+     *                     to calculate a pose.
+     * Correspondence randomness - setCorrespondenceRandomness (): Instead of matching each object 
+     *                             FPFH descriptor to its nearest matching feature in the scene, we 
+     *                             can choose between the N best matches at random. This increases 
+     *                             the iterations necessary, but also makes the algorithm robust 
+     *                             towards outlier matches.
+     * Polygonal similarity threshold - setSimilarityThreshold (): The alignment class uses the 
+     *                                  CorrespondenceRejectorPoly class for early elimination of bad 
+     *                                  poses based on pose-invariant geometric consistencies of the 
+     *                                  inter-distances between sampled points on the object and the 
+     *                                  scene. The closer this value is set to 1, the more greedy and 
+     *                                  thereby fast the algorithm becomes. However, this also 
+     *                                  increases the risk of eliminating good poses when noise is 
+     *                                  present.
+     * Inlier threshold - setMaxCorrespondenceDistance (): This is the Euclidean distance threshold 
+     *                    used for determining whether a transformed object point is correctly aligned
+     *                    to the nearest scene point or not. In this example, we have used a heuristic 
+     *                    value of 1.5 times the point cloud resolution.
+     * Inlier fraction - setInlierFraction (): In many practical scenarios, large parts of the observed 
+     *                   object in the scene are not visible, either due to clutter, occlusions or both. 
+     *                   In such cases, we need to allow for pose hypotheses that do not align all 
+     *                   object points to the scene. The absolute number of correctly aligned points is 
+     *                   determined using the inlier threshold, and if the ratio of this number to the 
+     *                   total number of points in the object is higher than the specified inlier 
+     *                   fraction, we accept a pose hypothesis as valid.
+
+     * */
 }
 
 

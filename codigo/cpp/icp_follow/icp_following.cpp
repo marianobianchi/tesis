@@ -9,23 +9,31 @@ ICPResult icp(PointCloud3D::Ptr source_cloud,
      **/
     pcl::IterativeClosestPoint<Point3D, Point3D> icp;
 
-
-    // Set the max correspondence distance (in meters)
+    // Set the max correspondence distance (in meters). Correspondences with higher distances will be ignored
     icp.setMaxCorrespondenceDistance(icp_defaults.max_corr_dist);
 
-    // Ejemplo: 50
+    // Set the maximum number of iterations (termination critera 1) Ejemplo: 50
     icp.setMaximumIterations(icp_defaults.max_iter);
 
-    // Ejemplo: 1e-8
+    // Set the transformation epsilon (termination critera 2) Ejemplo: 1e-8
     icp.setTransformationEpsilon(icp_defaults.transf_epsilon);
 
-    // Ejemplo: 1
+    // Set the euclidean distance difference epsilon (termination critera 2) Ejemplo: 1
     icp.setEuclideanFitnessEpsilon(icp_defaults.euc_fit);
 
     icp.setRANSACIterations(icp_defaults.ran_iter);
     icp.setRANSACOutlierRejectionThreshold(icp_defaults.ran_out_rej);
 
+    icp.setInputSource(source_cloud);
+    icp.setInputTarget(target_cloud);
+    PointCloud3D::Ptr final (new PointCloud3D);
+    icp.align(*final);
 
+    ICPResult res;
+    res.has_converged = icp.hasConverged();
+    res.score = icp.getFitnessScore();
+    res.cloud = final;
+    
     if(icp_defaults.show_values){
 
         // SET DIFFERENT PARAMETERS
@@ -47,18 +55,13 @@ ICPResult icp(PointCloud3D::Ptr source_cloud,
         std::cout << "RANSAC OUTLIER REJECTION THRESHOLD DEFAULT = ";
         std::cout << icp.getRANSACOutlierRejectionThreshold() << std::endl;
 
-        // setTransformationEstimation (SVD, point to plane, etc)
+        pcl::visualization::PCLVisualizer visu("ICP");
+        pcl::console::print_info("Verde = escena\n");
+        pcl::console::print_info("Azul = modelo alineado\n");
+        visu.addPointCloud (target_cloud, ColorHandler3D (target_cloud, 0.0, 255.0, 0.0), "target");
+        visu.addPointCloud (final, ColorHandler3D (final, 0.0, 0.0, 255.0), "object_aligned");
+        visu.spin ();
     }
-
-    icp.setInputSource(source_cloud);
-    icp.setInputTarget(target_cloud);
-    PointCloud3D::Ptr final (new PointCloud3D);
-    icp.align(*final);
-
-    ICPResult res;
-    res.has_converged = icp.hasConverged();
-    res.score = icp.getFitnessScore();
-    res.cloud = final;
 
     return res;
 }

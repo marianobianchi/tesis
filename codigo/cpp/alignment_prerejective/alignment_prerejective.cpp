@@ -7,6 +7,38 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
                                 PointCloud3D::Ptr target_cloud,
                                 APDefaults &ap_defaults)
 {   
+    /*
+     * 
+     * Number of samples - setNumberOfSamples (): The number of point correspondences to sample 
+     *                     between the object and the scene. At minimum, 3 points are required 
+     *                     to calculate a pose.
+     * Correspondence randomness - setCorrespondenceRandomness (): Instead of matching each object 
+     *                             FPFH descriptor to its nearest matching feature in the scene, we 
+     *                             can choose between the N best matches at random. This increases 
+     *                             the iterations necessary, but also makes the algorithm robust 
+     *                             towards outlier matches.
+     * Polygonal similarity threshold - setSimilarityThreshold (): The alignment class uses the 
+     *                                  CorrespondenceRejectorPoly class for early elimination of bad 
+     *                                  poses based on pose-invariant geometric consistencies of the 
+     *                                  inter-distances between sampled points on the object and the 
+     *                                  scene. The closer this value is set to 1, the more greedy and 
+     *                                  thereby fast the algorithm becomes. However, this also 
+     *                                  increases the risk of eliminating good poses when noise is 
+     *                                  present.
+     * Inlier threshold - setMaxCorrespondenceDistance (): This is the Euclidean distance threshold 
+     *                    used for determining whether a transformed object point is correctly aligned
+     *                    to the nearest scene point or not.
+     * Inlier fraction - setInlierFraction (): In many practical scenarios, large parts of the observed 
+     *                   object in the scene are not visible, either due to clutter, occlusions or both. 
+     *                   In such cases, we need to allow for pose hypotheses that do not align all 
+     *                   object points to the scene. The absolute number of correctly aligned points is 
+     *                   determined using the inlier threshold, and if the ratio of this number to the 
+     *                   total number of points in the object is higher than the specified inlier 
+     *                   fraction, we accept a pose hypothesis as valid.
+
+     * */
+    
+    
     // Point clouds
     PointCloud3D::Ptr source_cloud (new PointCloud3D);
     *source_cloud = *const_source_cloud; // Copy original cloud to avoid unwanted changes
@@ -101,7 +133,14 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     align.setInlierFraction (ap_defaults.inlier_fraction);
     
     // Compute alignment
-    align.align (*object_aligned);
+    if(ap_defaults.show_values){
+        // Count time
+        pcl::ScopeTime t("Alignment");
+        align.align (*object_aligned);
+    }
+    else{
+        align.align (*object_aligned);
+    }
     
     APResult ap_result;
   

@@ -191,23 +191,23 @@ class ICPFinderWithModel(ICPFinder):
         model_cloud = self._descriptors['obj_model']
 
         nframe = self._descriptors['nframe']
-        path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(target_cloud, str(path + 'target_{i}.pcd'.format(i=nframe)))
+        # path = 'pruebas_guardadas/detector_con_modelo/'
+        # save_pcd(target_cloud, str(path + 'target_{i}.pcd'.format(i=nframe)))
 
         # Calculate ICP
         icp_defaults = ICPDefaults()
         icp_result = icp(object_cloud, target_cloud, icp_defaults)
-        save_pcd(icp_result.cloud, str(path + 'icp_{i}.pcd'.format(i=nframe)))
+        # save_pcd(icp_result.cloud, str(path + 'icp_{i}.pcd'.format(i=nframe)))
 
-        #if icp_result.has_converged:
-        #    ap_defaults = APDefaults()
-        #    ap_defaults.simil_threshold = 0.1
-        #    ap_defaults.inlier_fraction = 0.7
-        #    #ap_defaults.show_values = True
-        #    aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
-        #
-        #    if aligned_prerejective_result.has_converged:
-        #        return aligned_prerejective_result
+        if icp_result.has_converged:
+           ap_defaults = APDefaults()
+           ap_defaults.simil_threshold = 0.1
+           ap_defaults.inlier_fraction = 0.7
+           #ap_defaults.show_values = True
+           aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
+
+           if aligned_prerejective_result.has_converged:
+               return aligned_prerejective_result
 
         return icp_result
 

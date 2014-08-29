@@ -41,7 +41,7 @@ class FrameNamesAndImageProvider(object):
         self.offset_frame_count = 55
         self.next_frame_number = self.offset_frame_count
         print "CAMBIAR FIN"
-        self.last_frame_number = 60#last_frame_number
+        self.last_frame_number = 57#60#last_frame_number
 
     def _obj_fname(self, obj_scene_number=1, frame_number=1, suffix='.pcd'):
         generic_fname = '{obj}_{obj_number}_{obj_scene_number}_{frame_number}{suffix}'
