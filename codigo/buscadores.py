@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
-    save_pcd
+    save_pcd, get_min_max
 from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
     from_cloud_to_flat
 
@@ -125,40 +125,25 @@ class ICPFinder(Finder):
         descriptors = {}
 
         if fue_exitoso:
-            filas = len(depth_img)
-            columnas = len(depth_img[0])
+            # filas = len(depth_img)
+            # columnas = len(depth_img[0])
 
             # Busco los limites en el dominio de las filas y columnas del RGB
-            col_left_limit = columnas - 1
-            col_right_limit = 0
-            row_top_limit = filas - 1
-            row_bottom_limit = 0
+            min_max = get_min_max(icp_result.cloud)
 
-            for i in range(points(icp_result.cloud)):
-                point_xyz = get_point(icp_result.cloud, i)
-                c = point_xyz.x
-                r = point_xyz.y
-                d = point_xyz.z
+            min_flat_rc = from_cloud_to_flat(min_max.min_y, min_max.min_x, min_max.min_z)
+            row_top_limit = min_flat_rc[0]
+            col_left_limit = min_flat_rc[1]
 
-                flat_rc = from_cloud_to_flat(r, c, d)
-
-                if flat_rc[0] < row_top_limit:
-                    row_top_limit = flat_rc[0]
-
-                if flat_rc[0] > row_bottom_limit:
-                    row_bottom_limit = flat_rc[0]
-
-                if flat_rc[1] < col_left_limit:
-                    col_left_limit = flat_rc[1]
-
-                if flat_rc[1] > col_right_limit:
-                    col_right_limit = flat_rc[1]
+            max_flat_rc = from_cloud_to_flat(min_max.max_y, min_max.max_x, min_max.max_z)
+            row_bottom_limit = max_flat_rc[0]
+            col_right_limit = max_flat_rc[1]
 
             width = col_right_limit - col_left_limit
             height = row_bottom_limit - row_top_limit
 
             descriptors.update({
-                'size': width if width > height else height,
+                'size': max(width, height),
                 'location': (row_top_limit, col_left_limit),
                 'object_cloud': icp_result.cloud,
             })
