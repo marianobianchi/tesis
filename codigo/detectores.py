@@ -45,7 +45,8 @@ class StaticDetector(Detector):
     def detect(self):
         nframe = self._descriptors['nframe']
 
-        objs = self._matfile[0][nframe][0]
+        # Comienza contando desde 0 por eso hago nframe - 1
+        objs = self._matfile[0][nframe - 1][0]
 
         fue_exitoso = False
         tam_region = 0
@@ -94,7 +95,15 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
         filter_cloud(cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
         filter_cloud(cloud, str("x"), float(c_left_limit), float(c_right_limit))
 
-        detected_descriptors.update({'object_cloud': cloud})
+        detected_descriptors.update(
+            {
+                'object_cloud': cloud,
+                'min_x_cloud': c_left_limit,
+                'max_x_cloud': c_right_limit,
+                'min_y_cloud': r_top_limit,
+                'max_y_cloud': r_bottom_limit,
+            }
+        )
 
         return detected_descriptors
 
