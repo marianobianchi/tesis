@@ -4,7 +4,8 @@ from __future__ import (unicode_literals, division)
 
 import scipy.io
 
-from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max
+from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
+    show_clouds
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits
@@ -79,9 +80,17 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
 
         depth_img = self._descriptors['depth_img']
 
+        filas = len(depth_img)
+        columnas = len(depth_img[0])
+
+        ubicacion_punto_diagonal = (
+            min(ubicacion[0] + tam_region, filas - 1),
+            min(ubicacion[1] + tam_region, columnas - 1)
+        )
+
         rows_cols_limits = from_flat_to_cloud_limits(
             ubicacion,
-            (ubicacion[0] + tam_region, ubicacion[1] + tam_region),
+            ubicacion_punto_diagonal,
             depth_img,
         )
 
@@ -136,9 +145,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
         ap_result = align(model_cloud, detected_cloud, ap_defaults)
 
-        path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(detected_cloud, str(path + "escena_objeto_recuadro.pcd"))
-        save_pcd(ap_result.cloud, str(path + "modelo_alineado.pcd"))
+        show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
 
         if ap_result.has_converged:
             # Calculate ICP
@@ -149,7 +156,8 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             icp_defaults.transf_epsilon = 1e-15
             # icp_defaults.show_values = True
             icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
-            save_pcd(icp_result.cloud, str(path + "icp_modelo_alineado.pcd"))
+
+            show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
 
             if icp_result.has_converged:
                 cloud = icp_result.cloud

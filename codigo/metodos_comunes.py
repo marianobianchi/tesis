@@ -179,15 +179,6 @@ def from_flat_to_cloud_limits(topleft, bottomright, depth_img):
     return res
 
 
-def filter_cloud(cloud, field_name, lower_limit, upper_limit):
-    # Create the filtering object
-    pass_through_filter = cloud.make_passthrough_filter()
-    pass_through_filter.set_filter_field_name(field_name)
-    pass_through_filter.set_filter_limits(lower_limit, upper_limit)
-
-    # Filter
-    return pass_through_filter.filter()
-
 #########
 # TESTS #
 #########

@@ -111,6 +111,16 @@ Point3D get_point(PointCloud3D::Ptr cloud, int i)
     return cloud->points[i];
 }
 
+void show_clouds(std::string title, PointCloud3D::Ptr first_cloud, PointCloud3D::Ptr second_cloud){
+    if(title == "") title = "Showing clouds";
+    pcl::visualization::PCLVisualizer visu(title);
+    pcl::console::print_info("Verde = first_cloud\n");
+    pcl::console::print_info("Azul = second_cloud\n");
+    visu.addPointCloud (first_cloud, ColorHandler3D (first_cloud, 0.0, 255.0, 0.0), "first_cloud");
+    visu.addPointCloud (second_cloud, ColorHandler3D (second_cloud, 0.0, 0.0, 255.0), "second_cloud");
+    visu.spin ();
+}
+
 MinMax3D get_min_max3D(PointCloud3D::Ptr cloud){
     Point3D min;
     Point3D max;
@@ -170,6 +180,7 @@ BOOST_PYTHON_MODULE(my_pcl)
     // Funciones que son de la clase PointCloud pero las manejo sueltas
     def("points", points);
     def("get_point", get_point);
+    def("show_clouds", show_clouds);
 
     class_<ICPResult>("ICPResult")
         .def_readonly("has_converged", &ICPResult::has_converged)

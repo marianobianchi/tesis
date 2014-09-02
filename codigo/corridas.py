@@ -2,11 +2,11 @@
 
 from __future__ import (unicode_literals, division)
 
-
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment
 from esquemas_seguimiento import FollowingScheme
+from metodos_comunes import test_flat_and_cloud_conversion
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreCharged
@@ -95,5 +95,34 @@ def icp_con_modelo():
     ).run()
 
 
+def probando_filtro_por_ejes():
+    from cpp.my_pcl import filter_cloud, show_clouds, get_min_max
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '5',
+    )
+
+    pcd = img_provider.pcd()
+    filtered_pcd = img_provider.pcd()
+
+    min_max = get_min_max(pcd)
+
+    left = min_max.max_x - 0.46
+    right = min_max.max_x - 0.35
+    diff = right - left
+
+    lefter_left = left - (diff / 2)
+    righter_right = right + (diff / 2)
+
+    filter_cloud(filtered_pcd, b"x", lefter_left, righter_right)
+
+    show_clouds(b"completo vs filtrado amplio en x", pcd, filtered_pcd)
+
+    filter_cloud(filtered_pcd, b"x", left, right)
+
+    show_clouds(b"completo vs filtrado angosto en x", pcd, filtered_pcd)
+
+
+
 if __name__ == '__main__':
-    icp_con_modelo()
+    probando_filtro_por_ejes()

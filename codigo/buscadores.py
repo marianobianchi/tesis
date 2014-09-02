@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
-    save_pcd, get_min_max
+    save_pcd, get_min_max, show_clouds
 from cpp.alignment_prerejective import align, APDefaults
 from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
     from_cloud_to_flat
@@ -117,11 +117,13 @@ class ICPFinder(Finder):
             # Busco los limites en el dominio de las filas y columnas del RGB
             min_max = get_min_max(icp_result.cloud)
 
-            min_flat_rc = from_cloud_to_flat(min_max.min_y, min_max.min_x, min_max.min_z)
+            med_z = (min_max.max_z - min_max.min_z) / 2 + min_max.min_z
+
+            min_flat_rc = from_cloud_to_flat(min_max.min_y, min_max.min_x, med_z)
             row_top_limit = min_flat_rc[0]
             col_left_limit = min_flat_rc[1]
 
-            max_flat_rc = from_cloud_to_flat(min_max.max_y, min_max.max_x, min_max.max_z)
+            max_flat_rc = from_cloud_to_flat(min_max.max_y, min_max.max_x, med_z)
             row_bottom_limit = max_flat_rc[0]
             col_right_limit = max_flat_rc[1]
 
@@ -175,13 +177,6 @@ class ICPFinderWithModel(ICPFinder):
         d_front_limit -= depth * factor
         d_back_limit += depth * factor
 
-        nframe = self._descriptors['nframe']
-        path = 'pruebas_guardadas/detector_con_modelo/'
-        save_pcd(
-            target_cloud,
-            str(path + 'target_prefiltro_{i}.pcd'.format(i=nframe))
-        )
-
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
         filter_cloud(
@@ -203,10 +198,6 @@ class ICPFinderWithModel(ICPFinder):
             float(d_back_limit)
         )
 
-        save_pcd(target_cloud, str(path + 'target_postfiltro_{i}.pcd'.format(i=nframe)))
-        save_pcd(object_cloud, str(path + 'object_{i}.pcd'.format(i=nframe)))
-
-
         # Calculate alignment prerejective
         ap_defaults = APDefaults()
         ap_defaults.leaf = 0.005
@@ -215,7 +206,8 @@ class ICPFinderWithModel(ICPFinder):
         ap_defaults.nearest_features_used = 2
         ap_defaults.simil_threshold = 0.1
         ap_defaults.inlier_threshold = 1.5
-        ap_defaults.inlier_fraction = 0.5
+        ap_defaults.inlier_fraction = 0.7
+
         # ap_defaults.show_values = True
         aligned_prerejective_result = align(
             object_cloud,
@@ -223,12 +215,13 @@ class ICPFinderWithModel(ICPFinder):
             ap_defaults,
         )
 
-        save_pcd(
-            aligned_prerejective_result.cloud,
-            str(path + 'aligned_object_{i}.pcd'.format(i=nframe))
-        )
-
         if aligned_prerejective_result.has_converged:
+            show_clouds(
+                b"alineacion en seguimiento",
+                target_cloud,
+                aligned_prerejective_result.cloud
+            )
+
             # Calculate ICP
             icp_defaults = ICPDefaults()
             icp_defaults.euc_fit = 1e-15
@@ -242,13 +235,16 @@ class ICPFinderWithModel(ICPFinder):
                 icp_defaults,
             )
 
-            save_pcd(
-                icp_result.cloud,
-                str(path + 'icp_aligned_object_{i}.pcd'.format(i=nframe))
-            )
-
             if icp_result.has_converged:
+                show_clouds(
+                    b"icp en seguimiento",
+                    target_cloud,
+                    icp_result.cloud
+                )
+
                 return icp_result
+        else:
+            print "NO CONVERGIO LA BUSQUEDA"
 
         return aligned_prerejective_result
 

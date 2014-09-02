@@ -73,6 +73,7 @@ void filter_cloud(PointCloud3D::Ptr cloud,
 
 int points(PointCloud3D::Ptr cloud);
 Point3D get_point(PointCloud3D::Ptr cloud, int i);
+void show_clouds(std::string title, PointCloud3D::Ptr first_cloud, PointCloud3D::Ptr second_cloud);
 
 
 struct MinMax3D {
