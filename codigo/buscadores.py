@@ -5,6 +5,7 @@ from __future__ import (unicode_literals, division)
 
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
     save_pcd, get_min_max
+from cpp.alignment_prerejective import align, APDefaults
 from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
     from_cloud_to_flat
 
@@ -47,21 +48,21 @@ class Finder(object):
 
 
 class ICPFinder(Finder):
-    # TODO: se puede hacer una busqueda mejor, en espiral o algo asi
-    #       tomando como valor de comparacion el score que devuelve ICP
-    @measure_time
-    def simple_follow(self,
-                      r_top_limit,
-                      r_bottom_limit,
-                      c_left_limit,
-                      c_right_limit,
-                      object_cloud,
-                      target_cloud):
+
+    def simple_follow(self, object_cloud, target_cloud):
         """
         Tomando como centro el centro del cuadrado que contiene al objeto
         en el frame anterior, busco el mismo objeto en una zona 4 veces mayor
         a la original.
         """
+        # TODO: se puede hacer una busqueda mejor, en espiral o algo asi
+        # tomando como valor de comparacion el score que devuelve ICP
+
+        r_top_limit = self._descriptors['min_y_cloud']
+        r_bottom_limit = self._descriptors['max_y_cloud']
+        c_left_limit = self._descriptors['min_x_cloud']
+        c_right_limit = self._descriptors['max_x_cloud']
+
         # Define row and column limits for the zone to search the object
         # In this case, we look on a box N times the size of the original
         n = 2
@@ -77,8 +78,18 @@ class ICPFinder(Finder):
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(target_cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
-        filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
+        filter_cloud(
+            target_cloud,
+            str("y"),
+            float(r_top_limit),
+            float(r_bottom_limit)
+        )
+        filter_cloud(
+            target_cloud,
+            str("x"),
+            float(c_left_limit),
+            float(c_right_limit)
+        )
 
         # Calculate ICP
         icp_defaults = ICPDefaults()
@@ -87,36 +98,11 @@ class ICPFinder(Finder):
         return icp_result
 
     def find(self):
-
         # Obtengo pcd's y depth
         object_cloud = self._descriptors['object_cloud']
         target_cloud = self._descriptors['pcd']
-        depth_img = self._descriptors['depth_img']
-
-        # Get frame size and location (in RGB image)
-        size = self._descriptors['size']
-        im_c_left = self._descriptors['location'][1]
-        im_c_right = min(im_c_left + size, len(depth_img[0]) - 1)
-        im_r_top = self._descriptors['location'][0]
-        im_r_bottom = min(im_r_top + size, len(depth_img) - 1)
-
-        topleft = (im_r_top, im_c_left)
-        bottomright = (im_r_bottom, im_c_right)
-
-        # Get location in point cloud
-        rows_cols_limits = from_flat_to_cloud_limits(topleft,
-                                                     bottomright,
-                                                     depth_img)
-        r_top_limit = rows_cols_limits[0][0]
-        r_bottom_limit = rows_cols_limits[0][1]
-        c_left_limit = rows_cols_limits[1][0]
-        c_right_limit = rows_cols_limits[1][1]
 
         icp_result = self.simple_follow(
-            r_top_limit,
-            r_bottom_limit,
-            c_left_limit,
-            c_right_limit,
             object_cloud,
             target_cloud,
         )
@@ -152,13 +138,7 @@ class ICPFinder(Finder):
 
 
 class ICPFinderWithModel(ICPFinder):
-    def simple_follow(self,
-                      r_top_limit,
-                      r_bottom_limit,
-                      c_left_limit,
-                      c_right_limit,
-                      object_cloud,
-                      target_cloud):
+    def simple_follow(self, object_cloud, target_cloud):
         """
         Tomando como centro el centro del cuadrado que contiene al objeto
         en el frame anterior, busco el mismo objeto en una zona N veces mayor
@@ -169,47 +149,108 @@ class ICPFinderWithModel(ICPFinder):
         # i.e: if height is 1 and i want a box 2 times bigger and centered
         # on the center of the original box, i have to substract 0.5 times the
         # height to the top of the box and add the same amount to the bottom
+        # TODO: ver http://docs.pointclouds.org/1.7.0/crop__box_8h_source.html
+        # TODO: ver http://www.pcl-users.org/How-to-use-Crop-Box-td3888183.html
+
+        r_top_limit = self._descriptors['min_y_cloud']
+        r_bottom_limit = self._descriptors['max_y_cloud']
+        c_left_limit = self._descriptors['min_x_cloud']
+        c_right_limit = self._descriptors['max_x_cloud']
+        d_front_limit = self._descriptors['min_z_cloud']
+        d_back_limit = self._descriptors['max_z_cloud']
+
+        # Define row and column limits for the zone to search the object
+        # In this case, we look on a box N times the size of the original
         n = 2
 
         factor = 0.5 * (n - 1)
         height = r_bottom_limit - r_top_limit
         width = c_right_limit - c_left_limit
+        depth = d_back_limit - d_front_limit
 
         r_top_limit -= height * factor
         r_bottom_limit += height * factor
         c_left_limit -= width * factor
         c_right_limit += width * factor
+        d_front_limit -= depth * factor
+        d_back_limit += depth * factor
+
+        nframe = self._descriptors['nframe']
+        path = 'pruebas_guardadas/detector_con_modelo/'
+        save_pcd(
+            target_cloud,
+            str(path + 'target_prefiltro_{i}.pcd'.format(i=nframe))
+        )
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(target_cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
-        filter_cloud(target_cloud, str("x"), float(c_left_limit), float(c_right_limit))
+        filter_cloud(
+            target_cloud,
+            str("y"),
+            float(r_top_limit),
+            float(r_bottom_limit)
+        )
+        filter_cloud(
+            target_cloud,
+            str("x"),
+            float(c_left_limit),
+            float(c_right_limit)
+        )
+        filter_cloud(
+            target_cloud,
+            str("z"),
+            float(d_front_limit),
+            float(d_back_limit)
+        )
 
-        # TODO: ver http://docs.pointclouds.org/1.7.0/crop__box_8h_source.html
-        # TODO: ver http://www.pcl-users.org/How-to-use-Crop-Box-td3888183.html
+        save_pcd(target_cloud, str(path + 'target_postfiltro_{i}.pcd'.format(i=nframe)))
+        save_pcd(object_cloud, str(path + 'object_{i}.pcd'.format(i=nframe)))
 
-        model_cloud = self._descriptors['obj_model']
 
-        nframe = self._descriptors['nframe']
-        # path = 'pruebas_guardadas/detector_con_modelo/'
-        # save_pcd(target_cloud, str(path + 'target_{i}.pcd'.format(i=nframe)))
+        # Calculate alignment prerejective
+        ap_defaults = APDefaults()
+        ap_defaults.leaf = 0.005
+        ap_defaults.max_ransac_iters = 1000
+        ap_defaults.points_to_sample = 3
+        ap_defaults.nearest_features_used = 2
+        ap_defaults.simil_threshold = 0.1
+        ap_defaults.inlier_threshold = 1.5
+        ap_defaults.inlier_fraction = 0.5
+        # ap_defaults.show_values = True
+        aligned_prerejective_result = align(
+            object_cloud,
+            target_cloud,
+            ap_defaults,
+        )
 
-        # Calculate ICP
-        icp_defaults = ICPDefaults()
-        icp_result = icp(object_cloud, target_cloud, icp_defaults)
-        # save_pcd(icp_result.cloud, str(path + 'icp_{i}.pcd'.format(i=nframe)))
+        save_pcd(
+            aligned_prerejective_result.cloud,
+            str(path + 'aligned_object_{i}.pcd'.format(i=nframe))
+        )
 
-        if icp_result.has_converged:
-           ap_defaults = APDefaults()
-           ap_defaults.simil_threshold = 0.1
-           ap_defaults.inlier_fraction = 0.7
-           #ap_defaults.show_values = True
-           aligned_prerejective_result = align(model_cloud, icp_result.cloud, ap_defaults)
+        if aligned_prerejective_result.has_converged:
+            # Calculate ICP
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-15
+            icp_defaults.max_corr_dist = 3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-15
+            # icp_defaults.show_values = True
+            icp_result = icp(
+                aligned_prerejective_result.cloud,
+                target_cloud,
+                icp_defaults,
+            )
 
-           if aligned_prerejective_result.has_converged:
-               return aligned_prerejective_result
+            save_pcd(
+                icp_result.cloud,
+                str(path + 'icp_aligned_object_{i}.pcd'.format(i=nframe))
+            )
 
-        return icp_result
+            if icp_result.has_converged:
+                return icp_result
+
+        return aligned_prerejective_result
 
     def calculate_descriptors(self, detected_descriptors):
         detected_descriptors = (super(ICPFinderWithModel, self)

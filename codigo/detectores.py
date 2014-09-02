@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 import scipy.io
 
-from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd
+from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits
@@ -125,13 +125,20 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
         # Calculate alignment prerejective
         ap_defaults = APDefaults()
+        ap_defaults.leaf = 0.004
         ap_defaults.max_ransac_iters = 10000
+        ap_defaults.points_to_sample = 5
         ap_defaults.nearest_features_used = 3
         ap_defaults.simil_threshold = 0.1
         ap_defaults.inlier_threshold = 1.5
         ap_defaults.inlier_fraction = 0.7
         #ap_defaults.show_values = True
+
         ap_result = align(model_cloud, detected_cloud, ap_defaults)
+
+        path = 'pruebas_guardadas/detector_con_modelo/'
+        save_pcd(detected_cloud, str(path + "escena_objeto_recuadro.pcd"))
+        save_pcd(ap_result.cloud, str(path + "modelo_alineado.pcd"))
 
         if ap_result.has_converged:
             # Calculate ICP
@@ -142,9 +149,16 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             icp_defaults.transf_epsilon = 1e-15
             # icp_defaults.show_values = True
             icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
+            save_pcd(icp_result.cloud, str(path + "icp_modelo_alineado.pcd"))
 
             if icp_result.has_converged:
-                detected_descriptors['object_cloud'] = icp_result.cloud
-                detected_descriptors['obj_model'] = icp_result.cloud
+                cloud = icp_result.cloud
+                minmax = get_min_max(cloud)
+                detected_descriptors.update({
+                    'min_z_cloud': minmax.min_z,
+                    'max_z_cloud': minmax.max_z,
+                    'object_cloud': cloud,
+                    'obj_model': cloud,
+                })
 
         return detected_descriptors
