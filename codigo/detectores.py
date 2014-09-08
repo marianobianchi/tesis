@@ -180,3 +180,55 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
                 })
 
         return detected_descriptors
+
+
+class AutomaticDetection(StaticDetectorWithModelAlignment):
+    def detect(self):
+        # Calculate alignment prerejective
+        ap_defaults = APDefaults()
+        ap_defaults.leaf = 0.004
+        ap_defaults.max_ransac_iters = 1000
+        ap_defaults.points_to_sample = 5
+        ap_defaults.nearest_features_used = 3
+        ap_defaults.simil_threshold = 0.1
+        ap_defaults.inlier_threshold = 1.5
+        ap_defaults.inlier_fraction = 0.7
+        #ap_defaults.show_values = True
+
+        ap_result = align(model_cloud, detected_cloud, ap_defaults)
+
+        # show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
+
+        if ap_result.has_converged:
+            # Calculate ICP
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-15
+            icp_defaults.max_corr_dist = 3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-15
+            # icp_defaults.show_values = True
+            icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
+
+            # show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
+
+            if icp_result.has_converged:
+                # Filtro los puntos de la escena que se corresponden con el
+                # objeto que estoy buscando
+                obj_scene_cloud = filter_object_from_scene_cloud(
+                    icp_result.cloud,  # object
+                    detected_cloud,  # scene
+                    0.001,  # radius
+                    False,  # show values
+                )
+
+                # show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
+
+                minmax = get_min_max(obj_scene_cloud)
+                detected_descriptors.update({
+                    'min_z_cloud': minmax.min_z,
+                    'max_z_cloud': minmax.max_z,
+                    'object_cloud': obj_scene_cloud,
+                    'obj_model': obj_scene_cloud,
+                })
+
+        return detected_descriptors
