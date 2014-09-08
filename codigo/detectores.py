@@ -135,7 +135,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         # Calculate alignment prerejective
         ap_defaults = APDefaults()
         ap_defaults.leaf = 0.004
-        ap_defaults.max_ransac_iters = 10000
+        ap_defaults.max_ransac_iters = 1000
         ap_defaults.points_to_sample = 5
         ap_defaults.nearest_features_used = 3
         ap_defaults.simil_threshold = 0.1

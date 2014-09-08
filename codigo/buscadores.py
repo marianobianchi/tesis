@@ -110,7 +110,7 @@ class ICPFinder(Finder):
             target_cloud,
         )
 
-        fue_exitoso = icp_result.has_converged
+        fue_exitoso = icp_result.score < 5e-5
         descriptors = {}
 
         if fue_exitoso:
@@ -214,10 +214,18 @@ class ICPFinderWithModel(ICPFinder):
         # Calculate ICP
         icp_defaults = ICPDefaults()
         icp_defaults.euc_fit = 1e-15
-        icp_defaults.max_corr_dist = 3
+        icp_defaults.max_corr_dist = 0.3
         icp_defaults.max_iter = 50
         icp_defaults.transf_epsilon = 1e-15
+        # icp_defaults.ran_iter
+        # icp_defaults.ran_out_rej
         # icp_defaults.show_values = True
+
+        path = b'pruebas_guardadas/detector_con_modelo/'
+        nframe = self._descriptors['nframe']
+        save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
+        save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
+
 
         icp_post_align_result = self._align_and_icp(
             object_cloud,
@@ -239,11 +247,13 @@ class ICPFinderWithModel(ICPFinder):
             msg = b'seguimiento con icp unicamente (score={s})'
             final_result = icp_result
 
-        show_clouds(
-            msg.format(s=final_result.score),
-            final_result.cloud,
-            target_cloud
-        )
+        save_pcd(final_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
+
+        # show_clouds(
+        #     msg.format(s=final_result.score),
+        #     final_result.cloud,
+        #     target_cloud
+        # )
 
         return final_result
 
@@ -281,4 +291,16 @@ class ICPFinderWithModel(ICPFinder):
         detected_descriptors = (super(ICPFinderWithModel, self)
                                 .calculate_descriptors(detected_descriptors))
         detected_descriptors['obj_model'] = detected_descriptors['object_cloud']
+
+        minmax = get_min_max(detected_descriptors['object_cloud'])
+
+        detected_descriptors.update({
+            'min_x_cloud': minmax.min_x,
+            'max_x_cloud': minmax.max_x,
+            'min_y_cloud': minmax.min_y,
+            'max_y_cloud': minmax.max_y,
+            'min_z_cloud': minmax.min_z,
+            'max_z_cloud': minmax.max_z,
+        })
+
         return detected_descriptors
