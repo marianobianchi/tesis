@@ -1,103 +1,78 @@
-#include <pcl/point_cloud.h>
-#include <pcl/kdtree/kdtree_flann.h>
-
-#include <iostream>
-#include <vector>
-#include <ctime>
-
-// Extra para el tutorial
-#include <pcl/console/print.h>
-#include <pcl/console/parse.h>
-#include <pcl/visualization/pcl_visualizer.h>
-#include <pcl/io/pcd_io.h>
-
-
-typedef pcl::PointXYZ Point3D;
-typedef pcl::PointCloud<Point3D> PointCloud3D;
-
+#include "kdtree.h"
 
 void showHelp(char * program_name)
 {
     std::cout << std::endl;
     std::cout << "Usage: " << program_name << " object.pcd" << std::endl;
-    std::cout << "-h:  Show this help." << std::endl;
+    std::cout << "-h or --help:  Show this help." << std::endl;
+    std::cout << "-r: Radius (in meters)" << std::endl;
 }
 
 
 int main (int argc, char** argv)
 {
-    srand (time (NULL));
-
-    PointCloud3D::Ptr cloud (new PointCloud3D);
+    PointCloud3D::Ptr object_cloud (new PointCloud3D);
+    PointCloud3D::Ptr scene_cloud (new PointCloud3D);
+    PointCloud3D::Ptr matching_points_cloud (new PointCloud3D);
     
     std::vector<int> filenames;
     filenames = pcl::console::parse_file_extension_argument (argc, argv, ".pcd");
     
-    if (filenames.size () != 1 || pcl::console::find_switch (argc, argv, "-h") || pcl::console::find_switch (argc, argv, "--help")){
+    if (filenames.size () != 2 || pcl::console::find_switch (argc, argv, "-h") || pcl::console::find_switch (argc, argv, "--help")){
         showHelp (argv[0]);
         return (1);
     }
+    
+    
+    float radius = 0.001;
+    if(pcl::console::find_argument(argc, argv, "-r") != -1){
+        radius = atof(argv[pcl::console::find_argument(argc, argv, "-r") + 1]);
+    }
   
     // Load object and scene
-    pcl::console::print_highlight ("Loading point clouds...\n");
-    if (pcl::io::loadPCDFile<Point3D> (argv[1], *cloud) < 0)
+    if (pcl::io::loadPCDFile<Point3D> (argv[1], *object_cloud) < 0 || 
+        pcl::io::loadPCDFile<Point3D> (argv[2], *scene_cloud) < 0)
     {
         pcl::console::print_error ("Error loading object/scene file!\n");
         return (1);
     }
 
+    // Tomo a la nube de puntos del objeto como area de busqueda
     pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
-
-    kdtree.setInputCloud (cloud);
-
-    Point3D searchPoint;
-
-    searchPoint.x = 1.0 * rand () / (RAND_MAX + 1.0);
-    searchPoint.y = 1.0 * rand () / (RAND_MAX + 1.0);
-    searchPoint.z = 1.0 * rand () / (RAND_MAX + 1.0);
-
-    // K nearest neighbor search
-
-    int K = 10;
-
-    std::vector<int> pointIdxNKNSearch(K);
-    std::vector<float> pointNKNSquaredDistance(K);
-
-    std::cout << "K nearest neighbor search at (" << searchPoint.x 
-            << " " << searchPoint.y 
-            << " " << searchPoint.z
-            << ") with K=" << K << std::endl;
-
-    if ( kdtree.nearestKSearch (searchPoint, K, pointIdxNKNSearch, pointNKNSquaredDistance) > 0 )
-    {
-    for (size_t i = 0; i < pointIdxNKNSearch.size (); ++i)
-      std::cout << "    "  <<   cloud->points[ pointIdxNKNSearch[i] ].x 
-                << " " << cloud->points[ pointIdxNKNSearch[i] ].y 
-                << " " << cloud->points[ pointIdxNKNSearch[i] ].z 
-                << " (squared distance: " << pointNKNSquaredDistance[i] << ")" << std::endl;
-    }
-
-    // Neighbors within radius search
-
+    kdtree.setInputCloud(object_cloud);
+    
+    // Busco los puntos de la escena que tienen "correspondencias" con el objeto
+    Point3D search_point;
     std::vector<int> pointIdxRadiusSearch;
     std::vector<float> pointRadiusSquaredDistance;
-
-    float radius = 0.3;
-
-    std::cout << "Neighbors within radius search at (" << searchPoint.x 
-            << " " << searchPoint.y 
-            << " " << searchPoint.z
-            << ") with radius=" << radius << std::endl;
-
-
-    if ( kdtree.radiusSearch (searchPoint, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance) > 0 )
-    {
-    for (size_t i = 0; i < pointIdxRadiusSearch.size (); ++i)
-      std::cout << "    "  <<   cloud->points[ pointIdxRadiusSearch[i] ].x 
-                << " " << cloud->points[ pointIdxRadiusSearch[i] ].y 
-                << " " << cloud->points[ pointIdxRadiusSearch[i] ].z 
-                << " (squared distance: " << pointRadiusSquaredDistance[i] << ")" << std::endl;
+    
+    int neighbors_count[10] = {0,0,0,0,0,0,0,0,0,0};
+    int neighbors;
+    
+    for(int i=0; i<=scene_cloud->size(); ++i){
+        search_point = scene_cloud->points[i];
+        pointIdxRadiusSearch.clear();
+        pointRadiusSquaredDistance.clear();
+        
+        // Neighbors within radius search
+        neighbors = kdtree.radiusSearch (search_point, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+        if ( neighbors > 0 ){
+            if(neighbors >= 10){
+                neighbors_count[9] += 1;
+            }
+            else{
+                neighbors_count[neighbors - 1] += 1;
+            }
+            matching_points_cloud->push_back(search_point);
+        }
+        
     }
+    
+    std::cout << "Puntos totales de la escena: " << scene_cloud->size() << std::endl;
+    std::cout << "Puntos de la escena con correspondencias en el objeto: " << matching_points_cloud->size() << std::endl;
+    
+    for (int i = 0; i < 10; ++i)
+        std::cout << "Puntos de la escena con " << i + 1 << " vecinos:" << neighbors_count[i] << std::endl;
 
 
     return 0;
