@@ -244,6 +244,7 @@ BOOST_PYTHON_MODULE(my_pcl)
         .def_readwrite("cloud", &ICPResult::cloud);
 
     def("icp", icp);
+    def("filter_object_from_scene_cloud", filter_object_from_scene_cloud);
     
     class_<MinMax3D>("MinMax3D")
         .def_readonly("min_x", &MinMax3D::min_x)

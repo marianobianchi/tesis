@@ -125,4 +125,4 @@ def probando_filtro_por_ejes():
 
 
 if __name__ == '__main__':
-    probando_filtro_por_ejes()
+    icp_con_modelo()
