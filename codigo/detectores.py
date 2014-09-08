@@ -5,7 +5,7 @@ from __future__ import (unicode_literals, division)
 import scipy.io
 
 from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
-    show_clouds
+    show_clouds, filter_object_from_scene_cloud
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits
@@ -160,13 +160,23 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
 
             if icp_result.has_converged:
-                cloud = icp_result.cloud
-                minmax = get_min_max(cloud)
+                # Filtro los puntos de la escena que se corresponden con el
+                # objeto que estoy buscando
+                obj_scene_cloud = filter_object_from_scene_cloud(
+                    icp_result.cloud,  # object
+                    detected_cloud,  # scene
+                    0.001,  # radius
+                    False,  # show values
+                )
+
+                show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
+
+                minmax = get_min_max(obj_scene_cloud)
                 detected_descriptors.update({
                     'min_z_cloud': minmax.min_z,
                     'max_z_cloud': minmax.max_z,
-                    'object_cloud': cloud,
-                    'obj_model': cloud,
+                    'object_cloud': obj_scene_cloud,
+                    'obj_model': obj_scene_cloud,
                 })
 
         return detected_descriptors

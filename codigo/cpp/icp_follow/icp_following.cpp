@@ -67,6 +67,62 @@ ICPResult icp(PointCloud3D::Ptr source_cloud,
 }
 
 
+
+PointCloud3D::Ptr filter_object_from_scene_cloud(PointCloud3D::Ptr object_cloud,
+                                                 PointCloud3D::Ptr scene_cloud,
+                                                 float radius, // 0.001 = 1 mm
+                                                 bool show_values)
+{
+
+    PointCloud3D::Ptr matching_points_cloud (new PointCloud3D);
+    
+    // Tomo a la nube de puntos del objeto como area de busqueda
+    pcl::KdTreeFLANN<pcl::PointXYZ> kdtree;
+    kdtree.setInputCloud(object_cloud);
+    
+    // Busco los puntos de la escena que tienen "correspondencias" con el objeto
+    Point3D search_point;
+    std::vector<int> pointIdxRadiusSearch;
+    std::vector<float> pointRadiusSquaredDistance;
+    
+    int neighbors_count[10] = {0,0,0,0,0,0,0,0,0,0};
+    int neighbors;
+    
+    for(int i=0; i<=scene_cloud->size(); ++i){
+        search_point = scene_cloud->points[i];
+        pointIdxRadiusSearch.clear();
+        pointRadiusSquaredDistance.clear();
+        
+        // Neighbors within radius search
+        neighbors = kdtree.radiusSearch (search_point, radius, pointIdxRadiusSearch, pointRadiusSquaredDistance);
+        if ( neighbors > 0 ){
+            if(neighbors >= 10){
+                neighbors_count[9] += 1;
+            }
+            else{
+                neighbors_count[neighbors - 1] += 1;
+            }
+            matching_points_cloud->push_back(search_point);
+        }
+        
+    }
+
+    if ( show_values ){
+        std::cout << "Radio de busqueda: " << radius << std::endl;
+        std::cout << "Puntos totales de la escena: " << scene_cloud->size() << std::endl;
+        std::cout << "Puntos de la escena con correspondencias en el objeto: " << matching_points_cloud->size() << std::endl;
+        
+        for (int i = 0; i < 10; ++i)
+            std::cout << "Puntos de la escena con " << i + 1 << " vecinos:" << neighbors_count[i] << std::endl;
+
+    }
+
+    return matching_points_cloud;
+
+}
+
+
+
 PointCloud3D::Ptr read_pcd(std::string pcd_filename)
 {
     PointCloud3D::Ptr cloud(new PointCloud3D);
