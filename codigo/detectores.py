@@ -145,7 +145,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
         ap_result = align(model_cloud, detected_cloud, ap_defaults)
 
-        show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
+        # show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
 
         if ap_result.has_converged:
             # Calculate ICP
@@ -157,7 +157,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             # icp_defaults.show_values = True
             icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
 
-            show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
+            # show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
 
             if icp_result.has_converged:
                 # Filtro los puntos de la escena que se corresponden con el
@@ -169,7 +169,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
                     False,  # show values
                 )
 
-                show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
+                # show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
 
                 minmax = get_min_max(obj_scene_cloud)
                 detected_descriptors.update({

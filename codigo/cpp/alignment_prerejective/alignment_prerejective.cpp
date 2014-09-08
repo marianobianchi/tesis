@@ -4,7 +4,7 @@
 
 // Align a rigid object to a scene with clutter and occlusions
 APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
-                                PointCloud3D::Ptr target_cloud,
+                                PointCloud3D::Ptr const_target_cloud,
                                 APDefaults &ap_defaults)
 {   
     /*
@@ -42,6 +42,10 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     // Point clouds
     PointCloud3D::Ptr source_cloud (new PointCloud3D);
     *source_cloud = *const_source_cloud; // Copy original cloud to avoid unwanted changes
+    
+    PointCloud3D::Ptr target_cloud (new PointCloud3D);
+    *target_cloud = *const_target_cloud; // Copy original cloud to avoid unwanted changes
+    
     
     PointCloudT::Ptr normalized_source (new PointCloudT);
     PointCloudT::Ptr normalized_target (new PointCloudT);
