@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
-    save_pcd, get_min_max, show_clouds
+    save_pcd, get_min_max, show_clouds, ICPResult
 from cpp.alignment_prerejective import align, APDefaults
 from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
     from_cloud_to_flat
@@ -25,6 +25,9 @@ class Finder(object):
         Calcula los descriptores en base al objeto encontrado para que
         los almacene el Follower
         """
+        if 'detected_cloud' in desc:
+            desc['object_cloud'] = desc['detected_cloud']
+
         return desc
 
     def base_comparisson(self):
@@ -133,7 +136,7 @@ class ICPFinder(Finder):
             descriptors.update({
                 'size': max(width, height),
                 'location': (row_top_limit, col_left_limit),
-                'object_cloud': icp_result.cloud,
+                'detected_cloud': icp_result.cloud,
             })
 
         return fue_exitoso, descriptors
@@ -208,6 +211,52 @@ class ICPFinderWithModel(ICPFinder):
         ap_defaults.inlier_threshold = 1.5
         ap_defaults.inlier_fraction = 0.7
 
+        # Calculate ICP
+        icp_defaults = ICPDefaults()
+        icp_defaults.euc_fit = 1e-15
+        icp_defaults.max_corr_dist = 3
+        icp_defaults.max_iter = 50
+        icp_defaults.transf_epsilon = 1e-15
+        # icp_defaults.show_values = True
+
+        icp_post_align_result = self._align_and_icp(
+            object_cloud,
+            target_cloud,
+            ap_defaults,
+            icp_defaults,
+        )
+
+        icp_result = self._icp(
+            object_cloud,
+            target_cloud,
+            icp_defaults,
+        )
+
+        if icp_post_align_result.score < icp_result.score:
+            msg = b'seguimiento con alineacion e icp (score={s})'
+            final_result = icp_post_align_result
+        else:
+            msg = b'seguimiento con icp unicamente (score={s})'
+            final_result = icp_result
+
+        show_clouds(
+            msg.format(s=final_result.score),
+            final_result.cloud,
+            target_cloud
+        )
+
+        return final_result
+
+    @staticmethod
+    def _icp(object_cloud, target_cloud, icp_defaults):
+        return icp(object_cloud, target_cloud, icp_defaults)
+
+    def _align_and_icp(self,
+                       object_cloud,
+                       target_cloud,
+                       ap_defaults,
+                       icp_defaults):
+
         # ap_defaults.show_values = True
         aligned_prerejective_result = align(
             object_cloud,
@@ -216,37 +265,17 @@ class ICPFinderWithModel(ICPFinder):
         )
 
         if aligned_prerejective_result.has_converged:
-            show_clouds(
-                b"alineacion en seguimiento",
-                target_cloud,
-                aligned_prerejective_result.cloud
-            )
-
-            # Calculate ICP
-            icp_defaults = ICPDefaults()
-            icp_defaults.euc_fit = 1e-15
-            icp_defaults.max_corr_dist = 3
-            icp_defaults.max_iter = 50
-            icp_defaults.transf_epsilon = 1e-15
-            # icp_defaults.show_values = True
-            icp_result = icp(
+            icp_result = self._icp(
                 aligned_prerejective_result.cloud,
                 target_cloud,
                 icp_defaults,
             )
-
-            if icp_result.has_converged:
-                show_clouds(
-                    b"icp en seguimiento",
-                    target_cloud,
-                    icp_result.cloud
-                )
-
-                return icp_result
         else:
-            print "NO CONVERGIO LA BUSQUEDA"
+            icp_result = ICPResult()
+            icp_result.has_converged = False
+            icp_result.score = 1e20
 
-        return aligned_prerejective_result
+        return icp_result
 
     def calculate_descriptors(self, detected_descriptors):
         detected_descriptors = (super(ICPFinderWithModel, self)

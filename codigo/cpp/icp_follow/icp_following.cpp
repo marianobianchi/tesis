@@ -239,8 +239,8 @@ BOOST_PYTHON_MODULE(my_pcl)
     def("show_clouds", show_clouds);
 
     class_<ICPResult>("ICPResult")
-        .def_readonly("has_converged", &ICPResult::has_converged)
-        .def_readonly("score", &ICPResult::score)
+        .def_readwrite("has_converged", &ICPResult::has_converged)
+        .def_readwrite("score", &ICPResult::score)
         .def_readwrite("cloud", &ICPResult::cloud);
 
     def("icp", icp);
