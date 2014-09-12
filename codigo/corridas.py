@@ -2,11 +2,12 @@
 
 from __future__ import (unicode_literals, division)
 
+from cpp.my_pcl import filter_cloud, show_clouds, get_min_max
+
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
-    StaticDetectorWithModelAlignment
+    StaticDetectorWithModelAlignment, AutomaticDetection
 from esquemas_seguimiento import FollowingScheme
-from metodos_comunes import test_flat_and_cloud_conversion
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreCharged
@@ -95,8 +96,33 @@ def icp_con_modelo():
     ).run()
 
 
+def deteccion_automatica_icp_con_modelo():
+    img_provider = FrameNamesAndImageProviderPreCharged(
+        'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug',
+        '5',
+    )  # path, objname, number
+
+
+    detector = AutomaticDetection(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
+
+    finder = ICPFinderWithModel()
+
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
+
+
 def probando_filtro_por_ejes():
-    from cpp.my_pcl import filter_cloud, show_clouds, get_min_max
+
     img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/', 'desk', '1',
         'videos/rgbd/objs/', 'coffee_mug', '5',
@@ -125,4 +151,4 @@ def probando_filtro_por_ejes():
 
 
 if __name__ == '__main__':
-    icp_con_modelo()
+    deteccion_automatica_icp_con_modelo()

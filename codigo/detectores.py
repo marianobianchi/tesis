@@ -184,22 +184,41 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
 class AutomaticDetection(StaticDetectorWithModelAlignment):
     def detect(self):
-        # Calculate alignment prerejective
+        model_cloud = self._descriptors['obj_model']
+        scene_cloud = self._descriptors['pcd']
+
+        detected_descriptors = {
+            'size': 0,
+            'location': (0, 0),  # location=(fila, columna)
+        }
+
+        # alignment prerejective parameters
         ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.004
+        ap_defaults.leaf = 0.005
         ap_defaults.max_ransac_iters = 1000
         ap_defaults.points_to_sample = 5
         ap_defaults.nearest_features_used = 3
-        ap_defaults.simil_threshold = 0.1
-        ap_defaults.inlier_threshold = 1.5
-        ap_defaults.inlier_fraction = 0.7
-        #ap_defaults.show_values = True
+        ap_defaults.simil_threshold = 0.7
+        ap_defaults.inlier_threshold = 3
+        ap_defaults.inlier_fraction = 0.4
+        ap_defaults.show_values = True
 
-        ap_result = align(model_cloud, detected_cloud, ap_defaults)
+        # Calculate alignment
+        ap_result = align(model_cloud, scene_cloud, ap_defaults)
 
         # show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
+        path = b'pruebas_guardadas/deteccion_automatica/'
+        nframe = self._descriptors['nframe']
+        save_pcd(model_cloud, path + b'model_cloud_{i}.pcd'.format(i=nframe))
+        save_pcd(scene_cloud, path + b'scene_cloud_{i}.pcd'.format(i=nframe))
 
         if ap_result.has_converged:
+
+            save_pcd(
+                ap_result.cloud,
+                path + b'aligned_cloud_{i}.pcd'.format(i=nframe)
+            )
+
             # Calculate ICP
             icp_defaults = ICPDefaults()
             icp_defaults.euc_fit = 1e-15
@@ -207,16 +226,21 @@ class AutomaticDetection(StaticDetectorWithModelAlignment):
             icp_defaults.max_iter = 50
             icp_defaults.transf_epsilon = 1e-15
             # icp_defaults.show_values = True
-            icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
+            icp_result = icp(ap_result.cloud, scene_cloud, icp_defaults)
 
             # show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
 
             if icp_result.has_converged:
+                save_pcd(
+                    icp_result.cloud,
+                    path + b'icp_cloud_{i}.pcd'.format(i=nframe)
+                )
+
                 # Filtro los puntos de la escena que se corresponden con el
                 # objeto que estoy buscando
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
-                    detected_cloud,  # scene
+                    scene_cloud,  # scene
                     0.001,  # radius
                     False,  # show values
                 )

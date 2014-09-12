@@ -128,6 +128,7 @@ int main (int argc, char **argv)
         object->points[i].y = loaded_object->points[i].y;
         object->points[i].z = loaded_object->points[i].z;
     }
+    //~ *object = *loaded_object;
     
     scene->points.resize(loaded_scene->size());
     for (size_t i = 0; i < loaded_scene->points.size(); i++) {
@@ -135,6 +136,7 @@ int main (int argc, char **argv)
         scene->points[i].y = loaded_scene->points[i].y;
         scene->points[i].z = loaded_scene->points[i].z;
     }
+    //~ *scene = *loaded_scene;
     
 
     // Estimate normals for object

@@ -36,6 +36,7 @@ BOOST_PYTHON_MODULE(alignment_prerejective)
 
     class_<APResult>("APResult")
         .def_readwrite("has_converged", &APResult::has_converged)
+        .def_readwrite("score", &APResult::score)
         .def_readwrite("cloud", &APResult::cloud);
 
     def("align", alignment_prerejective);
