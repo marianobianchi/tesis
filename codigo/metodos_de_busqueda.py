@@ -119,23 +119,6 @@ class BusquedaPorFramesSolapados(object):
         ancho_limites_superiores = ancho_linspace[int_obj_width:]
         ancho_limites = zip(ancho_limites_inferiores, ancho_limites_superiores)
 
-        # #######################################################
-        # Algunos calculos a mano para corroborar que ande bien
-        ########################################################
-        obj_height = alto_limites[0][1] - alto_limites[0][0]
-        obj_width = ancho_limites[0][1] - ancho_limites[0][0]
-        scene_width = scene_max_col - scene_min_col
-        frames_ancho = (scene_width / obj_width) * 2 - 1
-        print "Frames a lo ancho POSTA:", round(frames_ancho)
-
-        scene_height = scene_max_row - scene_min_row
-        frames_alto = (scene_height / obj_height) * 2 - 1
-        print "Frames a lo alto POSTA:", round(frames_alto)
-
-        print "Frames totales supuestos POSTA:", frames_ancho * frames_alto
-        ########################################################
-
-
         for row_low, row_up in alto_limites:
             for col_low, col_up in ancho_limites:
                 yield {

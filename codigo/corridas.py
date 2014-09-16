@@ -174,22 +174,7 @@ def segmentando_escena():
 
     save_pcd(pcd, path + b'scene.pcd')
 
-    ########################################################
-    # Algunos calculos a mano para corroborar que ande bien
-    ########################################################
-    scene_width = scene_max_col - scene_min_col
-    frames_ancho = (scene_width / obj_width) * 2 - 1
-    print "Frames a lo ancho:", round(frames_ancho)
-
-    scene_height = scene_max_row - scene_min_row
-    frames_alto = (scene_height / obj_height) * 2 - 1
-    print "Frames a lo alto:", round(frames_alto)
-
-    print "Frames totales supuestos:", frames_ancho * frames_alto
-    ########################################################
-
     counter = 0
-
     for limits in (BusquedaPorFramesSolapados()
                    .iterate_frame_boxes(scene_min_col,
                                         scene_max_col,
@@ -204,8 +189,6 @@ def segmentando_escena():
             save_pcd(cloud, path + b'filtered_scene_{i}_box.pcd'.format(i=counter))
 
         counter += 1
-
-    print "Frames totales POSTA:", counter - 1
 
 
 if __name__ == '__main__':
