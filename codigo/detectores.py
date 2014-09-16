@@ -101,8 +101,8 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
 
         cloud = self._descriptors['pcd']
 
-        filter_cloud(cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
-        filter_cloud(cloud, str("x"), float(c_left_limit), float(c_right_limit))
+        cloud = filter_cloud(cloud, str("y"), float(r_top_limit), float(r_bottom_limit))
+        cloud = filter_cloud(cloud, str("x"), float(c_left_limit), float(c_right_limit))
 
         detected_descriptors.update(
             {

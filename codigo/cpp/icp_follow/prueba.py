@@ -8,8 +8,8 @@ if __name__ == '__main__':
 
     print "La primer nube tiene", points(pc1), "puntos y la segunda tiene", points(pc2)
 
-    filter_cloud(pc1, "x", -0.2, 0.2)
-    filter_cloud(pc2, "x", -0.3, 0.3)
+    pc1 = filter_cloud(pc1, "x", -0.2, 0.2)
+    pc2 = filter_cloud(pc2, "x", -0.3, 0.3)
 
     print "Ahora la primer nube tiene", points(pc1), "y la segunda tiene", points(pc2)
 

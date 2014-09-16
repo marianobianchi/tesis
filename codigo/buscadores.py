@@ -81,13 +81,13 @@ class ICPFinder(Finder):
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("y"),
             float(r_top_limit),
             float(r_bottom_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("x"),
             float(c_left_limit),
@@ -182,19 +182,19 @@ class ICPFinderWithModel(ICPFinder):
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("y"),
             float(r_top_limit),
             float(r_bottom_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("x"),
             float(c_left_limit),
             float(c_right_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("z"),
             float(d_front_limit),
