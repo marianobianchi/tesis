@@ -9,6 +9,7 @@ from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits
+from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
 class Detector(object):
@@ -210,65 +211,127 @@ class AutomaticDetection(Detector):
 
         # alignment prerejective parameters
         ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.005
-        ap_defaults.max_ransac_iters = 1000
+        ap_defaults.leaf = 0.004
+        ap_defaults.max_ransac_iters = 1500
         ap_defaults.points_to_sample = 5
-        ap_defaults.nearest_features_used = 3
-        ap_defaults.simil_threshold = 0.7
-        ap_defaults.inlier_threshold = 3
-        ap_defaults.inlier_fraction = 0.4
+        ap_defaults.nearest_features_used = 4
+        ap_defaults.simil_threshold = 0.3
+        ap_defaults.inlier_threshold = 2
+        ap_defaults.inlier_fraction = 0.7
         ap_defaults.show_values = True
 
-        # Calculate alignment
-        ap_result = align(model_cloud, scene_cloud, ap_defaults)
+        #icp parameters
+        icp_defaults = ICPDefaults()
+        icp_defaults.euc_fit = 1e-15
+        icp_defaults.max_corr_dist = 3
+        icp_defaults.max_iter = 50
+        icp_defaults.transf_epsilon = 1e-15
+        # icp_defaults.show_values = True
 
-        # show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
-        path = b'pruebas_guardadas/deteccion_automatica/'
-        nframe = self._descriptors['nframe']
-        save_pcd(model_cloud, path + b'model_cloud_{i}.pcd'.format(i=nframe))
-        save_pcd(scene_cloud, path + b'scene_cloud_{i}.pcd'.format(i=nframe))
+        best_aligned_scene = None
+        best_alignment_score = 0.1  # lesser is better
+        best_icp_aligned_scene = None
+        best_icp_score = 0.1  # lesser is better
 
-        if ap_result.has_converged:
+        for limits in (BusquedaPorFramesSolapados()
+                       .iterate_frame_boxes(scene_min_col,
+                                            scene_max_col,
+                                            scene_min_row,
+                                            scene_max_row,
+                                            obj_width,
+                                            obj_height)):
+            cloud = filter_cloud(pcd, b'x', limits['min_x'], limits['max_x'])
+            cloud = filter_cloud(cloud, b'y', limits['min_y'], limits['max_y'])
 
-            save_pcd(
-                ap_result.cloud,
-                path + b'aligned_cloud_{i}.pcd'.format(i=nframe)
+            # Calculate alignment
+            ap_result = align(model_cloud, cloud, ap_defaults)
+            if (ap_result.has_converged and
+                        ap_result.score < best_alignment_score):
+                best_alignment_score = ap_result.score
+                best_aligned_scene = ap_result.cloud
+
+            if best_aligned_scene is not None:
+                # Calculate ICP
+                icp_result = icp(best_aligned_scene, cloud, icp_defaults)
+
+                if (icp_result.has_converged and
+                            icp_result.score < best_icp_score):
+                    best_icp_score = icp_result.score
+                    best_icp_aligned_scene = icp_result.cloud
+
+
+        if best_icp_aligned_scene is not None:
+            # Filtro los puntos de la escena que se corresponden con el
+            # objeto que estoy buscando
+            obj_scene_cloud = filter_object_from_scene_cloud(
+                best_icp_aligned_scene,  # object
+                cloud,  # scene
+                0.001,  # radius
+                False,  # show values
             )
 
-            # Calculate ICP
-            icp_defaults = ICPDefaults()
-            icp_defaults.euc_fit = 1e-15
-            icp_defaults.max_corr_dist = 3
-            icp_defaults.max_iter = 50
-            icp_defaults.transf_epsilon = 1e-15
-            # icp_defaults.show_values = True
-            icp_result = icp(ap_result.cloud, scene_cloud, icp_defaults)
+            minmax = get_min_max(obj_scene_cloud)
+            detected_descriptors.update({
+                'min_x_cloud': minax.min_x,
+                'max_x_cloud': minax.max_x,
+                'min_y_cloud': minax.min_y,
+                'max_y_cloud': minax.max_y,
+                'min_z_cloud': minmax.min_z,
+                'max_z_cloud': minmax.max_z,
+                'object_cloud': obj_scene_cloud,
+                'obj_model': obj_scene_cloud,
+                # TODO: calcular tamaño y posicion
+                'size': 0,
+                'location': (0, 0),  # location=(fila, columna)
+            })
 
-            # show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
 
-            if icp_result.has_converged:
-                save_pcd(
-                    icp_result.cloud,
-                    path + b'icp_cloud_{i}.pcd'.format(i=nframe)
-                )
 
-                # Filtro los puntos de la escena que se corresponden con el
-                # objeto que estoy buscando
-                obj_scene_cloud = filter_object_from_scene_cloud(
-                    icp_result.cloud,  # object
-                    scene_cloud,  # scene
-                    0.001,  # radius
-                    False,  # show values
-                )
 
-                # show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
 
-                minmax = get_min_max(obj_scene_cloud)
-                detected_descriptors.update({
-                    'min_z_cloud': minmax.min_z,
-                    'max_z_cloud': minmax.max_z,
-                    'object_cloud': obj_scene_cloud,
-                    'obj_model': obj_scene_cloud,
-                })
+
+
+        # # show_clouds(b"alineacion en zona de deteccion", detected_cloud, ap_result.cloud)
+        # path = b'pruebas_guardadas/deteccion_automatica/'
+        # nframe = self._descriptors['nframe']
+        # save_pcd(model_cloud, path + b'model_cloud_{i}.pcd'.format(i=nframe))
+        # save_pcd(scene_cloud, path + b'scene_cloud_{i}.pcd'.format(i=nframe))
+        #
+        # if ap_result.has_converged:
+        #
+        #     save_pcd(
+        #         ap_result.cloud,
+        #         path + b'aligned_cloud_{i}.pcd'.format(i=nframe)
+        #     )
+        #
+        #     # Calculate ICP
+        #     icp_result = icp(ap_result.cloud, scene_cloud, icp_defaults)
+        #
+        #     # show_clouds(b"icp de alineacion en zona de deteccion", detected_cloud, icp_result.cloud)
+        #
+        #     if icp_result.has_converged:
+        #         save_pcd(
+        #             icp_result.cloud,
+        #             path + b'icp_cloud_{i}.pcd'.format(i=nframe)
+        #         )
+        #
+        #         # Filtro los puntos de la escena que se corresponden con el
+        #         # objeto que estoy buscando
+        #         obj_scene_cloud = filter_object_from_scene_cloud(
+        #             icp_result.cloud,  # object
+        #             scene_cloud,  # scene
+        #             0.001,  # radius
+        #             False,  # show values
+        #         )
+        #
+        #         # show_clouds(b"kdtree en deteccion", detected_cloud, obj_scene_cloud)
+        #
+        #         minmax = get_min_max(obj_scene_cloud)
+        #         detected_descriptors.update({
+        #             'min_z_cloud': minmax.min_z,
+        #             'max_z_cloud': minmax.max_z,
+        #             'object_cloud': obj_scene_cloud,
+        #             'obj_model': obj_scene_cloud,
+        #         })
 
         return detected_descriptors

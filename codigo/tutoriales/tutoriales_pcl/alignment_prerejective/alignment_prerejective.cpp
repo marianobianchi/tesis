@@ -262,6 +262,7 @@ int main (int argc, char **argv)
         pcl::console::print_info ("t = < %0.3f, %0.3f, %0.3f >\n", transformation (0,3), transformation (1,3), transformation (2,3));
         pcl::console::print_info ("\n");
         pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), object->size ());
+        pcl::console::print_info ("Score: %f\n", align.getFitnessScore());
 
         // Show alignment
         pcl::visualization::PCLVisualizer visu("Alignment");
