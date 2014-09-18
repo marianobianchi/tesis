@@ -98,10 +98,9 @@ def icp_con_modelo():
 
 def deteccion_automatica_icp_con_modelo():
     img_provider = FrameNamesAndImageProviderPreCharged(
-        'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug',
-        '5',
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
-
 
     detector = AutomaticDetection(
         'videos/rgbd/scenes/desk/desk_1.mat',

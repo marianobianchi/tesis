@@ -182,10 +182,26 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         return detected_descriptors
 
 
-class AutomaticDetection(StaticDetectorWithModelAlignment):
+class AutomaticDetection(Detector):
+    def __init__(self, obj_rgbd_name):
+        super(AutomaticDetection, self).__init__()
+        self.obj_rgbd_name = obj_rgbd_name
+
     def detect(self):
         model_cloud = self._descriptors['obj_model']
         scene_cloud = self._descriptors['pcd']
+
+        # obtengo tamaño del modelo del objeto a detectar y lo duplico
+        min_max = get_min_max(model_cloud)
+        obj_width = (min_max.max_x - min_max.min_x) * 2
+        obj_height = (min_max.max_y - min_max.min_y) * 2
+
+        # obtengo limites de la escena
+        min_max = get_min_max(scene_cloud)
+        scene_min_col = min_max.min_x
+        scene_max_col = min_max.max_x
+        scene_min_row = min_max.min_y
+        scene_max_row = min_max.max_y
 
         detected_descriptors = {
             'size': 0,
