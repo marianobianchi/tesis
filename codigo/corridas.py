@@ -102,10 +102,7 @@ def deteccion_automatica_icp_con_modelo():
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    detector = AutomaticDetection(
-        'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
-    )
+    detector = AutomaticDetection()
 
     finder = ICPFinderWithModel()
 
@@ -124,4 +121,4 @@ def deteccion_automatica_icp_con_modelo():
 
 
 if __name__ == '__main__':
-    segmentando_escena()
+    deteccion_automatica_icp_con_modelo()

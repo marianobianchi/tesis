@@ -112,6 +112,11 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
 
     // Perform alignment
     if( ap_defaults.show_values ) pcl::console::print_highlight ("Starting alignment...\n");
+
+    APResult ap_result;
+    ap_result.has_converged = false;
+    ap_result.score = 1e10;
+
     pcl::SampleConsensusPrerejective<PointNT,PointNT,FeatureT> align;
     align.setInputSource (normalized_source);
     align.setSourceFeatures (source_features);
@@ -145,8 +150,6 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     else{
         align.align (*object_aligned);
     }
-
-    APResult ap_result;
 
     if (align.hasConverged ()){
         Eigen::Matrix4f transformation = align.getFinalTransformation ();

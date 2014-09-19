@@ -137,8 +137,6 @@ int main (int argc, char **argv)
     grid.setInputCloud (loaded_scene);
     grid.filter (*filtered_scene);
     
-    show_cloud("escena filtrada", filtered_scene);
-    
     // Converting from PointXYZ to PointNormal
      pcl::console::print_highlight ("Converting...\n");
     
@@ -155,8 +153,6 @@ int main (int argc, char **argv)
         scene->points[i].y = filtered_scene->points[i].y;
         scene->points[i].z = filtered_scene->points[i].z;
     }
-    
-    show_normal_cloud("escena normalizada", scene);
 
     // Estimate normals for object
     pcl::console::print_highlight ("Estimating object normals...\n");

@@ -5,10 +5,10 @@ from __future__ import (unicode_literals, division)
 import scipy.io
 
 from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
-    show_clouds, filter_object_from_scene_cloud
+    show_clouds, filter_object_from_scene_cloud, points
 from cpp.alignment_prerejective import align, APDefaults
 
-from metodos_comunes import from_flat_to_cloud_limits
+from metodos_comunes import from_flat_to_cloud_limits, from_cloud_to_flat
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
@@ -184,18 +184,16 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
 
 class AutomaticDetection(Detector):
-    def __init__(self, obj_rgbd_name):
-        super(AutomaticDetection, self).__init__()
-        self.obj_rgbd_name = obj_rgbd_name
 
     def detect(self):
         model_cloud = self._descriptors['obj_model']
         scene_cloud = self._descriptors['pcd']
 
-        # obtengo tamaño del modelo del objeto a detectar y lo duplico
+        # obtengo tamaño del modelo del objeto a detectar y tomo una region
+        # X veces mas grande
         min_max = get_min_max(model_cloud)
-        obj_width = (min_max.max_x - min_max.min_x) * 2
-        obj_height = (min_max.max_y - min_max.min_y) * 2
+        obj_width = (min_max.max_x - min_max.min_x) * 4
+        obj_height = (min_max.max_y - min_max.min_y) * 4
 
         # obtengo limites de la escena
         min_max = get_min_max(scene_cloud)
@@ -208,30 +206,33 @@ class AutomaticDetection(Detector):
             'size': 0,
             'location': (0, 0),  # location=(fila, columna)
         }
+        fue_exitoso = False
 
         # alignment prerejective parameters
         ap_defaults = APDefaults()
         ap_defaults.leaf = 0.004
-        ap_defaults.max_ransac_iters = 1500
-        ap_defaults.points_to_sample = 5
+        ap_defaults.max_ransac_iters = 500
+        ap_defaults.points_to_sample = 3
         ap_defaults.nearest_features_used = 4
-        ap_defaults.simil_threshold = 0.3
+        ap_defaults.simil_threshold = 0.1
         ap_defaults.inlier_threshold = 2
-        ap_defaults.inlier_fraction = 0.7
-        ap_defaults.show_values = True
+        ap_defaults.inlier_fraction = 0.5
+        # ap_defaults.show_values = True
 
         #icp parameters
         icp_defaults = ICPDefaults()
-        icp_defaults.euc_fit = 1e-15
+        icp_defaults.euc_fit = 1e-5
         icp_defaults.max_corr_dist = 3
         icp_defaults.max_iter = 50
-        icp_defaults.transf_epsilon = 1e-15
+        icp_defaults.transf_epsilon = 1e-5
         # icp_defaults.show_values = True
 
         best_aligned_scene = None
         best_alignment_score = 0.1  # lesser is better
         best_icp_aligned_scene = None
         best_icp_score = 0.1  # lesser is better
+
+        limit = 0
 
         for limits in (BusquedaPorFramesSolapados()
                        .iterate_frame_boxes(scene_min_col,
@@ -240,54 +241,73 @@ class AutomaticDetection(Detector):
                                             scene_max_row,
                                             obj_width,
                                             obj_height)):
-            cloud = filter_cloud(pcd, b'x', limits['min_x'], limits['max_x'])
+            cloud = filter_cloud(scene_cloud, b'x', limits['min_x'], limits['max_x'])
             cloud = filter_cloud(cloud, b'y', limits['min_y'], limits['max_y'])
 
-            # Calculate alignment
-            ap_result = align(model_cloud, cloud, ap_defaults)
-            if (ap_result.has_converged and
-                        ap_result.score < best_alignment_score):
-                best_alignment_score = ap_result.score
-                best_aligned_scene = ap_result.cloud
+            limit += 1
+            print "Limite nro.", limit
 
-            if best_aligned_scene is not None:
-                # Calculate ICP
-                icp_result = icp(best_aligned_scene, cloud, icp_defaults)
+            if points(cloud) > 0:
+                # Calculate alignment
+                ap_result = align(model_cloud, cloud, ap_defaults)
+                if (ap_result.has_converged and
+                            ap_result.score < best_alignment_score):
+                    # show_clouds(b'alignment', ap_result.cloud, cloud)
+                    best_alignment_score = ap_result.score
+                    best_aligned_scene = ap_result.cloud
 
-                if (icp_result.has_converged and
-                            icp_result.score < best_icp_score):
-                    best_icp_score = icp_result.score
-                    best_icp_aligned_scene = icp_result.cloud
+                    # Calculate ICP
+                    icp_result = icp(best_aligned_scene, cloud, icp_defaults)
 
+                    if (icp_result.has_converged and
+                                icp_result.score < best_icp_score):
+                        # show_clouds(b'icp', icp_result.cloud, cloud)
+                        best_icp_score = icp_result.score
+                        best_icp_aligned_scene = icp_result.cloud
 
         if best_icp_aligned_scene is not None:
             # Filtro los puntos de la escena que se corresponden con el
             # objeto que estoy buscando
             obj_scene_cloud = filter_object_from_scene_cloud(
                 best_icp_aligned_scene,  # object
-                cloud,  # scene
+                scene_cloud,  # scene
                 0.001,  # radius
                 False,  # show values
             )
 
             minmax = get_min_max(obj_scene_cloud)
+
+            top, left = from_cloud_to_flat(
+                minmax.min_y,
+                minmax.min_x,
+                minmax.min_z
+            )
+            bottom, right = from_cloud_to_flat(
+                minmax.max_y,
+                minmax.max_x,
+                minmax.max_z
+            )
+            size = max(top - bottom, right - left)
+            location = (top, left)
+
             detected_descriptors.update({
-                'min_x_cloud': minax.min_x,
-                'max_x_cloud': minax.max_x,
-                'min_y_cloud': minax.min_y,
-                'max_y_cloud': minax.max_y,
+                'min_x_cloud': minmax.min_x,
+                'max_x_cloud': minmax.max_x,
+                'min_y_cloud': minmax.min_y,
+                'max_y_cloud': minmax.max_y,
                 'min_z_cloud': minmax.min_z,
                 'max_z_cloud': minmax.max_z,
                 'object_cloud': obj_scene_cloud,
                 'obj_model': obj_scene_cloud,
-                # TODO: calcular tamaño y posicion
-                'size': 0,
-                'location': (0, 0),  # location=(fila, columna)
+                'size': size,
+                'location': location,  # location=(fila, columna)
             })
 
+            fue_exitoso = True
+            print "Tamaño:", size
+            print "Ubicacion:", location
 
-
-
+            show_clouds(b'mejor align', best_icp_aligned_scene, scene_cloud)
 
 
 
@@ -334,4 +354,4 @@ class AutomaticDetection(Detector):
         #             'obj_model': obj_scene_cloud,
         #         })
 
-        return detected_descriptors
+        return fue_exitoso, detected_descriptors
