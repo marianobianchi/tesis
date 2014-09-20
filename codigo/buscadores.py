@@ -210,14 +210,13 @@ class ICPFinderWithModel(ICPFinder):
         # icp_defaults.ran_iter
         # icp_defaults.ran_out_rej
         # icp_defaults.show_values = True
+        #
+        # path = b'pruebas_guardadas/detector_con_modelo/'
+        # nframe = self._descriptors['nframe']
+        # save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
+        # save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
 
-        path = b'pruebas_guardadas/detector_con_modelo/'
-        nframe = self._descriptors['nframe']
-        save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
-        save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
-
-
-        icp_result = self._icp(
+        icp_result = icp(
             object_cloud,
             target_cloud,
             icp_defaults,
@@ -229,46 +228,18 @@ class ICPFinderWithModel(ICPFinder):
             0.001,  # radius
             False,  # show values
         )
-        icp_result.cloud = obj_scene_cloud
-
-        # save_pcd(icp_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
 
         msg = b'score = {s}'
         show_clouds(
             msg.format(s=icp_result.score),
-            target_cloud,
             icp_result.cloud,
-        )
-
-        return icp_result
-
-    @staticmethod
-    def _icp(object_cloud, target_cloud, icp_defaults):
-        return icp(object_cloud, target_cloud, icp_defaults)
-
-    def _align_and_icp(self,
-                       object_cloud,
-                       target_cloud,
-                       ap_defaults,
-                       icp_defaults):
-
-        # ap_defaults.show_values = True
-        aligned_prerejective_result = align(
-            object_cloud,
             target_cloud,
-            ap_defaults,
         )
+        print "Cant. puntos ICP", points(icp_result.cloud)
+        print "Cant. puntos tomados de la escena", points(obj_scene_cloud)
+        icp_result.cloud = obj_scene_cloud
 
-        if aligned_prerejective_result.has_converged:
-            icp_result = self._icp(
-                aligned_prerejective_result.cloud,
-                target_cloud,
-                icp_defaults,
-            )
-        else:
-            icp_result = ICPResult()
-            icp_result.has_converged = False
-            icp_result.score = 1e20
+        # save_pcd(icp_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
 
         return icp_result
 
