@@ -23,7 +23,21 @@ typedef pcl::PointCloud<PointNT> PointCloudT;
 typedef pcl::FPFHSignature33 FeatureT;
 typedef pcl::FPFHEstimationOMP<PointNT,PointNT,FeatureT> FeatureEstimationT;
 typedef pcl::PointCloud<FeatureT> FeatureCloudT;
+typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D;
 typedef pcl::visualization::PointCloudColorHandlerCustom<PointNT> ColorHandlerT;
+
+
+void show_normal_cloud(std::string title, PointCloudT::Ptr scene){
+    pcl::visualization::PCLVisualizer visu(title);
+    visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+    visu.spin ();
+}
+
+void show_cloud(std::string title, PointCloud3D::Ptr scene){
+    pcl::visualization::PCLVisualizer visu(title);
+    visu.addPointCloud (scene, ColorHandler3D (scene, 0.0, 255.0, 0.0), "scene");
+    visu.spin ();
+}
 
 
 void showHelp(char * program_name)
@@ -79,6 +93,8 @@ int main (int argc, char **argv)
     // Point clouds
     PointCloud3D::Ptr loaded_object (new PointCloud3D);
     PointCloud3D::Ptr loaded_scene (new PointCloud3D);
+    PointCloud3D::Ptr filtered_object (new PointCloud3D);
+    PointCloud3D::Ptr filtered_scene (new PointCloud3D);
     
     PointCloudT::Ptr object (new PointCloudT);
     PointCloudT::Ptr object_aligned (new PointCloudT);
@@ -103,11 +119,13 @@ int main (int argc, char **argv)
         return (1);
     }
     
+    //~ show_cloud("escena cargada", loaded_scene);
+    
     // Downsample
     pcl::console::print_highlight ("Downsampling...\n");
     pcl::VoxelGrid<Point3D> grid;
     
-    float leaf = 0.005f;
+    float leaf = 0.005;
     if(pcl::console::find_argument(argc, argv, "-leaf") != -1){
         leaf = atof(argv[pcl::console::find_argument(argc, argv, "-leaf") + 1]);
     }
@@ -115,27 +133,26 @@ int main (int argc, char **argv)
     
     grid.setLeafSize (leaf, leaf, leaf);
     grid.setInputCloud (loaded_object);
-    grid.filter (*loaded_object);
+    grid.filter (*filtered_object);
     grid.setInputCloud (loaded_scene);
-    grid.filter (*loaded_scene);
+    grid.filter (*filtered_scene);
     
     // Converting from PointXYZ to PointNormal
      pcl::console::print_highlight ("Converting...\n");
     
-    object->points.resize(loaded_object->size());
-    for (size_t i = 0; i < loaded_object->points.size(); i++) {
-        object->points[i].x = loaded_object->points[i].x;
-        object->points[i].y = loaded_object->points[i].y;
-        object->points[i].z = loaded_object->points[i].z;
+    object->points.resize(filtered_object->size());
+    for (size_t i = 0; i < filtered_object->points.size(); i++) {
+        object->points[i].x = filtered_object->points[i].x;
+        object->points[i].y = filtered_object->points[i].y;
+        object->points[i].z = filtered_object->points[i].z;
     }
     
-    scene->points.resize(loaded_scene->size());
-    for (size_t i = 0; i < loaded_scene->points.size(); i++) {
-        scene->points[i].x = loaded_scene->points[i].x;
-        scene->points[i].y = loaded_scene->points[i].y;
-        scene->points[i].z = loaded_scene->points[i].z;
+    scene->points.resize(filtered_scene->size());
+    for (size_t i = 0; i < filtered_scene->points.size(); i++) {
+        scene->points[i].x = filtered_scene->points[i].x;
+        scene->points[i].y = filtered_scene->points[i].y;
+        scene->points[i].z = filtered_scene->points[i].z;
     }
-    
 
     // Estimate normals for object
     pcl::console::print_highlight ("Estimating object normals...\n");
@@ -241,6 +258,7 @@ int main (int argc, char **argv)
         pcl::console::print_info ("t = < %0.3f, %0.3f, %0.3f >\n", transformation (0,3), transformation (1,3), transformation (2,3));
         pcl::console::print_info ("\n");
         pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), object->size ());
+        pcl::console::print_info ("Score: %f\n", align.getFitnessScore());
 
         // Show alignment
         pcl::visualization::PCLVisualizer visu("Alignment");

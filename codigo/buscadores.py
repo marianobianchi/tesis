@@ -4,7 +4,7 @@ from __future__ import (unicode_literals, division)
 
 
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
-    save_pcd, get_min_max, show_clouds, ICPResult
+    save_pcd, get_min_max, show_clouds, ICPResult, filter_object_from_scene_cloud
 from cpp.alignment_prerejective import align, APDefaults
 from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
     from_cloud_to_flat
@@ -81,13 +81,13 @@ class ICPFinder(Finder):
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("y"),
             float(r_top_limit),
             float(r_bottom_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("x"),
             float(c_left_limit),
@@ -182,34 +182,24 @@ class ICPFinderWithModel(ICPFinder):
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("y"),
             float(r_top_limit),
             float(r_bottom_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("x"),
             float(c_left_limit),
             float(c_right_limit)
         )
-        filter_cloud(
+        target_cloud = filter_cloud(
             target_cloud,
             str("z"),
             float(d_front_limit),
             float(d_back_limit)
         )
-
-        # Calculate alignment prerejective
-        ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.005
-        ap_defaults.max_ransac_iters = 1000
-        ap_defaults.points_to_sample = 3
-        ap_defaults.nearest_features_used = 2
-        ap_defaults.simil_threshold = 0.1
-        ap_defaults.inlier_threshold = 1.5
-        ap_defaults.inlier_fraction = 0.7
 
         # Calculate ICP
         icp_defaults = ICPDefaults()
@@ -220,70 +210,36 @@ class ICPFinderWithModel(ICPFinder):
         # icp_defaults.ran_iter
         # icp_defaults.ran_out_rej
         # icp_defaults.show_values = True
+        #
+        # path = b'pruebas_guardadas/detector_con_modelo/'
+        # nframe = self._descriptors['nframe']
+        # save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
+        # save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
 
-        path = b'pruebas_guardadas/detector_con_modelo/'
-        nframe = self._descriptors['nframe']
-        save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
-        save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
-
-
-        icp_post_align_result = self._align_and_icp(
-            object_cloud,
-            target_cloud,
-            ap_defaults,
-            icp_defaults,
-        )
-
-        icp_result = self._icp(
+        icp_result = icp(
             object_cloud,
             target_cloud,
             icp_defaults,
         )
 
-        if icp_post_align_result.score < icp_result.score:
-            msg = b'seguimiento con alineacion e icp (score={s})'
-            final_result = icp_post_align_result
-        else:
-            msg = b'seguimiento con icp unicamente (score={s})'
-            final_result = icp_result
-
-        save_pcd(final_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
-
-        # show_clouds(
-        #     msg.format(s=final_result.score),
-        #     final_result.cloud,
-        #     target_cloud
-        # )
-
-        return final_result
-
-    @staticmethod
-    def _icp(object_cloud, target_cloud, icp_defaults):
-        return icp(object_cloud, target_cloud, icp_defaults)
-
-    def _align_and_icp(self,
-                       object_cloud,
-                       target_cloud,
-                       ap_defaults,
-                       icp_defaults):
-
-        # ap_defaults.show_values = True
-        aligned_prerejective_result = align(
-            object_cloud,
-            target_cloud,
-            ap_defaults,
+        obj_scene_cloud = filter_object_from_scene_cloud(
+            icp_result.cloud,  # object
+            target_cloud,  # scene
+            0.001,  # radius
+            False,  # show values
         )
 
-        if aligned_prerejective_result.has_converged:
-            icp_result = self._icp(
-                aligned_prerejective_result.cloud,
-                target_cloud,
-                icp_defaults,
-            )
-        else:
-            icp_result = ICPResult()
-            icp_result.has_converged = False
-            icp_result.score = 1e20
+        msg = b'score = {s}'
+        show_clouds(
+            msg.format(s=icp_result.score),
+            icp_result.cloud,
+            target_cloud,
+        )
+        print "Cant. puntos ICP", points(icp_result.cloud)
+        print "Cant. puntos tomados de la escena", points(obj_scene_cloud)
+        icp_result.cloud = obj_scene_cloud
+
+        # save_pcd(icp_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
 
         return icp_result
 

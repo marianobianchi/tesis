@@ -81,7 +81,7 @@ PointCloud3D::Ptr read_pcd(std::string pcd_filename);
 void save_pcd(PointCloud3D::Ptr, std::string fname);
 
 
-void filter_cloud(PointCloud3D::Ptr cloud,
+PointCloud3D::Ptr filter_cloud(PointCloud3D::Ptr cloud,
                   const std::string & field_name,
                   const float & lower_limit,
                   const float & upper_limit);

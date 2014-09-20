@@ -2,11 +2,12 @@
 
 from __future__ import (unicode_literals, division)
 
+from cpp.my_pcl import filter_cloud, show_clouds, get_min_max, save_pcd, points
+
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
-    StaticDetectorWithModelAlignment
+    StaticDetectorWithModelAlignment, AutomaticDetection
 from esquemas_seguimiento import FollowingScheme
-from metodos_comunes import test_flat_and_cloud_conversion
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreCharged
@@ -95,34 +96,29 @@ def icp_con_modelo():
     ).run()
 
 
-def probando_filtro_por_ejes():
-    from cpp.my_pcl import filter_cloud, show_clouds, get_min_max
-    img_provider = FrameNamesAndImageProvider(
+def deteccion_automatica_icp_con_modelo():
+    img_provider = FrameNamesAndImageProviderPreCharged(
         'videos/rgbd/scenes/', 'desk', '1',
         'videos/rgbd/objs/', 'coffee_mug', '5',
-    )
+    )  # path, objname, number
 
-    pcd = img_provider.pcd()
-    filtered_pcd = img_provider.pcd()
+    detector = AutomaticDetection()
 
-    min_max = get_min_max(pcd)
+    finder = ICPFinderWithModel()
 
-    left = min_max.max_x - 0.46
-    right = min_max.max_x - 0.35
-    diff = right - left
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    lefter_left = left - (diff / 2)
-    righter_right = right + (diff / 2)
+    show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
 
-    filter_cloud(filtered_pcd, b"x", lefter_left, righter_right)
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
 
-    show_clouds(b"completo vs filtrado amplio en x", pcd, filtered_pcd)
 
-    filter_cloud(filtered_pcd, b"x", left, right)
-
-    show_clouds(b"completo vs filtrado angosto en x", pcd, filtered_pcd)
 
 
 
 if __name__ == '__main__':
-    icp_con_modelo()
+    deteccion_automatica_icp_con_modelo()

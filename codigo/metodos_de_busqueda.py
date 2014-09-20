@@ -1,8 +1,9 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-#Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
-from __future__ import unicode_literals
+#coding=utf-8
 
+from __future__ import unicode_literals, division
+
+import numpy as np
+import math
 
 class BusquedaEnEspiral(object):
     def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
@@ -65,3 +66,64 @@ class BusquedaEnEspiralCambiandoFrameSize(object):
                     yield (x, y, tam_region)
 
                 sum_y *= -2
+
+
+class BusquedaPorFramesSolapados(object):
+    @staticmethod
+    def iterate_frame_boxes(scene_min_col, scene_max_col, scene_min_row,
+                            scene_max_row, obj_width, obj_height, step=2):
+        """
+        La idea de la segmentación es tomar un cuadrante de cierto tamaño e
+        ir recortando la imagen de manera que cada recorte se solape con el
+        anterior en la mitad del tamaño del cuadrante.
+        """
+        ###################################################################
+        # Armo una lista de tuplas con los limites del filtro para el alto
+        ###################################################################
+        paso_alto_frame = obj_height / step
+        cant_pasos_alto = (scene_max_row - scene_min_row) / paso_alto_frame
+
+        # armo una lista con intervalos de tamaño ancho_objeto / step
+        alto_linspace = np.linspace(
+            scene_min_row,
+            scene_max_row,
+            int(cant_pasos_alto),
+        )
+
+        # armo 2 listas y las reparto de manera tal que tengan el mismo tamaño
+        # pero que al hacer zip, la diferencia entre lista_1[i] y lista_2[i]
+        # sea de ancho_objeto / step
+        int_obj_height = math.ceil(obj_height/paso_alto_frame)
+        alto_limites_inferiores = alto_linspace[:-1*int_obj_height]
+        alto_limites_superiores = alto_linspace[int_obj_height:]
+        alto_limites = zip(alto_limites_inferiores, alto_limites_superiores)
+
+        ####################################################################
+        # Armo una lista de tuplas con los limites del filtro para el ancho
+        ####################################################################
+        paso_ancho_frame = obj_width / step
+        cant_pasos_ancho = (scene_max_row - scene_min_row) / paso_ancho_frame
+
+        # armo una lista con intervalos de tamaño ancho_objeto / step
+        ancho_linspace = np.linspace(
+            scene_min_col,
+            scene_max_col,
+            int(cant_pasos_ancho),
+        )
+
+        # armo 2 listas y las reparto de manera tal que tengan el mismo tamaño
+        # pero que al hacer zip, la diferencia entre lista_1[i] y lista_2[i]
+        # sea de ancho_objeto / step
+        int_obj_width = math.ceil(obj_width/paso_ancho_frame)
+        ancho_limites_inferiores = ancho_linspace[:-1 * int_obj_width]
+        ancho_limites_superiores = ancho_linspace[int_obj_width:]
+        ancho_limites = zip(ancho_limites_inferiores, ancho_limites_superiores)
+
+        for row_low, row_up in alto_limites:
+            for col_low, col_up in ancho_limites:
+                yield {
+                    'min_x': col_low,
+                    'max_x': col_up,
+                    'min_y': row_low,
+                    'max_y': row_up,
+                }

@@ -57,8 +57,8 @@ class MuestraDelSeguimiento(object):
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
-    def run(self, img_provider, ubicacion, tam_region, fue_exitoso, es_deteccion,
-                frenar=True):
+    def run(self, img_provider, ubicacion, tam_region, fue_exitoso,
+            es_deteccion, frenar=True):
 
         img_list = img_provider.image_list()
 

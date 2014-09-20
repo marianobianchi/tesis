@@ -40,7 +40,8 @@ typedef pcl::visualization::PointCloudColorHandlerCustom<PointNT> ColorHandlerT;
 
 
 struct APResult {
-    bool has_converged; // was found by icp?
+    bool has_converged; // was found by ap?
+    double score;
     PointCloud3D::Ptr cloud;
 };
 
@@ -48,7 +49,7 @@ struct APDefaults {
     APDefaults(){
         leaf = 0.004;
         max_ransac_iters = 1000;
-        points_to_sample = 5; // needs to be >= 3 
+        points_to_sample = 5; // needs to be >= 3
         nearest_features_used = 2; // needs to be >= 2
         simil_threshold = 0.7; // bigger is faster but less robust
         inlier_threshold = 2.0; // will be multiplied with leaf

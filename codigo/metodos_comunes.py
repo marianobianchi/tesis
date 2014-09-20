@@ -7,6 +7,8 @@ import time
 import numpy as np
 import cv2
 
+from cpp.my_pcl import get_point, points
+
 
 def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,
                                                         color=(0, 0, 0)):
@@ -127,14 +129,31 @@ def from_cloud_to_flat(cloud_row, cloud_col, float_depth):
     constant = 570.3
 
     # inverse of cloud calculation
-    imR = int(cloud_row / float_depth * constant)
-    imC = int(cloud_col / float_depth * constant)
+    im_row = int(cloud_row / float_depth * constant)
+    im_col = int(cloud_col / float_depth * constant)
+
+    im_row += rows_center
+    im_col += cols_center
+
+    return im_row, im_col
 
 
-    imR = imR + rows_center
-    imC = imC + cols_center
+def from_cloud_to_flat_limits(cloud):
+    top = 1e10
+    left = 1e10
+    bottom = 0
+    right = 0
+    for i in range(points(cloud)):
+        point_xyz = get_point(cloud, i)
+        point_flat = from_cloud_to_flat(point_xyz.y, point_xyz.x, point_xyz.z)
 
-    return (imR, imC)
+        top = min(point_flat[0], top)
+        bottom = max(point_flat[0], bottom)
+
+        left = min(point_flat[1], left)
+        right = max(point_flat[1], right)
+
+    return (top, left), (bottom, right)
 
 
 def from_flat_to_cloud_limits(topleft, bottomright, depth_img):
