@@ -46,28 +46,18 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     PointCloud3D::Ptr target_cloud (new PointCloud3D);
     *target_cloud = *const_target_cloud; // Copy original cloud to avoid unwanted changes
 
-
     PointCloudT::Ptr normalized_source (new PointCloudT);
     PointCloudT::Ptr normalized_target (new PointCloudT);
+    
+    PointCloudT::Ptr filtered_source (new PointCloudT);
+    PointCloudT::Ptr filtered_target (new PointCloudT);
 
     FeatureCloudT::Ptr source_features (new FeatureCloudT);
     FeatureCloudT::Ptr target_features (new FeatureCloudT);
 
     PointCloudT::Ptr object_aligned (new PointCloudT);
-
     PointCloud3D::Ptr source_cloud_transformed (new PointCloud3D);
-    *source_cloud_transformed = *source_cloud; // Copy original cloud to apply transformation later
-
-    // Downsample
-    if( ap_defaults.show_values ) pcl::console::print_highlight ("Downsampling...\n");
-
-    pcl::VoxelGrid<Point3D> grid;
-    grid.setLeafSize (ap_defaults.leaf, ap_defaults.leaf, ap_defaults.leaf);
-    grid.setInputCloud (source_cloud);
-    grid.filter (*source_cloud);
-    grid.setInputCloud (target_cloud);
-    grid.filter (*target_cloud);
-
+    
     // Converting from PointXYZ to PointNormal
     if( ap_defaults.show_values ) pcl::console::print_highlight ("Converting...\n");
 
@@ -99,15 +89,25 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     nest2.setInputCloud (normalized_target);
     nest2.compute (*normalized_target);
 
+    // Downsample
+    if( ap_defaults.show_values ) pcl::console::print_highlight ("Downsampling...\n");
+
+    pcl::VoxelGrid<PointNT> grid;
+    grid.setLeafSize (ap_defaults.leaf, ap_defaults.leaf, ap_defaults.leaf);
+    grid.setInputCloud (normalized_source);
+    grid.filter (*filtered_source);
+    grid.setInputCloud (normalized_target);
+    grid.filter (*filtered_target);
+
     // Estimate features
     if( ap_defaults.show_values ) pcl::console::print_highlight ("Estimating features...\n");
     FeatureEstimationT fest;
     fest.setRadiusSearch (0.025);
-    fest.setInputCloud (normalized_source);
-    fest.setInputNormals (normalized_source);
+    fest.setInputCloud (filtered_source);
+    fest.setInputNormals (filtered_source);
     fest.compute (*source_features);
-    fest.setInputCloud (normalized_target);
-    fest.setInputNormals (normalized_target);
+    fest.setInputCloud (filtered_target);
+    fest.setInputNormals (filtered_target);
     fest.compute (*target_features);
 
     // Perform alignment
@@ -118,9 +118,9 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     ap_result.score = 1e10;
 
     pcl::SampleConsensusPrerejective<PointNT,PointNT,FeatureT> align;
-    align.setInputSource (normalized_source);
+    align.setInputSource (filtered_source);
     align.setSourceFeatures (source_features);
-    align.setInputTarget (normalized_target);
+    align.setInputTarget (filtered_target);
     align.setTargetFeatures (target_features);
 
     // Number of RANSAC iterations
@@ -150,14 +150,17 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
     else{
         align.align (*object_aligned);
     }
-
+    
+    
+    // Set result values
     if (align.hasConverged ()){
         Eigen::Matrix4f transformation = align.getFinalTransformation ();
-        pcl::transformPointCloud (*source_cloud_transformed, *source_cloud_transformed, transformation);
+        pcl::transformPointCloud (*const_source_cloud, *source_cloud_transformed, transformation);
         ap_result.cloud = source_cloud_transformed;
     }
     ap_result.has_converged = align.hasConverged();
     ap_result.score = align.getFitnessScore();
+    
 
     if(ap_defaults.show_values){
         Eigen::Matrix4f transformation = align.getFinalTransformation ();
@@ -178,7 +181,7 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
         pcl::console::print_info ("\n");
         pcl::console::print_info ("t = < %0.3f, %0.3f, %0.3f >\n", transformation (0,3), transformation (1,3), transformation (2,3));
         pcl::console::print_info ("\n");
-        pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), normalized_source->size ());
+        pcl::console::print_info ("Inliers: %i/%i\n", align.getInliers ().size (), filtered_source->size ());
         pcl::console::print_info ("Score: %f\n", align.getFitnessScore());
 
         // Show alignment
@@ -186,7 +189,7 @@ APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
             pcl::visualization::PCLVisualizer visu("Alignment");
             pcl::console::print_info("Verde = escena\n");
             pcl::console::print_info("Azul = modelo alineado\n");
-            visu.addPointCloud (normalized_target, ColorHandlerT (normalized_target, 0.0, 255.0, 0.0), "scene");
+            visu.addPointCloud (filtered_target, ColorHandlerT (filtered_target, 0.0, 255.0, 0.0), "scene");
             visu.addPointCloud (ap_result.cloud, ColorHandler3D (ap_result.cloud, 0.0, 0.0, 255.0), "object_aligned");
             visu.spin ();
         }

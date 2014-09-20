@@ -92,5 +92,10 @@ def segmentando_escena():
 
         counter += 1
 
+
+def testing_voxel_grid():
+    pass
+
+
 if __name__ == '__main__':
     segmentando_escena()

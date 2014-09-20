@@ -93,12 +93,13 @@ int main (int argc, char **argv)
     // Point clouds
     PointCloud3D::Ptr loaded_object (new PointCloud3D);
     PointCloud3D::Ptr loaded_scene (new PointCloud3D);
-    PointCloud3D::Ptr filtered_object (new PointCloud3D);
-    PointCloud3D::Ptr filtered_scene (new PointCloud3D);
     
     PointCloudT::Ptr object (new PointCloudT);
+    PointCloudT::Ptr filtered_object (new PointCloudT);
     PointCloudT::Ptr object_aligned (new PointCloudT);
+    
     PointCloudT::Ptr scene (new PointCloudT);
+    PointCloudT::Ptr filtered_scene (new PointCloudT);
     FeatureCloudT::Ptr object_features (new FeatureCloudT);
     FeatureCloudT::Ptr scene_features (new FeatureCloudT);
   
@@ -119,39 +120,21 @@ int main (int argc, char **argv)
         return (1);
     }
     
-    //~ show_cloud("escena cargada", loaded_scene);
-    
-    // Downsample
-    pcl::console::print_highlight ("Downsampling...\n");
-    pcl::VoxelGrid<Point3D> grid;
-    
-    float leaf = 0.005;
-    if(pcl::console::find_argument(argc, argv, "-leaf") != -1){
-        leaf = atof(argv[pcl::console::find_argument(argc, argv, "-leaf") + 1]);
-    }
-    std::cout << "leaf = " << leaf << std::endl;
-    
-    grid.setLeafSize (leaf, leaf, leaf);
-    grid.setInputCloud (loaded_object);
-    grid.filter (*filtered_object);
-    grid.setInputCloud (loaded_scene);
-    grid.filter (*filtered_scene);
-    
     // Converting from PointXYZ to PointNormal
      pcl::console::print_highlight ("Converting...\n");
     
-    object->points.resize(filtered_object->size());
-    for (size_t i = 0; i < filtered_object->points.size(); i++) {
-        object->points[i].x = filtered_object->points[i].x;
-        object->points[i].y = filtered_object->points[i].y;
-        object->points[i].z = filtered_object->points[i].z;
+    object->points.resize(loaded_object->size());
+    for (size_t i = 0; i < loaded_object->points.size(); i++) {
+        object->points[i].x = loaded_object->points[i].x;
+        object->points[i].y = loaded_object->points[i].y;
+        object->points[i].z = loaded_object->points[i].z;
     }
     
-    scene->points.resize(filtered_scene->size());
-    for (size_t i = 0; i < filtered_scene->points.size(); i++) {
-        scene->points[i].x = filtered_scene->points[i].x;
-        scene->points[i].y = filtered_scene->points[i].y;
-        scene->points[i].z = filtered_scene->points[i].z;
+    scene->points.resize(loaded_scene->size());
+    for (size_t i = 0; i < loaded_scene->points.size(); i++) {
+        scene->points[i].x = loaded_scene->points[i].x;
+        scene->points[i].y = loaded_scene->points[i].y;
+        scene->points[i].z = loaded_scene->points[i].z;
     }
 
     // Estimate normals for object
@@ -167,24 +150,41 @@ int main (int argc, char **argv)
     nest2.setRadiusSearch (0.01);
     nest2.setInputCloud (scene);
     nest2.compute (*scene);
+    
+    
+    // Downsample
+    pcl::console::print_highlight ("Downsampling...\n");
+    pcl::VoxelGrid<PointNT> grid;
+    
+    float leaf = 0.005;
+    if(pcl::console::find_argument(argc, argv, "-leaf") != -1){
+        leaf = atof(argv[pcl::console::find_argument(argc, argv, "-leaf") + 1]);
+    }
+    std::cout << "leaf = " << leaf << std::endl;
+    
+    grid.setLeafSize (leaf, leaf, leaf);
+    grid.setInputCloud (object);
+    grid.filter (*filtered_object);
+    grid.setInputCloud (scene);
+    grid.filter (*filtered_scene);
 
     // Estimate features
     pcl::console::print_highlight ("Estimating features...\n");
     FeatureEstimationT fest;
     fest.setRadiusSearch (0.025);
-    fest.setInputCloud (object);
-    fest.setInputNormals (object);
+    fest.setInputCloud (filtered_object);
+    fest.setInputNormals (filtered_object);
     fest.compute (*object_features);
-    fest.setInputCloud (scene);
-    fest.setInputNormals (scene);
+    fest.setInputCloud (filtered_scene);
+    fest.setInputNormals (filtered_scene);
     fest.compute (*scene_features);
   
     // Perform alignment
     pcl::console::print_highlight ("Starting alignment...\n");
     pcl::SampleConsensusPrerejective<PointNT,PointNT,FeatureT> align;
-    align.setInputSource (object);
+    align.setInputSource (filtered_object);
     align.setSourceFeatures (object_features);
-    align.setInputTarget (scene);
+    align.setInputTarget (filtered_scene);
     align.setTargetFeatures (scene_features);
 
     // Number of RANSAC iterations
@@ -262,7 +262,7 @@ int main (int argc, char **argv)
 
         // Show alignment
         pcl::visualization::PCLVisualizer visu("Alignment");
-        visu.addPointCloud (scene, ColorHandlerT (scene, 0.0, 255.0, 0.0), "scene");
+        visu.addPointCloud (filtered_scene, ColorHandlerT (filtered_scene, 0.0, 255.0, 0.0), "filtered_scene");
         visu.addPointCloud (object_aligned, ColorHandlerT (object_aligned, 0.0, 0.0, 255.0), "object_aligned");
         visu.spin ();
     }

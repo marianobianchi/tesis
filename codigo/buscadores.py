@@ -6,8 +6,8 @@ from __future__ import (unicode_literals, division)
 from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
     save_pcd, get_min_max, show_clouds, ICPResult, filter_object_from_scene_cloud
 from cpp.alignment_prerejective import align, APDefaults
-from metodos_comunes import measure_time, from_flat_to_cloud_limits, \
-    from_cloud_to_flat
+
+from metodos_comunes import from_cloud_to_flat_limits
 
 
 class Finder(object):
@@ -117,25 +117,16 @@ class ICPFinder(Finder):
             # filas = len(depth_img)
             # columnas = len(depth_img[0])
 
+
             # Busco los limites en el dominio de las filas y columnas del RGB
-            min_max = get_min_max(icp_result.cloud)
-
-            med_z = (min_max.max_z - min_max.min_z) / 2 + min_max.min_z
-
-            min_flat_rc = from_cloud_to_flat(min_max.min_y, min_max.min_x, med_z)
-            row_top_limit = min_flat_rc[0]
-            col_left_limit = min_flat_rc[1]
-
-            max_flat_rc = from_cloud_to_flat(min_max.max_y, min_max.max_x, med_z)
-            row_bottom_limit = max_flat_rc[0]
-            col_right_limit = max_flat_rc[1]
-
-            width = col_right_limit - col_left_limit
-            height = row_bottom_limit - row_top_limit
+            topleft, bottomright = from_cloud_to_flat_limits(
+                icp_result.cloud
+            )
+            size = max(bottomright[0] - topleft[0], bottomright[1] - topleft[1])
 
             descriptors.update({
-                'size': max(width, height),
-                'location': (row_top_limit, col_left_limit),
+                'size': size,
+                'location': topleft,
                 'detected_cloud': icp_result.cloud,
             })
 
@@ -222,21 +213,22 @@ class ICPFinderWithModel(ICPFinder):
             icp_defaults,
         )
 
-        obj_scene_cloud = filter_object_from_scene_cloud(
-            icp_result.cloud,  # object
-            target_cloud,  # scene
-            0.001,  # radius
-            False,  # show values
-        )
-
         msg = b'score = {s}'
         show_clouds(
             msg.format(s=icp_result.score),
             icp_result.cloud,
             target_cloud,
         )
-        print "Cant. puntos ICP", points(icp_result.cloud)
-        print "Cant. puntos tomados de la escena", points(obj_scene_cloud)
+
+        obj_scene_cloud = filter_object_from_scene_cloud(
+            icp_result.cloud,  # object
+            target_cloud,  # scene
+            0.005,  # radius
+            False,  # show values
+        )
+        print "Puntos del modelo:", points(object_cloud)
+        print "Puntos del objeto en la escena:", points(obj_scene_cloud)
+        print "Puntos en la escena:", points(target_cloud)
         icp_result.cloud = obj_scene_cloud
 
         # save_pcd(icp_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))

@@ -8,8 +8,7 @@ from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
     show_clouds, filter_object_from_scene_cloud, points
 from cpp.alignment_prerejective import align, APDefaults
 
-from metodos_comunes import from_flat_to_cloud_limits, from_cloud_to_flat, \
-    from_cloud_to_flat_limits
+from metodos_comunes import from_flat_to_cloud_limits, from_cloud_to_flat_limits
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
@@ -232,13 +231,13 @@ class AutomaticDetection(Detector):
 
         # alignment prerejective parameters
         ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.004
-        ap_defaults.max_ransac_iters = 800
+        ap_defaults.leaf = 0.005
+        ap_defaults.max_ransac_iters = 100
         ap_defaults.points_to_sample = 3
         ap_defaults.nearest_features_used = 4
-        ap_defaults.simil_threshold = 0.3
-        ap_defaults.inlier_threshold = 2
-        ap_defaults.inlier_fraction = 0.7
+        ap_defaults.simil_threshold = 0.4
+        ap_defaults.inlier_threshold = 3
+        ap_defaults.inlier_fraction = 0.8
         # ap_defaults.show_values = True
 
         #icp parameters
@@ -263,6 +262,9 @@ class AutomaticDetection(Detector):
                                             scene_max_row,
                                             obj_width,
                                             obj_height)):
+            limit += 1
+            print "limite nro", limit
+
             cloud = filter_cloud(
                 scene_cloud,
                 b'x',
@@ -276,20 +278,14 @@ class AutomaticDetection(Detector):
                 limits['max_y']
             )
 
-            limit += 1
-            print "Limite nro.", limit
-
             if points(cloud) > 0:
                 # Calculate alignment
                 ap_result = align(model_cloud, cloud, ap_defaults)
                 if (ap_result.has_converged and
                         ap_result.score < best_alignment_score):
-                    show_clouds(b'alignment', ap_result.cloud, cloud)
                     best_alignment_score = ap_result.score
                     best_aligned_scene = ap_result.cloud
                     best_limits.update(limits)
-                else:
-                    show_clouds(b'scene not aligned', cloud, cloud)
 
         # Su hubo una buena alineacion
         if best_aligned_scene is not None:
@@ -313,7 +309,7 @@ class AutomaticDetection(Detector):
                 # objeto que estoy buscando
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
-                    cloud,  # scene
+                    scene_cloud,  # complete scene
                     0.001,  # radius
                     False,  # show values
                 )
@@ -323,21 +319,6 @@ class AutomaticDetection(Detector):
                 topleft, bottomright = from_cloud_to_flat_limits(
                     obj_scene_cloud
                 )
-
-                ####
-                # Lo dejo para control
-                ####
-                top, left = from_cloud_to_flat(
-                    minmax.min_y,
-                    minmax.min_x,
-                    minmax.min_z
-                )
-                bottom, right = from_cloud_to_flat(
-                    minmax.max_y,
-                    minmax.max_x,
-                    minmax.max_z
-                )
-                #########
 
                 size = max(bottomright[0] - topleft[0], bottomright[1] - topleft[1])
 
