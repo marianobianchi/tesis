@@ -68,10 +68,6 @@ struct APDefaults {
 
 };
 
-
-PointCloud3D::Ptr from_normal_to_xyz(PointCloudT::Ptr cloud);
-
-
 APResult alignment_prerejective(PointCloud3D::Ptr const_source_cloud,
                                 PointCloud3D::Ptr const_target_cloud,
                                 APDefaults &ap_defaults);

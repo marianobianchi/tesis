@@ -4,8 +4,9 @@ from __future__ import (unicode_literals, division)
 
 import scipy.io
 
-from cpp.my_pcl import filter_cloud, icp, ICPDefaults, save_pcd, get_min_max,\
-    show_clouds, filter_object_from_scene_cloud, points
+from cpp.icp import icp, ICPDefaults
+from cpp.common import filter_cloud, save_pcd, get_min_max, show_clouds, \
+    filter_object_from_scene_cloud, points
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits, from_cloud_to_flat_limits

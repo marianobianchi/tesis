@@ -3,7 +3,7 @@
 
 from __future__ import (unicode_literals, division, print_function)
 
-from cpp.my_pcl import get_min_max, filter_cloud, show_clouds, save_pcd, points
+from cpp.common import get_min_max, filter_cloud, show_clouds, save_pcd, points
 
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 from proveedores_de_imagenes import FrameNamesAndImageProvider

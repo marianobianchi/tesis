@@ -2,7 +2,7 @@
 
 from __future__ import (unicode_literals, division)
 
-from cpp.my_pcl import filter_cloud, show_clouds, get_min_max, save_pcd, points
+from cpp.common import filter_cloud, show_clouds, get_min_max, save_pcd, points
 
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \

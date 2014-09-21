@@ -7,7 +7,7 @@ import time
 import numpy as np
 import cv2
 
-from cpp.my_pcl import get_point, points
+from cpp.common import get_point, points
 
 
 def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,

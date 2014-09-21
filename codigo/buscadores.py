@@ -3,8 +3,9 @@
 from __future__ import (unicode_literals, division)
 
 
-from cpp.my_pcl import icp, ICPDefaults, filter_cloud, points, get_point, \
-    save_pcd, get_min_max, show_clouds, ICPResult, filter_object_from_scene_cloud
+from cpp.icp import icp, ICPDefaults, ICPResult
+from cpp.common import filter_cloud, points, get_point, save_pcd, get_min_max, \
+    show_clouds, filter_object_from_scene_cloud
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_cloud_to_flat_limits
