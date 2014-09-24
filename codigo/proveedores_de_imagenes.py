@@ -9,7 +9,7 @@ import os
 import cv2
 import numpy as np
 
-from cpp.my_pcl import read_pcd
+from cpp.common import read_pcd
 from cpp.depth_to_rgb import *
 
 

@@ -1,6 +1,6 @@
 
 ICP_INCLUDES = -I/usr/include/pcl-1.7/ -I/usr/include/eigen3
-ICP_FLAGS = -lpcl_registration
+ICP_FLAGS = -lpcl_registration -lpcl_search
 
 PYTHON_INCLUDE = -I/usr/include/python2.7
 BOOST_LIB = -lboost_python

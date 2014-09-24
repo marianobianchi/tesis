@@ -6,23 +6,11 @@
  * Includes para el codigo
  * */
 #include <iostream>
-//~ #include <vector>
 #include <ctime>
 
-//#include <pcl/io/pcd_io.h>
-//~ #include <pcl/filters/passthrough.h>
 #include <pcl/registration/icp.h>
-//~ #include <pcl/common/common.h>
-//~ #include <pcl/common/transforms.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl/point_cloud.h>
-//~ #include <pcl/kdtree/kdtree_flann.h>
-
-// Extra para el tutorial
-//~ #include <pcl/console/print.h>
-//~ #include <pcl/console/parse.h>
-//~ #include <pcl/visualization/pcl_visualizer.h>
-//~ #include <pcl/io/pcd_io.h>
 
 
 
