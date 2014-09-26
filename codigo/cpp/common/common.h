@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include <Eigen/Core>
+#include <pcl/common/transforms.h>
 #include <pcl/common/common.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
@@ -35,6 +37,8 @@ PointCloud3D::Ptr filter_cloud(PointCloud3D::Ptr cloud,
                   const std::string & field_name,
                   const float & lower_limit,
                   const float & upper_limit);
+
+PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, Eigen::Matrix4f transformation);
 
 
 int points(PointCloud3D::Ptr cloud);

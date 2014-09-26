@@ -109,6 +109,12 @@ PointCloud3D::Ptr filter_cloud(PointCloud3D::Ptr const_cloud,
     return cloud;
 }
 
+PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, Eigen::Matrix4f transformation){
+    PointCloud3D::Ptr transformed_cloud(new PointCloud3D);
+    pcl::transformPointCloud(*cloud, *transformed_cloud, transformation);
+    return transformed_cloud;
+}
+
 int points(PointCloud3D::Ptr cloud)
 {
     return cloud->points.size();

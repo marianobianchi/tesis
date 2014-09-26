@@ -33,6 +33,8 @@ BOOST_PYTHON_MODULE(common)
     def("read_pcd", read_pcd);
     def("save_pcd", save_pcd);
     def("filter_cloud", filter_cloud);
+    def("transform_cloud", transform_cloud);    
+    
     def("points", points);
     def("get_point", get_point);
     def("show_clouds", show_clouds);

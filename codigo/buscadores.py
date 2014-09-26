@@ -5,7 +5,7 @@ from __future__ import (unicode_literals, division)
 
 from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_point, save_pcd, get_min_max, \
-    show_clouds, filter_object_from_scene_cloud
+    show_clouds, filter_object_from_scene_cloud  # , transform_cloud
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_cloud_to_flat_limits
@@ -129,18 +129,14 @@ class ICPFinder(Finder):
                 'size': size,
                 'location': topleft,
                 'detected_cloud': icp_result.cloud,
+                # 'detected_transformation': icp_result.transformation,
             })
 
         return fue_exitoso, descriptors
 
 
 class ICPFinderWithModel(ICPFinder):
-    def simple_follow(self, object_cloud, target_cloud):
-        """
-        Tomando como centro el centro del cuadrado que contiene al objeto
-        en el frame anterior, busco el mismo objeto en una zona N veces mayor
-        a la original.
-        """
+    def _filter_target_cloud(self, target_cloud, n):
         # Define row and column limits for the zone to search the object
         # In this case, we look on a box N times the size of the original
         # i.e: if height is 1 and i want a box 2 times bigger and centered
@@ -158,8 +154,6 @@ class ICPFinderWithModel(ICPFinder):
 
         # Define row and column limits for the zone to search the object
         # In this case, we look on a box N times the size of the original
-        n = 2
-
         factor = 0.5 * (n - 1)
         height = r_bottom_limit - r_top_limit
         width = c_right_limit - c_left_limit
@@ -192,6 +186,15 @@ class ICPFinderWithModel(ICPFinder):
             float(d_front_limit),
             float(d_back_limit)
         )
+        return target_cloud
+
+    def simple_follow(self, object_cloud, target_cloud):
+        """
+        Tomando como centro el centro del cuadrado que contiene al objeto
+        en el frame anterior, busco el mismo objeto en una zona N veces mayor
+        a la original.
+        """
+        target_cloud = self._filter_target_cloud(target_cloud, 2)
 
         # Calculate ICP
         icp_defaults = ICPDefaults()
@@ -202,11 +205,6 @@ class ICPFinderWithModel(ICPFinder):
         # icp_defaults.ran_iter
         # icp_defaults.ran_out_rej
         # icp_defaults.show_values = True
-        #
-        # path = b'pruebas_guardadas/detector_con_modelo/'
-        # nframe = self._descriptors['nframe']
-        # save_pcd(object_cloud, path + b'object_{n}.pcd'.format(n=nframe))
-        # save_pcd(target_cloud, path + b'target_{n}.pcd'.format(n=nframe))
 
         icp_result = icp(
             object_cloud,
@@ -214,34 +212,41 @@ class ICPFinderWithModel(ICPFinder):
             icp_defaults,
         )
 
-        msg = b'score = {s}'
-        show_clouds(
-            msg.format(s=icp_result.score),
-            icp_result.cloud,
-            target_cloud,
-        )
-
-        obj_scene_cloud = filter_object_from_scene_cloud(
-            icp_result.cloud,  # object
-            target_cloud,  # scene
-            0.005,  # radius
-            False,  # show values
-        )
-        print "Puntos del modelo:", points(object_cloud)
-        print "Puntos del objeto en la escena:", points(obj_scene_cloud)
-        print "Puntos en la escena:", points(target_cloud)
-        icp_result.cloud = obj_scene_cloud
-
-        # save_pcd(icp_result.cloud, path + b'result_{n}.pcd'.format(n=nframe))
-
         return icp_result
 
     def calculate_descriptors(self, detected_descriptors):
-        detected_descriptors = (super(ICPFinderWithModel, self)
-                                .calculate_descriptors(detected_descriptors))
-        detected_descriptors['obj_model'] = detected_descriptors['object_cloud']
+        target_cloud = self._descriptors['pcd']
+        target_cloud = self._filter_target_cloud(target_cloud, 2)
+        icp_result_cloud = detected_descriptors['detected_cloud']
 
-        minmax = get_min_max(detected_descriptors['object_cloud'])
+        # transformation = detected_descriptors['detected_transformation']
+        # old_obj_model = self._descriptors['obj_model']
+        # print "ANTES DE TRANSFORMAR"
+        # new_obj_model = transform_cloud(old_obj_model, transformation)
+        # print "DESPUES DE TRANSFORMAR"
+
+        obj_scene_cloud = filter_object_from_scene_cloud(
+            icp_result_cloud,  # object
+            target_cloud,  # scene
+            0.002,  # radius
+            False,  # show values
+        )
+        # print "Puntos del modelo:", points(object_cloud)
+        # print "Puntos del objeto en la escena:", points(obj_scene_cloud)
+        # print "Puntos en la escena:", points(target_cloud)
+        detected_descriptors['object_cloud'] = obj_scene_cloud
+        detected_descriptors['obj_model'] = icp_result_cloud
+
+        # LALALALALALALAL
+        path = b'pruebas_guardadas/desk_1/coffee_mug_5/'
+        nframe = self._descriptors['nframe']
+        save_pcd(
+            icp_result_cloud,
+            path + b'model_transformed_{n:03}.pcd'.format(n=nframe)
+        )
+        ######################
+
+        minmax = get_min_max(obj_scene_cloud)
 
         detected_descriptors.update({
             'min_x_cloud': minmax.min_x,

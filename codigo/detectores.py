@@ -253,8 +253,6 @@ class AutomaticDetection(Detector):
         best_alignment_score = 1e-3  # lesser is better
         best_limits = {}
 
-        limit = 0
-
         # Busco la mejor alineacion del objeto segmentando la escena
         for limits in (BusquedaPorFramesSolapados()
                        .iterate_frame_boxes(scene_min_col,
@@ -263,9 +261,6 @@ class AutomaticDetection(Detector):
                                             scene_max_row,
                                             obj_width,
                                             obj_height)):
-            limit += 1
-            print "limite nro", limit
-
             cloud = filter_cloud(
                 scene_cloud,
                 b'x',
@@ -311,7 +306,7 @@ class AutomaticDetection(Detector):
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
                     scene_cloud,  # complete scene
-                    0.001,  # radius
+                    0.005,  # radius
                     False,  # show values
                 )
 
@@ -337,9 +332,5 @@ class AutomaticDetection(Detector):
                 })
 
                 fue_exitoso = True
-                print "Tamaño:", size
-                print "Ubicacion:", topleft
-
-                show_clouds(b'mejor align', icp_result.cloud, scene_cloud)
 
         return fue_exitoso, detected_descriptors
