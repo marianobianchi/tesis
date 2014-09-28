@@ -29,6 +29,7 @@ class FrameNamesAndImageProvider(object):
 
         # get the number of frames available
         filenames = os.listdir(scene_path)
+        filenames = [fname for fname in filenames if fname.endswith('.pcd')]
         last_frame_number = 1
 
         for filename in filenames:

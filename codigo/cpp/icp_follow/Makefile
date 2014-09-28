@@ -8,14 +8,16 @@ BOOST_LIB = -lboost_python
 VISUALIZATION_INCLUDES = -I/usr/include/vtk-5.8/
 VISUALIZATION_FLAGS = -lpcl_visualization
 
+COMMON_FLAGS = -lpcl_filters
+
 NO_WARNINGS = -Wno-deprecated
 
 
 all: icp.so
 
 
-icp.so: icp_following.o
-	c++ -shared $^ -o $@ $(BOOST_LIB) $(ICP_FLAGS) $(VISUALIZATION_FLAGS)
+icp.so: icp_following.o ../common/common.o
+	c++ -shared $^ -o $@ $(BOOST_LIB) $(ICP_FLAGS) $(VISUALIZATION_FLAGS) $(COMMON_FLAGS)
 	cp $@ ..
 
 icp_following.o: icp_following.cpp
@@ -24,4 +26,4 @@ icp_following.o: icp_following.cpp
 
 clean:
 	rm -f icp_following.o icp.so
-	rm ../icp.so
+	rm -f ../icp.so

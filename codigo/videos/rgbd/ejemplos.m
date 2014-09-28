@@ -85,3 +85,23 @@ data_aligned(:,1) = data2(:,1) - mean(data2(not(isnan(data2(:,1))),1));
 figure
 plot3(data_aligned(:,1), data_aligned(:,2), data_aligned(:,3), '.')
 grid on
+
+%% Objetos que aparecen en una escena
+load('scenes/desk/desk_2.mat');
+
+[a nframes] = size(bboxes);
+
+strings = {};
+obj_count = 1;
+for i=1:nframes
+    [a nobjs] = size(bboxes{i});
+    for o=1:nobjs
+        strings{obj_count} = sprintf('%s_%i', bboxes{i}(o).category, bboxes{i}(o).instance);
+        obj_count = obj_count + 1;
+    end
+end
+
+strings = unique(strings)
+
+
+

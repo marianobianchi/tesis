@@ -33,13 +33,7 @@ ICPResult icp(PointCloud3D::Ptr source_cloud,
     res.has_converged = icp.hasConverged();
     res.score = icp.getFitnessScore();
     res.cloud = final;
-    
-    //~ res.transformation = boost::make_shared<Eigen::Matrix4f>();
-    //~ 
-    //~ *(res.transformation) = icp.getFinalTransformation();
-    //~ 
-    //~ std::cout << "TRANSFORMATION = " << std::endl;
-    //~ std::cout << *(res.transformation) << std::endl;
+    res.transformation = mat_to_vector(icp.getFinalTransformation());
 
     if(icp_defaults.show_values){
 
@@ -98,8 +92,8 @@ BOOST_PYTHON_MODULE(icp)
     class_<ICPResult>("ICPResult")
         .def_readwrite("has_converged", &ICPResult::has_converged)
         .def_readwrite("score", &ICPResult::score)
-        .def_readwrite("cloud", &ICPResult::cloud);
-        //~ .def_readwrite("transformation", &ICPResult::transformation);
+        .def_readwrite("cloud", &ICPResult::cloud)
+        .def_readwrite("transformation", &ICPResult::transformation);
 
     def("icp", icp);
 }

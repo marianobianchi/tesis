@@ -17,7 +17,7 @@ common.so: export_common.o common.o
 	cp $@ ..
 
 common.o: common.cpp
-	c++ $(NO_WARNINGS) -c $^ -o $@ $(PCL_INCLUDES) $(VISUALIZATION_INCLUDES)
+	c++ $(NO_WARNINGS) -c $^ -o $@ $(PCL_INCLUDES) $(PYTHON_INCLUDE) $(VISUALIZATION_INCLUDES)
 	
 export_common.o: export_common.cpp
 	c++ $(NO_WARNINGS) -c $^ -o $@ $(PCL_INCLUDES) $(PYTHON_INCLUDE) $(VISUALIZATION_INCLUDES)

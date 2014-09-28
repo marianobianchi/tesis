@@ -14,12 +14,17 @@
 #include <pcl/point_cloud.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+#include <boost/python/suite/indexing/vector_indexing_suite.hpp>
+
 /*
  *  Define types
  * */
 typedef pcl::PointXYZ Point3D;
 typedef pcl::PointCloud<Point3D> PointCloud3D;
 typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D;
+typedef Eigen::Matrix4f Mat;
+typedef std::vector<float> FloatVector;
+typedef std::vector<FloatVector > VectorMat;
 
 
 PointCloud3D::Ptr voxel_grid_downsample(PointCloud3D::Ptr cloud, float leaf);
@@ -38,7 +43,10 @@ PointCloud3D::Ptr filter_cloud(PointCloud3D::Ptr cloud,
                   const float & lower_limit,
                   const float & upper_limit);
 
-PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, Eigen::Matrix4f transformation);
+
+VectorMat mat_to_vector(const Mat&);
+Mat vector_to_mat(const VectorMat&);
+PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, const VectorMat& transformation);
 
 
 int points(PointCloud3D::Ptr cloud);

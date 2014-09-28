@@ -7,7 +7,6 @@
  * */
 #include <iostream>
 #include <ctime>
-//~ #include <memory>
 
 #include <Eigen/Core>
 #include <pcl/registration/icp.h>
@@ -15,16 +14,7 @@
 #include <pcl/point_cloud.h>
 
 
-
-/*
- * Define types
- * */
-typedef pcl::PointXYZ Point3D;
-typedef pcl::PointCloud<Point3D> PointCloud3D;
-
-typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D;
-
-//~ typedef boost::shared_ptr< Eigen::Matrix4f > MatrixPtr;
+#include "../common/common.h"
 
 /*
  * Includes para exportar a python
@@ -35,8 +25,8 @@ typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D
 struct ICPResult {
     bool has_converged; // was found by icp?
     float score;        // icp score
-    pcl::PointCloud<Point3D>::Ptr cloud;
-    //~ MatrixPtr transformation;
+    PointCloud3D::Ptr cloud;
+    VectorMat transformation;
 };
 
 struct ICPDefaults {

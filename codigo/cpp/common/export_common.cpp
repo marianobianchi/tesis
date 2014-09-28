@@ -33,6 +33,12 @@ BOOST_PYTHON_MODULE(common)
     def("read_pcd", read_pcd);
     def("save_pcd", save_pcd);
     def("filter_cloud", filter_cloud);
+    
+    class_<FloatVector>("FloatVector")
+        .def(vector_indexing_suite<FloatVector>() );
+    
+    class_<VectorMat>("VectorMat")
+        .def(vector_indexing_suite<VectorMat>() );
     def("transform_cloud", transform_cloud);    
     
     def("points", points);

@@ -4,9 +4,8 @@ from __future__ import (unicode_literals, division)
 
 
 from cpp.icp import icp, ICPDefaults, ICPResult
-from cpp.common import filter_cloud, points, get_point, save_pcd, get_min_max, \
-    show_clouds, filter_object_from_scene_cloud  # , transform_cloud
-from cpp.alignment_prerejective import align, APDefaults
+from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
+    filter_object_from_scene_cloud
 
 from metodos_comunes import from_cloud_to_flat_limits
 
@@ -129,7 +128,7 @@ class ICPFinder(Finder):
                 'size': size,
                 'location': topleft,
                 'detected_cloud': icp_result.cloud,
-                # 'detected_transformation': icp_result.transformation,
+                'detected_transformation': icp_result.transformation,
             })
 
         return fue_exitoso, descriptors
@@ -219,11 +218,9 @@ class ICPFinderWithModel(ICPFinder):
         target_cloud = self._filter_target_cloud(target_cloud, 2)
         icp_result_cloud = detected_descriptors['detected_cloud']
 
-        # transformation = detected_descriptors['detected_transformation']
-        # old_obj_model = self._descriptors['obj_model']
-        # print "ANTES DE TRANSFORMAR"
-        # new_obj_model = transform_cloud(old_obj_model, transformation)
-        # print "DESPUES DE TRANSFORMAR"
+        transformation = detected_descriptors['detected_transformation']
+        old_obj_model = self._descriptors['obj_model']
+        new_obj_model = transform_cloud(old_obj_model, transformation)
 
         obj_scene_cloud = filter_object_from_scene_cloud(
             icp_result_cloud,  # object
@@ -231,20 +228,9 @@ class ICPFinderWithModel(ICPFinder):
             0.002,  # radius
             False,  # show values
         )
-        # print "Puntos del modelo:", points(object_cloud)
-        # print "Puntos del objeto en la escena:", points(obj_scene_cloud)
-        # print "Puntos en la escena:", points(target_cloud)
-        detected_descriptors['object_cloud'] = obj_scene_cloud
-        detected_descriptors['obj_model'] = icp_result_cloud
 
-        # LALALALALALALAL
-        path = b'pruebas_guardadas/desk_1/coffee_mug_5/'
-        nframe = self._descriptors['nframe']
-        save_pcd(
-            icp_result_cloud,
-            path + b'model_transformed_{n:03}.pcd'.format(n=nframe)
-        )
-        ######################
+        detected_descriptors['object_cloud'] = obj_scene_cloud
+        detected_descriptors['obj_model'] = new_obj_model
 
         minmax = get_min_max(obj_scene_cloud)
 

@@ -117,7 +117,10 @@ def deteccion_automatica_icp_con_modelo():
     ).run()
 
 
-def algoritmo_final_guardando_datos():
+def desk_1_coffee_mug_5():
+    """
+    algoritmo final guardando datos
+    """
     img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/', 'desk', '1',
         'videos/rgbd/objs/', 'coffee_mug', '5',
@@ -136,6 +139,27 @@ def algoritmo_final_guardando_datos():
     ).run()
 
 
+def desk_2_flashlight_1():
+    """
+    algoritmo final guardando datos
+    """
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'flashlight', '1',
+    )  # path, objname, number
+
+    detector = AutomaticDetection()
+
+    finder = ICPFinderWithModel()
+
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+
+    FollowingSchemeSavingData(
+        img_provider,
+        follower,
+        'pruebas_guardadas'
+    ).run()
+
 
 if __name__ == '__main__':
-    algoritmo_final_guardando_datos()
+    desk_2_flashlight_1()

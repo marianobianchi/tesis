@@ -2,9 +2,9 @@
 % Variables
 heigth = 480;
 width = 640;
-cant_frames = 98;
+cant_frames = 190;
 obj_name = 'desk';
-number = '1';
+number = '2';
 
 % Nombres de archivos
 video_frame_str = '{obj}_{number}_{nframe}_depth.png';

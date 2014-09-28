@@ -7,7 +7,7 @@ import time
 import numpy as np
 import cv2
 
-from cpp.common import get_point, points
+from cpp.common import get_point, points, get_min_max
 
 
 def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,
@@ -152,6 +152,27 @@ def from_cloud_to_flat_limits(cloud):
 
         left = min(point_flat[1], left)
         right = max(point_flat[1], right)
+
+    #### NUEVO Y MAS CORTO METODO
+    # minmax = get_min_max(cloud)
+    # topleft_1 = from_cloud_to_flat(minmax.min_y, minmax.min_x, minmax.min_z)
+    # topleft_2 = from_cloud_to_flat(minmax.min_y, minmax.min_x, minmax.max_z)
+    # topright_1 = from_cloud_to_flat(minmax.min_y, minmax.max_x, minmax.min_z)
+    # topright_2 = from_cloud_to_flat(minmax.min_y, minmax.max_x, minmax.max_z)
+    #
+    # bottomleft_1 = from_cloud_to_flat(minmax.max_y, minmax.min_x, minmax.min_z)
+    # bottomleft_2 = from_cloud_to_flat(minmax.max_y, minmax.min_x, minmax.max_z)
+    # bottomright_1 = from_cloud_to_flat(minmax.max_y, minmax.max_x, minmax.min_z)
+    # bottomright_2 = from_cloud_to_flat(minmax.max_y, minmax.max_x, minmax.max_z)
+    #
+    # top = min(topleft_1[0], topleft_2[0], topright_1[0], topright_2[0])
+    # bottom = max(bottomleft_1[0], bottomleft_2[0],
+    #              bottomright_1[0], bottomright_2[0])
+    #
+    # left = min(topleft_1[1], topleft_2[1], bottomleft_1[1], bottomleft_2[1])
+    # right = max(topright_1[1], topright_2[1],
+    #             bottomright_1[1], bottomright_2[1])
+    ####
 
     return (top, left), (bottom, right)
 

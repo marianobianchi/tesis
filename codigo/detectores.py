@@ -326,7 +326,7 @@ class AutomaticDetection(Detector):
                     'min_z_cloud': minmax.min_z,
                     'max_z_cloud': minmax.max_z,
                     'object_cloud': obj_scene_cloud,
-                    'obj_model': obj_scene_cloud,
+                    'obj_model': icp_result.cloud,  # original model transformed
                     'size': size,
                     'location': topleft,  # location=(fila, columna)
                 })

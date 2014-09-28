@@ -109,9 +109,51 @@ PointCloud3D::Ptr filter_cloud(PointCloud3D::Ptr const_cloud,
     return cloud;
 }
 
-PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, Eigen::Matrix4f transformation){
+
+VectorMat mat_to_vector(const Mat& m){
+    VectorMat s(4, std::vector<float>(4, 0.0));
+    s[0][0] = m(0,0);
+    s[0][1] = m(0,1);
+    s[0][2] = m(0,2);
+    s[0][3] = m(0,3);
+    
+    s[1][0] = m(1,0);
+    s[1][1] = m(1,1);
+    s[1][2] = m(1,2);
+    s[1][3] = m(1,3);
+    
+    s[2][0] = m(2,0);
+    s[2][1] = m(2,1);
+    s[2][2] = m(2,2);
+    s[2][3] = m(2,3);
+    
+    return s;
+}
+
+Mat vector_to_mat(const VectorMat& s){
+    Mat m;
+    m(0,0) = s[0][0];
+    m(0,1) = s[0][1];
+    m(0,2) = s[0][2];
+    m(0,3) = s[0][3];
+    
+    m(1,0) = s[1][0];
+    m(1,1) = s[1][1];
+    m(1,2) = s[1][2];
+    m(1,3) = s[1][3];
+
+    m(2,0) = s[2][0];
+    m(2,1) = s[2][1];
+    m(2,2) = s[2][2];
+    m(2,3) = s[2][3];
+    
+    return m;
+}
+
+PointCloud3D::Ptr transform_cloud(PointCloud3D::Ptr cloud, const VectorMat& transformation){
+    Mat m = vector_to_mat(transformation);
     PointCloud3D::Ptr transformed_cloud(new PointCloud3D);
-    pcl::transformPointCloud(*cloud, *transformed_cloud, transformation);
+    pcl::transformPointCloud(*cloud, *transformed_cloud, m);
     return transformed_cloud;
 }
 
