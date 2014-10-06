@@ -213,16 +213,10 @@ class AutomaticDetection(Detector):
 
         # obtengo tamaño del modelo del objeto a detectar y tomo una region
         # X veces mas grande
-        min_max = get_min_max(model_cloud)
-        obj_width = (min_max.max_x - min_max.min_x) * 4
-        obj_height = (min_max.max_y - min_max.min_y) * 4
+        obj_limits = get_min_max(model_cloud)
 
         # obtengo limites de la escena
-        min_max = get_min_max(scene_cloud)
-        scene_min_col = min_max.min_x
-        scene_max_col = min_max.max_x
-        scene_min_row = min_max.min_y
-        scene_max_row = min_max.max_y
+        scene_limits = get_min_max(scene_cloud)
 
         detected_descriptors = {
             'size': 0,
@@ -238,7 +232,7 @@ class AutomaticDetection(Detector):
         ap_defaults.nearest_features_used = 4
         ap_defaults.simil_threshold = 0.4
         ap_defaults.inlier_threshold = 3
-        ap_defaults.inlier_fraction = 0.8
+        ap_defaults.inlier_fraction = 0.9
         # ap_defaults.show_values = True
 
         #icp parameters
@@ -255,12 +249,8 @@ class AutomaticDetection(Detector):
 
         # Busco la mejor alineacion del objeto segmentando la escena
         for limits in (BusquedaPorFramesSolapados()
-                       .iterate_frame_boxes(scene_min_col,
-                                            scene_max_col,
-                                            scene_min_row,
-                                            scene_max_row,
-                                            obj_width,
-                                            obj_height)):
+                       .iterate_frame_boxes(obj_limits, scene_limits)):
+
             cloud = filter_cloud(
                 scene_cloud,
                 b'x',
@@ -275,6 +265,7 @@ class AutomaticDetection(Detector):
             )
 
             if points(cloud) > 0:
+
                 # Calculate alignment
                 ap_result = align(model_cloud, cloud, ap_defaults)
                 if (ap_result.has_converged and
@@ -300,7 +291,7 @@ class AutomaticDetection(Detector):
             # Calculate ICP
             icp_result = icp(best_aligned_scene, cloud, icp_defaults)
 
-            if icp_result.has_converged:
+            if icp_result.has_converged and icp_result.score < 1e-3:
                 # Filtro los puntos de la escena que se corresponden con el
                 # objeto que estoy buscando
                 obj_scene_cloud = filter_object_from_scene_cloud(
@@ -327,10 +318,14 @@ class AutomaticDetection(Detector):
                     'max_z_cloud': minmax.max_z,
                     'object_cloud': obj_scene_cloud,
                     'obj_model': icp_result.cloud,  # original model transformed
+                    'detected_cloud': icp_result.cloud,
                     'size': size,
                     'location': topleft,  # location=(fila, columna)
                 })
 
                 fue_exitoso = True
+                # ###############################
+                # show_clouds(b'Modelo detectado vs escena', icp_result.cloud, scene_cloud)
+                # ###############################
 
         return fue_exitoso, detected_descriptors

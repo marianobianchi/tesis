@@ -5,7 +5,7 @@ from __future__ import (unicode_literals, division)
 
 from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
-    filter_object_from_scene_cloud
+    filter_object_from_scene_cloud, show_clouds
 
 from metodos_comunes import from_cloud_to_flat_limits
 
@@ -228,6 +228,19 @@ class ICPFinderWithModel(ICPFinder):
             0.002,  # radius
             False,  # show values
         )
+
+        #################################################
+        # show_clouds(
+        #     b'Modelo transformado vs objeto de la escena',
+        #     new_obj_model,
+        #     obj_scene_cloud
+        # )
+        # show_clouds(
+        #     b'Modelo transformado vs escena',
+        #     new_obj_model,
+        #     target_cloud
+        # )
+        #################################################
 
         detected_descriptors['object_cloud'] = obj_scene_cloud
         detected_descriptors['obj_model'] = new_obj_model

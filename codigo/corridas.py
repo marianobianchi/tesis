@@ -161,5 +161,27 @@ def desk_2_flashlight_1():
     ).run()
 
 
+def desk_1_cap_4():
+    """
+    algoritmo final guardando datos
+    """
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'cap', '4',
+    )  # path, objname, number
+
+    detector = AutomaticDetection()
+
+    finder = ICPFinderWithModel()
+
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+
+    FollowingSchemeSavingData(
+        img_provider,
+        follower,
+        'pruebas_guardadas'
+    ).run()
+
+
 if __name__ == '__main__':
-    desk_2_flashlight_1()
+    desk_1_cap_4()

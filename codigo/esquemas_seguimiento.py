@@ -147,8 +147,7 @@ class FollowingSchemeSavingData(FollowingScheme):
             # Adelanto un frame
             self.img_provider.next()
 
-    def save_result(self, method, fue_exitoso, ubicacion_inicial,
-                    tam_region):
+    def save_result(self, method, fue_exitoso, ubicacion_inicial, tam_region):
         """
         Formato para guardar:
 
@@ -172,7 +171,15 @@ class FollowingSchemeSavingData(FollowingScheme):
         self.file.flush()
 
         if fue_exitoso and 'object_cloud' in self.obj_follower.descriptors():
+            # Guardo el objeto cuyos puntos pertenecen a la escena
             pcd = self.obj_follower.descriptors()['object_cloud']
-            pcd_filename = 'obj_found_frame_{i:03}.pcd'.format(i=nframe)
+            pcd_filename = 'obj_found_scenepoints_frame_{i:03}.pcd'.format(i=nframe)
+            filename = os.path.join(self.results_path, pcd_filename)
+            save_pcd(pcd, str(filename))
+
+            # Guardo el objeto alineado, cuyos puntos son los del frame anterior
+            # pero alineado
+            pcd = self.obj_follower.descriptors()['detected_cloud']
+            pcd_filename = 'obj_found_alignedpoints_frame_{i:03}.pcd'.format(i=nframe)
             filename = os.path.join(self.results_path, pcd_filename)
             save_pcd(pcd, str(filename))

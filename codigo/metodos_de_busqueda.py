@@ -70,53 +70,65 @@ class BusquedaEnEspiralCambiandoFrameSize(object):
 
 class BusquedaPorFramesSolapados(object):
     @staticmethod
-    def iterate_frame_boxes(scene_min_col, scene_max_col, scene_min_row,
-                            scene_max_row, obj_width, obj_height, step=2):
+    def iterate_frame_boxes(obj_limits, scene_limits, obj_mult=2, step=2):
         """
         La idea de la segmentación es tomar un cuadrante de cierto tamaño e
         ir recortando la imagen de manera que cada recorte se solape con el
         anterior en la mitad del tamaño del cuadrante.
         """
+        obj_width = (obj_limits.max_x - obj_limits.min_x) * obj_mult
+        obj_height = (obj_limits.max_y - obj_limits.min_y) * obj_mult
+
+        scene_min_col = scene_limits.min_x
+        scene_max_col = scene_limits.max_x
+        scene_min_row = scene_limits.min_y
+        scene_max_row = scene_limits.max_y
+
         ###################################################################
         # Armo una lista de tuplas con los limites del filtro para el alto
         ###################################################################
         paso_alto_frame = obj_height / step
-        cant_pasos_alto = (scene_max_row - scene_min_row) / paso_alto_frame
+        cant_pasos_alto = max(
+            int((scene_max_row - scene_min_row) / paso_alto_frame),
+            step
+        )
 
         # armo una lista con intervalos de tamaño ancho_objeto / step
         alto_linspace = np.linspace(
             scene_min_row,
             scene_max_row,
-            int(cant_pasos_alto),
+            cant_pasos_alto,
         )
 
-        # armo 2 listas y las reparto de manera tal que tengan el mismo tamaño
-        # pero que al hacer zip, la diferencia entre lista_1[i] y lista_2[i]
-        # sea de ancho_objeto / step
-        int_obj_height = math.ceil(obj_height/paso_alto_frame)
-        alto_limites_inferiores = alto_linspace[:-1*int_obj_height]
-        alto_limites_superiores = alto_linspace[int_obj_height:]
+        # Armo una lista de tuplas que marquen los puntos a "barrer", en donde
+        # la diferencia entre los valores de cada tupla sea del tamaño del
+        # objeto y la diferencia entre el primer valor de una tupla y el
+        # primero de la siguiente sea la mitad del tamaño del objeto
+        alto_limites_inferiores = alto_linspace[:-1*step]
+        alto_limites_superiores = alto_linspace[step:]
         alto_limites = zip(alto_limites_inferiores, alto_limites_superiores)
 
         ####################################################################
         # Armo una lista de tuplas con los limites del filtro para el ancho
         ####################################################################
         paso_ancho_frame = obj_width / step
-        cant_pasos_ancho = (scene_max_row - scene_min_row) / paso_ancho_frame
+        cant_pasos_ancho = int(
+            (scene_max_col - scene_min_col) / paso_ancho_frame
+        )
 
         # armo una lista con intervalos de tamaño ancho_objeto / step
         ancho_linspace = np.linspace(
             scene_min_col,
             scene_max_col,
-            int(cant_pasos_ancho),
+            cant_pasos_ancho,
         )
 
-        # armo 2 listas y las reparto de manera tal que tengan el mismo tamaño
-        # pero que al hacer zip, la diferencia entre lista_1[i] y lista_2[i]
-        # sea de ancho_objeto / step
-        int_obj_width = math.ceil(obj_width/paso_ancho_frame)
-        ancho_limites_inferiores = ancho_linspace[:-1 * int_obj_width]
-        ancho_limites_superiores = ancho_linspace[int_obj_width:]
+        # Armo una lista de tuplas que marquen los puntos a "barrer", en donde
+        # la diferencia entre los valores de cada tupla sea del tamaño del
+        # objeto y la diferencia entre el primer valor de una tupla y el
+        # primero de la siguiente sea la mitad del tamaño del objeto
+        ancho_limites_inferiores = ancho_linspace[:-1 * step]
+        ancho_limites_superiores = ancho_linspace[step:]
         ancho_limites = zip(ancho_limites_inferiores, ancho_limites_superiores)
 
         for row_low, row_up in alto_limites:
