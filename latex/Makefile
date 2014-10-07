@@ -1,9 +1,12 @@
+all: clean tesis
 
-
-
-tesis.pdf: tesis.tex
-	pdflatex $<; pdflatex $<;
-
+tesis:
+	pdflatex tesis.tex
+	bibtex tesis.aux
+	pdflatex tesis.tex
+	pdflatex tesis.tex
 
 clean:
-	rm -f *.aux *.log *.toc
+	rm -f *.aux *.log *.toc tesis.pdf
+
+
