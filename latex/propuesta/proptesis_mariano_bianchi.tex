@@ -1,0 +1,91 @@
+\documentclass[a4paper]{article}
+\usepackage[latin1]{inputenc}
+\usepackage[spanish, activeacute]{babel}
+
+\title{Seguimiento de Objetos en Secuencias de Imágenes RGB-D}
+\author{Propuesta de Tesis}
+\date{\today}
+%\institute{Departamento de Computaci\'on, Facultad de Ciencias Exactas y Naturales, Universidad de Buenos Aires, Buenos Aires, Argentina}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+
+%\begin{abstract}
+%\end{abstract}
+
+\bigskip
+
+
+\noindent \underline{Alumno:} Mariano Bianchi \hspace{7em}  marianobianchi08@gmail.com\\
+\underline{Director:} Francisco Gómez Fernández \hspace{2em} fgomezf@gmail.com
+
+
+
+\newpage
+
+\section{Motivación}
+
+
+En la actualidad, las posibles aplicaciones de métodos de seguimiento o tracking son muchas y van desde el uso en la industria hasta juegos de consola. Un ejemplo de ello es la fabricación de barcos y autos mediante el uso de robots. Estas tareas se caracterizan por la necesidad de posicionar de manera precisa una herramienta sobre una pieza de trabajo. A través del uso de métodos de tracking se puede conocer la posición y pose de la pieza que se desea utilizar con respecto a la pose de la cámara y de esta forma saber cómo ubicar la herramienta necesaria para trabajar sobre la pieza en cuestión.
+
+Otra área en donde se utiliza tracking de objetos es para la generación de estadísticas durante un partido de fútbol, tanto de jugadores como de un equipo, aunque las posibles aplicaciones en este contexto son mucho más amplias, como por ejemplo análisis de tácticas, verificación de las decisiones del árbitro, resúmenes automáticos de un partido, etc.
+
+Actualmente existen sensores de profundidad que en conjunto con una cámara RGB pueden ser utilizados para detectar y seguir a una o más personas en tiempo real. De esta manera, mediante un sistema que procese la imágenes RGB-D de estos sensores, las personas puedan utilizar su cuerpo y sus movimientos para interactuar naturalmente con un dispositivo.
+
+La utilización de sensores RGB-D se ha popularizado en los últimos años, cobrando un gran interés científico el estudio de aplicaciones y métodos capaces de procesar y entender la información que los mismos proveen.
+
+La información de profundidad que nos provee un sensor RGB-D es un dato fundamental que nos posibilita encontrar la distancia de un objeto al sensor pudiendo recuperar su información 3D (tridimensional) junto a su textura RGB en tiempo real: 30 cuadros por segundo.
+El video RGB-D que se obtiene provee una gran ayuda al mejoramiento y desarrollo de nuevas técnicas de procesamiento de imágenes y video ya conocidas. En particular, es de interés en esta tesis, el seguimiento de objetos en secuencias de imágenes RGB-D.
+
+Un sistema de seguimiento se puede dividir en tres etapas bien definidas:
+\begin{enumerate}
+ \item Entrenamiento
+ \item Detección
+ \item Seguimiento cuadro a cuadro
+\end{enumerate}
+
+La etapa de entrenamiento consiste en obtener una representación del objeto al cuál se pretende seguir. Para llevarla a cabo se puede utilizar un patrón (template) ya conocido o aprenderlo de imágenes capturadas del mismo objeto. Este template luego se utiliza en la detección para ubicar la representación del objeto dentro de una imagen cualquiera. Una vez conocido el template no se requiere de una nueva ejecución del entrenamiento.
+
+La segunda etapa, la de detección, radica en encontrar dentro de un frame del video al objeto en cuestión utilizando el método de detección deseado, valiéndose de la información registrada en la etapa de entrenamiento. Esta etapa se ejecuta, con el propósito de encontrar en la imagen el objeto a seguir, al comienzo del sistema de seguimiento y cuando el seguimiento cuadro a cuadro falla. Dado que la etapa de detección suele ser la más costosa en términos de desempeño computacional es deseable que se ejecute la menor cantidad de veces
+
+Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detectado en la etapa anterior. Es decir, teniendo la ubicación del objeto en un cuadro de video se desea identificar la posición del mismo objeto en el siguiente frame. Esta etapa es la más importante ya que es la que se ejecuta en cada frame del video. La eficiencia del método de seguimiento es lo que determinará que todo el sistema de seguimiento se consiga realizar eficientemente. Si la técnica de seguimiento tiene una efectividad baja, es decir, no logra identificar la nueva posición del objeto en el siguiente cuadro, se debe volver a la etapa de detección cuyo desempeño computacional es mayor.
+
+
+\section{Objetivos}
+
+El objetivo principal de esta tesis es la implementación, estudio y evaluación de un sistema de seguimiento de objetos en secuencias de imágenes RGB-D, con las siguientes características:
+\begin{itemize}
+ \item Performance Real-time: procesamiento de imágenes mayor a 10 cuadros por segundo
+ \item Seguimiento de objetos tridimensionales con forma conocida previamente y de objetos aprendidos mediante una fase de entrenamiento previa
+ \item Funcionamiento en sensores de profundidad de bajo costo (Kinect, XTion, etc.)
+\end{itemize}
+
+
+
+
+\section{Metodología y Antecedentes}
+
+Para poder cumplir con los objetivos de esta tesis se comenzará con el desarrollo e implementación del artículo \cite{park2011texture} el cual implementa las tres etapas de un sistema de seguimiento de objetos 3D de la siguiente manera:
+\begin{enumerate}
+  \item Entrenamiento: obtención del modelo 3D a seguir y calibración
+  \item Detección: usando DOT \cite{hinterstoisser2010dominant} adaptado a 3D 
+  \item Seguimiento 3D cuadro a cuadro: usando ICP \cite{zhang94icp,besl92icp} alineando las nubes de puntos del modelo y la detección
+\end{enumerate}
+
+La etapa de entrenamiento consiste en obtener una representación tridimensional del objeto al cuál se pretende seguir. En el artículo \cite{drummond1999real} se utiliza un entrenamiento off-line que consiste en obtener un modelo CAD (computer-aided design) del objeto que se desea seguir. Luego, en el artículo \cite{park2011texture} se presenta una etapa de entrenamiento novedosa que se realiza de manera on-line, en donde utiliza un marcador conocido para definir las coordenadas de los objetos y calibrar la cámara.
+
+La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizaremos la base de datos \cite{lai2011large} la cual nos provee de información de ground truth sobre el posicionamiento de los objetos cuadro por cuadro en video RGB-D. Por otro lado, se evaluará la posibilidad de implementar la fase de entrenamiento on-line presentada en el artículo \cite{park2011texture} y la evaluación cualitativa del seguimiento de objetos 3D.
+
+Sobre la implementación desarrollada se propone modificar la etapa de detección utilizando otros métodos conocidos en la literatura \cite{brunelli2009template,korman13fast} con el fin evaluar el desempeño del algoritmo DOT y sus oportunidades de mejora.
+
+La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para esta tarea resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\bibliographystyle{alpha}
+\bibliography{referencias_mariano}
+
+
+\end{document}

@@ -1,0 +1,147 @@
+X-Account-Key: account3
+X-UIDL: 1130971261.2662.mta07,S=6660
+X-Mozilla-Status: 1001
+X-Mozilla-Status2: 00000000
+Return-Path: <nbagnera@dc.uba.ar>
+Delivered-To: h.wilkinson@mercapsoftware.com
+Received: (qmail 2647 invoked from network); 2 Nov 2005 22:41:00 -0000
+Received: from unknown (HELO smtp-2.dc.uba.ar) ([157.92.27.62])
+          (envelope-sender <nbagnera@dc.uba.ar>)
+          by mail (qmail-ldap-1.03) with SMTP
+          for <h.wilkinson@mercapsoftware.com>; 2 Nov 2005 22:41:00 -0000
+Received: (qmail 4598 invoked from network); 2 Nov 2005 22:40:47 -0000
+Received: from unknown (HELO smtp.dc.uba.ar) ([10.0.0.3])
+          (envelope-sender <nbagnera@dc.uba.ar>)
+          by smtp-2.dc.uba.ar (qmail-ldap-1.03) with DES-CBC3-SHA encrypted SMTP
+          for <h.wilkinson@mercapsoftware.com>; 2 Nov 2005 22:40:47 -0000
+Received: (qmail 2440 invoked by uid 1006); 2 Nov 2005 22:40:46 -0000
+Received: from nbagnera@dc.uba.ar by goliat by uid 1003 with qmail-scanner-1.16 
+ (spamassassin: 2.20.  Clear:SA:0(0/0):. 
+ Processed in 0.025995 secs); 02 Nov 2005 22:40:46 -0000
+Received: from unknown (HELO webmail.dc.uba.ar) (nbagnera@[10.0.0.31])
+          (envelope-sender <nbagnera@dc.uba.ar>)
+          by ?smtp.dc.uba.ar (qmail-ldap-1.03) with SMTP
+          for <h.wilkinson@mercapsoftware.com>; 2 Nov 2005 22:40:46 -0000
+Received: from 10.1.100.171
+        (SquirrelMail authenticated user nbagnera)
+        by webmail.dc.uba.ar with HTTP;
+        Wed, 2 Nov 2005 19:40:47 -0300 (ART)
+Message-ID: <2516.10.1.100.171.1130971247.squirrel@webmail.dc.uba.ar>
+Date: Wed, 2 Nov 2005 19:40:47 -0300 (ART)
+Subject: [Fwd: Reglamento de licenciatura]
+From: =?iso-8859-1?Q?Nicol=E1s_Bagnera?= <nbagnera@dc.uba.ar>
+To: h.wilkinson@mercapsoftware.com
+User-Agent: SquirrelMail/1.4.5
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Antivirus: AVG for E-mail 7.1.362 [267.12.7/156]
+
+---------------------------- Original Message ----------------------------
+Subject: Reglamento de licenciatura
+From:    "mercedes" <mercedes@dc.uba.ar>
+Date:    Wed, November 2, 2005 7:37 pm
+To:      nbagnera@dc.uba.ar
+--------------------------------------------------------------------------
+
+REGLAMENTO DE TESIS DE LICENCIATURA 2000
+
+ 	Sobre la Dirección de la Tesis
+
+El director de Tesis debe ser profesor del Dpto. o de otra casa de
+estudios, o tener un cargo de investigación equivalente. En caso de no
+pertenecer al departamento de computación, deber haber un co-directores
+sea profesor del departamento. Los JTP o Ay1 podrán codirigir tesis a
+cargo de un profesor o dirigir en forma independiente pidiendo
+autorización especial antes de empezar junto con la presentación de la
+propuesta.
+Al comenzar la tesis los alumnos deben inscribirse en el departamento
+presentando la propuesta de Tesis firmada por el director.
+i) la propuesta tiene que contener nombre y apellido del director y
+alumnos, e-mail, nro. de libreta, titulo tentativo, resumen extendido de
+lo que se pretende hacer de un par de paginas y bibliografía básica.
+ii) la propuesta debe presentarse al encargado de las tesis del Dpto.
+COMIENZO del trabajo, o sea apenas e haya terminado de determinar el
+tema de la tesis.
+iii) el encargado de las tesis se la dará a algún otro profesor para que
+la evalúe y la apruebe o no, o haga comentarios. En caso de "conflicto"
+(no suele ocurrir) quien decide es obviamente el CODEP.
+
+ 	Sobre la Presentación Final
+
+Para la presentación de la tesis deben tenerse en cuenta las siguientes
+normas establecidas por el CODEP:
+i) Los trabajos de tesis deben contener como mínimo las siguientes
+secciones:
+Carátula: Título, nombre del Director, nombre de los integrantes del
+proyecto.
+Resumen: Deber incluir un resumen en Castellano e Inglés no más de 200
+palabras en donde se exponga con claridad los objetivos y los alcances
+del trabajo.
+Introducción: Breve referencia del trabajo mencionando la parte novedosa
+del trabajo.
+Desarrollo: Descripción del trabajo.
+Conclusiones: Alcances de los resultados obtenidos, ventajas y
+desventajas, futuros trabajos, etc.
+Bibliografía: Las citas bibliográficas deberán ser adecuadas al tema y
+usando el siguiente formato por orden alfabético:
+[AUT/ZZ] Autores, titulo, Publicación, Editorial, Año.
+Ejemplo:
+[GIO/82] Gioan A. "Regularized Minimization Under Weaker Hypotheses",
+applied Mathematics Optimization, Springer Verlag, Volumen 8 numero1 -
+pag 59-68.1982.
+ii) El jurado de la tesis esta compuesto por el director y otros 2
+miembros. El director de tesis acordar con el encargado de tesis del
+departamento quienes serán los miembros del jurado, al menos uno de
+ellos del área del tema de la tesis. Además será el responsable
+conjuntamente con los alumnos de hacerle llegar a cada uno de ellos una
+copia del trabajo. Cada una debe incluir copia del programa
+desarrollado, si corresponde.
+iii) El jurado deber confeccionar en el momento de la defensa de la
+tesis, el acta de examen correspondiente, la cual deber ser entregada a
+la secretaría del Dpto. junto con dos copias de la tesis destinadas a la
+biblioteca (incluyendo los disquetes). En caso de no presentarse la
+copias, se retendrá el acta correspondiente hasta dicha presentación.
+iv) La fecha de presentación de la tesis de licenciatura debe ser
+avisada por e-mail a todos los integrantes del Dpto. (listas de docentes
+y alumnos) por el director o los alumnos con una semana de anticipación.
+La presentación es publica. La participación de los 3 jurados es
+obligatoria. Eventualmente se podrá reemplazar algún miembro del jurado
+con el visto bueno de las autoridades del Departamento de Computación o
+del encargado de tesis.
+v) De existir un software, los derechos de autor pertenecerán al
+Departamento de Computación.
+vi) El Director y los alumnos mantendrán la propiedad intelectual de los
+resultados obtenidos, en lo que se refieren a su presentación en eventos
+académicos (publicaciones, congresos, etc.), debiéndose mencionar que
+fue realizado en el Departamento de Computación.
+
+ 	Sobre Los Plazos
+
+i) El trabajo y el software correspondiente deber ser presentado al
+jurado con una antelación no menor a 30 días de la fecha de
+presentación. Las eventuales correcciones o cambios en la presentación
+conducirán a una nuevo plazo de 30 días.
+ii) El plazo sugerido para la presentación del trabajo es de 1 (un) año
+a partir de la presentación de la propuesta. Cualquier situación anormal
+dentro del proyecto deber ser informada al profesor encargado de tesis
+y/o al CODEP.
+
+ 	NOTA: Cualquier eventualidad no prevista en el presente
+Reglamento, será resuelta por el CODEP.
+
+
+
+
+---
+Outgoing mail is certified Virus Free.
+Checked by AVG anti-virus system (http://www.grisoft.com).
+Version: 6.0.821 / Virus Database: 559 - Release Date: 21/12/2004
+
+
+
+
+
+

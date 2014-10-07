@@ -1,0 +1,62 @@
+%\documentclass[11pt,a4paper,twoside]{tesis}
+% SI NO PENSAS IMPRIMIRLO EN FORMATO LIBRO PODES USAR
+\documentclass[11pt,a4paper]{tesis}
+
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish, activeacute]{babel}
+\usepackage[left=3cm,right=3cm,bottom=3.5cm,top=3.5cm]{geometry}
+
+
+\begin{document}
+
+%%%% CARATULA
+\def\titulo{Licenciado }
+\def\autor{Mariano Bianchi}
+\def\tituloTesis{Seguimiento de Objetos en Secuencias de Imágenes RGB-D}
+\def\runtitulo{Seguimiento de Objetos en Secuencias de Imágenes RGB-D}
+\def\runtitle{Object tracking using RGB-D image sequences}
+\def\director{Francisco Roberto Gómez Fernández}
+%\def\codirector{Master Yoda}
+\def\lugar{Buenos Aires, 2014}
+\input{caratula}
+
+%%%% ABSTRACTS, AGRADECIMIENTOS Y DEDICATORIA
+\frontmatter
+\pagestyle{empty}
+\input{abs_esp.tex}
+
+\cleardoublepage
+\input{abs_en.tex}
+
+\cleardoublepage
+\input{agradecimientos.tex} % OPCIONAL: comentar si no se quiere
+
+%\cleardoublepage
+%\input{dedicatoria.tex}  % OPCIONAL: comentar si no se quiere
+
+\cleardoublepage
+\tableofcontents
+
+\mainmatter
+\pagestyle{headings}
+
+
+\chapter{Introducción}
+\chapter{Estado del arte}
+\chapter{Desarrollo}
+\chapter{Experimentación}
+\chapter{Discusión}
+\chapter{Conclusiones}
+
+
+%%%% BIBLIOGRAFIA
+\backmatter
+\bibliographystyle{alpha}
+\bibliography{tesis}
+
+
+\end{document}
+
+
+
