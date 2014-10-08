@@ -2,7 +2,7 @@
 % Variables
 heigth = 480;
 width = 640;
-cant_frames = 190;
+cant_frames = 2;
 obj_name = 'desk';
 number = '2';
 
