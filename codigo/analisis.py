@@ -3,6 +3,9 @@
 from __future__ import unicode_literals, division, print_function
 
 import codecs
+import matplotlib.pyplot as plt; plt.rcdefaults()
+import numpy as np
+import matplotlib.pyplot as plt
 
 from detectores import StaticDetector
 
@@ -33,19 +36,14 @@ class Rectangle(object):
 
         top = bottom = left = right = 0
 
-        if self.top <= other.top <= self.bottom <= other.bottom:
-            top = other.top
-            bottom = self.bottom
-        elif other.top <= self.top <= other.bottom <= self.bottom:
-            top = self.top
-            bottom = other.bottom
+        se_solapan = self.top <= other.top <= self.bottom
+        se_solapan = other.top <= self.top <= other.bottom or se_solapan
 
-        if self.left <= other.left <= self.right <= other.right:
-            left = other.left
-            right = self.right
-        elif other.left <= self.left <= other.right <= self.right:
-            left = self.left
-            right = other.right
+        if se_solapan:
+            top = max(self.top, other.top)
+            bottom = min(self.bottom, other.bottom)
+            left = max(self.left, other.left)
+            right = min(self.right, other.right)
 
         return Rectangle((top, left), (bottom, right))
 
@@ -77,17 +75,23 @@ def test_rectangle():
     assert a_intersection.area() == 2, "Mal el area de la interseccion"
     print(".", end='')
 
+    rect1 = Rectangle((202, 2), (345, 145))
+    rect2 = Rectangle((203, 15), (314, 126))
 
-def analizar_resultados():
+    intersection = rect1.intersection(rect2)
+    assert intersection == rect2, "La interseccion no dio bien"
+    print(".", end='')
+
+
+def analizar_resultados(matfile, scenenamenum, objname, resultfile):
     ground_truth = StaticDetector(
-        'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug',
+        matfile,
+        objname,
     )
-    fname = 'pruebas_guardadas/desk_1/coffee_mug_5/prueba_002/results.txt'
 
     nframe_area = []
 
-    with codecs.open(fname, 'r', 'utf-8') as file_:
+    with codecs.open(resultfile, 'r', 'utf-8') as file_:
         for line in file_.readlines():
             values = [int(v) for v in line.split(';')]
 
@@ -130,17 +134,45 @@ def analizar_resultados():
 
                 nframe_area.append((nframe, overlap_area))
 
-    for nframe, overlap_area in nframe_area:
-        print("################################")
-        print("NFRAME:", nframe)
-        print("overlap_area:", overlap_area)
+    # Ploteo % de solapamiento
+    areas = np.array([a for nf, a in nframe_area])
 
-    print("##### MAS DATOS #####")
-    areas = [a for n,a in nframe_area]
-    print("Min. overlap:", min(areas))
-    print("Max. overlap:", max(areas))
-    print("Avg. overlap:", sum(areas)/len(areas))
+    p1 = plt.bar(
+        np.arange(len(nframe_area)),  # x values
+        areas * 100,  # y values
+        align='center',
+    )
+    p2 = plt.plot(
+        np.arange(len(nframe_area)),  # x values
+        np.ones(len(nframe_area)) * np.mean(areas * 100),
+        color=(1, 0, 0)
+    )
+
+    plt.title(('Area de solapamiento para ' + objname + ' en ' + scenenamenum))
+    plt.xticks(
+        np.arange(len(nframe_area)),
+        [nf for nf, a in nframe_area]
+    )
+    plt.xlabel('numero de frame')
+    plt.yticks(np.arange(0, 110, 10))
+    plt.ylabel('% del area solapada')
+    plt.legend([p2[0]], ['% Promedio'])
+
+    plt.autoscale(axis='x')
+    plt.show()
 
 
 if __name__ == '__main__':
-    analizar_resultados()
+    # analizar_resultados(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/prueba_002/results.txt'
+    # )
+
+    analizar_resultados(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
+    )
