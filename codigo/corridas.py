@@ -183,5 +183,29 @@ def desk_1_cap_4():
     ).run()
 
 
+def desk_2_bowl_3():
+    """
+    algoritmo final guardando datos
+
+    Aparece en los frames 26-67, 111-166
+    """
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'bowl', '3',
+    )  # path, objname, number
+
+    detector = AutomaticDetection()
+
+    finder = ICPFinderWithModel()
+
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+
+    FollowingSchemeSavingData(
+        img_provider,
+        follower,
+        'pruebas_guardadas'
+    ).run()
+
+
 if __name__ == '__main__':
-    desk_1_cap_4()
+    desk_2_bowl_3()
