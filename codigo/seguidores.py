@@ -20,8 +20,8 @@ class Follower(object):
         self.finder = finder
 
         # Object descriptors
-        self._obj_location = (0, 0)  # (Fila, columna)
-        self._obj_frame_size = 0
+        self._obj_topleft = (0, 0)  # (Fila, columna)
+        self._obj_bottomright = 0
         self._obj_descriptors = {}
 
     ########################
@@ -30,8 +30,8 @@ class Follower(object):
     def descriptors(self):
         desc = self._obj_descriptors.copy()
         desc.update({
-            'location': self._obj_location,
-            'size': self._obj_frame_size,
+            'topleft': self._obj_topleft,
+            'bottomright': self._obj_bottomright,
         })
         return desc
 

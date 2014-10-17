@@ -10,22 +10,20 @@ import cv2
 from metodos_comunes import dibujar_cuadrado
 
 
-
-
 class MuestraDelSeguimiento(object):
 
     def __init__(self, nombre):
         self.name = nombre
 
-    def dibujar_seguimiento(self, img, ubicacion, tam_region, fue_exitoso,
+    def dibujar_seguimiento(self, img, topleft, bottomright, fue_exitoso,
                             es_deteccion):
         if len(img.shape) == 2:
             # Convierto a imagen a color para dibujar un cuadrado
             filas, columnas = img.shape
             color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
-            color_img[:,:,0] = img[:,:]
-            color_img[:,:,1] = img[:,:]
-            color_img[:,:,2] = img[:,:]
+            color_img[:, :, 0] = img[:, :]
+            color_img[:, :, 1] = img[:, :]
+            color_img[:, :, 2] = img[:, :]
         else:
             color_img = img
 
@@ -34,14 +32,24 @@ class MuestraDelSeguimiento(object):
         # porque recien comienza el algoritmo)
         if fue_exitoso:
             if es_deteccion:
-                color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,0,255))
+                color_img = dibujar_cuadrado(
+                    color_img,
+                    topleft,
+                    bottomright,
+                    color=(0, 0, 255)
+                )
             else:
-                color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(0,255,0))
+                color_img = dibujar_cuadrado(
+                    color_img,
+                    topleft,
+                    bottomright,
+                    color=(0, 255, 0)
+                )
 
         return color_img
 
-    def run(self, img_provider, ubicacion, tam_region, fue_exitoso, es_deteccion,
-                frenar=True):
+    def run(self, img_provider, topleft, bottomright, fue_exitoso, es_deteccion,
+            frenar=True):
         """
         Deben implementarlo las subclases
         """
@@ -57,7 +65,7 @@ class MuestraDelSeguimiento(object):
 
 class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
 
-    def run(self, img_provider, ubicacion, tam_region, fue_exitoso,
+    def run(self, img_provider, topleft, bottomright, fue_exitoso,
             es_deteccion, frenar=True):
 
         img_list = img_provider.image_list()
@@ -65,8 +73,8 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
         for i, img in enumerate(img_list):
             img_with_rectangle = self.dibujar_seguimiento(
                 img,
-                ubicacion,
-                tam_region,
+                topleft,
+                bottomright,
                 fue_exitoso,
                 es_deteccion,
             )
@@ -77,49 +85,3 @@ class MuestraSeguimientoEnVivo(MuestraDelSeguimiento):
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):
                 pass
-
-
-#class GrabaSeguimientoEnArchivo(MuestraDelSeguimiento):
-#
-#    def __init__(self, nombre):
-#        self.name = nombre
-#        self.grabador = None
-#
-#    def run(self, img, ubicacion, tam_region, lo_siguio, frenar=False):
-#        img_with_rectangle = self.dibujar_seguimiento(img, ubicacion, tam_region, lo_siguio)
-#
-#        if self.grabador is None:
-#            # Defino el codec y armo el objeto VideoWriter
-#            fourcc = cv2.cv.CV_FOURCC(b'X',b'V',b'I',b'D')
-#
-#            self.grabador = cv2.VideoWriter(
-#                self.name, # Video file name
-#                fourcc, # Codec
-#                6.0, # Frames por segundo
-#                (len(img[0]),len(img)), # Tamaño de los frames
-#                True, # Flag de color. True = color, False = gris
-#            )
-#
-#        self.grabador.write(img_with_rectangle)
-#
-#    def close(self):
-#        if self.grabador is not None:
-#            self.grabador.release()
-#
-#
-#class MuestraBusquedaEnVivo(MuestraSeguimientoEnVivo):
-#    def dibujar_seguimiento(self, img, ubicacion, tam_region, lo_siguio):
-#        if len(img.shape) == 2:
-#            # Convierto a imagen a color para dibujar un cuadrado
-#            filas, columnas = img.shape
-#            color_img = np.zeros((filas, columnas, 3), dtype=np.uint8)
-#            color_img[:,:,0] = img[:,:]
-#            color_img[:,:,1] = img[:,:]
-#            color_img[:,:,2] = img[:,:]
-#        else:
-#            color_img = img
-#
-#        # Cuadrado azul
-#        color_img = dibujar_cuadrado(color_img, ubicacion, tam_region, color=(255,0,0))
-#
-#        return color_img

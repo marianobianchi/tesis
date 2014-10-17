@@ -22,15 +22,15 @@ class FollowingScheme(object):
         ######################
         # Etapa de detección
         ######################
-        fue_exitoso, tam_region, ubicacion_inicial = (
+        fue_exitoso, topleft, bottomright = (
             self.obj_follower.detect()
         )
 
         # Muestro el seguimiento para hacer pruebas
         self.show_following.run(
             img_provider=self.img_provider,
-            ubicacion=ubicacion_inicial,
-            tam_region=tam_region,
+            topleft=topleft,
+            bottomright=bottomright,
             fue_exitoso=fue_exitoso,
             es_deteccion=True,
             frenar=True,
@@ -46,20 +46,20 @@ class FollowingScheme(object):
         while self.img_provider.have_images():
             es_deteccion = False
             if fue_exitoso:
-                fue_exitoso, tam_region, nueva_ubicacion = (
+                fue_exitoso, topleft, bottomright = (
                     self.obj_follower.follow()
                 )
 
             if not fue_exitoso:
                 es_deteccion = True
-                fue_exitoso, tam_region, nueva_ubicacion = (
+                fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
                 )
             # Muestro el seguimiento
             self.show_following.run(
                 img_provider=self.img_provider,
-                ubicacion=nueva_ubicacion,
-                tam_region=tam_region,
+                topleft=topleft,
+                bottomright=bottomright,
                 fue_exitoso=fue_exitoso,
                 es_deteccion=es_deteccion,
                 frenar=True,

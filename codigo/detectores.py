@@ -219,8 +219,8 @@ class AutomaticDetection(Detector):
         scene_limits = get_min_max(scene_cloud)
 
         detected_descriptors = {
-            'size': 0,
-            'location': (0, 0),  # location=(fila, columna)
+            'topleft': (0, 0),  # (fila, columna)
+            'bottomright': 0,
         }
         fue_exitoso = False
 
@@ -307,8 +307,6 @@ class AutomaticDetection(Detector):
                     obj_scene_cloud
                 )
 
-                size = max(bottomright[0] - topleft[0], bottomright[1] - topleft[1])
-
                 detected_descriptors.update({
                     'min_x_cloud': minmax.min_x,
                     'max_x_cloud': minmax.max_x,
@@ -319,13 +317,15 @@ class AutomaticDetection(Detector):
                     'object_cloud': obj_scene_cloud,
                     'obj_model': icp_result.cloud,  # original model transformed
                     'detected_cloud': icp_result.cloud,
-                    'size': size,
-                    'location': topleft,  # location=(fila, columna)
+                    'topleft': topleft,  # (fila, columna)
+                    'bottomright': bottomright,
                 })
 
                 fue_exitoso = True
-                # ###############################
-                # show_clouds(b'Modelo detectado vs escena', icp_result.cloud, scene_cloud)
-                # ###############################
+                # show_clouds(
+                #   b'Modelo detectado vs escena',
+                #   icp_result.cloud,
+                #   scene_cloud
+                # )
 
         return fue_exitoso, detected_descriptors
