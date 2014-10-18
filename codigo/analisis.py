@@ -148,6 +148,12 @@ def analizar_resultados(matfile, scenenamenum, objname, resultfile):
         color=(1, 0, 0)
     )
 
+    p2 = plt.plot(
+        np.arange(len(nframe_area)),  # x values
+        np.ones(len(nframe_area)) * 50,
+        color=(0, 1, 0)
+    )
+
     plt.title(('Area de solapamiento para ' + objname + ' en ' + scenenamenum))
     plt.xticks(
         np.arange(len(nframe_area)),
@@ -170,9 +176,23 @@ if __name__ == '__main__':
     #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/prueba_002/results.txt'
     # )
 
+    # analizar_resultados(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     resultfile='pruebas_guardadas/desk_1/coffee_mug/prueba_002/results.txt'
+    # )
+
     analizar_resultados(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
         resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
     )
+
+    # analizar_resultados(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     resultfile='pruebas_guardadas/desk_2/bowl_3/results.txt'
+    # )
