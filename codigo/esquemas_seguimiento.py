@@ -106,11 +106,11 @@ class FollowingSchemeSavingData(FollowingScheme):
             i=self.img_provider.next_frame_number
         )
 
-        fue_exitoso, tam_region, ubicacion_inicial = (
+        fue_exitoso, topleft, bottomright = (
             self.obj_follower.detect()
         )
 
-        self.save_result(0, fue_exitoso, ubicacion_inicial, tam_region)
+        self.save_result(0, fue_exitoso, topleft, bottomright)
 
         #######################
         # Etapa de seguimiento
@@ -127,27 +127,27 @@ class FollowingSchemeSavingData(FollowingScheme):
 
             es_deteccion = False
             if fue_exitoso:
-                fue_exitoso, tam_region, nueva_ubicacion = (
+                fue_exitoso, topleft, bottomright = (
                     self.obj_follower.follow()
                 )
 
             if not fue_exitoso:
                 es_deteccion = True
-                fue_exitoso, tam_region, nueva_ubicacion = (
+                fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
                 )
 
             self.save_result(
                 0 if es_deteccion else 1,
                 fue_exitoso,
-                nueva_ubicacion,
-                tam_region
+                topleft,
+                bottomright
             )
 
             # Adelanto un frame
             self.img_provider.next()
 
-    def save_result(self, method, fue_exitoso, ubicacion_inicial, tam_region):
+    def save_result(self, method, fue_exitoso, topleft, bottomright):
         """
         Formato para guardar:
 
@@ -159,12 +159,9 @@ class FollowingSchemeSavingData(FollowingScheme):
         """
         nframe = self.img_provider.next_frame_number
         exito = 1 if fue_exitoso else 0
-        fila_sup = ubicacion_inicial[0]
-        col_izq = ubicacion_inicial[1]
-        fila_inf = fila_sup + tam_region
-        col_der = col_izq + tam_region
 
-        values = [nframe, exito, method, fila_sup, col_izq, fila_inf, col_der]
+        values = [nframe, exito, method, topleft[0], topleft[1],
+                  bottomright[0], bottomright[1]]
 
         self.file.write(b';'.join([str(o) for o in values]))
         self.file.write(b'\n')

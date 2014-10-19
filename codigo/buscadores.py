@@ -117,16 +117,14 @@ class ICPFinder(Finder):
             # filas = len(depth_img)
             # columnas = len(depth_img[0])
 
-
             # Busco los limites en el dominio de las filas y columnas del RGB
             topleft, bottomright = from_cloud_to_flat_limits(
                 icp_result.cloud
             )
-            size = max(bottomright[0] - topleft[0], bottomright[1] - topleft[1])
 
             descriptors.update({
-                'size': size,
-                'location': topleft,
+                'topleft': topleft,
+                'bottomright': bottomright,
                 'detected_cloud': icp_result.cloud,
                 'detected_transformation': icp_result.transformation,
             })

@@ -163,16 +163,16 @@ def analizar_resultados(matfile, scenenamenum, objname, resultfile):
 
 
 if __name__ == '__main__':
-    # analizar_resultados(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/prueba_002/results.txt'
-    # )
-
     analizar_resultados(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
-        objname='cap',
-        resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
+        objname='coffee_mug',
+        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/results.txt'
     )
+
+    # analizar_resultados(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
+    # )
