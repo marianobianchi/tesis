@@ -10,15 +10,8 @@ import cv2
 from cpp.common import get_point, points, get_min_max
 
 
-def dibujar_cuadrado(img, (fila_borde_sup_izq, col_borde_sup_izq), tam_region,
-                                                        color=(0, 0, 0)):
-    cv2.rectangle(
-        img,
-        (col_borde_sup_izq, fila_borde_sup_izq),
-        (col_borde_sup_izq + tam_region, fila_borde_sup_izq + tam_region),
-        color,
-        3
-    )
+def dibujar_cuadrado(img, topleft, bottomright, color=(0, 0, 0)):
+    cv2.rectangle(img, topleft, bottomright, color, 3)
     return img
 
 

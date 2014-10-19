@@ -20,8 +20,8 @@ class Follower(object):
         self.finder = finder
 
         # Object descriptors
-        self._obj_location = (0, 0)  # (Fila, columna)
-        self._obj_frame_size = 0
+        self._obj_topleft = (0, 0)  # (Fila, columna)
+        self._obj_bottomright = (0, 0)
         self._obj_descriptors = {}
 
     ########################
@@ -30,8 +30,8 @@ class Follower(object):
     def descriptors(self):
         desc = self._obj_descriptors.copy()
         desc.update({
-            'location': self._obj_location,
-            'size': self._obj_frame_size,
+            'topleft': self._obj_topleft,
+            'bottomright': self._obj_bottomright,
         })
         return desc
 
@@ -50,16 +50,16 @@ class Follower(object):
 
         # Detectar
         fue_exitoso, descriptors = self.detector.detect()
-        tam_region = 0
-        location = (0,0)
+        topleft = (0, 0)
+        bottomright = (0, 0)
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
             self.upgrade_detected_descriptors(descriptors)
-            tam_region = self.descriptors()['size']
-            location = self.descriptors()['location']
+            topleft = self.descriptors()['topleft']
+            bottomright = self.descriptors()['bottomright']
 
-        return fue_exitoso, tam_region, location
+        return fue_exitoso, topleft, bottomright
 
     ######################
     # Funcion de busqueda
@@ -70,24 +70,24 @@ class Follower(object):
 
         # Busco el objeto
         fue_exitoso, descriptors = self.finder.find()
-        tam_region = 0
-        location = (0,0)
+        topleft = (0, 0)
+        bottomright = (0, 0)
 
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
             self.upgrade_followed_descriptors(descriptors)
-            tam_region = self.descriptors()['size']
-            location = self.descriptors()['location']
+            topleft = self.descriptors()['topleft']
+            bottomright = self.descriptors()['bottomright']
 
-        return fue_exitoso, tam_region, location
+        return fue_exitoso, topleft, bottomright
 
 
     ##########################
     # Actualizar descriptores
     ##########################
     def set_object_descriptors(self, obj_descriptors):
-        self._obj_location = obj_descriptors.pop('location')
-        self._obj_frame_size = obj_descriptors.pop('size')
+        self._obj_topleft = obj_descriptors.pop('topleft')
+        self._obj_bottomright = obj_descriptors.pop('bottomright')
         self._obj_descriptors.update(obj_descriptors)
 
     def upgrade_detected_descriptors(self, descriptors):
