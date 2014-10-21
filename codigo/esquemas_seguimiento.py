@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 
 from cpp.common import save_pcd
 
@@ -79,6 +80,8 @@ class FollowingSchemeSavingData(FollowingScheme):
             None,
         )
 
+        # para no pisar nunca los resultados voy a ir creando carpetas sucesivas
+        # llamadas prueba_###
         self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/')
         self.results_path = self.results_path.format(
             s=self.img_provider.scene,
@@ -86,9 +89,18 @@ class FollowingSchemeSavingData(FollowingScheme):
             o=self.img_provider.obj,
             on=self.img_provider.obj_number,
         )
+
+        os.listdir(self.results_path)
+        rc = re.compile('prueba_(?P<number>\d{3})')
+        pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
+        pruebas_dirs.sort()
+        last_test_number = int(rc.match(pruebas_dirs[-1]).groupdict()['number'])
+        new_folder_name = 'prueba_{n:03d}'.format(n=last_test_number+1)
+        self.results_path = os.path.join(self.results_path, new_folder_name)
+
         if not os.path.isdir(self.results_path):
             os.makedirs(self.results_path)
-        self.file = open(self.results_path + 'results.txt', 'w')
+        self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
         # Guardo los valores de los parametros
         ap_defaults = self.obj_follower.detector._ap_defaults

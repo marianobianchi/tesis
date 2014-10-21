@@ -270,4 +270,7 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
     ).run()
 
 if __name__ == '__main__':
-    desk_1_coffee_mug_5()
+    #correr_ejemplo(objname, objnumber, scenename, scenenumber)
+
+    correr_ejemplo('coffee_mug', '5', 'desk', '1')
+
