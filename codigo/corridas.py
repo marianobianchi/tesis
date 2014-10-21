@@ -2,7 +2,8 @@
 
 from __future__ import (unicode_literals, division)
 
-from cpp.common import filter_cloud, show_clouds, get_min_max, save_pcd, points
+from cpp.alignment_prerejective import APDefaults
+from cpp.icp import ICPDefaults
 
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
@@ -206,6 +207,67 @@ def desk_2_bowl_3():
         'pruebas_guardadas'
     ).run()
 
+
+def correr_ejemplo(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.1
+    ap_defaults.inlier_threshold = 3
+    ap_defaults.inlier_fraction = 0.8
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-5
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-5
+
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 3
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    find_umbral_score = 1e-4
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+
+    # Create objects
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = AutomaticDetection(
+        ap_defaults=ap_defaults,
+        icp_defaults=icp_detection_defaults,
+        umbral_score=det_umbral_score,
+        obj_scene_leaf=det_obj_scene_leaf,
+        perc_obj_model_points=det_perc_obj_model_points,
+    )
+
+    finder = ICPFinderWithModel(
+        icp_defaults=icp_finder_defaults,
+        umbral_score=find_umbral_score,
+        obj_scene_leaf=find_obj_scene_leaf,
+        perc_obj_model_points=find_perc_obj_model_points,
+    )
+
+    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+
+    FollowingSchemeSavingData(
+        img_provider,
+        follower,
+        'pruebas_guardadas'
+    ).run()
 
 if __name__ == '__main__':
     desk_1_coffee_mug_5()

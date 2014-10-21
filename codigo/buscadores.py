@@ -52,6 +52,18 @@ class Finder(object):
 
 class ICPFinder(Finder):
 
+    def __init__(self, icp_defaults=None, umbral_score=1e-4):
+        super(ICPFinder, self).__init__()
+        if icp_defaults is None:
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-15
+            icp_defaults.max_corr_dist = 0.3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-15
+
+        self._icp_defaults = icp_defaults
+        self.umbral_score = umbral_score
+
     def simple_follow(self, object_cloud, target_cloud):
         """
         Tomando como centro el centro del cuadrado que contiene al objeto
@@ -95,8 +107,7 @@ class ICPFinder(Finder):
         )
 
         # Calculate ICP
-        icp_defaults = ICPDefaults()
-        icp_result = icp(object_cloud, target_cloud, icp_defaults)
+        icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
 
         return icp_result
 
@@ -110,7 +121,7 @@ class ICPFinder(Finder):
             target_cloud,
         )
 
-        fue_exitoso = icp_result.score < 5e-5
+        fue_exitoso = icp_result.score < self.umbral_score
         descriptors = {}
 
         if fue_exitoso:
@@ -133,6 +144,31 @@ class ICPFinder(Finder):
 
 
 class ICPFinderWithModel(ICPFinder):
+    def __init__(self, icp_defaults=None, umbral_score=1e-4, **kwargs):
+        """
+        valid kwargs:
+        obj_scene_leaf (default: 0.002)
+        perc_obj_model_points (default: 0.5)
+        """
+        super(ICPFinderWithModel, self).__init__(icp_defaults, umbral_score)
+
+        # Seteo el tamaño de las esferas usadas para filtrar de la escena
+        # los puntos del objeto encontrado
+        self.obj_scene_leaf = kwargs.get('obj_scene_leaf', 0.002)
+
+        # Seteo el porcentaje de puntos que permito conservar del modelo del
+        # objeto antes de considerar que lo que se encontró no es el objeto
+        self.perc_obj_model_points = kwargs.get('perc_obj_model_points', 0.5)
+
+    def get_object_points_from_scene(self, found_obj, scene):
+        filtered_scene = self._filter_target_cloud(scene, 2)
+        return filter_object_from_scene_cloud(
+            found_obj,
+            filtered_scene,
+            self.obj_scene_leaf,
+            False,
+        )
+
     def _filter_target_cloud(self, target_cloud, n):
         # Define row and column limits for the zone to search the object
         # In this case, we look on a box N times the size of the original
@@ -185,6 +221,51 @@ class ICPFinderWithModel(ICPFinder):
         )
         return target_cloud
 
+    def find(self):
+        # Obtengo pcd's y depth
+        object_cloud = self._descriptors['object_cloud']
+        target_cloud = self._descriptors['pcd']
+
+        obj_model = self._descriptors['obj_model']
+        accepted_points = points(obj_model) * self.perc_obj_model_points
+
+        icp_result = self.simple_follow(
+            object_cloud,
+            target_cloud,
+        )
+
+        obj_from_scene_points = self.get_object_points_from_scene(
+            icp_result.cloud,
+            target_cloud,
+        )
+        print "Puntos aceptados =", accepted_points
+        print "Puntos encontrados =", points(obj_from_scene_points)
+
+        fue_exitoso = icp_result.score < self.umbral_score
+        fue_exitoso = (
+            fue_exitoso and
+            points(obj_from_scene_points) >= accepted_points
+        )
+        descriptors = {}
+
+        if fue_exitoso:
+            # filas = len(depth_img)
+            # columnas = len(depth_img[0])
+
+            # Busco los limites en el dominio de las filas y columnas del RGB
+            topleft, bottomright = from_cloud_to_flat_limits(
+                obj_from_scene_points
+            )
+
+            descriptors.update({
+                'topleft': topleft,
+                'bottomright': bottomright,
+                'detected_cloud': obj_from_scene_points,
+                'detected_transformation': icp_result.transformation,
+            })
+
+        return fue_exitoso, descriptors
+
     def simple_follow(self, object_cloud, target_cloud):
         """
         Tomando como centro el centro del cuadrado que contiene al objeto
@@ -194,38 +275,17 @@ class ICPFinderWithModel(ICPFinder):
         target_cloud = self._filter_target_cloud(target_cloud, 2)
 
         # Calculate ICP
-        icp_defaults = ICPDefaults()
-        icp_defaults.euc_fit = 1e-15
-        icp_defaults.max_corr_dist = 0.3
-        icp_defaults.max_iter = 50
-        icp_defaults.transf_epsilon = 1e-15
-        # icp_defaults.ran_iter
-        # icp_defaults.ran_out_rej
-        # icp_defaults.show_values = True
-
-        icp_result = icp(
-            object_cloud,
-            target_cloud,
-            icp_defaults,
-        )
+        icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
 
         return icp_result
 
     def calculate_descriptors(self, detected_descriptors):
-        target_cloud = self._descriptors['pcd']
-        target_cloud = self._filter_target_cloud(target_cloud, 2)
-        icp_result_cloud = detected_descriptors['detected_cloud']
+        detected_descriptors = (super(ICPFinderWithModel, self)
+                                .calculate_descriptors(detected_descriptors))
 
         transformation = detected_descriptors['detected_transformation']
         old_obj_model = self._descriptors['obj_model']
         new_obj_model = transform_cloud(old_obj_model, transformation)
-
-        obj_scene_cloud = filter_object_from_scene_cloud(
-            icp_result_cloud,  # object
-            target_cloud,  # scene
-            0.002,  # radius
-            False,  # show values
-        )
 
         #################################################
         # show_clouds(
@@ -240,10 +300,9 @@ class ICPFinderWithModel(ICPFinder):
         # )
         #################################################
 
-        detected_descriptors['object_cloud'] = obj_scene_cloud
         detected_descriptors['obj_model'] = new_obj_model
 
-        minmax = get_min_max(obj_scene_cloud)
+        minmax = get_min_max(detected_descriptors['object_cloud'])
 
         detected_descriptors.update({
             'min_x_cloud': minmax.min_x,

@@ -207,6 +207,43 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
 
 class AutomaticDetection(Detector):
 
+    def __init__(self, ap_defaults=None, icp_defaults=None,
+                 umbral_score=1e-3, **kwargs):
+        super(AutomaticDetection, self).__init__()
+        self.umbral_score = umbral_score
+        if ap_defaults is None:
+            # alignment prerejective parameters
+            ap_defaults = APDefaults()
+            ap_defaults.leaf = 0.005
+            ap_defaults.max_ransac_iters = 100
+            ap_defaults.points_to_sample = 3
+            ap_defaults.nearest_features_used = 4
+            ap_defaults.simil_threshold = 0.1
+            ap_defaults.inlier_threshold = 3
+            ap_defaults.inlier_fraction = 0.8
+            # ap_defaults.show_values = True
+
+        self._ap_defaults = ap_defaults
+
+        if icp_defaults is None:
+            # icp parameters
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-5
+            icp_defaults.max_corr_dist = 3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-5
+            # icp_defaults.show_values = True
+
+        self._icp_defaults = icp_defaults
+
+        # Seteo el tamaño de las esferas usadas para filtrar de la escena
+        # los puntos del objeto encontrado
+        self.obj_scene_leaf = kwargs.get('obj_scene_leaf', 0.005)
+
+        # Seteo el porcentaje de puntos que permito conservar del modelo del
+        # objeto antes de considerar que lo que se encontró no es el objeto
+        self.perc_obj_model_points = kwargs.get('perc_obj_model_points', 0.5)
+
     def detect(self):
         model_cloud = self._descriptors['obj_model']
         scene_cloud = self._descriptors['pcd']
@@ -224,27 +261,8 @@ class AutomaticDetection(Detector):
         }
         fue_exitoso = False
 
-        # alignment prerejective parameters
-        ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.005
-        ap_defaults.max_ransac_iters = 100
-        ap_defaults.points_to_sample = 3
-        ap_defaults.nearest_features_used = 4
-        ap_defaults.simil_threshold = 0.4
-        ap_defaults.inlier_threshold = 3
-        ap_defaults.inlier_fraction = 0.9
-        # ap_defaults.show_values = True
-
-        #icp parameters
-        icp_defaults = ICPDefaults()
-        icp_defaults.euc_fit = 1e-5
-        icp_defaults.max_corr_dist = 3
-        icp_defaults.max_iter = 50
-        icp_defaults.transf_epsilon = 1e-5
-        # icp_defaults.show_values = True
-
         best_aligned_scene = None
-        best_alignment_score = 1e-3  # lesser is better
+        best_alignment_score = self.umbral_score  # lesser is better
         best_limits = {}
 
         # Busco la mejor alineacion del objeto segmentando la escena
@@ -267,7 +285,7 @@ class AutomaticDetection(Detector):
             if points(cloud) > 0:
 
                 # Calculate alignment
-                ap_result = align(model_cloud, cloud, ap_defaults)
+                ap_result = align(model_cloud, cloud, self._ap_defaults)
                 if (ap_result.has_converged and
                         ap_result.score < best_alignment_score):
                     best_alignment_score = ap_result.score
@@ -288,18 +306,24 @@ class AutomaticDetection(Detector):
                 best_limits['min_y'],
                 best_limits['max_y']
             )
-            # Calculate ICP
-            icp_result = icp(best_aligned_scene, cloud, icp_defaults)
 
-            if icp_result.has_converged and icp_result.score < 1e-3:
+            # Calculate ICP
+            icp_result = icp(best_aligned_scene, cloud, self._icp_defaults)
+
+            if icp_result.has_converged and icp_result.score < self.umbral_score:
                 # Filtro los puntos de la escena que se corresponden con el
                 # objeto que estoy buscando
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
                     scene_cloud,  # complete scene
-                    0.005,  # radius
+                    self.obj_scene_leaf,  # radius
                     False,  # show values
                 )
+                accepted_points = (
+                    points(self._descriptors['obj_model']) *
+                    self.perc_obj_model_points
+                )
+                fue_exitoso = points(obj_scene_cloud) > accepted_points
 
                 minmax = get_min_max(obj_scene_cloud)
 
@@ -321,7 +345,6 @@ class AutomaticDetection(Detector):
                     'bottomright': bottomright,
                 })
 
-                fue_exitoso = True
                 # show_clouds(
                 #   b'Modelo detectado vs escena',
                 #   icp_result.cloud,

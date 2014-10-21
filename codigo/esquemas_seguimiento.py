@@ -90,6 +90,30 @@ class FollowingSchemeSavingData(FollowingScheme):
             os.makedirs(self.results_path)
         self.file = open(self.results_path + 'results.txt', 'w')
 
+        # Guardo los valores de los parametros
+        ap_defaults = self.obj_follower.detector._ap_defaults
+        self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
+        self.file.write(b'ap_max_ransac_iters={v}\n'.format(v=ap_defaults.max_ransac_iters))
+        self.file.write(b'ap_points_to_sample={v}\n'.format(v=ap_defaults.points_to_sample))
+        self.file.write(b'ap_nearest_features_used={v}\n'.format(v=ap_defaults.nearest_features_used))
+        self.file.write(b'ap_simil_threshold={v}\n'.format(v=ap_defaults.simil_threshold))
+        self.file.write(b'ap_inlier_threshold={v}\n'.format(v=ap_defaults.inlier_threshold))
+        self.file.write(b'ap_inlier_fraction={v}\n'.format(v=ap_defaults.inlier_fraction))
+
+        icp_defaults = self.obj_follower.detector._icp_defaults
+        self.file.write(b'det_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+        self.file.write(b'det_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+        self.file.write(b'det_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+        self.file.write(b'det_transf_epsilon={v}\n'.format(v=icp_defaults.transf_epsilon))
+
+        icp_defaults = self.obj_follower.finder._icp_defaults
+        self.file.write(b'seg_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+        self.file.write(b'seg_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+        self.file.write(b'seg_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+        self.file.write(b'seg_transf_epsilon={v}\n'.format(v=icp_defaults.transf_epsilon))
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()
+
     def __del__(self):
         self.file.close()
 
@@ -167,6 +191,7 @@ class FollowingSchemeSavingData(FollowingScheme):
         self.file.write(b'\n')
         self.file.flush()
 
+        # Guardo las nubes de puntos
         if fue_exitoso and 'object_cloud' in self.obj_follower.descriptors():
             # Guardo el objeto cuyos puntos pertenecen a la escena
             pcd = self.obj_follower.descriptors()['object_cloud']
