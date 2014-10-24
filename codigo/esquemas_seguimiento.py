@@ -93,6 +93,7 @@ class FollowingSchemeSavingData(FollowingScheme):
         os.listdir(self.results_path)
         rc = re.compile('prueba_(?P<number>\d{3})')
         pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
+        pruebas_dirs = pruebas_dirs if pruebas_dirs else ['prueba_000']
         pruebas_dirs.sort()
         last_test_number = int(rc.match(pruebas_dirs[-1]).groupdict()['number'])
         new_folder_name = 'prueba_{n:03d}'.format(n=last_test_number+1)
