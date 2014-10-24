@@ -262,3 +262,10 @@ class Timer(object):
         self.end = time.time()
         self.interval = self.end - self.start
         print self.func_name, "took", self.end - self.start, "to finish"
+
+
+class AdaptSearchArea(object):
+    """
+    It adapts the search area depending on the speed of the object
+    """
+    def __init__(self, ):
