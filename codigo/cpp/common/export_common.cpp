@@ -56,5 +56,7 @@ BOOST_PYTHON_MODULE(common)
         .def_readonly("max_z", &MinMax3D::max_z);
 
     def("get_min_max", get_min_max3D);
+    
+    def("compute_centroid", compute_centroid);
 
 }

@@ -6,6 +6,7 @@
 #include <Eigen/Core>
 #include <pcl/common/transforms.h>
 #include <pcl/common/common.h>
+#include <pcl/common/centroid.h>
 #include <pcl/filters/passthrough.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/io/pcd_io.h>
@@ -65,7 +66,7 @@ struct MinMax3D {
 
 MinMax3D get_min_max3D(PointCloud3D::Ptr cloud);
 
-
+Point3D compute_centroid(float x1, float y1, float z1, float x2, float y2, float z2);
 
 
 

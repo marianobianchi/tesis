@@ -3,11 +3,12 @@
 from __future__ import (unicode_literals, division)
 
 import time
+import math
 
 import numpy as np
 import cv2
 
-from cpp.common import get_point, points, get_min_max
+from cpp.common import get_point, points, get_min_max, compute_centroid
 
 
 def dibujar_cuadrado(img, topleft, bottomright, color=(0, 0, 0)):
@@ -268,4 +269,36 @@ class AdaptSearchArea(object):
     """
     It adapts the search area depending on the speed of the object
     """
-    def __init__(self, ):
+    def __init__(self):
+        self.centroids = []
+
+    def _distance(self, a_point, another_point):
+        x = (a_point.x - another_point.x) ** 2
+        y = (a_point.y - another_point.y) ** 2
+        z = (a_point.z - another_point.z) ** 2
+        return math.sqrt(x + y + z)
+
+    def save_centroid(self, x_min, y_min, z_min, x_max, y_max, z_max):
+        centroid = compute_centroid(x_min, y_min, z_min, x_max, y_max, z_max)
+        self.centroids.append(centroid)
+        print "Centro de masa=({x},{y},{z})".format(
+            x=centroid.x,
+            y=centroid.y,
+            z=centroid.z,
+        )
+        if len(self.centroids) > 1:
+            print "distancia recorrida = {d}".format(
+                d=self._distance(self.centroids[-2], self.centroids[-1])
+            )
+
+        return centroid
+
+    def search_area(self):
+        """
+        :return: a number greater than 1 that can be used to set the area range
+        to look for the object. For example, if this method returns 2, it means
+        that the area to look for the object is twice the size of the box
+        containing the object before, with the center of the box in the same
+        place as before
+        """
+        return 2

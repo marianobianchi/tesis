@@ -2,12 +2,11 @@
 
 from __future__ import (unicode_literals, division)
 
-
 from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
-from metodos_comunes import from_cloud_to_flat_limits
+from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea
 
 
 class Finder(object):
@@ -160,8 +159,13 @@ class ICPFinderWithModel(ICPFinder):
         # objeto antes de considerar que lo que se encontró no es el objeto
         self.perc_obj_model_points = kwargs.get('perc_obj_model_points', 0.5)
 
+        # Agrego un objeto que adapta la zona de busqueda segun la velocidad
+        # del objeto que estoy buscando
+        self.adapt_area = AdaptSearchArea()
+
+
     def get_object_points_from_scene(self, found_obj, scene):
-        filtered_scene = self._filter_target_cloud(scene, 2)
+        filtered_scene = self._filter_target_cloud(scene, self.adapt_area.search_area())
         return filter_object_from_scene_cloud(
             found_obj,
             filtered_scene,
@@ -272,7 +276,7 @@ class ICPFinderWithModel(ICPFinder):
         en el frame anterior, busco el mismo objeto en una zona N veces mayor
         a la original.
         """
-        target_cloud = self._filter_target_cloud(target_cloud, 2)
+        target_cloud = self._filter_target_cloud(target_cloud, self.adapt_area.search_area())
 
         # Calculate ICP
         icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
@@ -303,6 +307,15 @@ class ICPFinderWithModel(ICPFinder):
         detected_descriptors['obj_model'] = new_obj_model
 
         minmax = get_min_max(detected_descriptors['object_cloud'])
+
+        self.adapt_area.save_centroid(
+            minmax.min_x,
+            minmax.min_y,
+            minmax.min_z,
+            minmax.max_x,
+            minmax.max_y,
+            minmax.max_z,
+        )
 
         detected_descriptors.update({
             'min_x_cloud': minmax.min_x,
