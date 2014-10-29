@@ -9,7 +9,8 @@ from cpp.common import filter_cloud, save_pcd, get_min_max, show_clouds, \
     filter_object_from_scene_cloud, points
 from cpp.alignment_prerejective import align, APDefaults
 
-from metodos_comunes import from_flat_to_cloud_limits, from_cloud_to_flat_limits
+from metodos_comunes import from_flat_to_cloud_limits, \
+    from_cloud_to_flat_limits, AdaptLeafRadio
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
@@ -238,7 +239,7 @@ class AutomaticDetection(Detector):
 
         # Seteo el tamaño de las esferas usadas para filtrar de la escena
         # los puntos del objeto encontrado
-        self.obj_scene_leaf = kwargs.get('obj_scene_leaf', 0.005)
+        self.adapt_leaf = None
 
         # Seteo el porcentaje de puntos que permito conservar del modelo del
         # objeto antes de considerar que lo que se encontró no es el objeto
@@ -246,6 +247,9 @@ class AutomaticDetection(Detector):
 
     def detect(self):
         model_cloud = self._descriptors['obj_model']
+        if self.adapt_leaf is None:
+            self.adapt_leaf = AdaptLeafRadio(points(model_cloud))
+
         scene_cloud = self._descriptors['pcd']
 
         # obtengo tamaño del modelo del objeto a detectar y tomo una region
@@ -316,14 +320,18 @@ class AutomaticDetection(Detector):
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
                     scene_cloud,  # complete scene
-                    self.obj_scene_leaf,  # radius
+                    self.adapt_leaf.leaf_radio(),  # radius
                     False,  # show values
                 )
                 accepted_points = (
                     points(self._descriptors['obj_model']) *
                     self.perc_obj_model_points
                 )
-                fue_exitoso = points(obj_scene_cloud) > accepted_points
+                obj_scene_points = points(obj_scene_cloud)
+                self.adapt_leaf.set_found_points(obj_scene_points)
+                print "Próximo leaf size (detección) =", self.adapt_leaf.leaf_radio()
+
+                fue_exitoso = obj_scene_points > accepted_points
 
                 minmax = get_min_max(obj_scene_cloud)
 
@@ -340,7 +348,7 @@ class AutomaticDetection(Detector):
                     'max_z_cloud': minmax.max_z,
                     'object_cloud': obj_scene_cloud,
                     'obj_model': icp_result.cloud,  # original model transformed
-                    'detected_cloud': icp_result.cloud,
+                    'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
                     'topleft': topleft,  # (fila, columna)
                     'bottomright': bottomright,
                 })

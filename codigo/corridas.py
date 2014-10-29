@@ -237,7 +237,7 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
 
     find_umbral_score = 1e-4
     find_obj_scene_leaf = 0.002
-    find_perc_obj_model_points = 0.5
+    find_perc_obj_model_points = 0.3
 
 
     # Create objects

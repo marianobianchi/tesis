@@ -3,7 +3,6 @@
 from __future__ import (unicode_literals, division)
 
 import time
-import math
 
 import numpy as np
 import cv2
@@ -267,38 +266,88 @@ class Timer(object):
 
 class AdaptSearchArea(object):
     """
-    It adapts the search area depending on the speed of the object
-    """
-    def __init__(self):
-        self.centroids = []
+    Adapta el area de busqueda dependiendo de la velocidad del objeto. Las
+    primeras MUESTRAS veces devuelve la mitad del tamaño del objeto para cada
+    eje. (que termina siendo un volumen 8 veces mayor)
+    Una vez que tiene estadística suficiente calcula un movimiento ponderado.
 
-    def _distance(self, a_point, another_point):
-        x = (a_point.x - another_point.x) ** 2
-        y = (a_point.y - another_point.y) ** 2
-        z = (a_point.z - another_point.z) ** 2
-        return math.sqrt(x + y + z)
+    Lo que devuelve es cuanto hay que "estirar" cada borde del bounding-box.
+    """
+    def __init__(self, muestras=4):
+        self.centroids = []
+        self.default_x_distance = None
+        self.default_y_distance = None
+        self.default_z_distance = None
+        self.muestras = muestras
+
+    def set_default_distances(self, obj_model):
+        if self.default_x_distance is None:
+            minmax = get_min_max(obj_model)
+            self.default_x_distance = (minmax.max_x - minmax.min_x) / 2
+            self.default_y_distance = (minmax.max_y - minmax.min_y) / 2
+            self.default_z_distance = (minmax.max_z - minmax.min_z) / 2
 
     def save_centroid(self, x_min, y_min, z_min, x_max, y_max, z_max):
         centroid = compute_centroid(x_min, y_min, z_min, x_max, y_max, z_max)
         self.centroids.append(centroid)
-        print "Centro de masa=({x},{y},{z})".format(
-            x=centroid.x,
-            y=centroid.y,
-            z=centroid.z,
-        )
-        if len(self.centroids) > 1:
-            print "distancia recorrida = {d}".format(
-                d=self._distance(self.centroids[-2], self.centroids[-1])
-            )
-
         return centroid
 
-    def search_area(self):
-        """
-        :return: a number greater than 1 that can be used to set the area range
-        to look for the object. For example, if this method returns 2, it means
-        that the area to look for the object is twice the size of the box
-        containing the object before, with the center of the box in the same
-        place as before
-        """
-        return 2
+    def estimate_distance(self, axe):
+        if len(self.centroids) > self.muestras:
+            centroids = self.centroids[-1 * self.muestras:]
+            if axe == 'x':
+                centroids = [c.x for c in centroids]
+            elif axe == 'y':
+                centroids = [c.y for c in centroids]
+            elif axe == 'z':
+                centroids = [c.z for c in centroids]
+            else:
+                raise Exception('No existe el eje indicado')
+
+            cent_a = centroids[:-1]
+            cent_b = centroids[1:]
+            cent = zip(cent_a, cent_b)
+            distances = [abs(p1 - p2) for p1, p2 in cent]
+
+            # TODO: adaptar los porcentajes al valor de self.muestras
+            porcentajes = [0.1, 0.2, 0.7]
+
+            return sum([d*p for d, p in zip(distances, porcentajes)])
+        else:
+            if axe == 'x':
+                val = self.default_x_distance
+            elif axe == 'y':
+                val = self.default_y_distance
+            elif axe == 'z':
+                val = self.default_z_distance
+            else:
+                raise Exception('No existe el eje indicado')
+
+            return val
+
+
+class AdaptLeafRadio(object):
+    """
+    Adapts the leaf radio used to take object points from scene
+    """
+    def __init__(self, model_points):
+        self.found_points = [model_points]
+
+    def set_found_points(self, points):
+        self.found_points.append(points)
+
+    def leaf_radio(self):
+        if len(self.found_points) > 1:
+            perc_points_found = self.found_points[-1] / self.found_points[0]
+            if 0.8 <= perc_points_found <= 1.1:
+                return 0.002
+            elif 0.6 <= perc_points_found < 0.8:
+                return 0.004
+            elif 0.6 > perc_points_found:
+                return 0.006
+            else:  # perc_points_found > 1.1
+                return 0.001
+        else:
+            return 0.005
+
+
