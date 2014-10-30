@@ -332,44 +332,48 @@ class AdaptLeafRatio(object):
     """
     def __init__(self, model_points):
         self.found_points = [model_points]
-        self.ratios = [0.003]
+        self.ratios = [0.004]
 
     def set_found_points(self, points):
         self.found_points.append(points)
         self.set_leaf_ratio()
 
     def set_leaf_ratio(self):
-        """
-        Si en la ultima busqueda se mantuvo estable la cantidad de puntos
-        encontrados (varianza del 20% de los puntos del modelo), uso ese ratio
-        como base y ajusto de la siguiente manera:
-        - si bajó, aumento en 0.001
-        - si aumentó, bajo en 0.001
-
-        Si hubo una varianza mayor al 20%, tomo el cociente del porcentaje de
-        la varianza dividido 10 + 1 (y debería quedar entre 2 y 9)
-        - si bajó, aumento en 0.001 * cociente
-        - si subió, bajo en 0.001 * cociente
-        """
-        if len(self.found_points) > 1:
+        if len(self.ratios) > 1:
             model_points = self.found_points[0]
-
-            one_after_last_points = self.found_points[-2]
             last_points = self.found_points[-1]
-            varianza = (
-                (one_after_last_points - last_points) / model_points * 100
-            )
-            if abs(varianza) <= 20:
-                add = 0.001 * (1 if varianza > 0 else -1)
-                add = 0 if varianza == 0 else add
-            else:
-                cociente = abs(varianza) // 10 + 1
-                cociente = max(min(cociente, 9), 2)  # entre 2 y 9
-                cociente *= (1 if varianza > 0 else -1)
-                add = 0.001 * cociente
+            one_after_last_points = self.found_points[-2]
 
-            last_ratio = self.leaf_ratio()
-            self.ratios.append(last_ratio + add)
+            if 80 <= (last_points / model_points * 100) < 100:
+                self.ratios.append(self.ratios[-1] - 0.001)
+            elif (last_points / model_points * 100) < 80:
+                diff_ratio = self.ratios[-1] - self.ratios[-2]
+                diff_points = self.found_points[-1] - self.found_points[-2]
+
+                # Si subieron el radio y los puntos
+                if diff_ratio > 0 and diff_points > 0:
+                    self.ratios.append(self.ratios[-1])
+                # Si subio el radio y bajaron los puntos
+                elif diff_ratio > 0 and diff_points <= 0:
+                    self.ratios.append(self.ratios[-1] + 0.001)
+                # Si bajo el radio y subieron los puntos
+                elif diff_ratio < 0 and diff_points > 0:
+                    self.ratios.append(self.ratios[-1])
+                # Si bajaron el radio y los puntos
+                elif diff_ratio < 0 and diff_points <= 0:
+                    self.ratios.append(self.ratios[-1] + 0.001)
+                # Si se mantuvo el radio y subieron los puntos
+                elif diff_ratio == 0 and diff_points > 0:
+                    self.ratios.append(self.ratios[-1])
+                # Si se mantuvo el radio y bajaron los puntos
+                else:
+                    self.ratios.append(self.ratios[-1] + 0.001)
+
+            else:  # (last_points / model_points * 100) >= 100
+                self.ratios.append(self.ratios[-1] - 0.002)
+
+        else:
+            self.ratios.append(self.ratios[-1])
 
     def leaf_ratio(self):
         return self.ratios[-1]

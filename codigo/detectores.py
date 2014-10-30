@@ -335,7 +335,7 @@ class AutomaticDetection(Detector):
                     self.adapt_leaf.set_found_points(obj_scene_points)
                     print "     Puntos aceptados =", accepted_points
                     print "     Puntos detectados =", obj_scene_points
-                    print "Próximo leaf size (detección) =", self.adapt_leaf.leaf_ratio()
+                    print "     Próximo leaf size (detección) =", self.adapt_leaf.leaf_ratio()
 
                 minmax = get_min_max(obj_scene_cloud)
 
