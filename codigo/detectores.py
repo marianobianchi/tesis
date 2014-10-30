@@ -10,7 +10,7 @@ from cpp.common import filter_cloud, save_pcd, get_min_max, show_clouds, \
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits, \
-    from_cloud_to_flat_limits, AdaptLeafRadio
+    from_cloud_to_flat_limits, AdaptLeafRatio
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
@@ -248,7 +248,7 @@ class AutomaticDetection(Detector):
     def detect(self):
         model_cloud = self._descriptors['obj_model']
         if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRadio(points(model_cloud))
+            self.adapt_leaf = AdaptLeafRatio(points(model_cloud))
 
         scene_cloud = self._descriptors['pcd']
 
@@ -320,7 +320,7 @@ class AutomaticDetection(Detector):
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
                     scene_cloud,  # complete scene
-                    self.adapt_leaf.leaf_radio(),  # radius
+                    self.adapt_leaf.leaf_ratio(),  # radius
                     False,  # show values
                 )
                 accepted_points = (
@@ -328,10 +328,14 @@ class AutomaticDetection(Detector):
                     self.perc_obj_model_points
                 )
                 obj_scene_points = points(obj_scene_cloud)
-                self.adapt_leaf.set_found_points(obj_scene_points)
-                print "Próximo leaf size (detección) =", self.adapt_leaf.leaf_radio()
 
                 fue_exitoso = obj_scene_points > accepted_points
+
+                if fue_exitoso:
+                    self.adapt_leaf.set_found_points(obj_scene_points)
+                    print "     Puntos aceptados =", accepted_points
+                    print "     Puntos detectados =", obj_scene_points
+                    print "Próximo leaf size (detección) =", self.adapt_leaf.leaf_ratio()
 
                 minmax = get_min_max(obj_scene_cloud)
 

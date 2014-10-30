@@ -7,7 +7,7 @@ from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
-    AdaptLeafRadio
+    AdaptLeafRatio
 
 
 class Finder(object):
@@ -171,11 +171,11 @@ class ICPFinderWithModel(ICPFinder):
         return filter_object_from_scene_cloud(
             found_obj,
             filtered_scene,
-            self.adapt_leaf.leaf_radio(),
+            self.adapt_leaf.leaf_ratio(),
             False,
         )
 
-    def _filter_target_cloud(self, target_cloud, p=False):
+    def _filter_target_cloud(self, target_cloud):
         # TODO: ver http://docs.pointclouds.org/1.7.0/crop__box_8h_source.html
         # TODO: ver http://www.pcl-users.org/How-to-use-Crop-Box-td3888183.html
 
@@ -185,20 +185,6 @@ class ICPFinderWithModel(ICPFinder):
         c_right_limit = self._descriptors['max_x_cloud']
         d_front_limit = self._descriptors['min_z_cloud']
         d_back_limit = self._descriptors['max_z_cloud']
-
-        if p:
-            print "VOLUMEN DEL PRISMA ORIGINAL=", round(
-                abs(r_top_limit - r_bottom_limit) *
-                abs(c_right_limit - c_left_limit) *
-                abs(d_back_limit - d_front_limit),
-                6
-            )
-            print "VOLUMEN DEL PRISMA ORIGINAL * 8 =", round(
-                abs(r_top_limit - r_bottom_limit) *
-                abs(c_right_limit - c_left_limit) *
-                abs(d_back_limit - d_front_limit) * 8,
-                6
-            )
 
         # Define row and column limits for the zone to search the object
         x_move = self.adapt_area.estimate_distance('x')
@@ -211,14 +197,6 @@ class ICPFinderWithModel(ICPFinder):
         c_right_limit += x_move
         d_front_limit -= z_move
         d_back_limit += z_move
-
-        if p:
-            print "VOLUMEN DEL PRISMA A BUSCAR=", round(
-                abs(r_top_limit - r_bottom_limit) *
-                abs(c_right_limit - c_left_limit) *
-                abs(d_back_limit - d_front_limit),
-                6
-            )
 
         # Filter points corresponding to the zone where the object being
         # followed is supposed to be
@@ -251,7 +229,7 @@ class ICPFinderWithModel(ICPFinder):
         model_points = points(obj_model)
         self.adapt_area.set_default_distances(obj_model)
         if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRadio(model_points)
+            self.adapt_leaf = AdaptLeafRatio(model_points)
 
         accepted_points = model_points * self.perc_obj_model_points
 
@@ -265,11 +243,6 @@ class ICPFinderWithModel(ICPFinder):
             target_cloud,
         )
         points_from_scene = points(obj_from_scene_points)
-        self.adapt_leaf.set_found_points(points_from_scene)
-
-        print "Puntos aceptados =", accepted_points
-        print "Puntos encontrados =", points(obj_from_scene_points)
-        print "Próximo leaf size (busqueda) =", self.adapt_leaf.leaf_radio()
 
         fue_exitoso = icp_result.score < self.umbral_score
         fue_exitoso = (
@@ -280,6 +253,11 @@ class ICPFinderWithModel(ICPFinder):
         descriptors = {}
 
         if fue_exitoso:
+            self.adapt_leaf.set_found_points(points_from_scene)
+            print "     Puntos aceptados =", accepted_points
+            print "     Puntos encontrados =", points_from_scene
+            print "     Próximo leaf size (busqueda) =", self.adapt_leaf.leaf_ratio()
+
             # filas = len(depth_img)
             # columnas = len(depth_img[0])
 
@@ -303,7 +281,7 @@ class ICPFinderWithModel(ICPFinder):
         en el frame anterior, busco el mismo objeto en una zona N veces mayor
         a la original.
         """
-        target_cloud = self._filter_target_cloud(target_cloud, True)
+        target_cloud = self._filter_target_cloud(target_cloud)
 
         # Calculate ICP
         icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
