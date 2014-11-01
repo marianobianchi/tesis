@@ -179,7 +179,7 @@ if __name__ == '__main__':
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
-        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/prueba_004/results.txt'
+        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/4/results.txt'
     )
 
     # analizar_resultados(

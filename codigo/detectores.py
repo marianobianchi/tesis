@@ -240,15 +240,24 @@ class AutomaticDetection(Detector):
         # Seteo el tamaño de las esferas usadas para filtrar de la escena
         # los puntos del objeto encontrado
         self.adapt_leaf = None
+        self.first_leaf_size = kwargs.get('first_leaf_size', 0.005)
 
         # Seteo el porcentaje de puntos que permito conservar del modelo del
         # objeto antes de considerar que lo que se encontró no es el objeto
         self.perc_obj_model_points = kwargs.get('perc_obj_model_points', 0.5)
 
+        # Seteo el tamaño del frame de busqueda. Este valor se va a multiplicar
+        # por la altura y el ancho del objeto. Ej: si se multiplica por 2, el
+        # frame de busqueda tiene un area 4 (2*2) veces mayor que la del objeto
+        self.obj_mult = kwargs.get('obj_mult', 2)
+
     def detect(self):
         model_cloud = self._descriptors['obj_model']
         if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRatio(points(model_cloud))
+            self.adapt_leaf = AdaptLeafRatio(
+                points(model_cloud),
+                self.first_leaf_size
+            )
 
         scene_cloud = self._descriptors['pcd']
 
@@ -271,7 +280,8 @@ class AutomaticDetection(Detector):
 
         # Busco la mejor alineacion del objeto segmentando la escena
         for limits in (BusquedaPorFramesSolapados()
-                       .iterate_frame_boxes(obj_limits, scene_limits)):
+                       .iterate_frame_boxes(obj_limits, scene_limits,
+                                            obj_mult=self.obj_mult)):
 
             cloud = filter_cloud(
                 scene_cloud,
@@ -333,9 +343,6 @@ class AutomaticDetection(Detector):
 
                 if fue_exitoso:
                     self.adapt_leaf.set_found_points(obj_scene_points)
-                    print "     Puntos aceptados =", accepted_points
-                    print "     Puntos detectados =", obj_scene_points
-                    print "     Próximo leaf size (detección) =", self.adapt_leaf.leaf_ratio()
 
                 minmax = get_min_max(obj_scene_cloud)
 

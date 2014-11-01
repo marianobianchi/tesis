@@ -154,8 +154,8 @@ class ICPFinderWithModel(ICPFinder):
 
         # Seteo el tamaño de las esferas usadas para filtrar de la escena
         # los puntos del objeto encontrado
-        # self.obj_scene_leaf = kwargs.get('obj_scene_leaf', 0.002)
         self.adapt_leaf = None
+        self.first_leaf_size = kwargs.get('first_leaf_size', 0.002)
 
         # Seteo el porcentaje de puntos que permito conservar del modelo del
         # objeto antes de considerar que lo que se encontró no es el objeto
@@ -164,7 +164,6 @@ class ICPFinderWithModel(ICPFinder):
         # Agrego un objeto que adapta la zona de busqueda segun la velocidad
         # del objeto que estoy buscando
         self.adapt_area = AdaptSearchArea()
-
 
     def get_object_points_from_scene(self, found_obj, scene):
         filtered_scene = self._filter_target_cloud(scene)
@@ -190,6 +189,11 @@ class ICPFinderWithModel(ICPFinder):
         x_move = self.adapt_area.estimate_distance('x')
         y_move = self.adapt_area.estimate_distance('y')
         z_move = self.adapt_area.estimate_distance('z')
+
+        if x_move < 0 or y_move < 0 or z_move < 0:
+            raise Exception(('Ojo que esta mal el area de busqueda. '
+                             'x,y,z={x},{y},{z}'.format(x=x_move, y=y_move,
+                                                        z=z_move)))
 
         r_top_limit -= y_move
         r_bottom_limit += y_move
@@ -229,7 +233,10 @@ class ICPFinderWithModel(ICPFinder):
         model_points = points(obj_model)
         self.adapt_area.set_default_distances(obj_model)
         if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRatio(model_points)
+            self.adapt_leaf = AdaptLeafRatio(
+                model_points,
+                self.first_leaf_size,
+            )
 
         accepted_points = model_points * self.perc_obj_model_points
 
@@ -254,9 +261,6 @@ class ICPFinderWithModel(ICPFinder):
 
         if fue_exitoso:
             self.adapt_leaf.set_found_points(points_from_scene)
-            print "     Puntos aceptados =", accepted_points
-            print "     Puntos encontrados =", points_from_scene
-            print "     Próximo leaf size (busqueda) =", self.adapt_leaf.leaf_ratio()
 
             # filas = len(depth_img)
             # columnas = len(depth_img[0])

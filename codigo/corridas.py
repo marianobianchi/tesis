@@ -8,7 +8,9 @@ from cpp.icp import ICPDefaults
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment, AutomaticDetection
-from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingData
+from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingData, \
+    FollowingSquemaExploringParameter
+from metodos_comunes import Timer
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreCharged
@@ -239,7 +241,6 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
     find_obj_scene_leaf = 0.002
     find_perc_obj_model_points = 0.3
 
-
     # Create objects
     img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/', scenename, scenenumber,
@@ -269,8 +270,81 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
         'pruebas_guardadas'
     ).run()
 
-if __name__ == '__main__':
-    #correr_ejemplo(objname, objnumber, scenename, scenenumber)
 
-    correr_ejemplo('coffee_mug', '5', 'desk', '1')
+def barrer_parametro(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.1
+    ap_defaults.inlier_threshold = 3
+    ap_defaults.inlier_fraction = 0.8
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-5
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-5
+
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 3
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+    det_obj_mult = 2
+
+    find_umbral_score = 1e-4
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.3
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreCharged(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for det_obj_mult in [2, 3, 4, 5, 6, 8]:
+        with Timer('###\ndetection_frame_size - {a}'.format(a=det_obj_mult)) as t:
+
+            detector = AutomaticDetection(
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                umbral_score=det_umbral_score,
+                first_leaf_size=det_obj_scene_leaf,
+                perc_obj_model_points=det_perc_obj_model_points,
+                obj_mult=det_obj_mult,
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = FollowerStaticICPAndObjectModel(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameter(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'detection_frame_size',
+                det_obj_mult,
+            ).run()
+
+            img_provider.restart()
+
+
+if __name__ == '__main__':
+    barrer_parametro('coffee_mug', '5', 'desk', '1')
 

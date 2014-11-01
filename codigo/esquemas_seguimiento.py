@@ -73,6 +73,9 @@ class FollowingScheme(object):
 
 
 class FollowingSchemeSavingData(FollowingScheme):
+    """
+    Guarda las pruebas en carpetas consecutivas llamadas prueba_###
+    """
     def __init__(self, img_provider, obj_follower, path):
         super(FollowingSchemeSavingData, self).__init__(
             img_provider,
@@ -139,7 +142,7 @@ class FollowingSchemeSavingData(FollowingScheme):
         ######################
         # Etapa de detección
         ######################
-        print "Buscando/Detectando en imagen {i}".format(
+        print "Detectando en imagen {i}".format(
             i=self.img_provider.next_frame_number
         )
 
@@ -158,18 +161,20 @@ class FollowingSchemeSavingData(FollowingScheme):
 
         while self.img_provider.have_images():
 
-            print "Buscando/Detectando en imagen {i}".format(
-                i=self.img_provider.next_frame_number
-            )
-
             es_deteccion = False
             if fue_exitoso:
+                print "Buscando en imagen {i}".format(
+                    i=self.img_provider.next_frame_number
+                )
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.follow()
                 )
 
             if not fue_exitoso:
                 es_deteccion = True
+                print "MISS... Detectando en imagen {i}".format(
+                    i=self.img_provider.next_frame_number
+                )
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
                 )
@@ -218,3 +223,71 @@ class FollowingSchemeSavingData(FollowingScheme):
             pcd_filename = 'obj_found_alignedpoints_frame_{i:03}.pcd'.format(i=nframe)
             filename = os.path.join(self.results_path, pcd_filename)
             save_pcd(pcd, str(filename))
+
+
+class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
+    """
+    Guarda las pruebas en carpetas con el nombre del parametro y el valor
+    que se estan explorando
+    """
+
+    def __init__(self, img_provider, obj_follower, path, param_name, param_val):
+        self.img_provider = img_provider
+        self.obj_follower = obj_follower
+        self.show_following = None
+
+        self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/{p}/{v}')
+        self.results_path = self.results_path.format(
+            s=self.img_provider.scene,
+            sn=self.img_provider.scene_number,
+            o=self.img_provider.obj,
+            on=self.img_provider.obj_number,
+            p=param_name,
+            v=param_val,
+        )
+
+        if not os.path.isdir(self.results_path):
+            os.makedirs(self.results_path)
+        else:
+            raise Exception('Ojo. Vas a pisar resultados!')
+
+        self.file = open(
+            os.path.join(self.results_path, 'results.txt'),
+            'w'
+        )
+
+        # Guardo los valores de los parametros
+        ap_defaults = self.obj_follower.detector._ap_defaults
+        self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
+        self.file.write(b'ap_max_ransac_iters={v}\n'.format(
+            v=ap_defaults.max_ransac_iters))
+        self.file.write(b'ap_points_to_sample={v}\n'.format(
+            v=ap_defaults.points_to_sample))
+        self.file.write(b'ap_nearest_features_used={v}\n'.format(
+            v=ap_defaults.nearest_features_used))
+        self.file.write(b'ap_simil_threshold={v}\n'.format(
+            v=ap_defaults.simil_threshold))
+        self.file.write(b'ap_inlier_threshold={v}\n'.format(
+            v=ap_defaults.inlier_threshold))
+        self.file.write(b'ap_inlier_fraction={v}\n'.format(
+            v=ap_defaults.inlier_fraction))
+
+        icp_defaults = self.obj_follower.detector._icp_defaults
+        self.file.write(b'det_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+        self.file.write(
+            b'det_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+        self.file.write(
+            b'det_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+        self.file.write(b'det_transf_epsilon={v}\n'.format(
+            v=icp_defaults.transf_epsilon))
+
+        icp_defaults = self.obj_follower.finder._icp_defaults
+        self.file.write(b'seg_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+        self.file.write(
+            b'seg_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+        self.file.write(
+            b'seg_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+        self.file.write(b'seg_transf_epsilon={v}\n'.format(
+            v=icp_defaults.transf_epsilon))
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()

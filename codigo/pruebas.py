@@ -7,7 +7,7 @@ from cpp.common import get_min_max, filter_cloud, show_clouds, save_pcd, points
 
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 from proveedores_de_imagenes import FrameNamesAndImageProvider
-from metodos_comunes import AdaptLeafRatio
+from metodos_comunes import AdaptSearchArea
 
 
 def probando_filtro_por_ejes():
@@ -93,13 +93,5 @@ def segmentando_escena():
         counter += 1
 
 
-def testing_voxel_grid():
-    pass
-
-
 if __name__ == '__main__':
-    af = AdaptLeafRatio(6500)
-    af.set_found_points(4500)
-    print(af.leaf_ratio())
-    af.set_found_points(5000)
-    print(af.leaf_ratio())
+    pass
