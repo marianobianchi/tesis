@@ -2,6 +2,7 @@
 
 from __future__ import unicode_literals, division, print_function
 
+import os
 import codecs
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
@@ -52,6 +53,7 @@ class Rectangle(object):
         height = self.bottom - self.top
         return base * height
 
+
 def test_rectangle():
     a = Rectangle((0, 0), (2, 2))
     b = Rectangle((0, 0), (3, 1))
@@ -97,24 +99,24 @@ def analizar_resultados(matfile, scenenamenum, objname, resultfile):
             line = file_.next()
             reach_result_zone = line.startswith('RESULTS_SECTION')
 
-
         for line in file_.readlines():
             values = [int(v) for v in line.split(';')]
 
             nframe = values[0]
-            fue_exitoso = values[1]
-            metodo = values[2]
+            # fue_exitoso = values[1]
+            # metodo = values[2]
             fila_sup = values[3]
             col_izq = values[4]
             fila_inf = values[5]
             col_der = values[6]
-            size = fila_inf - fila_sup
+            # size = fila_inf - fila_sup
 
             ground_truth.update({'nframe': nframe})
             gt_fue_exitoso, gt_desc = ground_truth.detect()
-            gt_size = gt_desc['size']
-            gt_col_izq = gt_desc['location'][1]
-            gt_fila_sup = gt_desc['location'][0]
+            gt_col_izq = gt_desc['topleft'][1]
+            gt_fila_sup = gt_desc['topleft'][0]
+            gt_col_der = gt_desc['bottomright'][1]
+            gt_fila_inf = gt_desc['bottomright'][0]
 
             rectangle_found = Rectangle(
                 (fila_sup, col_izq),
@@ -122,18 +124,20 @@ def analizar_resultados(matfile, scenenamenum, objname, resultfile):
             )
             ground_truth_rectangle = Rectangle(
                 (gt_fila_sup, gt_col_izq),
-                (gt_fila_sup + gt_size, gt_col_izq + gt_size)
+                (gt_fila_inf, gt_col_der)
             )
-            intersection = rectangle_found.intersection(ground_truth_rectangle)
+            intersection = rectangle_found.intersection(
+                ground_truth_rectangle
+            )
 
-            if intersection.area() > 0:
+            if ground_truth_rectangle.area() > 0:
                 found_area = rectangle_found.area()
                 ground_truth_area = ground_truth_rectangle.area()
                 intersection_area = intersection.area()
 
                 # To be considered a correct detection, the area of overlap A0
-                # between the predicted bounding box Bp and ground truth bounding
-                # box Bgt must exceed 50% by the formula:
+                # between the predicted bounding box Bp and ground truth
+                # bounding box Bgt must exceed 50% by the formula:
                 # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
                 union_area = found_area + ground_truth_area - intersection_area
                 overlap_area = intersection_area / union_area
@@ -174,13 +178,112 @@ def analizar_resultados(matfile, scenenamenum, objname, resultfile):
     plt.show()
 
 
-if __name__ == '__main__':
-    analizar_resultados(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/4/results.txt'
+def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
+                                       param, path):
+    ground_truth = StaticDetector(
+        matfile,
+        objname,
     )
+    objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
+    param_values = os.listdir(
+        os.path.join(path, scenenamenum, objnamenum, param)
+    )
+    param_values.sort()
+
+    paramval_avgarea = []
+    for param_value in param_values:
+        overlapping_areas = []
+        resultfile = os.path.join(
+            path,
+            scenenamenum,
+            objnamenum,
+            param,
+            param_value,
+            'results.txt'
+        )
+        with codecs.open(resultfile, 'r', 'utf-8') as file_:
+            reach_result_zone = False
+            while not reach_result_zone:
+                line = file_.next()
+                reach_result_zone = line.startswith('RESULTS_SECTION')
+
+            for line in file_:
+                values = [int(v) for v in line.split(';')]
+
+                nframe = values[0]
+                # fue_exitoso = values[1]
+                # metodo = values[2]
+                fila_sup = values[3]
+                col_izq = values[4]
+                fila_inf = values[5]
+                col_der = values[6]
+
+                ground_truth.update({'nframe': nframe})
+                gt_fue_exitoso, gt_desc = ground_truth.detect()
+                gt_col_izq = gt_desc['topleft'][1]
+                gt_fila_sup = gt_desc['topleft'][0]
+                gt_col_der = gt_desc['bottomright'][1]
+                gt_fila_inf = gt_desc['bottomright'][0]
+
+                rectangle_found = Rectangle(
+                    (fila_sup, col_izq),
+                    (fila_inf, col_der)
+                )
+                ground_truth_rectangle = Rectangle(
+                    (gt_fila_sup, gt_col_izq),
+                    (gt_fila_inf, gt_col_der)
+                )
+                intersection = rectangle_found.intersection(
+                    ground_truth_rectangle
+                )
+
+                if ground_truth_rectangle.area() > 0:
+                    found_area = rectangle_found.area()
+                    ground_truth_area = ground_truth_rectangle.area()
+                    intersection_area = intersection.area()
+
+                    # To be considered a correct detection, the area of overlap
+                    # A0 between the predicted bounding box Bp and ground truth
+                    # bounding box Bgt must exceed 50% by the formula:
+                    # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
+                    union_area = (
+                        found_area + ground_truth_area - intersection_area
+                    )
+                    overlap_area = intersection_area / union_area
+
+                    overlapping_areas.append(overlap_area)
+
+            mean = np.mean(overlapping_areas) if overlapping_areas else 0
+            paramval_avgarea.append((param_value, mean))
+
+    # Ploteo % promedio de solapamiento para cada valor del parametro
+    avg_areas = np.array([avgarea for param_value, avgarea in paramval_avgarea])
+
+    plt.bar(
+        np.arange(len(avg_areas)),  # x values
+        avg_areas * 100,  # y values
+        align='center',
+    )
+    plt.title(
+        ('Area de solapamiento promedio para {obj} en {scn}, explorando el '
+         'parametro {p}').format(obj=objnamenum, scn=scenenamenum, p=param)
+    )
+    plt.xticks(np.arange(len(param_values)), param_values)
+    plt.xlabel('valor del parametro')
+    plt.yticks(np.arange(0, 110, 10))
+    plt.ylabel('% promedio del area solapada en la escena')
+
+    plt.autoscale(axis='x')
+    plt.show()
+
+
+if __name__ == '__main__':
+    # analizar_resultados(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/5/results.txt'
+    # )
 
     # analizar_resultados(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -188,3 +291,28 @@ if __name__ == '__main__':
     #     objname='cap',
     #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
     # )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='detection_frame_size',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='detection_frame_size',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='detection_frame_size',
+        path='pruebas_guardadas',
+    )

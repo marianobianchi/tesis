@@ -104,16 +104,21 @@ class BusquedaPorFramesSolapados(object):
         # la diferencia entre los valores de cada tupla sea del tamaño del
         # objeto y la diferencia entre el primer valor de una tupla y el
         # primero de la siguiente sea la mitad del tamaño del objeto
-        alto_limites_inferiores = alto_linspace[:-1*step]
-        alto_limites_superiores = alto_linspace[step:]
+        if len(alto_linspace) == step:
+            alto_limites_inferiores = alto_linspace[:-1 * (step-1)]
+            alto_limites_superiores = alto_linspace[step-1:]
+        else:  # len(alto_linspace) > 2
+            alto_limites_inferiores = alto_linspace[:-1*step]
+            alto_limites_superiores = alto_linspace[step:]
         alto_limites = zip(alto_limites_inferiores, alto_limites_superiores)
 
         ####################################################################
         # Armo una lista de tuplas con los limites del filtro para el ancho
         ####################################################################
         paso_ancho_frame = obj_width / step
-        cant_pasos_ancho = int(
-            (scene_max_col - scene_min_col) / paso_ancho_frame
+        cant_pasos_ancho = max(
+            int((scene_max_col - scene_min_col) / paso_ancho_frame),
+            step
         )
 
         # armo una lista con intervalos de tamaño ancho_objeto / step
@@ -127,8 +132,12 @@ class BusquedaPorFramesSolapados(object):
         # la diferencia entre los valores de cada tupla sea del tamaño del
         # objeto y la diferencia entre el primer valor de una tupla y el
         # primero de la siguiente sea la mitad del tamaño del objeto
-        ancho_limites_inferiores = ancho_linspace[:-1 * step]
-        ancho_limites_superiores = ancho_linspace[step:]
+        if len(ancho_linspace) == step:
+            ancho_limites_inferiores = ancho_linspace[:-1 * (step-1)]
+            ancho_limites_superiores = ancho_linspace[step-1:]
+        else:
+            ancho_limites_inferiores = ancho_linspace[:-1 * step]
+            ancho_limites_superiores = ancho_linspace[step:]
         ancho_limites = zip(ancho_limites_inferiores, ancho_limites_superiores)
 
         for row_low, row_up in alto_limites:

@@ -154,7 +154,7 @@ class ICPFinderWithModel(ICPFinder):
 
         # Seteo el tamaño de las esferas usadas para filtrar de la escena
         # los puntos del objeto encontrado
-        self.adapt_leaf = None
+        self.adapt_leaf = kwargs.get('adapt_leaf', AdaptLeafRatio())
         self.first_leaf_size = kwargs.get('first_leaf_size', 0.002)
 
         # Seteo el porcentaje de puntos que permito conservar del modelo del
@@ -163,7 +163,7 @@ class ICPFinderWithModel(ICPFinder):
 
         # Agrego un objeto que adapta la zona de busqueda segun la velocidad
         # del objeto que estoy buscando
-        self.adapt_area = AdaptSearchArea()
+        self.adapt_area = kwargs.get('adapt_area', AdaptSearchArea())
 
     def get_object_points_from_scene(self, found_obj, scene):
         filtered_scene = self._filter_target_cloud(scene)
@@ -232,8 +232,8 @@ class ICPFinderWithModel(ICPFinder):
         obj_model = self._descriptors['obj_model']
         model_points = points(obj_model)
         self.adapt_area.set_default_distances(obj_model)
-        if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRatio(
+        if not self.adapt_leaf.was_started():
+            self.adapt_leaf.set_first_values(
                 model_points,
                 self.first_leaf_size,
             )

@@ -6,6 +6,7 @@ from cpp.alignment_prerejective import APDefaults
 from cpp.icp import ICPDefaults
 
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
+from metodos_comunes import AdaptLeafRatio, AdaptSearchArea
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment, AutomaticDetection
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingData, \
@@ -295,11 +296,14 @@ def barrer_parametro(objname, objnumber, scenename, scenenumber):
     icp_finder_defaults.transf_epsilon = 1e-5
 
     det_umbral_score = 1e-3
+    det_adapt_leaf = AdaptLeafRatio()
     det_obj_scene_leaf = 0.005
     det_perc_obj_model_points = 0.5
     det_obj_mult = 2
 
     find_umbral_score = 1e-4
+    find_adapt_area = AdaptSearchArea()
+    find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
     find_perc_obj_model_points = 0.3
 
@@ -309,42 +313,43 @@ def barrer_parametro(objname, objnumber, scenename, scenenumber):
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    for det_obj_mult in [2, 3, 4, 5, 6, 8]:
-        with Timer('###\ndetection_frame_size - {a}'.format(a=det_obj_mult)) as t:
+    # for find_perc_obj_model_points in [0.2, 0.4, 0.5, 0.75]:
+    for det_obj_mult in [2, 3, 5, 7]:
+        detector = AutomaticDetection(
+            ap_defaults=ap_defaults,
+            icp_defaults=icp_detection_defaults,
+            umbral_score=det_umbral_score,
+            adapt_leaf=det_adapt_leaf,
+            first_leaf_size=det_obj_scene_leaf,
+            perc_obj_model_points=det_perc_obj_model_points,
+            obj_mult=det_obj_mult,
+        )
 
-            detector = AutomaticDetection(
-                ap_defaults=ap_defaults,
-                icp_defaults=icp_detection_defaults,
-                umbral_score=det_umbral_score,
-                first_leaf_size=det_obj_scene_leaf,
-                perc_obj_model_points=det_perc_obj_model_points,
-                obj_mult=det_obj_mult,
-            )
+        finder = ICPFinderWithModel(
+            icp_defaults=icp_finder_defaults,
+            umbral_score=find_umbral_score,
+            adapt_area=find_adapt_area,
+            adapt_leaf=find_adapt_leaf,
+            first_leaf_size=find_obj_scene_leaf,
+            perc_obj_model_points=find_perc_obj_model_points,
+        )
 
-            finder = ICPFinderWithModel(
-                icp_defaults=icp_finder_defaults,
-                umbral_score=find_umbral_score,
-                first_leaf_size=find_obj_scene_leaf,
-                perc_obj_model_points=find_perc_obj_model_points,
-            )
+        follower = FollowerStaticICPAndObjectModel(
+            img_provider,
+            detector,
+            finder
+        )
 
-            follower = FollowerStaticICPAndObjectModel(
-                img_provider,
-                detector,
-                finder
-            )
+        FollowingSquemaExploringParameter(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'detection_frame_size',
+            det_obj_mult,
+        ).run()
 
-            FollowingSquemaExploringParameter(
-                img_provider,
-                follower,
-                'pruebas_guardadas',
-                'detection_frame_size',
-                det_obj_mult,
-            ).run()
-
-            img_provider.restart()
+        img_provider.restart()
 
 
 if __name__ == '__main__':
-    barrer_parametro('coffee_mug', '5', 'desk', '1')
-
+    barrer_parametro('bowl', '3', 'desk', '2')

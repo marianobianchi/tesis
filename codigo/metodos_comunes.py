@@ -330,7 +330,14 @@ class AdaptLeafRatio(object):
     """
     Adapts the leaf radio used to take object points from scene
     """
-    def __init__(self, model_points, first_ratio):
+    def __init__(self):
+        self.found_points = []
+        self.ratios = []
+
+    def was_started(self):
+        return len(self.found_points) > 0 and len(self.ratios) > 0
+
+    def set_first_values(self, model_points, first_ratio):
         self.found_points = [model_points]
         self.ratios = [first_ratio]
 

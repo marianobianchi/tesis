@@ -55,11 +55,13 @@ class StaticDetector(Detector):
         fue_exitoso = False
         tam_region = 0
         location = (0, 0)
+        bottomright = (0, 0)
 
         for obj in objs:
             if obj[0][0] == self._obj_rgbd_name:
                 fue_exitoso = True
                 location = (int(obj[2][0][0]), int(obj[4][0][0]))
+                bottomright = (int(obj[3][0][0]), int(obj[5][0][0]))
                 tam_region = max(int(obj[3][0][0]) - int(obj[2][0][0]),
                                  int(obj[5][0][0]) - int(obj[4][0][0]))
                 break
@@ -67,6 +69,8 @@ class StaticDetector(Detector):
         detected_descriptors = {
             'size': tam_region,
             'location': location,  # location=(fila, columna)
+            'topleft': location,
+            'bottomright': bottomright,
         }
 
         return fue_exitoso, detected_descriptors
@@ -239,7 +243,7 @@ class AutomaticDetection(Detector):
 
         # Seteo el tamaño de las esferas usadas para filtrar de la escena
         # los puntos del objeto encontrado
-        self.adapt_leaf = None
+        self.adapt_leaf = kwargs.get('adapt_leaf', AdaptLeafRatio())
         self.first_leaf_size = kwargs.get('first_leaf_size', 0.005)
 
         # Seteo el porcentaje de puntos que permito conservar del modelo del
@@ -253,9 +257,13 @@ class AutomaticDetection(Detector):
 
     def detect(self):
         model_cloud = self._descriptors['obj_model']
-        if self.adapt_leaf is None:
-            self.adapt_leaf = AdaptLeafRatio(
-                points(model_cloud),
+        model_cloud_points = points(model_cloud)
+
+        accepted_points = model_cloud_points * self.perc_obj_model_points
+
+        if not self.adapt_leaf.was_started():
+            self.adapt_leaf.set_first_values(
+                model_cloud_points,
                 self.first_leaf_size
             )
 
@@ -279,6 +287,8 @@ class AutomaticDetection(Detector):
         best_limits = {}
 
         # Busco la mejor alineacion del objeto segmentando la escena
+        #TODO: remove counting
+        i = 0
         for limits in (BusquedaPorFramesSolapados()
                        .iterate_frame_boxes(obj_limits, scene_limits,
                                             obj_mult=self.obj_mult)):
@@ -296,7 +306,8 @@ class AutomaticDetection(Detector):
                 limits['max_y']
             )
 
-            if points(cloud) > 0:
+            if points(cloud) > model_cloud_points:
+                i += 1
 
                 # Calculate alignment
                 ap_result = align(model_cloud, cloud, self._ap_defaults)
@@ -305,6 +316,9 @@ class AutomaticDetection(Detector):
                     best_alignment_score = ap_result.score
                     best_aligned_scene = ap_result.cloud
                     best_limits.update(limits)
+
+        print ("    La imagen para la busqueda se dividio en {i} imagenes"
+               .format(i=i))
 
         # Su hubo una buena alineacion
         if best_aligned_scene is not None:
@@ -333,10 +347,7 @@ class AutomaticDetection(Detector):
                     self.adapt_leaf.leaf_ratio(),  # radius
                     False,  # show values
                 )
-                accepted_points = (
-                    points(self._descriptors['obj_model']) *
-                    self.perc_obj_model_points
-                )
+
                 obj_scene_points = points(obj_scene_cloud)
 
                 fue_exitoso = obj_scene_points > accepted_points
