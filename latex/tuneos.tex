@@ -1,0 +1,94 @@
+\usepackage{enumitem}
+\usepackage[normalem]{ulem}
+
+
+\usepackage{textcomp}
+
+\usepackage{multirow}
+
+\newcommand{\comentarioM}[1]{\todo[bordercolor=green!20, color=green!20, inline]{mlopez: #1}\xspace}
+\newcommand{\comentarioiM}[1]{\todo[bordercolor=green!20, color=green!20, linecolor=black!40]{mlopez: #1}\xspace}
+\newcommand{\comentarioiMparaAndre}[1]{\todo[bordercolor=blue!20, color=blue!20, linecolor=black!40]{mlopez para Andre: #1}\xspace}
+\newcommand{\comentarioD}[1]{\todo[bordercolor=yellow!20, color=yellow!20, inline]{dfs: #1}\xspace}
+\newcommand{\comentarioA}[1]{\todo[bordercolor=orange!40, color=orange!40]{Andre: #1}\xspace}
+
+\newcommand{\comentarioxD}[1]{\comentarioD{\sout{#1}}}
+\newcommand{\comentarioxM}[1]{\comentarioiM{\sout{#1}}}
+\newcommand{\comentarioxA}[1]{\comentarioA{\sout{#1}}}
+\renewcommand{\comentarioxA}[1]{}
+\renewcommand{\comentarioxD}[1]{}
+\renewcommand{\comentarioxM}[1]{}
+
+\newcommand{\comentarioSchapa}[2]{\todo[bordercolor=green!20, color=green!20, inline]{Decía: #1}\todo[bordercolor=green!20, color=green!20, inline]{Y ahora dice: #2}\xspace}
+
+
+\newcommand{\framework}{\emph{framework}\xspace}
+\newcommand{\checkpoint}{\emph{checkpoint}\xspace}
+
+\newcommand{\titulin}[1]{\includegraphics[scale=0.3]{nubis.png} \textbf{#1}\addcontentsline{toc}{subsection}{#1}}
+\renewcommand{\titulin}[1]{--{\comentado #1}}
+\newcommand{\tabla}[2]{\vspace{0.3cm}\fbox{\parbox{0.85\textwidth}{\mbox{\textbf{Tabla #1:}} \linebreak #2}}\vspace{0.3cm}}
+
+% \newcommand{\inlinetablafeatures}[2]{\begin{minipage}{#1cm}\begin{center}#2\end{center}\end{minipage} }
+% \newcommand{\inlinetabla}[1]{\inlinetablafeatures{2}{#1} }
+
+\newcommand{\inlinetablafeatures}[2]{\begin{minipage}{#1cm}\vspace{0.15cm}\setlength\fboxsep{-0.01pt}\setlength\fboxrule{0.05pt}#2\end{minipage} }
+\newcommand{\inlinetabla}[1]{\inlinetablafeatures{2}{\vspace{-0.15cm}\begin{center}#1\end{center}} }
+
+
+\newenvironment{comentado}
+{\color{gray}}
+{}
+
+\pdfminorversion 6
+
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstdefinelanguage{LogMateMarote}{ %
+  basicstyle=\tiny\ttfamily\color{black!50},           % the size of the fonts that are used for the code
+  numbers=left,                   % where to put the line-numbers
+  numberstyle=\tiny\color{gray},  % the style that is used for the line-numbers
+  stepnumber=1,                   % the step between two line-numbers. If it's 1, each line 
+                                  % will be numbered
+  numbersep=5pt,                  % how far the line-numbers are from the code
+  backgroundcolor=\color{white},      % choose the background color. You must add \usepackage{color}
+  showspaces=false,               % show spaces adding particular underscores
+  showstringspaces=false,         % underline spaces within strings
+  showtabs=false,                 % show tabs within strings adding particular underscores
+  frame=lines,                   % adds a frame around the code
+  rulecolor=\color{black},        % if not set, the frame-color may be changed on line-breaks within not-black text (e.g. commens (green here))
+  tabsize=2,                      % sets default tabsize to 2 spaces
+  captionpos=b,                   % sets the caption-position to bottom
+  breaklines=true,                % sets automatic line breaking
+  breakatwhitespace=false,        % sets if automatic breaks should only happen at whitespace
+  title=\lstname,                   % show the filename of files included with \lstinputlisting;
+                                  % also try caption instead of title
+  keywordstyle=\bfseries\color{black},          % keyword style
+  commentstyle=\tiny,       % comment style
+  morecomment=[s][\ttfamily\color{blue}]{[2012}{]},
+  morecomment=[l][\ttfamily\color{blue}]{...},
+  stringstyle=\color{mauve},         % string literal style
+  escapeinside={\%*}{*)},            % if you want to add LaTeX within your code
+  morekeywords={INIT,WON,INICIANDO,JUEGO,PLANE_KIND,RES, WRONG, CORRECT, Status, NEW, HOUSES, PLAYER, MOUSE, DOWN, UP, IN, STATUS, LOST, NOT, MOVING, Add, BOX, CARD, Move, from, to, Card, clicked, OK, Game}               % if you want to add more keywords to the set
+}
+
+
+\newcommand{\skipenums}[1]{\\
+ \hspace*{-0.4cm} \vdots \vspace{-0.15cm} \addtocounter{enumi}{#1}}
+ 
+ 
+ 
+\newcommand{\feature}[1]{\fbox{\includegraphics[scale=0.28]{#1}}\hspace*{-1pt}}
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

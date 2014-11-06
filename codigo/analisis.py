@@ -85,6 +85,16 @@ def test_rectangle():
     print(".", end='')
 
 
+# Analisis y funciones
+def autolabel(fig, rects):
+    # attach some text labels
+    for rect in rects:
+        height = rect.get_height()
+        fig.text(rect.get_x() + rect.get_width() / 2., height * 1.05,
+                 '{h}'.format(h=round(height, 2)),
+                 ha='center', va='bottom')
+
+
 def analizar_resultados(matfile, scenenamenum, objname, resultfile):
     ground_truth = StaticDetector(
         matfile,
@@ -259,19 +269,28 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     # Ploteo % promedio de solapamiento para cada valor del parametro
     avg_areas = np.array([avgarea for param_value, avgarea in paramval_avgarea])
 
-    plt.bar(
+    # # the figure
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    rects = ax.bar(
         np.arange(len(avg_areas)),  # x values
         avg_areas * 100,  # y values
         align='center',
     )
-    plt.title(
+    ax.set_title(
         ('Area de solapamiento promedio para {obj} en {scn}, explorando el '
          'parametro {p}').format(obj=objnamenum, scn=scenenamenum, p=param)
     )
-    plt.xticks(np.arange(len(param_values)), param_values)
-    plt.xlabel('valor del parametro')
-    plt.yticks(np.arange(0, 110, 10))
-    plt.ylabel('% promedio del area solapada en la escena')
+
+    ax.set_xticks(np.arange(len(param_values)))
+    ax.set_xticklabels(param_values)
+    ax.set_xlabel('valor del parametro')
+
+    ax.set_yticks(np.arange(0, 110, 10))
+    ax.set_ylabel('% promedio del area solapada en la escena')
+
+    autolabel(ax, rects)
 
     plt.autoscale(axis='x')
     plt.show()
@@ -411,16 +430,8 @@ def analizar_precision_recall_por_parametro(matfile, scenenamenum, objname,
     # # add a legend
     ax.legend((rects1[0], rects2[0]), ('Precision', 'Recall'))
 
-    def autolabel(rects):
-        # attach some text labels
-        for rect in rects:
-            height = rect.get_height()
-            ax.text(rect.get_x() + rect.get_width() / 2., height * 1.05,
-                    '{h}'.format(h=round(height, 2)),
-                    ha='center', va='bottom')
-
-    autolabel(rects1)
-    autolabel(rects2)
+    autolabel(ax, rects1)
+    autolabel(ax, rects2)
 
     plt.show()
 
@@ -440,64 +451,15 @@ if __name__ == '__main__':
     #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
     # )
 
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-
-    analizar_precision_recall_por_parametro(
-    matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
@@ -505,7 +467,7 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
         scenenamenum='desk_2',
         objname='bowl',
@@ -513,8 +475,7 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
-
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
@@ -522,7 +483,7 @@ if __name__ == '__main__':
         param='find_perc_obj_model_points',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
@@ -530,7 +491,7 @@ if __name__ == '__main__':
         param='find_perc_obj_model_points',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
         scenenamenum='desk_2',
         objname='bowl',
@@ -538,3 +499,53 @@ if __name__ == '__main__':
         param='find_perc_obj_model_points',
         path='pruebas_guardadas',
     )
+
+    # analizar_precision_recall_por_parametro(
+    # matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )

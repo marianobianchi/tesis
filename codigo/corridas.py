@@ -352,7 +352,7 @@ def barrer_parametro(objname, objnumber, scenename, scenenumber):
 
 if __name__ == '__main__':
     barrer_parametro('coffee_mug', '5', 'desk', '1')
-    barrer_parametro('cap', '4', 'desk', '1')
-    barrer_parametro('bowl', '3', 'desk', '2')
+    # barrer_parametro('cap', '4', 'desk', '1')
+    # barrer_parametro('bowl', '3', 'desk', '2')
 
 
