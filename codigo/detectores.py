@@ -287,8 +287,6 @@ class AutomaticDetection(Detector):
         best_limits = {}
 
         # Busco la mejor alineacion del objeto segmentando la escena
-        #TODO: remove counting
-        i = 0
         for limits in (BusquedaPorFramesSolapados()
                        .iterate_frame_boxes(obj_limits, scene_limits,
                                             obj_mult=self.obj_mult)):
@@ -307,8 +305,6 @@ class AutomaticDetection(Detector):
             )
 
             if points(cloud) > model_cloud_points:
-                i += 1
-
                 # Calculate alignment
                 ap_result = align(model_cloud, cloud, self._ap_defaults)
                 if (ap_result.has_converged and
@@ -316,9 +312,6 @@ class AutomaticDetection(Detector):
                     best_alignment_score = ap_result.score
                     best_aligned_scene = ap_result.cloud
                     best_limits.update(limits)
-
-        print ("    La imagen para la busqueda se dividio en {i} imagenes"
-               .format(i=i))
 
         # Su hubo una buena alineacion
         if best_aligned_scene is not None:

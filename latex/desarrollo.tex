@@ -5,26 +5,41 @@ La etapa de entrenamiento consiste en obtener una representación tridimensional
 
 La etapa de detección tiene como objetivo obtener la ubicación del objeto a seguir en un frame dado. En el artículo \cite{park2011texture} utilizan el método propuesto en \cite{hinterstoisser2010dominant} para detección de objetos en imágenes 2D y lo extienden para estimar la pose 3D. Otros métodos conocidos en la literatura son los propuestos en \cite{brunelli2009template,korman13fast}. 
 
-La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. En el artículo \cite{park2011texture} utilizan el algoritmo ``Iterative Closest Point'' (ICP) propuesto en \cite{zhang94icp,besl92icp}, refinando el resultado con datos de bordes tomados durante la fase de entrenamiento. El método utilizado por \cite{drummond1999real} se basa en la detección de bordes para realizar el seguimiento frame a frame. 
+La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. En el artículo \cite{park2011texture} utilizan el algoritmo ``Iterative Closest Point'' (ICP) propuesto en \cite{zhang94icp,besl92icp}, refinando el resultado con datos de bordes tomados durante la fase de entrenamiento. El método utilizado por \cite{drummond1999real} se basa en la detección de bordes para realizar el seguimiento frame a frame.
+
+\section{Alignment prerejective}
+
+\section{Iterative Closest Point (ICP)}
+
+\section{Esquema de seguimiento}
+Cosas a escribir:
+\begin{itemize}
+	\item cómo separé las etapas en el código y por qué
+	\item cómo se "comunican"
+\end{itemize}
 
 \section{Método propuesto}
-Tomando como base las etapas antes mencionadas, BLALBLALBLAL La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizaremos la base de datos \cite{lai2011large} la cual nos provee de información de ground truth sobre el posicionamiento de los objetos cuadro por cuadro en video RGB-D. 
+Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizaremos la base de datos \cite{lai2011large} la cual nos provee de información de ground truth sobre el posicionamiento de los objetos cuadro por cuadro en video RGB-D. 
+Cosas a escribir:
+\begin{itemize}
+	\item que imagen tomo como entrenamiento
+	\item una posibilidad que se barajó: armar un modelo más completo alineando varias imágenes
+\end{itemize}
 
 
-La detección se realizó utilizando \cite{6630856}
+La detección se realizó utilizando \cite{6630856} y corrigiendo con ICP.
+Cosas a escribir:
+\begin{itemize}
+	\item qué sucedió al tratar de detectar en toda la escena
+	\item cómo se hizo para dividir la escena en partes y detectar en cada una
+	\item elección de parámetros
+\end{itemize}
 
 
-Para el seguimiento, la utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para esta tarea resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
+La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para realizar el seguimiento resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
 
+Cosas a escribir:
+\begin{itemize}
+	\item elección de parámetros
+\end{itemize}
 
-
-
-\section{sacada}
-Existen distintos artículos que atacan cada una de estas etapas de manera distinta. 
-\begin{enumerate}
-  \item Entrenamiento: obtención del modelo 3D a seguir y calibración
-  \item Detección: usando DOT \cite{hinterstoisser2010dominant} adaptado a 3D
-  \item Seguimiento 3D cuadro a cuadro: usando ICP \cite{zhang94icp,besl92icp} alineando las nubes de puntos del modelo y la detección
-\end{enumerate}
-
-Por otro lado, se evaluará la posibilidad de implementar la fase de entrenamiento on-line presentada en el artículo \cite{park2011texture} y la evaluación cualitativa del seguimiento de objetos 3D.

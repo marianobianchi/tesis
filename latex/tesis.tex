@@ -7,6 +7,18 @@
 \usepackage[spanish, activeacute]{babel}
 \usepackage[left=3cm,right=3cm,bottom=3.5cm,top=3.5cm]{geometry}
 
+%%%%%%%%%%%%%%%%%%%%%%%
+% Para los comentarios
+%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{xspace}
+\usepackage[colorinlistoftodos, shadow]{todonotes}
+%\usepackage[disable]{todonotes}
+\newcommand{\comentarioM}[1]{\todo[bordercolor=green!20, color=green!20, inline]{mbianchi: #1}\xspace}
+\newcommand{\comentarioiM}[1]{\todo[bordercolor=green!20, color=green!20, linecolor=black!40]{mbianchi: #1}\xspace}
+\newcommand{\comentarioP}[1]{\todo[bordercolor=yellow!20, color=yellow!20, inline]{pachi: #1}\xspace}
+
+\newcommand{\comentarioxP}[1]{\comentarioP{\sout{#1}}}
+\newcommand{\comentarioxM}[1]{\comentarioM{\sout{#1}}}
 
 \begin{document}
 

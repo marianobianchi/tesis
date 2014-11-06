@@ -313,8 +313,7 @@ def barrer_parametro(objname, objnumber, scenename, scenenumber):
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    # for find_perc_obj_model_points in [0.2, 0.4, 0.5, 0.75]:
-    for det_obj_mult in [2, 3, 5, 7]:
+    for find_perc_obj_model_points in [0.2, 0.4, 0.5, 0.75]:
         detector = AutomaticDetection(
             ap_defaults=ap_defaults,
             icp_defaults=icp_detection_defaults,
@@ -344,12 +343,16 @@ def barrer_parametro(objname, objnumber, scenename, scenenumber):
             img_provider,
             follower,
             'pruebas_guardadas',
-            'detection_frame_size',
-            det_obj_mult,
+            'find_perc_obj_model_points',
+            find_perc_obj_model_points,
         ).run()
 
         img_provider.restart()
 
 
 if __name__ == '__main__':
+    barrer_parametro('coffee_mug', '5', 'desk', '1')
+    barrer_parametro('cap', '4', 'desk', '1')
     barrer_parametro('bowl', '3', 'desk', '2')
+
+
