@@ -3,7 +3,6 @@
 from __future__ import unicode_literals, division
 
 import numpy as np
-import math
 
 class BusquedaEnEspiral(object):
     def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
