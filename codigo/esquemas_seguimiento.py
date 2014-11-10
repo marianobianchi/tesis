@@ -246,15 +246,20 @@ class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
             v=param_val,
         )
 
+        rc = re.compile('(?P<number>\d{2})')
+        pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
+        pruebas_dirs = pruebas_dirs if pruebas_dirs else ['00']
+        pruebas_dirs.sort()
+        last_test_number = int(rc.match(pruebas_dirs[-1]).groupdict()['number'])
+        new_folder_name = '{n:02d}'.format(n=last_test_number + 1)
+        self.results_path = os.path.join(self.results_path, new_folder_name)
+
         if not os.path.isdir(self.results_path):
             os.makedirs(self.results_path)
         else:
             raise Exception('Ojo. Vas a pisar resultados!')
 
-        self.file = open(
-            os.path.join(self.results_path, 'results.txt'),
-            'w'
-        )
+        self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
         # Guardo los valores de los parametros
         ap_defaults = self.obj_follower.detector._ap_defaults

@@ -235,7 +235,6 @@ def test_flat_and_cloud_conversion():
                 raise Exception('Falla la columna')
 
 
-
 def measure_time(func):
     """
     Decorador que imprime en pantalla el tiempo que tarda en ejecutarse
