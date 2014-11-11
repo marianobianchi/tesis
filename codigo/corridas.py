@@ -314,8 +314,8 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
     )  # path, objname, number
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
-    for i in range(1):
-        for find_perc_obj_model_points in [0.5, 0.75, 0.2, 0.4, 0.5, 0.75]:
+    for i in range(3):
+        for find_perc_obj_model_points in [0.2, 0.4, 0.5, 0.75]:
             detector = AutomaticDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
@@ -427,7 +427,7 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
                 follower,
                 'pruebas_guardadas',
                 'detection_frame_size',
-                find_perc_obj_model_points,
+                det_obj_mult,
             ).run()
 
             img_provider.restart()
@@ -435,10 +435,10 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
 if __name__ == '__main__':
     # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
     # barrer_find_percentage_object('cap', '4', 'desk', '1')
-    barrer_find_percentage_object('bowl', '3', 'desk', '2')
+    # barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
-    # barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')
-    # barrer_detection_frame_size('cap', '4', 'desk', '1')
-    # barrer_detection_frame_size('bowl', '3', 'desk', '2')
+    barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')
+    barrer_detection_frame_size('cap', '4', 'desk', '1')
+    barrer_detection_frame_size('bowl', '3', 'desk', '2')
 
 

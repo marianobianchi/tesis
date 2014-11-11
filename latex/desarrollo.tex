@@ -7,15 +7,17 @@ La etapa de detección tiene como objetivo obtener la ubicación del objeto a se
 
 La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. En el artículo \cite{park2011texture} utilizan el algoritmo ``Iterative Closest Point'' (ICP) propuesto en \cite{zhang94icp,besl92icp}, refinando el resultado con datos de bordes tomados durante la fase de entrenamiento. El método utilizado por \cite{drummond1999real} se basa en la detección de bordes para realizar el seguimiento frame a frame.
 
-\section{Base de datos RGB-D}
+\section{Base de datos RGB-D}\label{base_rgbd}
 Durante el desarrollo de este trabajo se utilizaron datos de imágenes RGB-D anotados para aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Los datos fueron tomados del trabajo \cite{lai2011large} en donde se creó una base de objetos y escenas anotada frame a frame. Esta base cuenta por un lado con varias escenas. Cada una de ellas consta de varios frames RGB con su respectiva información de profundidad. Además, la base provee información frame a frame de qué objetos aparecen y cuál es su ubicación en el plano RGB.
 
 Por otra parte, la base provee imágenes RGB de los objetos anotados frame a frame en las escenas antes mencionadas. Para tomar estas imágenes los objetos fueron posados en una base circular giratoria y manteniendo la cámara en una posición fija se tomaron muestras con cierta regularidad cubriendo toda la circunferencia de cada objeto. Esto se hizo además desde distintas alturas permitiendo apreciar la profundidad del objeto y así obtener una mejor descripción del mismo. Cada una de estas imágenes es acompañada además por una máscara que segmenta al objeto buscado y la información de profundidad (nube de puntos) del objeto segmentado.
 
+Los objetos elegidos para esta base se organizaron de una manera jerárquica tomada de las relaciones hiperónimo/hipónimo de WordNet. Cada objeto pertenece a una clase de objetos y hay varias instancias por cada clase. Por ejemplo, en la categoría ``taza'' existen varias instancias diferentes, que se corresponden simplemente a distintas tazas ya sea por forma o por color.
+
+Existen distintas escenas que contienen a los objetos mencionados y en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase. De esta manera la base otorga la posibilidad de generar algoritmos capaces de identificar instancias de objetos particulares o familias de objetos según la clasificación antes mencionada.
 
 
-
-\section{Alignment prerejective}
+\section{Alignment prerejective}\label{alignment_prerejective}
 
 \section{Iterative Closest Point (ICP)}
 
@@ -27,15 +29,13 @@ Cosas a escribir:
 \end{itemize}
 
 
-
 \section{Método propuesto}
-Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizaremos la base de datos \cite{lai2011large} la cual nos provee de información de ground truth sobre el posicionamiento de los objetos cuadro por cuadro en video RGB-D.
+Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
+Para esta primer etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D. Lo ideal sería que esta nube de puntos sea lo más completa posible, acercándose así al modelo 3D completo del objeto pero esto no es muy factible ni se puede obtener desde la base que usamos. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto que otorga la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado. Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la primera según orden alfanumérico del nombre del archivo proveniente de la base.
 
-Cosas a escribir:
-\begin{itemize}
-	\item que imagen tomo como entrenamiento
-	\item una posibilidad que se barajó: armar un modelo más completo alineando varias imágenes
-\end{itemize}
+Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del método de detección se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo.
+
+
 
 
 La detección se realizó utilizando \cite{6630856} y corrigiendo con ICP.
