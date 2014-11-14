@@ -521,12 +521,12 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
 
 if __name__ == '__main__':
-    # analizar_resultados(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/5/results.txt'
-    # )
+    analizar_resultados(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/2/01/results.txt'
+    )
 
     # analizar_resultados(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -583,7 +583,7 @@ if __name__ == '__main__':
     #     param='find_perc_obj_model_points',
     #     path='pruebas_guardadas',
     # )
-
+    #
     # analizar_precision_recall_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -634,4 +634,4 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    dibujar_cuadros_encontrados_y_del_ground_truth()
+    # dibujar_cuadros_encontrados_y_del_ground_truth()

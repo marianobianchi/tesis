@@ -355,8 +355,15 @@ class AdaptLeafRatio(object):
             model_points = self.found_points[0]
             last_points = self.found_points[-1]
 
-            if 80 <= (last_points / model_points * 100) < 100:
-                self.ratios.append(self.ratios[-1] - 0.001)
+            if 70 <= (last_points / model_points * 100) < 100:
+                # Mantengo si se perdieron puntos, bajo si se ganaron
+                last_ratio = self.ratios[-1]
+                new_ratio = last_ratio
+                diff_points = self.found_points[-1] - self.found_points[-2]
+                if diff_points > 0:
+                    new_ratio -= 0.001
+                    new_ratio = max(new_ratio, 0.001)
+                self.ratios.append(new_ratio)
             elif (last_points / model_points * 100) < 80:
                 diff_ratio = self.ratios[-1] - self.ratios[-2]
                 diff_points = self.found_points[-1] - self.found_points[-2]
@@ -381,7 +388,9 @@ class AdaptLeafRatio(object):
                     self.ratios.append(self.ratios[-1] + 0.001)
 
             else:  # (last_points / model_points * 100) >= 100
-                self.ratios.append(self.ratios[-1] - 0.002)
+                last_ratio = self.ratios[-1]
+                new_ratio = last_ratio - 0.002
+                self.ratios.append(max(new_ratio, 0.001))
 
         else:
             self.ratios.append(self.ratios[-1])
