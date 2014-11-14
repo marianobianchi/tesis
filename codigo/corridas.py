@@ -512,18 +512,101 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
 
             img_provider.restart()
 
+def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.1
+    ap_defaults.inlier_threshold = 3
+    ap_defaults.inlier_fraction = 0.8
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-5
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-5
+
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 3  # TODO: probar con 0.3
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    det_umbral_score = 1e-3
+    det_adapt_leaf = AdaptLeafRatio()
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+    det_obj_mult = 2
+
+    find_umbral_score = 1e-4
+    find_adapt_area = AdaptSearchArea()
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.3
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreCharged(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(3):
+        for simil_threshold in [0.2, 0.4, 0.6, 0.7, 0.9]:
+            ap_defaults.simil_threshold = simil_threshold
+            detector = AutomaticDetection(
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                umbral_score=det_umbral_score,
+                adapt_leaf=det_adapt_leaf,
+                first_leaf_size=det_obj_scene_leaf,
+                perc_obj_model_points=det_perc_obj_model_points,
+                obj_mult=det_obj_mult,
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = FollowerStaticICPAndObjectModel(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameter(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'detection_similarity_threshold',
+                simil_threshold,
+            ).run()
+
+            img_provider.restart()
+
 
 if __name__ == '__main__':
-    # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
-    # barrer_find_percentage_object('cap', '4', 'desk', '1')
-    # barrer_find_percentage_object('bowl', '3', 'desk', '2')
+    barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
+    barrer_find_percentage_object('cap', '4', 'desk', '1')
+    barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
-    # barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')
-    # barrer_detection_frame_size('cap', '4', 'desk', '1')
-    # barrer_detection_frame_size('bowl', '3', 'desk', '2')
+    barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')
+    barrer_detection_frame_size('cap', '4', 'desk', '1')
+    barrer_detection_frame_size('bowl', '3', 'desk', '2')
 
-    #barrer_inlier_fraction('coffee_mug', '5', 'desk', '1')
+    barrer_inlier_fraction('coffee_mug', '5', 'desk', '1')
     barrer_inlier_fraction('cap', '4', 'desk', '1')
     barrer_inlier_fraction('bowl', '3', 'desk', '2')
 
+    barrer_similarity_threshold('bowl', '3', 'desk', '2')
+    barrer_similarity_threshold('coffee_mug', '5', 'desk', '1')
+    barrer_similarity_threshold('cap', '4', 'desk', '1')
 
