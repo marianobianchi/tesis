@@ -224,13 +224,13 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
 
     icp_detection_defaults = ICPDefaults()
     icp_detection_defaults.euc_fit = 1e-5
-    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_corr_dist = 0.8
     icp_detection_defaults.max_iter = 50
     icp_detection_defaults.transf_epsilon = 1e-5
 
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 3
+    icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
@@ -285,13 +285,13 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
 
     icp_detection_defaults = ICPDefaults()
     icp_detection_defaults.euc_fit = 1e-5
-    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_corr_dist = 0.8
     icp_detection_defaults.max_iter = 50
     icp_detection_defaults.transf_epsilon = 1e-5
 
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 3
+    icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
@@ -365,13 +365,13 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
 
     icp_detection_defaults = ICPDefaults()
     icp_detection_defaults.euc_fit = 1e-5
-    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_corr_dist = 0.8
     icp_detection_defaults.max_iter = 50
     icp_detection_defaults.transf_epsilon = 1e-5
 
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 3
+    icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
@@ -445,13 +445,13 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
 
     icp_detection_defaults = ICPDefaults()
     icp_detection_defaults.euc_fit = 1e-5
-    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_corr_dist = 0.8
     icp_detection_defaults.max_iter = 50
     icp_detection_defaults.transf_epsilon = 1e-5
 
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 3  # TODO: probar con 0.3
+    icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
