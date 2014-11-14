@@ -11,7 +11,13 @@ from cpp.common import get_point, points, get_min_max, compute_centroid
 
 
 def dibujar_cuadrado(img, topleft, bottomright, color=(0, 0, 0)):
-    cv2.rectangle(img, topleft, bottomright, color, 3)
+    cv2.rectangle(
+        img,
+        tuple(reversed(topleft)),
+        tuple(reversed(bottomright)),
+        color,
+        3
+    )
     return img
 
 
@@ -348,7 +354,6 @@ class AdaptLeafRatio(object):
         if len(self.ratios) > 1:
             model_points = self.found_points[0]
             last_points = self.found_points[-1]
-            one_after_last_points = self.found_points[-2]
 
             if 80 <= (last_points / model_points * 100) < 100:
                 self.ratios.append(self.ratios[-1] - 0.001)

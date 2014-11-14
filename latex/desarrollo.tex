@@ -29,7 +29,7 @@ Cosas a escribir:
 \end{itemize}
 
 
-\section{Método propuesto}
+\section{Método propuesto}\label{metodo_propuesto}
 Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
 Para esta primer etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D. Lo ideal sería que esta nube de puntos sea lo más completa posible, acercándose así al modelo 3D completo del objeto pero esto no es muy factible ni se puede obtener desde la base que usamos. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto que otorga la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado. Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la primera según orden alfanumérico del nombre del archivo proveniente de la base.
 
@@ -43,14 +43,40 @@ Cosas a escribir:
 \begin{itemize}
 	\item qué sucedió al tratar de detectar en toda la escena
 	\item cómo se hizo para dividir la escena en partes y detectar en cada una
-	\item elección de parámetros
 \end{itemize}
 
 
 La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para realizar el seguimiento resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
 
-Cosas a escribir:
-\begin{itemize}
-	\item elección de parámetros
-\end{itemize}
+\section{Elección de parámetros}
+\begin{table}[h]
+	\begin{tabular}{|c|c|c|c|c|}
+	\hline 
+	Escena y objeto/valor del parametro & 2 & 3 & 5 & 7 \\ 
+	\hline 
+	desk\_1 - coffee\_mug\_5 & 32.57\% & 6.99\% & 0\% & 0.5\% \\ 
+	\hline 
+	desk\_1 - cap\_4 & 46.61\% & 42.42\% & 24.01\% & 21.68\% \\ 
+	\hline 
+	desk\_2 - bowl\_3 & 13.27\% & 8.61\% & 7.8\% & 3.5\% \\ 
+	\hline 
+	\end{tabular}
+	\caption{Los valores corresponden al parámetro DET\_FRAME\_SIZE, que es en cuanto se multiplica el tamaño del bounding box del objeto para usarlo como frame de detección (ver sección \ref{metodo_propuesto})}
+\end{table}
+
+
+\begin{table}[h]
+	\begin{tabular}{|c|c|c|c|c|}
+	\hline 
+	Escena y objeto/valor del parametro & 0.2 & 0.4 & 0.5 & 0.75 \\ 
+	\hline 
+	desk\_1 - coffee\_mug\_5 & 44.94\% & 32.48\% & 15.1\% & 0.23\% \\ 
+	\hline 
+	desk\_1 - cap\_4 & 32.39\% & 23.95\% & 6.65\% & 0\% \\ 
+	\hline 
+	desk\_2 - bowl\_3 & 15.01\% & 4.5\% & 10.39\% & 1.71\% \\ 
+	\hline 
+	\end{tabular}
+	\caption{Los valores corresponden al parámetro FIND\_PERC\_OBJ\_MODEL, que es el porcentaje de puntos del modelo considerados suficientes para determinar que lo que se encontró es el objeto buscado (ver sección \ref{metodo_propuesto})}
+\end{table}
 

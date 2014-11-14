@@ -7,7 +7,9 @@ import codecs
 import matplotlib.pyplot as plt; plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
+from metodos_comunes import dibujar_cuadrado
 from detectores import StaticDetector
 
 
@@ -419,13 +421,103 @@ def analizar_precision_recall_por_parametro(matfile, scenenamenum, objname,
     )
 
     for prm, prec, rec in mean_precs_recalls:
-        fig.text(
+        plt.text(
             prec,
-            rec * 1.05,
-            '{h}'.format(h=prm)
+            rec * 1.1,
+            '{h}'.format(h=prm),
+            ha='center',
+            va='bottom',
         )
 
     plt.show()
+
+
+def dibujar_cuadros_encontrados_y_del_ground_truth():
+    results_path = ('pruebas_guardadas/desk_1/coffee_mug_5/'
+                    'detection_frame_size/2/01/results.txt')
+    img_path_re = 'videos/rgbd/scenes/desk/desk_1/desk_1_{nframe}.png'
+
+    ground_truth = StaticDetector(
+        matfile_path='videos/rgbd/scenes/desk/desk_1.mat',
+        obj_rgbd_name='coffee_mug',
+    )
+
+    with codecs.open(results_path, 'r', 'utf-8') as file_:
+        reach_result_zone = False
+        while not reach_result_zone:
+            line = file_.next()
+            reach_result_zone = line.startswith('RESULTS_SECTION')
+
+        for line in file_.readlines():
+            values = [int(v) for v in line.split(';')]
+
+            nframe = values[0]
+            # fue_exitoso = values[1]
+            metodo = values[2]
+            fila_sup = values[3]
+            col_izq = values[4]
+            fila_inf = values[5]
+            col_der = values[6]
+            # size = fila_inf - fila_sup
+
+            ground_truth.update({'nframe': nframe})
+            gt_fue_exitoso, gt_desc = ground_truth.detect()
+            gt_col_izq = gt_desc['topleft'][1]
+            gt_fila_sup = gt_desc['topleft'][0]
+            gt_col_der = gt_desc['bottomright'][1]
+            gt_fila_inf = gt_desc['bottomright'][0]
+
+            rectangle_found = Rectangle(
+                (fila_sup, col_izq),
+                (fila_inf, col_der)
+            )
+            ground_truth_rectangle = Rectangle(
+                (gt_fila_sup, gt_col_izq),
+                (gt_fila_inf, gt_col_der)
+            )
+            intersection = rectangle_found.intersection(
+                ground_truth_rectangle
+            )
+
+            if intersection.area() > 0:
+                union_area = (
+                    rectangle_found.area() + ground_truth_rectangle.area() - intersection.area()
+                )
+                overlap_area = intersection.area() / union_area
+                if nframe == 56:
+                    print(rectangle_found)
+                    print(ground_truth_rectangle)
+                    print("Overlap_area: " + unicode(overlap_area))
+
+                fname = img_path_re.format(nframe=nframe)
+                img = cv2.imread(fname, cv2.IMREAD_COLOR)
+
+                img = dibujar_cuadrado(
+                    img,
+                    (gt_fila_sup, gt_col_izq),
+                    (gt_fila_inf, gt_col_der),
+                    color=(0, 255, 0)
+                )
+                algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
+                if metodo == 1:  # si fue seguimiento
+                    algoritmo_color = (255, 0, 0)  # azul
+                img = dibujar_cuadrado(
+                    img,
+                    (fila_sup, col_izq),
+                    (fila_inf, col_der),
+                    color=algoritmo_color,
+                )
+
+                # Muestro el resultado y espero que se apriete la tecla q
+                # cv2.imshow(
+                #     'Frame {n}, {obj}, {scene}'.format(n=nframe, obj='coffee_mug', scene='desk_1'),
+                #     img
+                # )
+                #
+                # while cv2.waitKey(1) & 0xFF != ord('q'):
+                #     pass
+                #
+                # cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
@@ -442,7 +534,7 @@ if __name__ == '__main__':
     #     objname='cap',
     #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
     # )
-
+    #
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -492,52 +584,54 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
 
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
+    dibujar_cuadros_encontrados_y_del_ground_truth()

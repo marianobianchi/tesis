@@ -246,6 +246,11 @@ class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
             v=param_val,
         )
 
+        # Creo la carpeta para ese parametro en la escena y objeto
+        # correspondientes
+        if not os.path.isdir(self.results_path):
+            os.makedirs(self.results_path)
+
         rc = re.compile('(?P<number>\d{2})')
         pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
         pruebas_dirs = pruebas_dirs if pruebas_dirs else ['00']
@@ -254,6 +259,7 @@ class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
         new_folder_name = '{n:02d}'.format(n=last_test_number + 1)
         self.results_path = os.path.join(self.results_path, new_folder_name)
 
+        # Creo una carpeta distinta por numero de corrida
         if not os.path.isdir(self.results_path):
             os.makedirs(self.results_path)
         else:
