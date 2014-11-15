@@ -262,10 +262,7 @@ class AutomaticDetection(Detector):
         accepted_points = model_cloud_points * self.perc_obj_model_points
 
         if not self.adapt_leaf.was_started():
-            self.adapt_leaf.set_first_values(
-                model_cloud_points,
-                self.first_leaf_size
-            )
+            self.adapt_leaf.set_first_values(model_cloud_points)
 
         scene_cloud = self._descriptors['pcd']
 
@@ -347,6 +344,8 @@ class AutomaticDetection(Detector):
 
                 if fue_exitoso:
                     self.adapt_leaf.set_found_points(obj_scene_points)
+                else:
+                    self.adapt_leaf.reset()
 
                 minmax = get_min_max(obj_scene_cloud)
 

@@ -1,11 +1,12 @@
 #coding=utf-8
 
-from __future__ import unicode_literals
+from __future__ import unicode_literals, print_function
 
 import os
 import re
 
 from cpp.common import save_pcd
+
 
 class FollowingScheme(object):
 
@@ -142,9 +143,10 @@ class FollowingSchemeSavingData(FollowingScheme):
         ######################
         # Etapa de detección
         ######################
-        print "Detectando en imagen {i}".format(
+        print("Detectando en imagen {i}".format(
             i=self.img_provider.next_frame_number
-        )
+        ))
+        es_deteccion = True
 
         fue_exitoso, topleft, bottomright = (
             self.obj_follower.detect()
@@ -161,23 +163,30 @@ class FollowingSchemeSavingData(FollowingScheme):
 
         while self.img_provider.have_images():
 
-            es_deteccion = False
             if fue_exitoso:
-                print "Buscando en imagen {i}".format(
-                    i=self.img_provider.next_frame_number
+                print(
+                    "Buscando en imagen {i}".format(
+                        i=self.img_provider.next_frame_number
+                    ),
+                    ''
                 )
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.follow()
                 )
+                if fue_exitoso:
+                    print('')
+                es_deteccion = False
 
             if not fue_exitoso:
-                es_deteccion = True
-                print "MISS... Detectando en imagen {i}".format(
-                    i=self.img_provider.next_frame_number
-                )
+
+                print("{p}Detectando en imagen {i}".format(
+                    p='...MISS... ' if not es_deteccion else '',
+                    i=self.img_provider.next_frame_number,
+                ))
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
                 )
+                es_deteccion = True
 
             self.save_result(
                 0 if es_deteccion else 1,

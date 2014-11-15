@@ -335,65 +335,65 @@ class AdaptLeafRatio(object):
     """
     Adapts the leaf radio used to take object points from scene
     """
-    def __init__(self):
+    def __init__(self, first_leaf=0.005, min_ratio=0.002):
         self.found_points = []
-        self.ratios = []
+        self.ratios = [first_leaf]
+        self.min_ratio = min_ratio
 
     def was_started(self):
-        return len(self.found_points) > 0 and len(self.ratios) > 0
+        return len(self.found_points) > 0
 
-    def set_first_values(self, model_points, first_ratio):
+    def reset(self):
+        self.found_points = self.found_points[:1]
+        self.ratios = self.ratios[:1]
+
+    def set_first_values(self, model_points):
         self.found_points = [model_points]
-        self.ratios = [first_ratio]
 
     def set_found_points(self, points):
         self.found_points.append(points)
-        self.set_leaf_ratio()
+        self._set_leaf_ratio()
 
-    def set_leaf_ratio(self):
+    def _set_leaf_ratio(self):
+        last_ratio = self.ratios[-1]
+        new_ratio = last_ratio
         if len(self.ratios) > 1:
             model_points = self.found_points[0]
             last_points = self.found_points[-1]
 
             if 70 <= (last_points / model_points * 100) < 100:
                 # Mantengo si se perdieron puntos, bajo si se ganaron
-                last_ratio = self.ratios[-1]
-                new_ratio = last_ratio
                 diff_points = self.found_points[-1] - self.found_points[-2]
                 if diff_points > 0:
                     new_ratio -= 0.001
-                    new_ratio = max(new_ratio, 0.001)
-                self.ratios.append(new_ratio)
-            elif (last_points / model_points * 100) < 80:
+            elif (last_points / model_points * 100) < 70:
                 diff_ratio = self.ratios[-1] - self.ratios[-2]
                 diff_points = self.found_points[-1] - self.found_points[-2]
 
                 # Si subieron el radio y los puntos
                 if diff_ratio > 0 and diff_points > 0:
-                    self.ratios.append(self.ratios[-1])
+                    new_ratio = last_ratio  # Mantengo
                 # Si subio el radio y bajaron los puntos
                 elif diff_ratio > 0 and diff_points <= 0:
-                    self.ratios.append(self.ratios[-1] + 0.001)
+                    new_ratio = last_ratio + 0.001
                 # Si bajo el radio y subieron los puntos
                 elif diff_ratio < 0 and diff_points > 0:
-                    self.ratios.append(self.ratios[-1])
+                    new_ratio = last_ratio  # Mantengo
                 # Si bajaron el radio y los puntos
                 elif diff_ratio < 0 and diff_points <= 0:
-                    self.ratios.append(self.ratios[-1] + 0.001)
+                    new_ratio = last_ratio + 0.001
                 # Si se mantuvo el radio y subieron los puntos
                 elif diff_ratio == 0 and diff_points > 0:
-                    self.ratios.append(self.ratios[-1])
+                    new_ratio = last_ratio  # Mantengo
                 # Si se mantuvo el radio y bajaron los puntos
                 else:
-                    self.ratios.append(self.ratios[-1] + 0.001)
+                    new_ratio = last_ratio + 0.001
 
             else:  # (last_points / model_points * 100) >= 100
-                last_ratio = self.ratios[-1]
                 new_ratio = last_ratio - 0.002
-                self.ratios.append(max(new_ratio, 0.001))
 
-        else:
-            self.ratios.append(self.ratios[-1])
+        new_ratio = max(self.min_ratio, new_ratio)
+        self.ratios.append(new_ratio)
 
     def leaf_ratio(self):
         return self.ratios[-1]

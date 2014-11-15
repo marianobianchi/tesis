@@ -233,10 +233,7 @@ class ICPFinderWithModel(ICPFinder):
         model_points = points(obj_model)
         self.adapt_area.set_default_distances(obj_model)
         if not self.adapt_leaf.was_started():
-            self.adapt_leaf.set_first_values(
-                model_points,
-                self.first_leaf_size,
-            )
+            self.adapt_leaf.set_first_values(model_points)
 
         accepted_points = model_points * self.perc_obj_model_points
 
@@ -276,6 +273,8 @@ class ICPFinderWithModel(ICPFinder):
                 'detected_cloud': obj_from_scene_points,
                 'detected_transformation': icp_result.transformation,
             })
+        else:
+            self.adapt_leaf.reset()
 
         return fue_exitoso, descriptors
 

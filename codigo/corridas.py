@@ -296,16 +296,16 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
     icp_finder_defaults.transf_epsilon = 1e-5
 
     det_umbral_score = 1e-3
-    det_adapt_leaf = AdaptLeafRatio()
     det_obj_scene_leaf = 0.005
     det_perc_obj_model_points = 0.5
+    det_adapt_leaf = AdaptLeafRatio(first_leaf=det_obj_scene_leaf)
     det_obj_mult = 2
 
     find_umbral_score = 1e-4
     find_adapt_area = AdaptSearchArea()
-    find_adapt_leaf = AdaptLeafRatio()
-    find_obj_scene_leaf = 0.002
+    find_obj_scene_leaf = 0.004
     find_perc_obj_model_points = 0.3
+    find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
     img_provider = FrameNamesAndImageProviderPreCharged(
@@ -376,16 +376,16 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
     icp_finder_defaults.transf_epsilon = 1e-5
 
     det_umbral_score = 1e-3
-    det_adapt_leaf = AdaptLeafRatio()
     det_obj_scene_leaf = 0.005
     det_perc_obj_model_points = 0.5
+    det_adapt_leaf = AdaptLeafRatio(first_leaf=det_obj_scene_leaf)
     det_obj_mult = 2
 
     find_umbral_score = 1e-4
     find_adapt_area = AdaptSearchArea()
-    find_adapt_leaf = AdaptLeafRatio()
-    find_obj_scene_leaf = 0.002
+    find_obj_scene_leaf = 0.004
     find_perc_obj_model_points = 0.3
+    find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
     img_provider = FrameNamesAndImageProviderPreCharged(
@@ -456,16 +456,16 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
     icp_finder_defaults.transf_epsilon = 1e-5
 
     det_umbral_score = 1e-3
-    det_adapt_leaf = AdaptLeafRatio()
     det_obj_scene_leaf = 0.005
     det_perc_obj_model_points = 0.5
+    det_adapt_leaf = AdaptLeafRatio(first_leaf=det_obj_scene_leaf)
     det_obj_mult = 2
 
     find_umbral_score = 1e-4
     find_adapt_area = AdaptSearchArea()
-    find_adapt_leaf = AdaptLeafRatio()
-    find_obj_scene_leaf = 0.002
+    find_obj_scene_leaf = 0.004
     find_perc_obj_model_points = 0.3
+    find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
     img_provider = FrameNamesAndImageProviderPreCharged(
