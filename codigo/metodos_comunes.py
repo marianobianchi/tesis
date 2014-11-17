@@ -396,5 +396,6 @@ class AdaptLeafRatio(object):
         self.ratios.append(new_ratio)
 
     def leaf_ratio(self):
+        print "    leaf_size =", self.ratios[-1]
         return self.ratios[-1]
 

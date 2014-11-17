@@ -525,13 +525,13 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
 
     icp_detection_defaults = ICPDefaults()
     icp_detection_defaults.euc_fit = 1e-5
-    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_corr_dist = 0.8
     icp_detection_defaults.max_iter = 50
     icp_detection_defaults.transf_epsilon = 1e-5
 
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 3  # TODO: probar con 0.3
+    icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
@@ -594,19 +594,19 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
 
 
 if __name__ == '__main__':
-    barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')
-    barrer_detection_frame_size('cap', '4', 'desk', '1')
-    barrer_detection_frame_size('bowl', '3', 'desk', '2')
-
-    barrer_inlier_fraction('coffee_mug', '5', 'desk', '1')
-    barrer_inlier_fraction('cap', '4', 'desk', '1')
+    # barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')  # 4 hs
+    # barrer_detection_frame_size('cap', '4', 'desk', '1')  # 4.9 hs
+    # barrer_detection_frame_size('bowl', '3', 'desk', '2')  # 15.83 hs
+    #
+    # barrer_inlier_fraction('coffee_mug', '5', 'desk', '1')  # ?? hs
+    # barrer_inlier_fraction('cap', '4', 'desk', '1')  # ?? hs
     barrer_inlier_fraction('bowl', '3', 'desk', '2')
-
-    barrer_similarity_threshold('coffee_mug', '5', 'desk', '1')
-    barrer_similarity_threshold('cap', '4', 'desk', '1')
-    barrer_similarity_threshold('bowl', '3', 'desk', '2')
-
-    barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
-    barrer_find_percentage_object('cap', '4', 'desk', '1')
-    barrer_find_percentage_object('bowl', '3', 'desk', '2')
+    #
+    # barrer_similarity_threshold('coffee_mug', '5', 'desk', '1')
+    # barrer_similarity_threshold('cap', '4', 'desk', '1')
+    # barrer_similarity_threshold('bowl', '3', 'desk', '2')
+    #
+    # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
+    # barrer_find_percentage_object('cap', '4', 'desk', '1')
+    # barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
