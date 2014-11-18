@@ -33,9 +33,35 @@ Cosas a escribir:
 Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
 Para esta primer etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D. Lo ideal sería que esta nube de puntos sea lo más completa posible, acercándose así al modelo 3D completo del objeto pero esto no es muy factible ni se puede obtener desde la base que usamos. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto que otorga la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado. Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la primera según orden alfanumérico del nombre del archivo proveniente de la base.
 
-Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. Luego de realizar varias pruebas se pudo observar que el método era robusto para ciertos valores de los parámetros y un objeto en particular pero que al cambiar de objeto los valores de los parámetros debían ser modificados para lograr una detección. Pero también se observó en las pruebas que si la escena donde se buscaba el objeto era lo suficientemente pequeña, la búsqueda volvía a ser robusta no solo para un objeto en particular sino para todos con los que se probó. Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tenía como primer etapa tomar el tamaño del objeto
+Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. A través de estas pruebas se pudo observar que el método era robusto para ciertos valores de los parámetros y un objeto en particular pero que al cambiar de objeto los valores de los parámetros debían ser modificados para lograr una detección. También se observó en las pruebas que si la escena donde se buscaba el objeto era lo suficientemente pequeña, la búsqueda volvía a ser robusta no solo para un objeto en particular sino para aquellos elegidos para estas pruebas. Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tenía como primer etapa obtener el alto y el ancho del modelo del objeto y multiplicarlos por un cierto valor. Llamemos a este valor DETECTION\_FRAME\_SIZE. Considerando estos valores dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Como el objeto a detectar puede haber quedado justo entre dos cuadrantes, la división se hizo de manera tal que estos cuadrantes se solapen entre si, como puede observarse en el gráfico \ref{frames_solapados} \comentarioM{Notar que la división no se hizo en el eje de la profundidad ya que las pruebas preeliminares dieron buenos resultados de esta manera y hacer eso implicaba agregarle complejidad algoritmica al método.} o \comentarioM{Notar que esta división solo se hizo en los ejes ``x'' e ``y'' y no en el eje ``z''}. La detección se corre en cada uno de estos cuadrantes y pueden suceder varias cosas:
+\begin{itemize}
+	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
+	\item Se encontró el objeto en un cuadrante
+	\item Se encontró el objeto en varios cuadrantes: el algoritmo devuelve la mejor alineación encontrada
+\end{itemize}
 
-
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/primercuadrante.png}
+		\caption{Primer frame de búsqueda}
+		\label{frames_solapados_1}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/segundocuadrante.png}
+		\caption{Segundo frame de búsqueda}
+		\label{frames_solapados_2}
+	\end{subfigure}	
+	\quad
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/sextocuadrante.png}
+		\caption{Sexto frame de búsqueda}
+		\label{frames_solapados_3}
+	\end{subfigure}
+	\caption{Se busca en cada cuadrante de la grilla y en los recuadros del mismo tamaño que cubren los bordes de la grilla principal}
+	\label{frames_solapados}
+\end{figure}
 
 
 La detección se realizó utilizando \cite{6630856} y corrigiendo con ICP.
@@ -48,7 +74,7 @@ Cosas a escribir:
 
 La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para realizar el seguimiento resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
 
-\section{Elección de parámetros}
+\section{Elección de parámetros}\label{eleccion_parametros}
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|}
 	\hline 
