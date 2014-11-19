@@ -7,7 +7,7 @@ from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
-    AdaptLeafRatio, Timer
+    AdaptLeafRatio
 
 
 class Finder(object):
@@ -225,57 +225,58 @@ class ICPFinderWithModel(ICPFinder):
         return target_cloud
 
     def find(self):
-        with Timer('    tiempo de seguimiento'):
-            # Obtengo pcd's y depth
-            object_cloud = self._descriptors['object_cloud']
-            target_cloud = self._descriptors['pcd']
+        # Obtengo pcd's y depth
+        object_cloud = self._descriptors['object_cloud']
+        target_cloud = self._descriptors['pcd']
 
-            obj_model = self._descriptors['obj_model']
-            model_points = points(obj_model)
-            self.adapt_area.set_default_distances(obj_model)
-            if not self.adapt_leaf.was_started():
-                self.adapt_leaf.set_first_values(model_points)
+        obj_model = self._descriptors['obj_model']
+        model_points = points(obj_model)
+        self.adapt_area.set_default_distances(obj_model)
+        if not self.adapt_leaf.was_started():
+            self.adapt_leaf.set_first_values(model_points)
 
-            accepted_points = model_points * self.perc_obj_model_points
+        accepted_points = model_points * self.perc_obj_model_points
 
-            icp_result = self.simple_follow(
-                object_cloud,
-                target_cloud,
-            )
+        icp_result = self.simple_follow(
+            object_cloud,
+            target_cloud,
+        )
 
+        points_from_scene = 0
+        if icp_result.has_converged:
             obj_from_scene_points = self.get_object_points_from_scene(
                 icp_result.cloud,
                 target_cloud,
             )
             points_from_scene = points(obj_from_scene_points)
 
-            fue_exitoso = icp_result.score < self.umbral_score
-            fue_exitoso = (
-                fue_exitoso and
-                points_from_scene >= accepted_points
+        fue_exitoso = icp_result.score < self.umbral_score
+        fue_exitoso = (
+            fue_exitoso and
+            points_from_scene >= accepted_points
+        )
+
+        descriptors = {}
+
+        if fue_exitoso:
+            self.adapt_leaf.set_found_points(points_from_scene)
+
+            # filas = len(depth_img)
+            # columnas = len(depth_img[0])
+
+            # Busco los limites en el dominio de las filas y columnas del RGB
+            topleft, bottomright = from_cloud_to_flat_limits(
+                obj_from_scene_points
             )
 
-            descriptors = {}
-
-            if fue_exitoso:
-                self.adapt_leaf.set_found_points(points_from_scene)
-
-                # filas = len(depth_img)
-                # columnas = len(depth_img[0])
-
-                # Busco los limites en el dominio de las filas y columnas del RGB
-                topleft, bottomright = from_cloud_to_flat_limits(
-                    obj_from_scene_points
-                )
-
-                descriptors.update({
-                    'topleft': topleft,
-                    'bottomright': bottomright,
-                    'detected_cloud': obj_from_scene_points,
-                    'detected_transformation': icp_result.transformation,
-                })
-            else:
-                self.adapt_leaf.reset()
+            descriptors.update({
+                'topleft': topleft,
+                'bottomright': bottomright,
+                'detected_cloud': obj_from_scene_points,
+                'detected_transformation': icp_result.transformation,
+            })
+        else:
+            self.adapt_leaf.reset()
 
         return fue_exitoso, descriptors
 
@@ -287,8 +288,13 @@ class ICPFinderWithModel(ICPFinder):
         """
         target_cloud = self._filter_target_cloud(target_cloud)
 
-        # Calculate ICP
-        icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
+        if points(target_cloud) > 0:
+            # Calculate ICP
+            icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
+        else:
+            icp_result = ICPResult()
+            icp_result.has_converged = False
+            icp_result.score = 100
 
         return icp_result
 

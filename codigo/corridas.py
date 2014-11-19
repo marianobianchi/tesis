@@ -11,7 +11,6 @@ from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment, AutomaticDetection
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingData, \
     FollowingSquemaExploringParameter
-from metodos_comunes import Timer
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreCharged
@@ -474,8 +473,8 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
     )  # path, objname, number
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
-    for i in range(3):
-        for inlier_fraction in [0.2, 0.4, 0.6, 0.7, 0.9]:
+    for i in range(1):
+        for inlier_fraction in [0.7, 0.9, 0.2, 0.4, 0.6, 0.7, 0.9]:
             ap_defaults.inlier_fraction = inlier_fraction
             detector = AutomaticDetection(
                 ap_defaults=ap_defaults,

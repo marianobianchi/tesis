@@ -2,8 +2,6 @@
 
 from __future__ import (unicode_literals, division)
 
-from metodos_comunes import measure_time
-
 
 class Follower(object):
     """
@@ -46,7 +44,6 @@ class Follower(object):
     #######################
     # Funcion de deteccion
     #######################
-    @measure_time
     def detect(self):
         # Actualizo descriptores e imagen en detector
         self.detector.update(self.descriptors())
@@ -67,7 +64,6 @@ class Follower(object):
     ######################
     # Funcion de busqueda
     ######################
-    @measure_time
     def follow(self):
         # Actualizo descriptores e imagen en comparador
         self.finder.update(self.descriptors())
@@ -84,7 +80,6 @@ class Follower(object):
             bottomright = self.descriptors()['bottomright']
 
         return fue_exitoso, topleft, bottomright
-
 
     ##########################
     # Actualizar descriptores

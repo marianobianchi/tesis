@@ -10,7 +10,7 @@ from cpp.common import filter_cloud, save_pcd, get_min_max, show_clouds, \
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits, \
-    from_cloud_to_flat_limits, AdaptLeafRatio, Timer
+    from_cloud_to_flat_limits, AdaptLeafRatio
 from metodos_de_busqueda import BusquedaPorFramesSolapados
 
 
@@ -256,122 +256,121 @@ class AutomaticDetection(Detector):
         self.obj_mult = kwargs.get('obj_mult', 2)
 
     def detect(self):
-        with Timer('    tiempo de deteccion'):
-            model_cloud = self._descriptors['obj_model']
-            model_cloud_points = points(model_cloud)
+        model_cloud = self._descriptors['obj_model']
+        model_cloud_points = points(model_cloud)
 
-            accepted_points = model_cloud_points * self.perc_obj_model_points
+        accepted_points = model_cloud_points * self.perc_obj_model_points
 
-            if not self.adapt_leaf.was_started():
-                self.adapt_leaf.set_first_values(model_cloud_points)
+        if not self.adapt_leaf.was_started():
+            self.adapt_leaf.set_first_values(model_cloud_points)
 
-            scene_cloud = self._descriptors['pcd']
+        scene_cloud = self._descriptors['pcd']
 
-            # obtengo tamaño del modelo del objeto a detectar y tomo una region
-            # X veces mas grande
-            obj_limits = get_min_max(model_cloud)
+        # obtengo tamaño del modelo del objeto a detectar y tomo una region
+        # X veces mas grande
+        obj_limits = get_min_max(model_cloud)
 
-            # obtengo limites de la escena
-            scene_limits = get_min_max(scene_cloud)
+        # obtengo limites de la escena
+        scene_limits = get_min_max(scene_cloud)
 
-            detected_descriptors = {
-                'topleft': (0, 0),  # (fila, columna)
-                'bottomright': 0,
-            }
-            fue_exitoso = False
+        detected_descriptors = {
+            'topleft': (0, 0),  # (fila, columna)
+            'bottomright': 0,
+        }
+        fue_exitoso = False
 
-            best_aligned_scene = None
-            best_alignment_score = self.umbral_score  # lesser is better
-            best_limits = {}
+        best_aligned_scene = None
+        best_alignment_score = self.umbral_score  # lesser is better
+        best_limits = {}
 
-            # Busco la mejor alineacion del objeto segmentando la escena
-            for limits in (BusquedaPorFramesSolapados()
-                           .iterate_frame_boxes(obj_limits, scene_limits,
-                                                obj_mult=self.obj_mult)):
+        # Busco la mejor alineacion del objeto segmentando la escena
+        for limits in (BusquedaPorFramesSolapados()
+                       .iterate_frame_boxes(obj_limits, scene_limits,
+                                            obj_mult=self.obj_mult)):
 
-                cloud = filter_cloud(
-                    scene_cloud,
-                    b'x',
-                    limits['min_x'],
-                    limits['max_x']
+            cloud = filter_cloud(
+                scene_cloud,
+                b'x',
+                limits['min_x'],
+                limits['max_x']
+            )
+            cloud = filter_cloud(
+                cloud,
+                b'y',
+                limits['min_y'],
+                limits['max_y']
+            )
+
+            if points(cloud) > model_cloud_points:
+                # Calculate alignment
+                ap_result = align(model_cloud, cloud, self._ap_defaults)
+                if (ap_result.has_converged and
+                        ap_result.score < best_alignment_score):
+                    best_alignment_score = ap_result.score
+                    best_aligned_scene = ap_result.cloud
+                    best_limits.update(limits)
+
+        # Su hubo una buena alineacion
+        if best_aligned_scene is not None:
+            cloud = filter_cloud(
+                scene_cloud,
+                b'x',
+                best_limits['min_x'],
+                best_limits['max_x']
+            )
+            cloud = filter_cloud(
+                cloud,
+                b'y',
+                best_limits['min_y'],
+                best_limits['max_y']
+            )
+
+            # Calculate ICP
+            icp_result = icp(best_aligned_scene, cloud, self._icp_defaults)
+
+            if icp_result.has_converged and icp_result.score < self.umbral_score:
+                # Filtro los puntos de la escena que se corresponden con el
+                # objeto que estoy buscando
+                obj_scene_cloud = filter_object_from_scene_cloud(
+                    icp_result.cloud,  # object
+                    scene_cloud,  # complete scene
+                    self.adapt_leaf.leaf_ratio(),  # radius
+                    False,  # show values
                 )
-                cloud = filter_cloud(
-                    cloud,
-                    b'y',
-                    limits['min_y'],
-                    limits['max_y']
+
+                obj_scene_points = points(obj_scene_cloud)
+
+                fue_exitoso = obj_scene_points > accepted_points
+
+                if fue_exitoso:
+                    self.adapt_leaf.set_found_points(obj_scene_points)
+                else:
+                    self.adapt_leaf.reset()
+
+                minmax = get_min_max(obj_scene_cloud)
+
+                topleft, bottomright = from_cloud_to_flat_limits(
+                    obj_scene_cloud
                 )
 
-                if points(cloud) > model_cloud_points:
-                    # Calculate alignment
-                    ap_result = align(model_cloud, cloud, self._ap_defaults)
-                    if (ap_result.has_converged and
-                            ap_result.score < best_alignment_score):
-                        best_alignment_score = ap_result.score
-                        best_aligned_scene = ap_result.cloud
-                        best_limits.update(limits)
+                detected_descriptors.update({
+                    'min_x_cloud': minmax.min_x,
+                    'max_x_cloud': minmax.max_x,
+                    'min_y_cloud': minmax.min_y,
+                    'max_y_cloud': minmax.max_y,
+                    'min_z_cloud': minmax.min_z,
+                    'max_z_cloud': minmax.max_z,
+                    'object_cloud': obj_scene_cloud,
+                    'obj_model': icp_result.cloud,  # original model transformed
+                    'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
+                    'topleft': topleft,  # (fila, columna)
+                    'bottomright': bottomright,
+                })
 
-            # Su hubo una buena alineacion
-            if best_aligned_scene is not None:
-                cloud = filter_cloud(
-                    scene_cloud,
-                    b'x',
-                    best_limits['min_x'],
-                    best_limits['max_x']
-                )
-                cloud = filter_cloud(
-                    cloud,
-                    b'y',
-                    best_limits['min_y'],
-                    best_limits['max_y']
-                )
-
-                # Calculate ICP
-                icp_result = icp(best_aligned_scene, cloud, self._icp_defaults)
-
-                if icp_result.has_converged and icp_result.score < self.umbral_score:
-                    # Filtro los puntos de la escena que se corresponden con el
-                    # objeto que estoy buscando
-                    obj_scene_cloud = filter_object_from_scene_cloud(
-                        icp_result.cloud,  # object
-                        scene_cloud,  # complete scene
-                        self.adapt_leaf.leaf_ratio(),  # radius
-                        False,  # show values
-                    )
-
-                    obj_scene_points = points(obj_scene_cloud)
-
-                    fue_exitoso = obj_scene_points > accepted_points
-
-                    if fue_exitoso:
-                        self.adapt_leaf.set_found_points(obj_scene_points)
-                    else:
-                        self.adapt_leaf.reset()
-
-                    minmax = get_min_max(obj_scene_cloud)
-
-                    topleft, bottomright = from_cloud_to_flat_limits(
-                        obj_scene_cloud
-                    )
-
-                    detected_descriptors.update({
-                        'min_x_cloud': minmax.min_x,
-                        'max_x_cloud': minmax.max_x,
-                        'min_y_cloud': minmax.min_y,
-                        'max_y_cloud': minmax.max_y,
-                        'min_z_cloud': minmax.min_z,
-                        'max_z_cloud': minmax.max_z,
-                        'object_cloud': obj_scene_cloud,
-                        'obj_model': icp_result.cloud,  # original model transformed
-                        'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
-                        'topleft': topleft,  # (fila, columna)
-                        'bottomright': bottomright,
-                    })
-
-                    # show_clouds(
-                    #   b'Modelo detectado vs escena',
-                    #   icp_result.cloud,
-                    #   scene_cloud
-                    # )
+                # show_clouds(
+                #   b'Modelo detectado vs escena',
+                #   icp_result.cloud,
+                #   scene_cloud
+                # )
 
         return fue_exitoso, detected_descriptors
