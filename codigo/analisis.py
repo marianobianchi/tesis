@@ -192,7 +192,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     )
     param_values.sort()
 
-    paramval_avgsareas = []
+    paramval_avgsvarsareas = []
     for param_value in param_values:
         param_path = os.path.join(
             path,
@@ -202,6 +202,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             param_value,
         )
         means = []
+        vars = []
         for run_num in os.listdir(param_path):
             overlapping_areas = []
             resultfile = os.path.join(param_path, run_num, 'results.txt')
@@ -260,8 +261,10 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                 means.append(
                     np.mean(overlapping_areas) if overlapping_areas else 0
                 )
-        paramval_avgsareas.append((param_value, means))
-
+                vars.append(
+                    np.var(overlapping_areas) if overlapping_areas else 0
+                )
+        paramval_avgsvarsareas.append((param_value, means, vars))
 
     # Imprimo en pantalla para cada valor del parametro el promedio de
     # solapamiento en la escena para cada corrida y el promedio de todas las
@@ -273,12 +276,17 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         e=scenenamenum,
     ))
     print('###############')
-    for val, avgs in paramval_avgsareas:
+    for val, avgs, variances in paramval_avgsvarsareas:
         strmeans = [unicode(round(m * 100, 2)) for m in avgs]
+        strvars = [unicode(round(m * 100, 2)) for m in variances]
         print('{v}:'.format(v=val))
         print('    {m} ==> prom: {p}'.format(
             m=' | '.join(strmeans),
             p=round(np.mean(np.array(avgs) * 100), 2),
+        ))
+        print('    {m} ==> prom_var: {p}'.format(
+            m=' | '.join(strvars),
+            p=round(np.mean(np.array(variances) * 100), 2),
         ))
 
 
@@ -535,56 +543,7 @@ if __name__ == '__main__':
     #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
     # )
     #
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='detection_frame_size',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='find_perc_obj_model_points',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
@@ -592,7 +551,7 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
@@ -600,7 +559,7 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
-    analizar_precision_recall_por_parametro(
+    analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
         scenenamenum='desk_2',
         objname='bowl',
@@ -608,6 +567,55 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+    #
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
     #
     # analizar_precision_recall_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',

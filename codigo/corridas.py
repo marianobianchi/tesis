@@ -599,13 +599,13 @@ if __name__ == '__main__':
     #
     # barrer_inlier_fraction('coffee_mug', '5', 'desk', '1')  # ?? hs
     # barrer_inlier_fraction('cap', '4', 'desk', '1')  # ?? hs
-    barrer_inlier_fraction('bowl', '3', 'desk', '2')
+    # barrer_inlier_fraction('bowl', '3', 'desk', '2')
     #
     # barrer_similarity_threshold('coffee_mug', '5', 'desk', '1')  # 6.9 hs
     # barrer_similarity_threshold('cap', '4', 'desk', '1')  # 8.94 hs
     # barrer_similarity_threshold('bowl', '3', 'desk', '2')
     #
-    # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
-    # barrer_find_percentage_object('cap', '4', 'desk', '1')
-    # barrer_find_percentage_object('bowl', '3', 'desk', '2')
+    barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
+    barrer_find_percentage_object('cap', '4', 'desk', '1')
+    barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
