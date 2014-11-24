@@ -87,97 +87,138 @@ def test_rectangle():
     print(".", end='')
 
 
-def analizar_resultados(matfile, scenenamenum, objname, resultfile):
+def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
+    
+    RESULT_OVERAP = {
+        'FP': 'Lo encontro pero no estaba',
+        'FN': 'No lo encontro pero estaba',
+        'VN': 'Lo encontro pero no se solapan',
+    }
+           
     ground_truth = StaticDetector(
         matfile,
         objname,
     )
+    
+    objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
+    param_values = os.listdir(
+        os.path.join(path, scenenamenum, objnamenum, param)
+    )
+    param_values.sort()
+    
+    # Valor de parametro y el promedio de solapamiento por frame
+    paramval_avgsareaperframe = []
+    
+    # Valor de parametro y la explicacion del 0 en promedio de solapamiento
+    paramval_explanationperframe = []
+    
+    
+    for param_value in param_values:
+        param_path = os.path.join(
+            path,
+            scenenamenum,
+            objnamenum,
+            param,
+            param_value,
+        )
+        
+        frames_overlappedareas = []
+        
+        for run_num in os.listdir(param_path):
+            frames_overlappedareas_per_run = []
+            resultfile = os.path.join(param_path, run_num, 'results.txt')
+            with codecs.open(resultfile, 'r', 'utf-8') as file_:
+                reach_result_zone = False
+                while not reach_result_zone:
+                    line = file_.next()
+                    reach_result_zone = line.startswith('RESULTS_SECTION')
 
-    nframe_area = []
+                for line in file_.readlines():
+                    values = [int(v) for v in line.split(';')]
+                    nframe = values[0]
+                    fue_exitoso = values[1]
+                    metodo = values[2]
+                    fila_sup = values[3]
+                    col_izq = values[4]
+                    fila_inf = values[5]
+                    col_der = values[6]
+                    # size = fila_inf - fila_sup
 
-    with codecs.open(resultfile, 'r', 'utf-8') as file_:
-        reach_result_zone = False
-        while not reach_result_zone:
-            line = file_.next()
-            reach_result_zone = line.startswith('RESULTS_SECTION')
+                    ground_truth.update({'nframe': nframe})
+                    gt_fue_exitoso, gt_desc = ground_truth.detect()
+                    gt_col_izq = gt_desc['topleft'][1]
+                    gt_fila_sup = gt_desc['topleft'][0]
+                    gt_col_der = gt_desc['bottomright'][1]
+                    gt_fila_inf = gt_desc['bottomright'][0]
 
-        for line in file_.readlines():
-            values = [int(v) for v in line.split(';')]
+                    rectangle_found = Rectangle(
+                        (fila_sup, col_izq),
+                        (fila_inf, col_der)
+                    )
+                    ground_truth_rectangle = Rectangle(
+                        (gt_fila_sup, gt_col_izq),
+                        (gt_fila_inf, gt_col_der)
+                    )
+                    intersection = rectangle_found.intersection(
+                        ground_truth_rectangle
+                    )
+                    found_area = rectangle_found.area()
+                    ground_truth_area = ground_truth_rectangle.area()
+                    intersection_area = intersection.area()
+                    
+                    overlap_area = 0
+                    
+                    if gt_fue_exitoso and fue_exitoso and intersection_area > 0:
+                        # To be considered a correct detection, the area of overlap A0
+                        # between the predicted bounding box Bp and ground truth
+                        # bounding box Bgt must exceed 50% by the formula:
+                        # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
+                        union_area = found_area + ground_truth_area - intersection_area
+                        overlap_area = intersection_area / union_area
+                    elif gt_fue_exitoso and fue_exitoso and intersection_area == 0:
+                        pass
+                    elif not gt_fue_exitoso and fue_exitoso:
+                        pass
+                    elif gt_fue_exitoso and not fue_exitoso:
+                        pass
+                    else:  # ambos no exitosos
+                        pass
+                    
+                    frames_overlappedareas_per_run.append(overlap_area)
+            
+            frames_overlappedareas.append(frames_overlappedareas_per_run)
+        
+        overlappedareas_per_frame = zip(*frames_overlappedareas)
+        avg_overlappedareas_per_frame = [np.mean(l) for l in overlappedareas_per_frame]
+        paramval_avgsareaperframe.append((param_value, avg_overlappedareas_per_frame))
+    
+    
+    for param_val, avg_per_frame in paramval_avgsareaperframe:
+        # # the figure
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
 
-            nframe = values[0]
-            # fue_exitoso = values[1]
-            # metodo = values[2]
-            fila_sup = values[3]
-            col_izq = values[4]
-            fila_inf = values[5]
-            col_der = values[6]
-            # size = fila_inf - fila_sup
+        # # the data
+        n = len(avg_per_frame)
+        
+        precs = [prec for prm, prec, rec in mean_precs_recalls]
+        recs = [rec for prm, prec, rec in mean_precs_recalls]
 
-            ground_truth.update({'nframe': nframe})
-            gt_fue_exitoso, gt_desc = ground_truth.detect()
-            gt_col_izq = gt_desc['topleft'][1]
-            gt_fila_sup = gt_desc['topleft'][0]
-            gt_col_der = gt_desc['bottomright'][1]
-            gt_fila_inf = gt_desc['bottomright'][0]
+        line, = ax.plot(np.arange(1, n + 1), avg_per_frame, '-o')
 
-            rectangle_found = Rectangle(
-                (fila_sup, col_izq),
-                (fila_inf, col_der)
+        # # axes and labels
+        ax.set_ylim(0, 100)
+        ax.set_xlabel('Frame number')
+        ax.set_ylabel('average \% of overlapping')
+        ax.set_title(
+            'Overlapping entre ground truth y el algoritmo para {scn}, {obj} y el parametro {prm}'.format(
+                scn=scenenamenum,
+                obj=objnamenum,
+                prm=param,
             )
-            ground_truth_rectangle = Rectangle(
-                (gt_fila_sup, gt_col_izq),
-                (gt_fila_inf, gt_col_der)
-            )
-            intersection = rectangle_found.intersection(
-                ground_truth_rectangle
-            )
+        )
 
-            if ground_truth_rectangle.area() > 0:
-                found_area = rectangle_found.area()
-                ground_truth_area = ground_truth_rectangle.area()
-                intersection_area = intersection.area()
-
-                # To be considered a correct detection, the area of overlap A0
-                # between the predicted bounding box Bp and ground truth
-                # bounding box Bgt must exceed 50% by the formula:
-                # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
-                union_area = found_area + ground_truth_area - intersection_area
-                overlap_area = intersection_area / union_area
-
-                nframe_area.append((nframe, overlap_area))
-
-    # Ploteo % de solapamiento
-    areas = np.array([a for nf, a in nframe_area])
-
-    p1 = plt.bar(
-        np.arange(len(nframe_area)),  # x values
-        areas * 100,  # y values
-        align='center',
-    )
-    p2 = plt.plot(
-        np.arange(len(nframe_area)),  # x values
-        np.ones(len(nframe_area)) * np.mean(areas * 100),
-        color=(1, 0, 0)
-    )
-
-    p2 = plt.plot(
-        np.arange(len(nframe_area)),  # x values
-        np.ones(len(nframe_area)) * 50,
-        color=(0, 1, 0)
-    )
-
-    plt.title(('Area de solapamiento para ' + objname + ' en ' + scenenamenum))
-    plt.xticks(
-        np.arange(len(nframe_area)),
-        [nf for nf, a in nframe_area]
-    )
-    plt.xlabel('numero de frame')
-    plt.yticks(np.arange(0, 110, 10))
-    plt.ylabel('% del area solapada')
-    plt.legend([p2[0]], ['% Promedio'])
-
-    plt.autoscale(axis='x')
-    plt.show()
+        plt.show()
 
 
 def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
@@ -529,20 +570,20 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
 
 if __name__ == '__main__':
-    # analizar_resultados(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/2/03/results.txt'
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/2/03/results.txt'
+    )
 
-    # analizar_resultados(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
-    # )
-    #
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
+    )
+    
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
