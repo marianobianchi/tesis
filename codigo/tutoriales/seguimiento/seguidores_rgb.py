@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
+
 from __future__ import unicode_literals
 
 
@@ -8,11 +8,11 @@ import numpy as np
 import cv2
 
 
-from seguimiento_common.esquemas_seguimiento import FollowingSchema
-from seguimiento_common.observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
+from esquemas_seguimiento import SimpleFollowingSchema
+from observar_seguimiento import (MuestraSeguimientoEnVivo, MuestraBusquedaEnVivo,
                                   GrabaSeguimientoEnArchivo)
-from seguimiento_common.proveedores_de_imagenes import FramesAsVideo
-from seguimiento_common.metodos_de_busqueda import *
+from proveedores_de_imagenes import FramesAsVideo
+from metodos_de_busqueda import *
 
 from metodos_comunes import *
 
@@ -192,7 +192,8 @@ class ObjectDetectorAndFollower(object):
     def detect(self, img):
         # Los valores estan harcodeados en el __init__
         self.upgrade_detected_descriptors(img, self.object_location(), self.object_frame_size())
-        return self.object_frame_size(), self.object_location()
+        fue_exitoso = self.object_frame_size() > 0
+        return fue_exitoso, self.object_frame_size(), self.object_location()
 
     ##########################
     # Funciones de cada clase
@@ -321,7 +322,9 @@ class DeteccionDePelotaNaranjaPorContornosMixin(object):
 
         self.upgrade_detected_descriptors(img, ubicacion, tam_region)
 
-        return self.object_frame_size(), self.object_location()
+        fue_exitoso = self.object_frame_size() > 0
+
+        return fue_exitoso, self.object_frame_size(), self.object_location()
 
 
 class MatchingTemplateDetectionMixin(object):
@@ -344,7 +347,9 @@ class MatchingTemplateDetectionMixin(object):
 
         self.upgrade_detected_descriptors(img, ubicacion, tam_region)
 
-        return self.object_frame_size(), self.object_location()
+        fue_exitoso = self.object_frame_size() > 0
+
+        return fue_exitoso, self.object_frame_size(), self.object_location()
 
 
 class CalculaHistogramaMixin(object):
@@ -597,55 +602,61 @@ def seguir_pelota_monocromo():
     img_provider = FramesAsVideo('videos/moving_circle')
     follower = ObjectDetectorAndFollower(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 def seguir_pelota_naranja():
     """
     """
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    img_provider = cv2.VideoCapture('../../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollower(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 
 def seguir_pelota_naranja_version2():
     """
     """
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    img_provider = cv2.VideoCapture('../../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion2(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version3():
     """
     """
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
+    img_provider = cv2.VideoCapture('../../videos/pelotita_naranja_webcam/output.avi')
     follower = OrangeBallDetectorAndFollowerVersion3(img_provider)
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version4():
     """
     Template matching y comparacion de histogramas
     """
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    img_provider = cv2.VideoCapture('../../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../../videos/pelotita_naranja_webcam/template_pelota.jpg')
     follower = ALittleGeneralObjectDetectorAndFollower(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 def seguir_pelota_naranja_version5():
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    template = cv2.imread('../videos/pelotita_naranja_webcam/template_pelota.jpg')
+    img_provider = cv2.VideoCapture('../../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread('../../videos/pelotita_naranja_webcam/template_pelota.jpg')
     follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
     muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
+
+def seguir_nariz_boca():
+    img_provider = cv2.VideoCapture(
+        '../../videos/pelotita_naranja_webcam/output.avi')
+    template = cv2.imread(
+        '../../videos/pelotita_naranja_webcam/template_bocanariz.jpg')
+    follower = TemplateMatchingAndSURFFollowing(img_provider, template,
+                                                metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
+    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
+    SimpleFollowingSchema(img_provider, follower, muestra_seguimiento).run()
 
 if __name__ == '__main__':
-    img_provider = cv2.VideoCapture('../videos/pelotita_naranja_webcam/output.avi')
-    template = cv2.imread('../videos/pelotita_naranja_webcam/template_bocanariz.jpg')
-    follower = TemplateMatchingAndSURFFollowing(img_provider, template, metodo_de_busqueda=BusquedaEnEspiralCambiandoFrameSize())
-    muestra_seguimiento = MuestraSeguimientoEnVivo(nombre='Seguimiento')
-    FollowingSchema(img_provider, follower, muestra_seguimiento).run()
+    seguir_pelota_naranja_version5()

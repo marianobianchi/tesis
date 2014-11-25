@@ -55,7 +55,7 @@ class SimpleFollowingSchema(object):
             )
 
             if not fue_exitoso:
-                tam_region, nueva_ubicacion = self.obj_follower.detect(img)
+                fue_exitoso, tam_region, nueva_ubicacion = self.obj_follower.detect(img)
 
             # Muestro el seguimiento para hacer pruebas
             self.show_following.run(

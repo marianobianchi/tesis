@@ -331,6 +331,35 @@ class AdaptSearchArea(object):
             return val
 
 
+class FixedSearchArea(AdaptSearchArea):
+    def __init__(self, obj_size_times=2):
+        self.centroids = []
+        self.default_x_distance = None
+        self.default_y_distance = None
+        self.default_z_distance = None
+
+        # Multiplo del tamaño del objeto que tiene cada eje del area de busqueda
+        self.obj_size_times = max(obj_size_times, 1) - 1
+
+    def estimate_distance(self, axe):
+        if axe == 'x':
+            val = self.default_x_distance
+        elif axe == 'y':
+            val = self.default_y_distance
+        elif axe == 'z':
+            val = self.default_z_distance
+        else:
+            raise Exception('No existe el eje indicado')
+
+        obj_tam = val * 2
+        eje_tam = obj_tam + obj_tam * self.obj_size_times
+        print "    tam. objeto en el eje:", obj_tam
+        print "    tam. busqueda en el eje:", eje_tam
+        print "    relacion-tamaño:", eje_tam * 1.0 / obj_tam
+
+        return val * self.obj_size_times
+
+
 class AdaptLeafRatio(object):
     """
     Adapts the leaf radio used to take object points from scene
@@ -396,6 +425,5 @@ class AdaptLeafRatio(object):
         self.ratios.append(new_ratio)
 
     def leaf_ratio(self):
-        print "    leaf_size =", self.ratios[-1]
         return self.ratios[-1]
 
