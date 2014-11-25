@@ -93,29 +93,59 @@ La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para realizar el s
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|}
 	\hline 
-	Escena y objeto/valor del parametro & 2 & 3 & 5 & 7 \\ 
+	 & 2 & 3 & 5 & 7 \\ 
 	\hline 
-	desk\_1 - coffee\_mug\_5 & 32.57\% & 6.99\% & 0\% & 0.5\% \\ 
+	desk\_1 - coffee\_mug\_5 & 30.71\%$\pm$5.9 & 47.58\%$\pm$4.49 & 42.42\%$\pm$5.1 & 41.41\%$\pm$5.21 \\ 
 	\hline 
-	desk\_1 - cap\_4 & 46.61\% & 42.42\% & 24.01\% & 21.68\% \\ 
+	desk\_1 - cap\_4 & 28.7\%$\pm$6 & 42.51\%$\pm$8.44 & 37.48\%$\pm$6.1 & 34.04\%$\pm$6.08 \\ 
 	\hline 
-	desk\_2 - bowl\_3 & 13.27\% & 8.61\% & 7.8\% & 3.5\% \\ 
+	desk\_2 - bowl\_3 & 23.71\%$\pm$9.41 & 23.13\%$\pm$8.8 & 16.99\%$\pm$7.39 & 14.16\%$\pm$6.28 \\ 
 	\hline 
 	\end{tabular}
 	\caption{Los valores corresponden al parámetro DET\_FRAME\_SIZE, que es en cuanto se multiplica el tamaño del bounding box del objeto para usarlo como frame de detección (ver sección \ref{metodo_propuesto})}
+\end{table}
+
+\begin{table}[h]
+	\begin{tabular}{|c|c|c|c|c|c|}
+	\hline 
+	 & 0.2 & 0.4 & 0.6 & 0.7 & 0.9 \\ 
+	\hline 
+	desk\_1 - coffee\_mug\_5 & 36.99\%$\pm$5.41 & 48.82\%$\pm$4.66 & 47.14\%$\pm$5.17 & 44.69\%$\pm$5.42 & 33.18\%$\pm$6.52\\ 
+	\hline 
+	desk\_1 - cap\_4 & 44.22\%$\pm$7.7 & 31.35\%$\pm$4.56 & 34.49\%$\pm$6.44 & 42.54\%$\pm$7.86 & 32.09\%$\pm$10.84\\ 
+	\hline 
+	desk\_2 - bowl\_3 & 23.18\%$\pm$8.59 & 24.39\%$\pm$9.42 & 21.46\%$\pm$8.94 & 16.06\%$\pm$6.62 & 15.27\%$\pm$6.86\\ 
+	\hline 
+	\end{tabular}
+	\caption{Los valores corresponden al parámetro DET\_SIMILARITY\_THRESHOLD utilizado en la detección, que está relacionado con la eliminación temprana de malas poses basándose en las distancias entre el objeto y la escena (ver sección \ref{alignment_prerejective})}
+\end{table}
+
+\begin{table}[h]
+	\begin{tabular}{|c|c|c|c|c|c|}
+	\hline 
+	 & 0.2 & 0.4 & 0.6 & 0.7 & 0.9 \\ 
+	\hline 
+	desk\_1 - coffee\_mug\_5 & 30.11\%$\pm$6.22 & 32.11\%$\pm$6.67 & 31.78\%$\pm$4.2 & 36.82\%$\pm$5.24 & 43.6\%$\pm$5.49\\ 
+	\hline 
+	desk\_1 - cap\_4 & 23.83\%$\pm$7.18 & 38.98\%$\pm$7.75 & 37.7\%$\pm$6.48 & 41.21\%$\pm$6.59 & 25.42\%$\pm$5.3\\ 
+	\hline 
+	desk\_2 - bowl\_3 & 9.01\%$\pm$4.08 & 13.21\%$\pm$5.61 & 24.25\%$\pm$8.55 & 21.55\%$\pm$8.66 & 21\%$\pm$8.78\\ 
+	\hline 
+	\end{tabular}
+	\caption{Los valores corresponden al parámetro DET\_INLIER\_FRACTION utilizado en la detección, que es el porcentaje de puntos del modelo considerados suficientes para aceptar una hipótesis de pose del objeto como válida (ver sección \ref{alignment_prerejective})}
 \end{table}
 
 
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|}
 	\hline 
-	Escena y objeto/valor del parametro & 0.2 & 0.4 & 0.5 & 0.75 \\ 
+	 & 0.2 & 0.4 & 0.5 & 0.75 \\ 
 	\hline 
-	desk\_1 - coffee\_mug\_5 & 44.94\% & 32.48\% & 15.1\% & 0.23\% \\ 
+	desk\_1 - coffee\_mug\_5 & 36.77\%$\pm$4.76 & 51.07\%$\pm$5.08 & 39.94\%$\pm$5.62 & 47.45\%$\pm$6.93 \\ 
 	\hline 
-	desk\_1 - cap\_4 & 32.39\% & 23.95\% & 6.65\% & 0\% \\ 
+	desk\_1 - cap\_4 & 37.91\%$\pm$5.25 & 48.76\%$\pm$9.09 & 52.32\%$\pm$12.39 & 50.25\%$\pm$14.91 \\ 
 	\hline 
-	desk\_2 - bowl\_3 & 15.01\% & 4.5\% & 10.39\% & 1.71\% \\ 
+	desk\_2 - bowl\_3 & 20.51\%$\pm$7.87 & 20.81\%$\pm$7.81 & 25.56\%$\pm$9.59 & 24.86\%$\pm$10.13 \\ 
 	\hline 
 	\end{tabular}
 	\caption{Los valores corresponden al parámetro FIND\_PERC\_OBJ\_MODEL, que es el porcentaje de puntos del modelo considerados suficientes para determinar que lo que se encontró es el objeto buscado (ver sección \ref{metodo_propuesto})}

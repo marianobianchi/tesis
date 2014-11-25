@@ -88,31 +88,31 @@ def test_rectangle():
 
 
 def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
-    
+
     RESULT_OVERAP = {
         'FP': 'Lo encontro pero no estaba',
         'FN': 'No lo encontro pero estaba',
-        'VN': 'Lo encontro pero no se solapan',
+        'BF': 'Lo encontro pero no se solapan',
+        'VN': 'Ninguno lo encontro',
     }
-           
+
     ground_truth = StaticDetector(
         matfile,
         objname,
     )
-    
+
     objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
     param_values = os.listdir(
         os.path.join(path, scenenamenum, objnamenum, param)
     )
     param_values.sort()
-    
+
     # Valor de parametro y el promedio de solapamiento por frame
     paramval_avgsareaperframe = []
-    
+
     # Valor de parametro y la explicacion del 0 en promedio de solapamiento
-    paramval_explanationperframe = []
-    
-    
+    paramval_explanationperframe = {}
+
     for param_value in param_values:
         param_path = os.path.join(
             path,
@@ -121,11 +121,14 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
             param,
             param_value,
         )
-        
+
         frames_overlappedareas = []
-        
+        frames_explanations = []
+
         for run_num in os.listdir(param_path):
             frames_overlappedareas_per_run = []
+            frames_explanations_per_run = []
+
             resultfile = os.path.join(param_path, run_num, 'results.txt')
             with codecs.open(resultfile, 'r', 'utf-8') as file_:
                 reach_result_zone = False
@@ -165,9 +168,9 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
                     found_area = rectangle_found.area()
                     ground_truth_area = ground_truth_rectangle.area()
                     intersection_area = intersection.area()
-                    
+
                     overlap_area = 0
-                    
+
                     if gt_fue_exitoso and fue_exitoso and intersection_area > 0:
                         # To be considered a correct detection, the area of overlap A0
                         # between the predicted bounding box Bp and ground truth
@@ -175,24 +178,31 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
                         # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
                         union_area = found_area + ground_truth_area - intersection_area
                         overlap_area = intersection_area / union_area
+                        frames_explanations_per_run.append('NN')
                     elif gt_fue_exitoso and fue_exitoso and intersection_area == 0:
-                        pass
+                        frames_explanations_per_run.append('BF')
                     elif not gt_fue_exitoso and fue_exitoso:
-                        pass
+                        frames_explanations_per_run.append('FP')
                     elif gt_fue_exitoso and not fue_exitoso:
-                        pass
+                        frames_explanations_per_run.append('FN')
                     else:  # ambos no exitosos
-                        pass
-                    
+                        frames_explanations_per_run.append('VN')
+
                     frames_overlappedareas_per_run.append(overlap_area)
-            
+
             frames_overlappedareas.append(frames_overlappedareas_per_run)
-        
+            frames_explanations.append(frames_explanations_per_run)
+
         overlappedareas_per_frame = zip(*frames_overlappedareas)
+        explanations_per_frame = zip(*frames_explanations)
+
         avg_overlappedareas_per_frame = [np.mean(l) for l in overlappedareas_per_frame]
+        explanations_per_frame = [exps[0] if len(set(exps)) == 1 else 'NN'
+                                  for exps in explanations_per_frame]
+
         paramval_avgsareaperframe.append((param_value, avg_overlappedareas_per_frame))
-    
-    
+        paramval_explanationperframe.update({param_value: explanations_per_frame})
+
     for param_val, avg_per_frame in paramval_avgsareaperframe:
         # # the figure
         fig = plt.figure()
@@ -200,23 +210,60 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
 
         # # the data
         n = len(avg_per_frame)
-        
-        precs = [prec for prm, prec, rec in mean_precs_recalls]
-        recs = [rec for prm, prec, rec in mean_precs_recalls]
+        avg_per_frame = np.array(avg_per_frame) * 100
+        explanation_per_frame = paramval_explanationperframe[param_val]
+        fps_x = [i+1 for i, exp in enumerate(explanation_per_frame)
+                 if exp == 'FP']
+        fns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
+                 if exp == 'FN']
+        bfs_x = [i+1 for i, exp in enumerate(explanation_per_frame)
+                 if exp == 'BF']
+        vns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
+                 if exp == 'VN']
+        nns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
+                 if exp == 'NN']
 
+        # # plot
         line, = ax.plot(np.arange(1, n + 1), avg_per_frame, '-o')
+        line.set_label('overlap per frame')
+
+        if fps_x:
+            fpsl, = ax.plot(fps_x, np.zeros(len(fps_x)), 'o', color='red')
+            fpsl.set_label('Lo encontro pero no estaba')
+
+        if fns_x:
+            fnsl, = ax.plot(fns_x, np.zeros(len(fns_x)), 'o', color='orange')
+            fnsl.set_label('No lo encontro pero estaba')
+
+        if bfs_x:
+            bfsl, = ax.plot(bfs_x, np.zeros(len(bfs_x)), 'o', color='yellow')
+            bfsl.set_label('No se solaparon')
+
+        if vns_x:
+            vnsl, = ax.plot(vns_x, np.zeros(len(vns_x)), 'o', color='green')
+            vnsl.set_label('Ninguno lo encontro')
+
+        if nns_x:
+            nnsl, = ax.plot(nns_x, np.zeros(len(nns_x)), 'o', color='black')
+            nnsl.set_label('Distintos resultados por corrida')
 
         # # axes and labels
         ax.set_ylim(0, 100)
         ax.set_xlabel('Frame number')
-        ax.set_ylabel('average \% of overlapping')
+        ax.set_xticks(np.arange(0, n+4, 5))
+        ax.set_ylabel('average % of overlapping')
+        ax.set_yticks(np.arange(0, 101, 5))
         ax.set_title(
-            'Overlapping entre ground truth y el algoritmo para {scn}, {obj} y el parametro {prm}'.format(
+            ('Overlapping entre ground truth y el algoritmo para {scn}, {obj}, '
+             'con {prm} = {v}').format(
                 scn=scenenamenum,
                 obj=objnamenum,
                 prm=param,
+                v=param_val,
             )
         )
+
+        ax.legend()
 
         plt.show()
 
@@ -570,20 +617,42 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
 
 if __name__ == '__main__':
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        resultfile='pruebas_guardadas/desk_1/coffee_mug_5/detection_frame_size/2/03/results.txt'
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_similarity_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_inlier_fraction',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
 
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        resultfile='pruebas_guardadas/desk_1/cap_4/prueba_001/results.txt'
-    )
-    
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
@@ -608,6 +677,57 @@ if __name__ == '__main__':
         param='detection_frame_size',
         path='pruebas_guardadas',
     )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='detection_similarity_threshold',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='detection_similarity_threshold',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='detection_similarity_threshold',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='detection_inlier_fraction',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='detection_inlier_fraction',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='detection_inlier_fraction',
+        path='pruebas_guardadas',
+    )
+
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
