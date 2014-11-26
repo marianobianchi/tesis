@@ -352,6 +352,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
 
 
 def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
+    # TODO: correr con más valores (1, 1.5, 4, 6, 8)
     # Set parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005

@@ -18,7 +18,6 @@ from metodos_comunes import *
 
 
 
-
 class ObjectDetectorAndFollower(object):
     """
     Es la clase base para los primeros ejemplos sencillos.

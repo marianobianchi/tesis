@@ -316,6 +316,8 @@ class AdaptSearchArea(object):
 
             # TODO: adaptar los porcentajes al valor de self.muestras
             porcentajes = [0.1, 0.2, 0.7]
+            # [0.25, 0.25, 0.5]
+
 
             return sum([d*p for d, p in zip(distances, porcentajes)])
         else:
