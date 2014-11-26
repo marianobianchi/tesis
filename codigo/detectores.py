@@ -2,6 +2,7 @@
 
 from __future__ import (unicode_literals, division)
 
+import cv2
 import scipy.io
 
 from cpp.icp import icp, ICPDefaults
@@ -374,3 +375,32 @@ class AutomaticDetection(Detector):
                 # )
 
         return fue_exitoso, detected_descriptors
+
+
+#################
+# Detectores RGB
+#################
+
+class RGBTemplateDetector(Detector):
+    def detect(self):
+        img = self._descriptors['img']
+        template = self._descriptors['template']
+        template_filas, template_columnas = len(template), len(template[0])
+
+        # Aplico el template Matching
+        res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
+
+        # Busco la posición
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+
+        # min_loc tiene primero las columnas y despues las filas, entonces lo
+        # doy vuelta
+        ubicacion = (min_loc[1], min_loc[0])
+
+        tam_region = max(template_columnas, template_filas)
+
+        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
+
+        fue_exitoso = self.object_frame_size() > 0
+
+        return fue_exitoso, self.object_frame_size(), self.object_location()
