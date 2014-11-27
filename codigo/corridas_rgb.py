@@ -10,7 +10,8 @@ from esquemas_seguimiento import FollowingScheme
 from detectores import RGBTemplateDetector
 from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize
 from observar_seguimiento import MuestraSeguimientoEnVivo
-from proveedores_de_imagenes import FrameNamesAndImageProvider
+from proveedores_de_imagenes import FrameNamesAndImageProvider, \
+    TemplateAndImageProviderFromVideo
 from seguidores import FollowerStaticAndRGBTemplate
 
 
@@ -63,7 +64,30 @@ def seguir_taza():
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo(
-        'Deteccion estatica - Sin seguidor'
+        'Deteccion por template - Seguimiento por histograma'
+    )
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
+
+
+def seguir_pelota():
+    img_provider = TemplateAndImageProviderFromVideo(
+        video_path='videos/pelotita_naranja_webcam/output.avi',
+        template_path='videos/pelotita_naranja_webcam/template_pelota.jpg',
+    )
+
+    detector = RGBTemplateDetector()
+
+    finder = HistogramFinder()
+
+    follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo(
+        'Deteccion por template - Seguimiento por histograma'
     )
 
     FollowingScheme(
@@ -73,4 +97,4 @@ def seguir_taza():
     ).run()
 
 if __name__ == '__main__':
-    seguir_taza()
+    seguir_pelota()
