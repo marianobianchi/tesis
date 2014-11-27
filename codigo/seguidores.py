@@ -128,41 +128,33 @@ class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
 #################
 # Seguidores RGB
 #################
+class FollowerStaticAndRGBTemplate(FollowerWithStaticDetection):
+    def train(self):
+        obj_template = self.img_provider.obj_rgb()
+        self._obj_descriptors.update({'obj_rgb_template': obj_template})
 
-class BusquedaEnEspiral(object):
-    @staticmethod
-    def get_positions_and_framesizes(ultima_ubicacion, tam_region, filas,
-                                     columnas):
-        x, y = ultima_ubicacion
-        sum_x = 2
-        sum_y = 2
-        for j in range(30):
-            # Hago 2 busquedas por cada nuevo X
-            x += sum_x/2
-            if ((0 <= x <= (x+tam_region) <= filas) and
-                    (0 <= y <= (y+tam_region) <= columnas)):
-                yield (x, y, tam_region)
+    def descriptors(self):
+        desc = super(FollowerStaticAndRGBTemplate, self).descriptors()
+        desc.update({
+            'scene_rgb': self.img_provider.rgb_img(),
+        })
+        return desc
 
-            x += sum_x/2
-            if ((0 <= x <= (x+tam_region) <= filas) and
-                    (0 <= y <= (y+tam_region) <= columnas)):
-                yield (x, y, tam_region)
 
-            sum_x *= -2
 
-            # Hago 2 busquedas por cada nuevo Y
-            y += sum_y/2
-            if ((0 <= x <= (x+tam_region) <= filas) and
-                    (0 <= y <= (y+tam_region) <= columnas)):
-                yield (x, y, tam_region)
 
-            y += sum_y/2
-            if ((0 <= x <= (x+tam_region) <= filas) and
-                    (0 <= y <= (y+tam_region) <= columnas)):
-                yield (x, y, tam_region)
 
-            sum_y *= -2
 
+
+
+
+
+
+
+##########################
+# BORRAR TODO LO DE ABAJO
+##########################
+from metodos_de_busqueda import BusquedaEnEspiral
 
 class ObjectDetectorAndFollower(object):
     def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
@@ -391,64 +383,6 @@ class ComparacionDeSurfMixin(object):
         return len(good)
 
 
-class CalculaHistogramaMixin(object):
-    def calculate_histogram(self, roi):
-        # Paso la imagen de BGR a HSV
-        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
-
-        ###################################
-        # TODO: Ver por que falla al usar los 3 canales
-        # Aplico equalizacion de histograma en V
-        # (http://en.wikipedia.org/wiki/Histogram_equalization#Histogram_equalization_of_color_images)
-        # roi_hsv[:,:,2] = cv2.equalizeHist(roi_hsv[:,:,2])
-
-        # hist = cv2.calcHist(
-        #     [roi_hsv], # Imagen
-        #     [0,1,2], # Canales
-        #     None, # Mascara
-        #     [180, 256, 256], # Numero de bins para cada canal
-        #     [0,180,0,256,0,256], # Rangos válidos para los pixeles de c/canal
-        # )
-        ########################################
-
-        # Calculo el histograma del roi (para H y S)
-        hist = cv2.calcHist(
-            [roi_hsv],  # Imagen
-            [0, 1],  # Canales
-            None,  # Mascara
-            [180, 256],  # Numero de bins para cada canal
-            [0, 180, 0, 256],  # Rangos válidos para los pixeles de cada canal
-        )
-
-        # Normalizo el histograma para evitar errores por distinta escala
-        hist = cv2.normalize(hist)
-
-        return hist
-
-
-class ComparacionDeHistogramasPorBhattacharyya(object):
-    def saved_object_comparisson(self):
-        if 'hist' not in self._obj_descriptors:
-            obj = self.object_roi()
-            hist = self.calculate_histogram(obj)
-            self._obj_descriptors['hist'] = hist
-
-        return self._obj_descriptors['hist']
-
-    def object_comparisson_base(self, img):
-        # TODO: ver que valor conviene poner. Esto es el umbral para la
-        # deteccion en el seguimiento
-        return 0.6
-
-    def object_comparisson(self, roi):
-        roi_hist = self.calculate_histogram(roi)
-
-        # Tomo el histograma del objeto para comparar
-        obj_hist = self.saved_object_comparisson()
-
-        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
-
-
 class MatchingTemplateDetectionMixin(object):
     def detect(self, img):
 
@@ -474,78 +408,78 @@ class MatchingTemplateDetectionMixin(object):
         return fue_exitoso, self.object_frame_size(), self.object_location()
 
 
-class ALittleGeneralObjectDetectorAndFollower(
-        CalculaHistogramaMixin, ComparacionDeHistogramasPorBhattacharyya,
-        MatchingTemplateDetectionMixin, ObjectDetectorAndFollower):
-
-    def __init__(self, image_provider, template,
-                 metodo_de_busqueda=BusquedaEnEspiral()):
-        self.img_provider = image_provider
-        self.metodo_de_busqueda = metodo_de_busqueda
-
-        # Object descriptors
-        self._obj_location = None  # Fila, columna
-        self._obj_frame_size = None
-        self._obj_descriptors = {
-            'template': template,
-        }
-
-    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
-        print "UBICACION:", ubicacion, tam_region
-
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
-
-        # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
-
-        obj_descriptors = {'frame': frame, 'hist': hist}
-        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
-
-    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
-
-        # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
-
-        # TODO: actualizo el template?
-        obj_descriptors = {'frame': frame, 'hist': hist, 'template': frame}
-        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
-
-
-class TemplateMatchingAndSURFFollowing(CalculaSurfMixin,
-                                       ComparacionDeSurfMixin,
-                                       MatchingTemplateDetectionMixin,
-                                       ObjectDetectorAndFollower):
-    def __init__(self, image_provider, template,
-                 metodo_de_busqueda=BusquedaEnEspiral()):
-        self.img_provider = image_provider
-        self.metodo_de_busqueda = metodo_de_busqueda
-
-        # Object descriptors
-        self._obj_location = None  # Fila, columna
-        self._obj_frame_size = None
-        self._obj_descriptors = {
-            'template': template,
-        }
-
-    def train(self):
-        pass
-
-    def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
-        frame = img[ubicacion[0]:ubicacion[0] + tam_region,
-                    ubicacion[1]:ubicacion[1] + tam_region]
-
-        # Actualizo los keypoints y descriptores
-        kps, desc = self.detect_features(frame)
-
-        obj_descriptors = {
-            'frame': frame,
-            'keypoints': kps,
-            'descriptors': desc,
-        }
-        self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
-
-    def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
-        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
+# class ALittleGeneralObjectDetectorAndFollower(
+#         CalculaHistogramaMixin, ComparacionDeHistogramasPorBhattacharyya,
+#         MatchingTemplateDetectionMixin, ObjectDetectorAndFollower):
+#
+#     def __init__(self, image_provider, template,
+#                  metodo_de_busqueda=BusquedaEnEspiral()):
+#         self.img_provider = image_provider
+#         self.metodo_de_busqueda = metodo_de_busqueda
+#
+#         # Object descriptors
+#         self._obj_location = None  # Fila, columna
+#         self._obj_frame_size = None
+#         self._obj_descriptors = {
+#             'template': template,
+#         }
+#
+#     def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
+#         print "UBICACION:", ubicacion, tam_region
+#
+#         frame = img[ubicacion[0]:ubicacion[0] + tam_region,
+#                     ubicacion[1]:ubicacion[1] + tam_region]
+#
+#         # Actualizo el histograma
+#         hist = self.calculate_histogram(frame)
+#
+#         obj_descriptors = {'frame': frame, 'hist': hist}
+#         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+#
+#     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
+#         frame = img[ubicacion[0]:ubicacion[0] + tam_region,
+#                     ubicacion[1]:ubicacion[1] + tam_region]
+#
+#         # Actualizo el histograma
+#         hist = self.calculate_histogram(frame)
+#
+#         # TODO: actualizo el template?
+#         obj_descriptors = {'frame': frame, 'hist': hist, 'template': frame}
+#         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+#
+#
+# class TemplateMatchingAndSURFFollowing(CalculaSurfMixin,
+#                                        ComparacionDeSurfMixin,
+#                                        MatchingTemplateDetectionMixin,
+#                                        ObjectDetectorAndFollower):
+#     def __init__(self, image_provider, template,
+#                  metodo_de_busqueda=BusquedaEnEspiral()):
+#         self.img_provider = image_provider
+#         self.metodo_de_busqueda = metodo_de_busqueda
+#
+#         # Object descriptors
+#         self._obj_location = None  # Fila, columna
+#         self._obj_frame_size = None
+#         self._obj_descriptors = {
+#             'template': template,
+#         }
+#
+#     def train(self):
+#         pass
+#
+#     def upgrade_detected_descriptors(self, img, ubicacion, tam_region):
+#         frame = img[ubicacion[0]:ubicacion[0] + tam_region,
+#                     ubicacion[1]:ubicacion[1] + tam_region]
+#
+#         # Actualizo los keypoints y descriptores
+#         kps, desc = self.detect_features(frame)
+#
+#         obj_descriptors = {
+#             'frame': frame,
+#             'keypoints': kps,
+#             'descriptors': desc,
+#         }
+#         self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+#
+#     def upgrade_followed_descriptors(self, img, ubicacion, tam_region):
+#         self.upgrade_detected_descriptors(img, ubicacion, tam_region)

@@ -384,24 +384,31 @@ class AutomaticDetection(Detector):
 
 class RGBTemplateDetector(Detector):
     def detect(self):
-        img = self._descriptors['img']
-        template = self._descriptors['template']
+        img = self._descriptors['scene_rgb']
+        template = self._descriptors['obj_rgb_template']
         template_filas, template_columnas = len(template), len(template[0])
 
+        # Leer: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html#theory
         # Aplico el template Matching
         res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
 
         # Busco la posición
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        # min_loc tiene primero las columnas y despues las filas, entonces lo
-        # doy vuelta
-        ubicacion = (min_loc[1], min_loc[0])
+        # min_loc y max_loc tienen primero las columnas y despues las filas,
+        # entonces lo doy vuelta
+        topleft = (min_loc[1], min_loc[0])
+        bottomright = (min_loc[1] + template_filas, min_loc[0] + template_columnas)
 
+        desc = {
+            'topleft': topleft,
+            'bottomright': bottomright,
+            'object_frame': img[topleft[0]:bottomright[0],
+                                topleft[1]:bottomright[1]],
+        }
+
+        # TODO: ver como decidir si fue exitoso
         tam_region = max(template_columnas, template_filas)
+        fue_exitoso = tam_region > 0
 
-        self.upgrade_detected_descriptors(img, ubicacion, tam_region)
-
-        fue_exitoso = self.object_frame_size() > 0
-
-        return fue_exitoso, self.object_frame_size(), self.object_location()
+        return fue_exitoso, desc

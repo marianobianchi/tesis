@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-#Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
+
 from __future__ import unicode_literals
 
 import sys
@@ -58,6 +58,11 @@ class FrameNamesAndImageProvider(object):
         fname = self._obj_fname(frame_number=n)
         pc = read_pcd(str(fname))
         return pc
+
+    def obj_rgb(self, n=1):
+        fname = self._obj_fname(frame_number=n, suffix='_crop.png')
+        img = cv2.imread(fname, cv2.IMREAD_COLOR)
+        return img
 
     def _get_fnumber(self, fname):
         parts = fname.split('.')[0].split('_')

@@ -2,12 +2,15 @@
 
 from __future__ import (unicode_literals, division)
 
+import cv2
+
 from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
     AdaptLeafRatio
+from metodos_de_busqueda import BusquedaEnEspiral
 
 
 class Finder(object):
@@ -144,6 +147,7 @@ class ICPFinder(Finder):
 
 
 class ICPFinderWithModel(ICPFinder):
+
     def __init__(self, icp_defaults=None, umbral_score=1e-4, **kwargs):
         """
         valid kwargs:
@@ -342,3 +346,161 @@ class ICPFinderWithModel(ICPFinder):
         })
 
         return detected_descriptors
+
+
+#############
+# RGB Finder
+#############
+class HistogramFinder(Finder):
+    def __init__(self):
+        super(HistogramFinder, self).__init__()
+        self.metodo_de_busqueda = BusquedaEnEspiral()
+
+    def calculate_histogram(self, roi):
+        # Paso la imagen de BGR a HSV
+        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi_hsv],  # Imagen
+            [0, 1],  # Canales
+            None,  # Mascara
+            [180, 256],  # Numero de bins para cada canal
+            [0, 180, 0, 256],  # Rangos válidos para los pixeles de cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist)
+
+        return hist
+
+    def object_comparisson_base(self, img):
+        # TODO: ver que valor conviene poner.
+        # Esto es el umbral para la deteccion en el seguimiento
+        return 0.6
+
+    def object_comparisson(self, roi):
+        roi_hist = self.calculate_histogram(roi)
+
+        # Tomo el histograma del objeto para comparar
+        obj_hist = self.saved_object_comparisson()
+
+        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
+
+    def saved_object_comparisson(self):
+        if 'hist' not in self._descriptors:
+            obj = self._descriptors['object_frame']
+            hist = self.calculate_histogram(obj)
+            self._descriptors['hist'] = hist
+
+        return self._descriptors['hist']
+
+    def is_best_match(self, new_value, old_value):
+        return new_value < old_value
+
+    def simple_follow(self, img, ubicacion, valor_comparativo,
+                      tam_region_inicial):
+        """
+        Esta funcion es el esquema de seguimiento del objeto.
+        """
+        filas, columnas = len(img), len(img[0])
+
+        nueva_ubicacion = ubicacion
+        tam_region_final = tam_region_inicial
+
+        # Seguimiento (busqueda/deteccion acotada)
+        for x, y, tam_region in (self.metodo_de_busqueda
+                                 .get_positions_and_framesizes(
+                                    ubicacion,
+                                    tam_region_inicial,
+                                    filas,
+                                    columnas)):
+            col_izq = y
+            col_der = col_izq + tam_region
+            fil_arr = x
+            fil_aba = fil_arr + tam_region
+
+            # Tomo una region de la imagen donde se busca el objeto
+            roi = img[fil_arr:fil_aba, col_izq:col_der]
+
+            # Si se quiere ver como va buscando, descomentar la siguiente linea
+            # MuestraBusquedaEnVivo('Buscando el objeto').run(
+            # img_copy,
+            #    (x, y),
+            #    tam_region,
+            #    None,
+            #    frenar=True,
+            # )
+            nueva_comparacion = self.object_comparisson(roi)
+
+            # Si hubo coincidencia
+            if self.is_best_match(nueva_comparacion, valor_comparativo):
+                # Nueva ubicacion del objeto (esquina superior izquierda del
+                # cuadrado)
+                nueva_ubicacion = (x, y)
+
+                # Actualizo el valor de la comparacion
+                valor_comparativo = nueva_comparacion
+
+                # Actualizo el tamaño de la region
+                tam_region_final = tam_region
+
+        return nueva_ubicacion, valor_comparativo, tam_region_final
+
+    def find(self):
+        # TODO: usar la esquina inferior derecha y NO el tamaño
+        img = self._descriptors['scene_rgb']
+        # Descomentar si se quiere ver la busqueda
+        # img_copy = img.copy()
+
+        vieja_ubicacion = self._descriptors['topleft']
+        nueva_ubicacion = vieja_ubicacion
+
+        bottomright = self._descriptors['bottomright']
+
+        tam_region = max(
+            abs(vieja_ubicacion[0] - bottomright[0]),
+            abs(vieja_ubicacion[1] - bottomright[1]),
+        )
+        tam_region_final = tam_region
+
+        # Cantidad de pixeles distintos
+        valor_comparativo = self.object_comparisson_base(img)
+
+        # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
+        # de la ultima mejor ubicacion del objeto encontrada
+        for i in range(3):
+            nueva_ubicacion, valor_comparativo, tam_region_final = self.simple_follow(
+                img,
+                nueva_ubicacion,
+                valor_comparativo,
+                tam_region_final
+            )
+
+        fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
+        topleft = nueva_ubicacion if fue_exitoso else None
+        bottomright = (nueva_ubicacion[0] + tam_region_final,
+                       nueva_ubicacion[1] + tam_region_final)
+
+        desc = {
+            'topleft': topleft,
+            'bottomright': bottomright,
+        }
+
+        return fue_exitoso, desc
+
+    def calculate_descriptors(self, desc):
+        img = self._descriptors['scene_rgb']
+        topleft = desc['topleft']
+        bottomright = desc['bottomright']
+
+        frame = img[topleft[0]:bottomright[0],
+                    topleft[1]:bottomright[1]]
+
+        # Actualizo el histograma
+        hist = self.calculate_histogram(frame)
+
+        # TODO: actualizo el template?
+        desc.update({'object_frame': frame, 'hist': hist})
+        # self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
+        return desc

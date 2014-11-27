@@ -11,6 +11,8 @@ from cpp.common import get_point, points, get_min_max, compute_centroid
 
 
 def dibujar_cuadrado(img, topleft, bottomright, color=(0, 0, 0)):
+    topleft = (int(topleft[0]), int(topleft[1]))
+    bottomright = (int(bottomright[0]), int(bottomright[1]))
     cv2.rectangle(
         img,
         tuple(reversed(topleft)),
