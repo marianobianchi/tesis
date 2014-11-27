@@ -19,6 +19,7 @@ class Detector(object):
     """
     Es la clase que se encarga de detectar el objeto buscado
     """
+
     def __init__(self):
         self._descriptors = {}
 
