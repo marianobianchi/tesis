@@ -11,6 +11,7 @@ from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
     AdaptLeafRatio
 from metodos_de_busqueda import BusquedaEnEspiral
+from observar_seguimiento import MuestraBusquedaEnVivo
 
 
 class Finder(object):
@@ -352,6 +353,7 @@ class ICPFinderWithModel(ICPFinder):
 # RGB Finder
 #############
 class HistogramFinder(Finder):
+    # TODO: http://www.pyimagesearch.com/2014/07/14/3-ways-compare-histograms-using-opencv-python/
     def __init__(self):
         super(HistogramFinder, self).__init__()
         self.metodo_de_busqueda = BusquedaEnEspiral()
@@ -377,7 +379,7 @@ class HistogramFinder(Finder):
     def object_comparisson_base(self, img):
         # TODO: ver que valor conviene poner.
         # Esto es el umbral para la deteccion en el seguimiento
-        return 0.6
+        return 0.7
 
     def object_comparisson(self, roi):
         roi_hist = self.calculate_histogram(roi)
@@ -425,11 +427,10 @@ class HistogramFinder(Finder):
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
             # MuestraBusquedaEnVivo('Buscando el objeto').run(
-            # img_copy,
-            #    (x, y),
-            #    tam_region,
-            #    None,
-            #    frenar=True,
+            #     img,
+            #     (fil_arr, col_izq),
+            #     (fil_aba, col_der),
+            #     frenar=True,
             # )
             nueva_comparacion = self.object_comparisson(roi)
 
@@ -450,8 +451,6 @@ class HistogramFinder(Finder):
     def find(self):
         # TODO: usar la esquina inferior derecha y NO el tamaño
         img = self._descriptors['scene_rgb']
-        # Descomentar si se quiere ver la busqueda
-        # img_copy = img.copy()
 
         vieja_ubicacion = self._descriptors['topleft']
         nueva_ubicacion = vieja_ubicacion
@@ -477,17 +476,22 @@ class HistogramFinder(Finder):
                 tam_region_final
             )
 
-        fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
-        if fue_exitoso:
-            pass
-        topleft = nueva_ubicacion if fue_exitoso else None
-        bottomright = (nueva_ubicacion[0] + tam_region_final,
-                       nueva_ubicacion[1] + tam_region_final)
+        fue_exitoso = self.is_best_match(
+            valor_comparativo,
+            self.object_comparisson_base(img),
+        )
+        desc = {}
 
-        desc = {
-            'topleft': topleft,
-            'bottomright': bottomright,
-        }
+        if fue_exitoso:
+            print "Comparacion Histograma:", valor_comparativo
+            topleft = nueva_ubicacion if fue_exitoso else None
+            bottomright = (nueva_ubicacion[0] + tam_region_final,
+                           nueva_ubicacion[1] + tam_region_final)
+
+            desc = {
+                'topleft': topleft,
+                'bottomright': bottomright,
+            }
 
         return fue_exitoso, desc
 
@@ -500,9 +504,9 @@ class HistogramFinder(Finder):
                     topleft[1]:bottomright[1]]
 
         # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
+        # hist = self.calculate_histogram(frame)
 
-        # TODO: actualizo el template?
-        desc.update({'object_frame': frame, 'hist': hist})
+        # TODO: actualizo el template? y el hist?
+        desc.update({'object_frame': frame})#, 'hist': hist})
         # self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
         return desc
