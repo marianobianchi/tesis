@@ -188,19 +188,18 @@ class TemplateAndImageProviderFromVideo(object):
         self.video_capture = cv2.VideoCapture(video_path)
         self.template_path = template_path
 
-        self._next_frame_number = 1
-        self._have_imgs = False
-        self._img = None
+        self.next_frame_number = 1
+        self._have_imgs, self._img = self.video_capture.read()
 
     def next(self):
-        self._next_frame_number += 1
+        self.next_frame_number += 1
         self._have_imgs, self._img = self.video_capture.read()
 
     def have_images(self):
         return self._have_imgs
 
     def restart(self):
-        self._next_frame_number = 1
+        self.next_frame_number = 1
         self.video_capture.release()
         self.video_capture.open()
 
@@ -209,3 +208,6 @@ class TemplateAndImageProviderFromVideo(object):
 
     def obj_rgb(self):
         return cv2.imread(self.template_path, cv2.IMREAD_COLOR)
+
+    def image_list(self):
+        return [self.rgb_img()]

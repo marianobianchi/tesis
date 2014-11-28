@@ -478,6 +478,8 @@ class HistogramFinder(Finder):
             )
 
         fue_exitoso = (vieja_ubicacion != nueva_ubicacion)
+        if fue_exitoso:
+            pass
         topleft = nueva_ubicacion if fue_exitoso else None
         bottomright = (nueva_ubicacion[0] + tam_region_final,
                        nueva_ubicacion[1] + tam_region_final)

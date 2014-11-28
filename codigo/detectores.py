@@ -395,20 +395,21 @@ class RGBTemplateDetector(Detector):
         # Busco la posición
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        # min_loc y max_loc tienen primero las columnas y despues las filas,
-        # entonces lo doy vuelta
-        topleft = (min_loc[1], min_loc[0])
-        bottomright = (min_loc[1] + template_filas, min_loc[0] + template_columnas)
+        desc = {}
+        # TODO: revisar este umbral
+        fue_exitoso = min_val < 0.16
 
-        desc = {
-            'topleft': topleft,
-            'bottomright': bottomright,
-            'object_frame': img[topleft[0]:bottomright[0],
-                                topleft[1]:bottomright[1]],
-        }
+        if fue_exitoso:
+            # min_loc y max_loc tienen primero las columnas y despues las filas,
+            # entonces lo doy vuelta
+            topleft = (min_loc[1], min_loc[0])
+            bottomright = (min_loc[1] + template_filas, min_loc[0] + template_columnas)
 
-        # TODO: ver como decidir si fue exitoso
-        tam_region = max(template_columnas, template_filas)
-        fue_exitoso = tam_region > 0
+            desc = {
+                'topleft': topleft,
+                'bottomright': bottomright,
+                'object_frame': img[topleft[0]:bottomright[0],
+                                    topleft[1]:bottomright[1]],
+            }
 
         return fue_exitoso, desc
