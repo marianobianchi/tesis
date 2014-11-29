@@ -5,9 +5,9 @@ from __future__ import (unicode_literals, division)
 
 import cv2
 
-from buscadores import HistogramFinder
+from buscadores import HistogramFinder, CorrelationHistogramFinder
 from esquemas_seguimiento import FollowingScheme
-from detectores import RGBTemplateDetector
+from detectores import RGBTemplateDetector, StaticDetector
 from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
@@ -96,5 +96,35 @@ def seguir_pelota():
         show_following,
     ).run()
 
+
+def seguir_taza_det_fija():
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/',  # scene path
+        'desk',  # scene
+        '1',  # scene number
+        'videos/rgbd/objs/',  # object path
+        'coffee_mug',  # object
+        '5',  # object number
+    )
+
+    detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat', 'coffee_mug')
+
+    finder = CorrelationHistogramFinder()
+
+    follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo(
+        'Deteccion por template - Seguimiento por histograma'
+    )
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
+
+
+
+
 if __name__ == '__main__':
-    seguir_pelota()
+    seguir_taza_det_fija()

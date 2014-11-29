@@ -379,7 +379,7 @@ class HistogramFinder(Finder):
     def object_comparisson_base(self, img):
         # TODO: ver que valor conviene poner.
         # Esto es el umbral para la deteccion en el seguimiento
-        return 0.7
+        return 0.4
 
     def object_comparisson(self, roi):
         roi_hist = self.calculate_histogram(roi)
@@ -393,9 +393,9 @@ class HistogramFinder(Finder):
         if 'hist' not in self._descriptors:
             obj = self._descriptors['object_frame']
             hist = self.calculate_histogram(obj)
-            self._descriptors['hist'] = hist
+            #self._descriptors['hist'] = hist
 
-        return self._descriptors['hist']
+        return hist #self._descriptors['hist']
 
     def is_best_match(self, new_value, old_value):
         return new_value < old_value
@@ -510,3 +510,21 @@ class HistogramFinder(Finder):
         desc.update({'object_frame': frame})#, 'hist': hist})
         # self.set_object_descriptors(ubicacion, tam_region, obj_descriptors)
         return desc
+
+
+class CorrelationHistogramFinder(HistogramFinder):
+    def object_comparisson_base(self, img):
+        # TODO: ver que valor conviene poner.
+        # Esto es el umbral para la deteccion en el seguimiento
+        return 0.75
+
+    def object_comparisson(self, roi):
+        roi_hist = self.calculate_histogram(roi)
+
+        # Tomo el histograma del objeto para comparar
+        obj_hist = self.saved_object_comparisson()
+
+        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_CORREL)
+
+    def is_best_match(self, new_value, old_value):
+        return new_value > old_value

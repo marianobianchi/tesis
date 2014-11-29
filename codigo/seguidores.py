@@ -34,6 +34,7 @@ class Follower(object):
         desc.update({
             'topleft': self._obj_topleft,
             'bottomright': self._obj_bottomright,
+            'scene_rgb': self.img_provider.rgb_img(),
         })
         return desc
 

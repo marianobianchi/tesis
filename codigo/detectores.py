@@ -77,6 +77,12 @@ class StaticDetector(Detector):
 
         return fue_exitoso, detected_descriptors
 
+    def calculate_descriptors(self, desc):
+        img = self._descriptors['scene_rgb']
+        img = img[desc['topleft'][0]:desc['bottomright'][0], desc['topleft'][1]: desc['bottomright'][1]]
+        desc.update({'object_frame': img})
+        return desc
+
 
 class StaticDetectorWithPCDFiltering(StaticDetector):
     def calculate_descriptors(self, detected_descriptors):

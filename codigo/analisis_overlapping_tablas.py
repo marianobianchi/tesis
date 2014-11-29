@@ -34,7 +34,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         )
         means = []
         stds = []
-        for run_num in os.listdir(param_path):
+        for run_num in os.listdir(param_path)[:1]:
             overlapping_areas = []
             resultfile = os.path.join(param_path, run_num, 'results.txt')
             with codecs.open(resultfile, 'r', 'utf-8') as file_:
@@ -87,7 +87,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                         )
                         overlap_area = intersection_area / union_area
 
-                        overlapping_areas.append(overlap_area * 100)
+                        overlapping_areas.append(overlap_area)
 
                 means.append(
                     np.mean(overlapping_areas) if overlapping_areas else 0
@@ -113,11 +113,11 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         print('{v}:'.format(v=val))
         print('    {m} ==> prom: {p}'.format(
             m=' | '.join(strmeans),
-            p=round(np.mean(np.array(avgs)), 2),
+            p=round(np.mean(np.array(avgs) * 100), 2),
         ))
         print('    {m} ==> prom_std: {p}'.format(
             m=' | '.join(strstds),
-            p=round(np.mean(np.array(stds)), 2),
+            p=round(np.mean(np.array(stds) * 100), 2),
         ))
 
 
