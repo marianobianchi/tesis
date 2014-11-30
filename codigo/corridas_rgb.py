@@ -5,7 +5,8 @@ from __future__ import (unicode_literals, division)
 
 import cv2
 
-from buscadores import HistogramFinder, CorrelationHistogramFinder
+from buscadores import BhattacharyyaHistogramFinder, CorrelationHistogramFinder, \
+    IntersectionHistogramFinder
 from esquemas_seguimiento import FollowingScheme
 from detectores import RGBTemplateDetector, StaticDetector
 from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize
@@ -59,7 +60,7 @@ def seguir_taza():
 
     detector = RGBTemplateDetector()
 
-    finder = HistogramFinder()
+    finder = BhattacharyyaHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -82,7 +83,7 @@ def seguir_pelota():
 
     detector = RGBTemplateDetector()
 
-    finder = HistogramFinder()
+    finder = IntersectionHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -109,7 +110,7 @@ def seguir_taza_det_fija():
 
     detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat', 'coffee_mug')
 
-    finder = CorrelationHistogramFinder()
+    finder = IntersectionHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
