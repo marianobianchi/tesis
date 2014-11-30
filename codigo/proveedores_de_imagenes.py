@@ -59,10 +59,15 @@ class FrameNamesAndImageProvider(object):
         pc = read_pcd(str(fname))
         return pc
 
+    @staticmethod
+    def imread(fname, color_scheme):
+        if not os.path.isfile(fname):
+            raise Exception("La imagen que quiere cargar no existe")
+        return cv2.imread(fname, color_scheme)
+
     def obj_rgb(self, n=1):
         fname = self._obj_fname(frame_number=n, suffix='_crop.png')
-        img = cv2.imread(fname, cv2.IMREAD_COLOR)
-        return img
+        return self.imread(fname, cv2.IMREAD_COLOR)
 
     def _get_fnumber(self, fname):
         parts = fname.split('.')[0].split('_')
@@ -114,16 +119,15 @@ class FrameNamesAndImageProvider(object):
     # Images
     def rgb_img(self):
         fname = self.rgb_fname()
-        img = cv2.imread(fname, cv2.IMREAD_COLOR)
-        return img
+        return self.imread(fname, cv2.IMREAD_COLOR)
 
     def rgbdepth_img(self):
         fname = self.depth_fname()
-        depth_img = cv2.imread(fname, cv2.IMREAD_ANYDEPTH)
+        depth_img = self.imread(fname, cv2.IMREAD_ANYDEPTH)
 
         height = len(depth_img)
         width = len(depth_img[0])
-        rgbdepth_img = np.zeros((height, width,3), np.uint8)
+        rgbdepth_img = np.zeros((height, width, 3), np.uint8)
         for r in range(height):
             for c in range(width):
                 char_rgb = depth_to_rgb(int(depth_img[r][c]))
@@ -133,8 +137,7 @@ class FrameNamesAndImageProvider(object):
 
     def depth_img(self):
         fname = self.depth_fname()
-        depth_img = cv2.imread(fname, cv2.IMREAD_ANYDEPTH)
-        return depth_img
+        return self.imread(fname, cv2.IMREAD_ANYDEPTH)
 
     def pcd(self):
         fname = self.pcd_fname()
@@ -207,7 +210,7 @@ class TemplateAndImageProviderFromVideo(object):
         return self._img
 
     def obj_rgb(self):
-        return cv2.imread(self.template_path, cv2.IMREAD_COLOR)
+        return self.imread(self.template_path, cv2.IMREAD_COLOR)
 
     def image_list(self):
         return [self.rgb_img()]

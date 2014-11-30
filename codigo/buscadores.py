@@ -521,7 +521,7 @@ class BhattacharyyaHistogramFinder(Finder):
                 'object_frame_hist': hist,
             }
         )
-        cv2.imwrite('taza_encontrada.png', frame)
+        # cv2.imwrite('gorra_seguida.png', frame)
         return desc
 
 
@@ -573,7 +573,7 @@ class IntersectionHistogramFinder(BhattacharyyaHistogramFinder):
                 self._descriptors['object_frame_hist'],
                 cv2.cv.CV_COMP_INTERSECT,
             )
-            obj_frame_base_comp *= 0.2
+            obj_frame_base_comp *= 0.8
             self._descriptors['obj_frame_base_comp'] = obj_frame_base_comp
 
         if 'obj_rgb_template_hist' not in self._descriptors:
@@ -588,7 +588,7 @@ class IntersectionHistogramFinder(BhattacharyyaHistogramFinder):
                 self._descriptors['object_frame_hist'],
                 cv2.cv.CV_COMP_INTERSECT,
             )
-            base_comp *= 0.4
+            base_comp *= 0.9
             self._descriptors['template_base_comp'] = base_comp
 
         return {

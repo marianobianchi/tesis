@@ -125,7 +125,33 @@ def seguir_taza_det_fija():
     ).run()
 
 
+def seguir_gorra_det_fija():
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/',  # scene path
+        'desk',  # scene
+        '1',  # scene number
+        'videos/rgbd/objs/',  # object path
+        'cap',  # object
+        '4',  # object number
+    )
+
+    detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat',
+                              'cap')
+
+    finder = IntersectionHistogramFinder()
+
+    follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo(
+        'Deteccion por template - Seguimiento por histograma'
+    )
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
 
 
 if __name__ == '__main__':
-    seguir_taza_det_fija()
+    seguir_gorra_det_fija()

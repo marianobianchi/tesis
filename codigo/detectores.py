@@ -81,6 +81,7 @@ class StaticDetector(Detector):
         img = self._descriptors['scene_rgb']
         img = img[desc['topleft'][0]:desc['bottomright'][0], desc['topleft'][1]: desc['bottomright'][1]]
         desc.update({'object_frame': img})
+        # cv2.imwrite('gorra_encontrada.png', img)
         return desc
 
 
