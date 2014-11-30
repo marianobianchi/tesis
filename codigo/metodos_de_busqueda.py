@@ -6,32 +6,31 @@ import numpy as np
 
 class BusquedaEnEspiral(object):
     def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
-        x, y = ultima_ubicacion
+        top, left = ultima_ubicacion
+        bottom, right = top + tam_region, left + tam_region
 
-        sum_x = 2
-        sum_y = 2
-        for j in range(30):
-            # Hago 2 busquedas por cada nuevo X
-            x += sum_x/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
+        height = bottom - top
+        width = right - left
 
-            x += sum_x/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
+        diff = 0.25
+        cant_moves = int(1 / diff) + 1
 
-            sum_x *= -2
+        # Voy a ir moviendo el cuadrante de a "diff" para cada eje y aumentaré
+        # hasta 4 * diff veces la zona de busqueda
+        for i in range(1, 3):
+            actual_diff = diff * i
+            actual_x_diff = height * actual_diff
+            actual_y_diff = width * actual_diff
+            x = top - actual_x_diff
+            y = left - actual_y_diff
 
-            # Hago 2 busquedas por cada nuevo Y
-            y += sum_y/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            y += sum_y/2
-            if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                yield (x, y, tam_region)
-
-            sum_y *= -2
+            for x_move in range(cant_moves):
+                for y_move in range(cant_moves):
+                    next_x = x + x_move * actual_x_diff
+                    next_y = y + y_move * actual_y_diff
+                    if (0 <= next_x < next_x + tam_region <= filas and
+                            0 <= next_y < next_y + tam_region <= columnas):
+                        yield (next_x, next_y, tam_region)
 
 
 class BusquedaEnEspiralCambiandoFrameSize(object):

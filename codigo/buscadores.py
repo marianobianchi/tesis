@@ -430,16 +430,18 @@ class BhattacharyyaHistogramFinder(Finder):
             # Tomo una region de la imagen donde se busca el objeto
             roi = img[fil_arr:fil_aba, col_izq:col_der]
 
-            # Si se quiere ver como va buscando, descomentar la siguiente linea
-            MuestraBusquedaEnVivo('Buscando el objeto').run(
-                img,
-                (fil_arr, col_izq),
-                (fil_aba, col_der),
-                frenar=True,
-            )
+            # Comparo
             nueva_comparacion = self.object_comparisson(roi)
 
             print "     Nueva comparacion:", nueva_comparacion
+
+            # Si se quiere ver como va buscando, descomentar la siguiente linea
+            # MuestraBusquedaEnVivo('Buscando el objeto').run(
+            #     img,
+            #     (fil_arr, col_izq),
+            #     (fil_aba, col_der),
+            #     frenar=True,
+            # )
 
             # Si hubo coincidencia
             if self.is_best_match(nueva_comparacion, valor_comparativo):
