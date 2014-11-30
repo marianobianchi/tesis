@@ -110,25 +110,32 @@ def prueba_histogramas():
     # initialize the index dictionary to store the image name
     # and corresponding histograms and the images dictionary
     # to store the images themselves
-    index = {}
+    rgb_index = {}
+    hsv_index = {}
     images = {}
 
-    model_filename = 'buena_taza_escena2'
+    model_filename = 'taza4'
 
     # loop over the image paths
-    for filename in ['buena_taza_escena', 'buena_taza_escena2',
-                     'buena_taza_escena3', 'buena_taza_escena4',
-                     'taza_modelo']:
+    for filename in ['taza', 'taza2', 'taza3', 'taza4', 'taza_modelo',
+                     'taza_maso_encontrada1', 'taza_maso_encontrada2',
+                     'taza_maso_encontrada3', 'taza_maso_encontrada7']:
         image = cv2.imread(filename + '.png')
-        image_2 = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         images[filename] = image
 
         # extract a 3D RGB color histogram from the image,
         # using 8 bins per channel, normalize, and update
         # the index
-        hist = cv2.calcHist([image_2], [0, 1], None, [180, 256], [0, 180, 0, 256])
+        hist = cv2.calcHist([image_rgb], [0, 1, 2], None, [16, 4, 4], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
-        index[filename] = hist
+        rgb_index[filename] = hist
+
+        # extract a 3D HSV color histogram from the image
+        hist = cv2.calcHist([image_hsv], [0, 1, 2], None, [9, 8, 16], [0, 180, 0, 256, 0, 256])
+        hist = cv2.normalize(hist).flatten()
+        hsv_index[filename] = hist
 
     # loop over the comparison methods
     for (methodName, method) in OPENCV_METHODS:
@@ -142,11 +149,17 @@ def prueba_histogramas():
         if methodName in ("Correlation", "Intersection"):
             reverse = True
 
-        for (k, hist) in index.items():
+        for (k, hist) in rgb_index.items():
             # compute the distance between the two histograms
             # using the method and update the results dictionary
-            d = cv2.compareHist(index[model_filename], hist, method)
-            results[k] = d
+            d = cv2.compareHist(rgb_index[model_filename], hist, method)
+            results['{f}#RGB'.format(f=k)] = d
+
+        for (k, hist) in hsv_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(hsv_index[model_filename], hist, method)
+            results['{f}#HSV'.format(f=k)] = d
 
         # sort the results
         results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
@@ -158,16 +171,29 @@ def prueba_histogramas():
         plt.axis("off")
 
         # initialize the results figure
-        fig = plt.figure("Results: %s" % methodName)
-        fig.suptitle(methodName, fontsize=20)
+        figrgb = plt.figure("Results RGB: %s" % methodName)
+        figrgb.suptitle(methodName + ' - RGB', fontsize=20)
+
+        fighsv = plt.figure("Results HSV: %s" % methodName)
+        fighsv.suptitle(methodName + ' - HSV', fontsize=20)
 
         # loop over the results
-        for (i, (v, k)) in enumerate(results):
+        rgb_res_num = 0
+        hsv_res_num = 0
+        for (v, k) in results:
             # show the result
-            ax = fig.add_subplot(1, len(images), i + 1)
+            if 'RGB' in k:
+                ax = figrgb.add_subplot(3, 3, rgb_res_num + 1)
+                rgb_res_num += 1
+            else:
+                ax = fighsv.add_subplot(3, 3, hsv_res_num + 1)
+                hsv_res_num += 1
+
             ax.set_title("%s: %.2f" % (k, v))
-            plt.imshow(images[k])
-            plt.axis("off")
+
+            k = k.split('#')[0]
+            ax.imshow(images[k])
+            ax.axis("off")
 
     # show the OpenCV methods
     plt.show()
