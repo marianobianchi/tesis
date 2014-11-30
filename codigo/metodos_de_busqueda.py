@@ -5,32 +5,29 @@ from __future__ import unicode_literals, division
 import numpy as np
 
 class BusquedaEnEspiral(object):
-    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region, filas, columnas):
-        top, left = ultima_ubicacion
-        bottom, right = top + tam_region, left + tam_region
+    def get_positions_and_framesizes(self, topleft, bottomright, filas, columnas):
+        top, left = topleft
+        bottom, right = bottomright
 
         height = bottom - top
         width = right - left
 
         diff = 0.25
-        cant_moves = int(1 / diff) + 1
 
-        # Voy a ir moviendo el cuadrante de a "diff" para cada eje y aumentaré
-        # hasta 4 * diff veces la zona de busqueda
-        for i in range(1, 3):
+        for i in [1, 2, 3, 4]:
             actual_diff = diff * i
             actual_x_diff = height * actual_diff
             actual_y_diff = width * actual_diff
             x = top - actual_x_diff
             y = left - actual_y_diff
 
-            for x_move in range(cant_moves):
-                for y_move in range(cant_moves):
+            for x_move in range(3):
+                for y_move in range(3):
                     next_x = x + x_move * actual_x_diff
                     next_y = y + y_move * actual_y_diff
-                    if (0 <= next_x < next_x + tam_region <= filas and
-                            0 <= next_y < next_y + tam_region <= columnas):
-                        yield (next_x, next_y, tam_region)
+                    if (0 <= next_x < next_x + height <= filas and
+                            0 <= next_y < next_y + width <= columnas):
+                        yield (next_x, next_y), (next_x + height, next_y + width)
 
 
 class BusquedaEnEspiralCambiandoFrameSize(object):

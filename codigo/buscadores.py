@@ -401,31 +401,34 @@ class BhattacharyyaHistogramFinder(Finder):
     def is_best_match(self, new_value, old_value):
         return new_value < old_value
 
-    def simple_follow(self, img, ubicacion, valor_comparativo,
-                      tam_region_inicial):
+    def simple_follow(self, img, topleft, bottomright, valor_comparativo):
         """
         Esta funcion es el esquema de seguimiento del objeto.
         """
         filas, columnas = len(img), len(img[0])
 
-        nueva_ubicacion = ubicacion
-        tam_region_final = tam_region_inicial
+        new_topleft = topleft
+        new_bottomright = bottomright
 
 
         #SACAR
         print "valor_comparativo:", valor_comparativo
 
         # Seguimiento (busqueda/deteccion acotada)
-        for x, y, tam_region in (self.metodo_de_busqueda
-                                 .get_positions_and_framesizes(
-                                    ubicacion,
-                                    tam_region_inicial,
-                                    filas,
-                                    columnas)):
-            col_izq = y
-            col_der = col_izq + tam_region
-            fil_arr = x
-            fil_aba = fil_arr + tam_region
+        generador_de_ubicaciones = (
+            self.metodo_de_busqueda.get_positions_and_framesizes(
+                topleft,
+                bottomright,
+                filas,
+                columnas
+            )
+        )
+
+        for explored_topleft, explored_bottomright in generador_de_ubicaciones:
+            col_izq = explored_topleft[1]
+            col_der = explored_bottomright[1]
+            fil_arr = explored_topleft[0]
+            fil_aba = explored_bottomright[0]
 
             # Tomo una region de la imagen donde se busca el objeto
             roi = img[fil_arr:fil_aba, col_izq:col_der]
@@ -433,6 +436,7 @@ class BhattacharyyaHistogramFinder(Finder):
             # Comparo
             nueva_comparacion = self.object_comparisson(roi)
 
+            #SACAR
             print "     Nueva comparacion:", nueva_comparacion
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
@@ -447,30 +451,26 @@ class BhattacharyyaHistogramFinder(Finder):
             if self.is_best_match(nueva_comparacion, valor_comparativo):
                 # Nueva ubicacion del objeto (esquina superior izquierda del
                 # cuadrado)
-                nueva_ubicacion = (x, y)
+                new_topleft = explored_topleft
+
+                # Esq. inferior derecha
+                new_bottomright = explored_bottomright
 
                 # Actualizo el valor de la comparacion
                 valor_comparativo = nueva_comparacion
 
-                # Actualizo el tamaño de la region
-                tam_region_final = tam_region
-
-        return nueva_ubicacion, valor_comparativo, tam_region_final
+        return new_topleft, new_bottomright, valor_comparativo
 
     def find(self):
         # TODO: usar la esquina inferior derecha y NO el tamaño
         img = self._descriptors['scene_rgb']
 
-        vieja_ubicacion = self._descriptors['topleft']
-        nueva_ubicacion = vieja_ubicacion
+        topleft = self._descriptors['topleft']
+        new_topleft = topleft
 
         bottomright = self._descriptors['bottomright']
+        new_bottomright = bottomright
 
-        tam_region = max(
-            abs(vieja_ubicacion[0] - bottomright[0]),
-            abs(vieja_ubicacion[1] - bottomright[1]),
-        )
-        tam_region_final = tam_region
 
         # Cantidad de pixeles distintos
         valor_comparativo = self.object_comparisson_base(img)
@@ -478,16 +478,15 @@ class BhattacharyyaHistogramFinder(Finder):
         # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
         # de la ultima mejor ubicacion del objeto encontrada
         for i in range(3):
-            nueva_ubicacion, valor_comparativo, tam_region_final = self.simple_follow(
+            new_topleft, new_bottomright, valor_comparativo = self.simple_follow(
                 img,
-                vieja_ubicacion,
+                new_topleft,
+                new_bottomright,
                 valor_comparativo,
-                tam_region_final
             )
             # Si no cambio de posicion, no sigo buscando
-            if nueva_ubicacion == vieja_ubicacion:
+            if new_topleft == topleft:
                 break
-            vieja_ubicacion = nueva_ubicacion
 
         fue_exitoso = self.is_best_match(
             valor_comparativo,
@@ -496,13 +495,9 @@ class BhattacharyyaHistogramFinder(Finder):
         desc = {}
 
         if fue_exitoso:
-            topleft = nueva_ubicacion if fue_exitoso else None
-            bottomright = (nueva_ubicacion[0] + tam_region_final,
-                           nueva_ubicacion[1] + tam_region_final)
-
             desc = {
-                'topleft': topleft,
-                'bottomright': bottomright,
+                'topleft': new_topleft,
+                'bottomright': new_bottomright,
             }
         else:
             self._descriptors = {}
@@ -594,8 +589,6 @@ class IntersectionHistogramFinder(BhattacharyyaHistogramFinder):
             )
             base_comp *= 0.8
             self._descriptors['template_base_comp'] = base_comp
-
-
 
         return {
             'template_comp': self._descriptors['template_base_comp'],
