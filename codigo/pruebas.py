@@ -114,13 +114,14 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'gorra_modelo'
-    model_mask = cv2.imread('gorra_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
+    model_filename = 'taza_modelo'
+    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
 
     # loop over the image paths
-    for filename in ['gorra_modelo', 'gorra_encontrada', 'gorra_encontrada1',
-                     'gorra_encontrada2', 'gorra_encontrada3', 'gorra_seguida1',
-                     'gorra_seguida2', 'gorra_seguida3', 'gorra_seguida4']:
+    for filename in ['taza_modelo', 'taza_maso_encontrada1',
+                     'taza_maso_encontrada2', 'taza_maso_encontrada3',
+                     'taza_maso_encontrada7', 'taza', 'taza2', 'taza3',
+                     'taza4']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -203,5 +204,51 @@ def prueba_histogramas():
     # show the OpenCV methods
     plt.show()
 
+
+def prueba_promedio_histogramas():
+    mod1 = cv2.imread('taza_modelo.png', cv2.COLOR_BGR2RGB)
+    masc1 = cv2.imread('taza_mascara.png', cv2.COLOR_BGR2GRAY)
+    hist1 = cv2.calcHist(
+        [mod1], [0, 1, 2], masc1, [16, 8, 8], [0, 256, 0, 256, 0, 256]
+    )
+    hist1 = cv2.normalize(hist1).flatten()
+
+    mod2 = cv2.imread('taza_modelo_2.png', cv2.COLOR_BGR2RGB)
+    masc2 = cv2.imread('taza_mascara_2.png', cv2.COLOR_BGR2GRAY)
+    hist2 = cv2.calcHist(
+        [mod2], [0, 1, 2], masc2, [16, 8, 8], [0, 256, 0, 256, 0, 256]
+    )
+    hist2 = cv2.normalize(hist2).flatten()
+
+    mod3 = cv2.imread('taza_modelo_3.png', cv2.COLOR_BGR2RGB)
+    masc3 = cv2.imread('taza_mascara_3.png', cv2.COLOR_BGR2GRAY)
+    hist3 = cv2.calcHist(
+        [mod3], [0, 1, 2], masc3, [16, 8, 8], [0, 256, 0, 256, 0, 256]
+    )
+    hist3 = cv2.normalize(hist3).flatten()
+
+    hist_prom = (hist1 + hist2 + hist3) / 3
+
+    fig = plt.figure("Histogramas")
+    ax = fig.add_subplot(2, 2, 1)
+    ax.plot(hist1)
+    ax.set_title("modelo 1")
+
+    ax = fig.add_subplot(2, 2, 2)
+    ax.plot(hist2)
+    ax.set_title("modelo 2")
+
+    ax = fig.add_subplot(2, 2, 3)
+    ax.plot(hist3)
+    ax.set_title("modelo 3")
+
+    ax = fig.add_subplot(2, 2, 4)
+    ax.plot(hist_prom)
+    ax.set_title("promedio")
+
+    # show the OpenCV methods
+    plt.show()
+
+
 if __name__ == '__main__':
-    prueba_histogramas()
+    prueba_promedio_histogramas()
