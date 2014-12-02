@@ -5,8 +5,7 @@ from __future__ import (unicode_literals, division)
 
 import cv2
 
-from buscadores import BhattacharyyaHistogramFinder, CorrelationHistogramFinder, \
-    IntersectionHistogramFinder
+from buscadores import TemplateAndFrameHistogramFinder
 from esquemas_seguimiento import FollowingScheme
 from detectores import RGBTemplateDetector, StaticDetector
 from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize
@@ -60,7 +59,7 @@ def seguir_taza():
 
     detector = RGBTemplateDetector()
 
-    finder = BhattacharyyaHistogramFinder()
+    finder = TemplateAndFrameHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -83,7 +82,7 @@ def seguir_pelota():
 
     detector = RGBTemplateDetector()
 
-    finder = IntersectionHistogramFinder()
+    finder = TemplateAndFrameHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -108,9 +107,12 @@ def seguir_taza_det_fija():
         '5',  # object number
     )
 
-    detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat', 'coffee_mug')
+    detector = StaticDetector(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
 
-    finder = IntersectionHistogramFinder()
+    finder = TemplateAndFrameHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -135,10 +137,12 @@ def seguir_gorra_det_fija():
         '4',  # object number
     )
 
-    detector = StaticDetector('videos/rgbd/scenes/desk/desk_1.mat',
-                              'cap')
+    detector = StaticDetector(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'cap'
+    )
 
-    finder = IntersectionHistogramFinder()
+    finder = TemplateAndFrameHistogramFinder()
 
     follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
@@ -154,4 +158,4 @@ def seguir_gorra_det_fija():
 
 
 if __name__ == '__main__':
-    seguir_gorra_det_fija()
+    seguir_taza_det_fija()

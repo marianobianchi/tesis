@@ -131,7 +131,13 @@ class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
 class FollowerStaticAndRGBTemplate(FollowerWithStaticDetection):
     def train(self):
         obj_template = self.img_provider.obj_rgb()
-        self._obj_descriptors.update({'obj_rgb_template': obj_template})
+        obj_mask = self.img_provider.obj_mask()
+        self._obj_descriptors.update(
+            {
+                'object_template': obj_template,
+                'object_mask': obj_mask,
+            }
+        )
 
     def descriptors(self):
         desc = super(FollowerStaticAndRGBTemplate, self).descriptors()

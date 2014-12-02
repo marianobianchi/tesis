@@ -69,6 +69,10 @@ class FrameNamesAndImageProvider(object):
         fname = self._obj_fname(frame_number=n, suffix='_crop.png')
         return self.imread(fname, cv2.IMREAD_COLOR)
 
+    def obj_mask(self, n=1):
+        fname = self._obj_fname(frame_number=n, suffix='_maskcrop.png')
+        return self.imread(fname, cv2.IMREAD_GRAYSCALE)
+
     def _get_fnumber(self, fname):
         parts = fname.split('.')[0].split('_')
         fnumber = None

@@ -114,7 +114,7 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'taza_modelo'
+    model_filename = 'taza2'
     model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
 
     # loop over the image paths
@@ -128,18 +128,18 @@ def prueba_histogramas():
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         images[filename] = image_rgb
 
-        if 'modelo' in filename:
-            mask = model_mask
+        # if 'modelo' in filename:
+        #     mask = model_mask
 
         # extract a 3D RGB color histogram from the image,
         # using 8 bins per channel, normalize, and update
         # the index
-        hist = cv2.calcHist([image_rgb], [0, 1, 2], mask, [16, 4, 4], [0, 256, 0, 256, 0, 256])
+        hist = cv2.calcHist([image_rgb], [0, 1, 2], mask, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         rgb_index[filename] = hist
 
         # extract a 3D HSV color histogram from the image
-        hist = cv2.calcHist([image_hsv], [0, 1, 2], mask, [9, 8, 16], [0, 180, 0, 256, 0, 256])
+        hist = cv2.calcHist([image_hsv], [1, 2], mask, [8, 16], [0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         hsv_index[filename] = hist
 
@@ -205,6 +205,114 @@ def prueba_histogramas():
     plt.show()
 
 
+def prueba_mejor_canal_hsv_histogramas():
+    OPENCV_METHODS = (
+        ("Correlation", cv2.cv.CV_COMP_CORREL),
+        ("Chi-Squared", cv2.cv.CV_COMP_CHISQR),
+        ("Intersection", cv2.cv.CV_COMP_INTERSECT),
+        ("Hellinger", cv2.cv.CV_COMP_BHATTACHARYYA),
+    )
+
+    # initialize the index dictionary to store the image name
+    # and corresponding histograms and the images dictionary
+    # to store the images themselves
+    h_index = {}
+    s_index = {}
+    v_index = {}
+    images = {}
+
+    model_filename = 'taza_modelo'
+    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
+
+    # loop over the image paths
+    for filename in ['taza_modelo', 'taza_maso_encontrada2',
+                     'taza_maso_encontrada7', 'taza', 'taza3']:
+        mask = None
+        image = cv2.imread(filename + '.png')
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        images[filename] = image_rgb
+
+        if 'modelo' in filename:
+            mask = model_mask
+
+        h_hist = cv2.calcHist([image_hsv], [0], mask, [4], [0, 180])
+        h_hist = cv2.normalize(h_hist).flatten()
+        h_index[filename] = h_hist
+
+        s_hist = cv2.calcHist([image_hsv], [1], mask, [4], [0, 256])
+        s_hist = cv2.normalize(s_hist).flatten()
+        s_index[filename] = s_hist
+
+        v_hist = cv2.calcHist([image_hsv], [2], mask, [4], [0, 256])
+        v_hist = cv2.normalize(v_hist).flatten()
+        v_index[filename] = v_hist
+
+    # loop over the comparison methods
+    for (methodName, method) in OPENCV_METHODS:
+        # initialize the results dictionary and the sort
+        # direction
+        results = {}
+        reverse = False
+
+        # if we are using the correlation or intersection
+        # method, then sort the results in reverse order
+        if methodName in ("Correlation", "Intersection"):
+            reverse = True
+
+        for (k, hist) in h_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(h_index[model_filename], hist, method)
+            results['{f}#H'.format(f=k)] = d
+
+        for (k, hist) in s_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(s_index[model_filename], hist, method)
+            results['{f}#S'.format(f=k)] = d
+
+        for (k, hist) in v_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(v_index[model_filename], hist, method)
+            results['{f}#V'.format(f=k)] = d
+
+        # sort the results
+        results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
+
+        # initialize the results figure
+        fig = plt.figure("Results for {m}".format(m=methodName))
+
+        # loop over the results
+        h_res_num = 0
+        s_res_num = 4
+        v_res_num = 8
+        for (v, k) in results:
+            if 'modelo' not in k:
+                # show the result
+                if 'H' in k:
+                    ax = fig.add_subplot(3, 4, h_res_num + 1)
+                    h_res_num += 1
+                elif 'S' in k:
+                    ax = fig.add_subplot(3, 4, s_res_num + 1)
+                    s_res_num += 1
+                elif 'V' in k:
+                    ax = fig.add_subplot(3, 4, v_res_num + 1)
+                    v_res_num += 1
+                else:
+                    raise Exception("ALGO FALLO")
+
+                ax.set_title("%s: %.2f" % (k, v))
+
+                k = k.split('#')[0]
+                ax.imshow(images[k])
+                ax.axis("off")
+
+    # show the OpenCV methods
+    plt.show()
+
+
 def prueba_promedio_histogramas():
     mod1 = cv2.imread('taza_modelo.png', cv2.COLOR_BGR2RGB)
     masc1 = cv2.imread('taza_mascara.png', cv2.COLOR_BGR2GRAY)
@@ -251,4 +359,4 @@ def prueba_promedio_histogramas():
 
 
 if __name__ == '__main__':
-    prueba_promedio_histogramas()
+    prueba_histogramas()

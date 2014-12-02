@@ -352,54 +352,104 @@ class ICPFinderWithModel(ICPFinder):
 #############
 # RGB Finder
 #############
-class BhattacharyyaHistogramFinder(Finder):
-    # TODO: http://www.pyimagesearch.com/2014/07/14/3-ways-compare-histograms-using-opencv-python/
-    def __init__(self):
-        super(BhattacharyyaHistogramFinder, self).__init__()
+class TemplateAndFrameHistogramFinder(Finder):
+    def __init__(self, template_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA,
+                 frame_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA):
+        super(TemplateAndFrameHistogramFinder, self).__init__()
         self.metodo_de_busqueda = BusquedaEnEspiral()
+        self.template_comp_method = template_comp_method
+        self.frame_comp_method = frame_comp_method
 
     @staticmethod
-    def calculate_histogram(roi):
-        # Paso la imagen de BGR a HSV
+    def calculate_rgb_histogram(roi, mask=None):
+        # Paso la imagen de BGR a RGB
+        roi_rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi_rgb],  # Imagen
+            [0, 1, 2],  # Canales
+            mask,  # Mascara
+            [8, 8, 8],  # Numero de bins para cada canal
+            [0, 256, 0, 256, 0, 256],  # Rangos válidos para cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist).flatten()
+
+        return hist
+
+    @staticmethod
+    def calculate_hsv_histogram(roi, mask=None):
+        # Paso la imagen de BGR a RGB
         roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
 
         # Calculo el histograma del roi (para H y S)
         hist = cv2.calcHist(
             [roi_hsv],  # Imagen
-            [0, 1],  # Canales
-            None,  # Mascara
-            [180, 256],  # Numero de bins para cada canal
-            [0, 180, 0, 256],  # Rangos válidos para los pixeles de cada canal
+            [1, 2],  # Canales
+            mask,  # Mascara
+            [8, 16],  # Numero de bins para cada canal
+            [0, 256, 0, 256],  # Rangos válidos para cada canal
         )
 
         # Normalizo el histograma para evitar errores por distinta escala
-        hist = cv2.normalize(hist)
+        hist = cv2.normalize(hist).flatten()
 
         return hist
 
-    def object_comparisson_base(self, img):
-        # TODO: ver que valor conviene poner.
-        # Esto es el umbral para la deteccion en el seguimiento
-        return 0.4
+    def saved_object_comparisson(self):
+        if 'object_frame_hsv_hist' not in self._descriptors:
+            obj = self._descriptors['object_frame']
+            hist = self.calculate_hsv_histogram(obj)
+            self._descriptors['object_frame_hsv_hist'] = hist
+
+        if 'object_template_rgb_hist' not in self._descriptors:
+            obj = self._descriptors['object_template']
+            mask = self._descriptors['object_mask']
+            hist = self.calculate_rgb_histogram(obj, mask)
+            self._descriptors['object_template_rgb_hist'] = hist
+
+        return (self._descriptors['object_template_rgb_hist'],
+                self._descriptors['object_frame_hsv_hist'])
+
+    @staticmethod
+    def object_comparisson_base(img):
+        return {
+            'object_template_comp': 0.6,
+            'object_frame_comp': 0.4,
+        }
 
     def object_comparisson(self, roi):
-        roi_hist = self.calculate_histogram(roi)
+        roi_rgb_hist = self.calculate_rgb_histogram(roi)
+        roi_hsv_hist = self.calculate_hsv_histogram(roi)
 
         # Tomo el histograma del objeto para comparar
-        obj_hist = self.saved_object_comparisson()
+        obj_template_rgb_hist, object_frame_hsv_hist = (
+            self.saved_object_comparisson()
+        )
 
-        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_BHATTACHARYYA)
+        template_comp = cv2.compareHist(
+            obj_template_rgb_hist,
+            roi_rgb_hist,
+            self.template_comp_method,
+        )
+        frame_comp = cv2.compareHist(
+            object_frame_hsv_hist,
+            roi_hsv_hist,
+            self.frame_comp_method,
+        )
 
-    def saved_object_comparisson(self):
-        if 'object_frame_hist' not in self._descriptors:
-            obj = self._descriptors['object_frame']
-            hist = self.calculate_histogram(obj)
-            self._descriptors['object_frame_hist'] = hist
-
-        return self._descriptors['object_frame_hist']
+        return {
+            'object_template_comp': template_comp,
+            'object_frame_comp': frame_comp,
+        }
 
     def is_best_match(self, new_value, old_value):
-        return new_value < old_value
+        templ_better = new_value['object_template_comp'] < old_value['object_template_comp']
+        obj_better = new_value['object_frame_comp'] < old_value['object_frame_comp']
+        return templ_better and obj_better
+
 
     def simple_follow(self, img, topleft, bottomright, valor_comparativo):
         """
@@ -409,10 +459,6 @@ class BhattacharyyaHistogramFinder(Finder):
 
         new_topleft = topleft
         new_bottomright = bottomright
-
-
-        #SACAR
-        print "valor_comparativo:", valor_comparativo
 
         # Seguimiento (busqueda/deteccion acotada)
         generador_de_ubicaciones = (
@@ -435,9 +481,6 @@ class BhattacharyyaHistogramFinder(Finder):
 
             # Comparo
             nueva_comparacion = self.object_comparisson(roi)
-
-            #SACAR
-            print "     Nueva comparacion:", nueva_comparacion
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
             # MuestraBusquedaEnVivo('Buscando el objeto').run(
@@ -462,7 +505,6 @@ class BhattacharyyaHistogramFinder(Finder):
         return new_topleft, new_bottomright, valor_comparativo
 
     def find(self):
-        # TODO: usar la esquina inferior derecha y NO el tamaño
         img = self._descriptors['scene_rgb']
 
         topleft = self._descriptors['topleft']
@@ -471,26 +513,27 @@ class BhattacharyyaHistogramFinder(Finder):
         bottomright = self._descriptors['bottomright']
         new_bottomright = bottomright
 
-
-        # Cantidad de pixeles distintos
-        valor_comparativo = self.object_comparisson_base(img)
+        valor_comparativo_base = self.object_comparisson_base(img)
+        valor_comparativo = valor_comparativo_base
 
         # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
         # de la ultima mejor ubicacion del objeto encontrada
         for i in range(3):
-            new_topleft, new_bottomright, valor_comparativo = self.simple_follow(
+            new_topleft, new_bottomright, new_valor_comparativo = self.simple_follow(
                 img,
                 new_topleft,
                 new_bottomright,
                 valor_comparativo,
             )
             # Si no cambio de posicion, no sigo buscando
-            if new_topleft == topleft:
+            if not self.is_best_match(new_valor_comparativo, valor_comparativo):
                 break
+
+            valor_comparativo = new_valor_comparativo
 
         fue_exitoso = self.is_best_match(
             valor_comparativo,
-            self.object_comparisson_base(img),
+            valor_comparativo_base,
         )
         desc = {}
 
@@ -513,112 +556,12 @@ class BhattacharyyaHistogramFinder(Finder):
                     topleft[1]:bottomright[1]]
 
         # Actualizo el histograma
-        hist = self.calculate_histogram(frame)
+        hist = self.calculate_hsv_histogram(frame)
 
         desc.update(
             {
                 'object_frame': frame,
-                'object_frame_hist': hist,
+                'object_frame_hsv_hist': hist,
             }
         )
-        # cv2.imwrite('gorra_seguida.png', frame)
         return desc
-
-
-class CorrelationHistogramFinder(BhattacharyyaHistogramFinder):
-    def object_comparisson_base(self, img):
-        # TODO: ver que valor conviene poner.
-        # Esto es el umbral para la deteccion en el seguimiento
-        return 0.75
-
-    def object_comparisson(self, roi):
-        roi_hist = self.calculate_histogram(roi)
-
-        # Tomo el histograma del objeto para comparar
-        obj_hist = self.saved_object_comparisson()
-
-        return cv2.compareHist(roi_hist, obj_hist, cv2.cv.CV_COMP_CORREL)
-
-    def is_best_match(self, new_value, old_value):
-        return new_value > old_value
-
-
-class IntersectionHistogramFinder(BhattacharyyaHistogramFinder):
-    def saved_object_comparisson(self):
-        if 'object_frame_hist' not in self._descriptors:
-            obj = self._descriptors['object_frame']
-            hist = self.calculate_histogram(obj)
-            self._descriptors['object_frame_hist'] = hist
-
-        if 'obj_rgb_template_hist' not in self._descriptors:
-            obj = self._descriptors['obj_rgb_template']
-            hist = self.calculate_histogram(obj)
-            self._descriptors['obj_rgb_template_hist'] = hist
-
-        return (self._descriptors['obj_rgb_template_hist'],
-                self._descriptors['object_frame_hist'])
-
-    def object_comparisson_base(self, img):
-        # Si no está, es porque viene de la deteccion y debo calcularlo.
-        # Si está, es el que se encontró en el seguimiento del frame anterior
-        if 'object_frame_hist' not in self._descriptors:
-            obj_frame_hist = self.calculate_histogram(
-                self._descriptors['object_frame']
-            )
-            self._descriptors['object_frame_hist'] = obj_frame_hist
-
-        if 'obj_frame_base_comp' not in self._descriptors:
-            obj_frame_base_comp = cv2.compareHist(
-                self._descriptors['object_frame_hist'],
-                self._descriptors['object_frame_hist'],
-                cv2.cv.CV_COMP_INTERSECT,
-            )
-            obj_frame_base_comp *= 0.8
-            self._descriptors['obj_frame_base_comp'] = obj_frame_base_comp
-
-        if 'obj_rgb_template_hist' not in self._descriptors:
-            obj = self._descriptors['obj_rgb_template']
-            hist = self.calculate_histogram(obj)
-            self._descriptors['obj_rgb_template_hist'] = hist
-
-        if 'template_base_comp' not in self._descriptors:
-            hist = self._descriptors['obj_rgb_template_hist']
-            base_comp = cv2.compareHist(
-                hist,
-                self._descriptors['object_frame_hist'],
-                cv2.cv.CV_COMP_INTERSECT,
-            )
-            base_comp *= 0.9
-            self._descriptors['template_base_comp'] = base_comp
-
-        return {
-            'template_comp': self._descriptors['template_base_comp'],
-            'obj_frame_comp': self._descriptors['obj_frame_base_comp'],
-        }
-
-    def object_comparisson(self, roi):
-        roi_hist = self.calculate_histogram(roi)
-
-        # Tomo el histograma del objeto para comparar
-        templ_hist, obj_hist = self.saved_object_comparisson()
-
-        obj_frame_comp = cv2.compareHist(
-            roi_hist,
-            obj_hist,
-            cv2.cv.CV_COMP_INTERSECT,
-        )
-        template_comp = cv2.compareHist(
-            roi_hist,
-            templ_hist,
-            cv2.cv.CV_COMP_INTERSECT,
-        )
-
-        return {
-            'template_comp': template_comp,
-            'obj_frame_comp': obj_frame_comp,
-        }
-
-    def is_best_match(self, new_value, old_value):
-        templ_better = new_value['template_comp'] > old_value['template_comp']
-        obj_better = new_value['obj_frame_comp'] > old_value['obj_frame_comp']
-        return templ_better and obj_better

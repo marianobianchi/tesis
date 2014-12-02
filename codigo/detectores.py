@@ -392,7 +392,7 @@ class AutomaticDetection(Detector):
 class RGBTemplateDetector(Detector):
     def detect(self):
         img = self._descriptors['scene_rgb']
-        template = self._descriptors['obj_rgb_template']
+        template = self._descriptors['object_template']
         template_filas, template_columnas = len(template), len(template[0])
 
         # Leer: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html#theory
