@@ -390,33 +390,69 @@ class AutomaticDetection(Detector):
 #################
 
 class RGBTemplateDetector(Detector):
+    def __init__(self, template_threshold=0.16, templates_to_use=3,
+                 templates_sizes=None, templates_from_frame=1):
+        super(RGBTemplateDetector, self).__init__()
+        self.template_threshold = template_threshold
+
+        # Follower/image_provider train parameters
+        self.templates_to_use = templates_to_use
+        self.template_sizes = templates_sizes
+        self.templates_from_frame = templates_from_frame
+
     def detect(self):
         img = self._descriptors['scene_rgb']
-        template = self._descriptors['object_template']
-        template_filas, template_columnas = len(template), len(template[0])
+        templates = self._descriptors['object_templates']
 
-        # Leer: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html#theory
-        # Aplico el template Matching
-        res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
+        fue_exitoso = False
+        best_threshold = self.template_threshold
+        topleft = (0, 0)
+        bottomright = (0, 0)
+        best_template_index = None
 
-        # Busco la posición
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+        for i, template in enumerate(templates):
+            height, width = len(template), len(template[0])
 
-        desc = {}
-        # TODO: revisar este umbral
-        fue_exitoso = min_val < 0.16
+            # Leer: http://opencv-python-tutroals.readthedocs.org/en/latest/py_tutorials/py_imgproc/py_template_matching/py_template_matching.html#theory
+            # Aplico el template Matching
+            res = cv2.matchTemplate(img, template, cv2.TM_SQDIFF_NORMED)
 
-        if fue_exitoso:
-            # min_loc y max_loc tienen primero las columnas y despues las filas,
-            # entonces lo doy vuelta
-            topleft = (min_loc[1], min_loc[0])
-            bottomright = (min_loc[1] + template_filas, min_loc[0] + template_columnas)
+            # Busco la posición
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-            desc = {
-                'topleft': topleft,
-                'bottomright': bottomright,
-                'object_frame': img[topleft[0]:bottomright[0],
-                                    topleft[1]:bottomright[1]],
-            }
+            # cv2.imshow('Template usado', template)
+            # print "Valor de la comparacion:", min_val
+            # cv2.waitKey()
+
+            # TODO: revisar este umbral
+            if min_val < best_threshold:
+                # min_loc y max_loc tienen primero las columnas y despues las filas,
+                # entonces lo doy vuelta
+                fue_exitoso = True
+                topleft = (min_loc[1], min_loc[0])
+                bottomright = (min_loc[1] + height, min_loc[0] + width)
+                best_template_index = i
+
+        desc = {
+            'topleft': topleft,
+            'bottomright': bottomright,
+            'object_frame': img[topleft[0]:bottomright[0],
+                                topleft[1]:bottomright[1]],
+
+        }
+
+        if best_template_index is not None:
+            desc.update({'best_template_index': best_template_index})
 
         return fue_exitoso, desc
+
+    def calculate_descriptors(self, desc):
+        if 'best_template_index' in desc:
+            idx = desc['best_template_index']
+            template = self._descriptors['object_templates'][idx]
+            mask = self._descriptors['object_masks'][idx]
+
+            desc['object_template'] = template
+            desc['object_mask'] = mask
+
+        return desc

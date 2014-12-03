@@ -10,7 +10,7 @@ from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
 
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
     AdaptLeafRatio
-from metodos_de_busqueda import BusquedaEnEspiral
+from metodos_de_busqueda import BusquedaAlrededor
 from observar_seguimiento import MuestraBusquedaEnVivo
 
 
@@ -356,7 +356,7 @@ class TemplateAndFrameHistogramFinder(Finder):
     def __init__(self, template_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA,
                  frame_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA):
         super(TemplateAndFrameHistogramFinder, self).__init__()
-        self.metodo_de_busqueda = BusquedaEnEspiral()
+        self.metodo_de_busqueda = BusquedaAlrededor()
         self.template_comp_method = template_comp_method
         self.frame_comp_method = frame_comp_method
 

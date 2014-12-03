@@ -73,12 +73,12 @@ class FollowingScheme(object):
         self.show_following.close()
 
 
-class FollowingSchemeSavingData(FollowingScheme):
+class FollowingSchemeSavingDataPCD(FollowingScheme):
     """
     Guarda las pruebas en carpetas consecutivas llamadas prueba_###
     """
     def __init__(self, img_provider, obj_follower, path):
-        super(FollowingSchemeSavingData, self).__init__(
+        super(FollowingSchemeSavingDataPCD, self).__init__(
             img_provider,
             obj_follower,
             None,
@@ -234,7 +234,7 @@ class FollowingSchemeSavingData(FollowingScheme):
             save_pcd(pcd, str(filename))
 
 
-class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
+class FollowingSquemaExploringParameterPCD(FollowingSchemeSavingDataPCD):
     """
     Guarda las pruebas en carpetas con el nombre del parametro y el valor
     que se estan explorando
@@ -309,5 +309,203 @@ class FollowingSquemaExploringParameter(FollowingSchemeSavingData):
             b'seg_max_iter={v}\n'.format(v=icp_defaults.max_iter))
         self.file.write(b'seg_transf_epsilon={v}\n'.format(
             v=icp_defaults.transf_epsilon))
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()
+
+
+class FollowingSchemeSavingDataRGB(FollowingScheme):
+    """
+    Guarda las pruebas en carpetas consecutivas llamadas prueba_###
+    """
+    def __init__(self, img_provider, obj_follower, path):
+        (super(FollowingSchemeSavingDataRGB, self)
+         .__init__(img_provider, obj_follower, None))
+
+        # para no pisar nunca los resultados voy a ir creando carpetas sucesivas
+        # llamadas prueba_###
+        self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/')
+        self.results_path = self.results_path.format(
+            s=self.img_provider.scene,
+            sn=self.img_provider.scene_number,
+            o=self.img_provider.obj,
+            on=self.img_provider.obj_number,
+        )
+
+        os.listdir(self.results_path)
+        rc = re.compile('prueba_(?P<number>\d{3})')
+        pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
+        pruebas_dirs = pruebas_dirs if pruebas_dirs else ['prueba_000']
+        pruebas_dirs.sort()
+        last_test_number = int(rc.match(pruebas_dirs[-1]).groupdict()['number'])
+        new_folder_name = 'prueba_{n:03d}'.format(n=last_test_number+1)
+        self.results_path = os.path.join(self.results_path, new_folder_name)
+
+        if not os.path.isdir(self.results_path):
+            os.makedirs(self.results_path)
+        self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
+
+        # Guardo los valores de los parametros
+        detector = self.obj_follower.detector
+        self.file.write(b'det_template_threshold={v}\n'.format(
+            v=detector.template_threshold
+        ))
+        self.file.write(b'det_templates_to_use={v}\n'.format(
+            v=detector.templates_to_use
+        ))
+        self.file.write(b'det_template_sizes={v}\n'.format(
+            v=detector.template_sizes
+        ))
+        self.file.write(b'det_templates_from_frame={v}\n'.format(
+            v=detector.templates_from_frame
+        ))
+
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()
+
+    def __del__(self):
+        self.file.close()
+
+    def run(self):
+        # ########################
+        # Etapa de entrenamiento
+        #########################
+        self.obj_follower.train()
+
+        ######################
+        # Etapa de detección
+        ######################
+        print("Detectando en imagen {i}".format(
+            i=self.img_provider.next_frame_number
+        ))
+        es_deteccion = True
+
+        fue_exitoso, topleft, bottomright = (
+            self.obj_follower.detect()
+        )
+
+        self.save_result(0, fue_exitoso, topleft, bottomright)
+
+        #######################
+        # Etapa de seguimiento
+        #######################
+
+        # Adelanto un frame
+        self.img_provider.next()
+
+        while self.img_provider.have_images():
+
+            if fue_exitoso:
+                print(
+                    "Buscando en imagen {i}".format(
+                        i=self.img_provider.next_frame_number
+                    ),
+                    ''
+                )
+                fue_exitoso, topleft, bottomright = (
+                    self.obj_follower.follow()
+                )
+                if fue_exitoso:
+                    print('')
+                es_deteccion = False
+
+            if not fue_exitoso:
+
+                print("{p}Detectando en imagen {i}".format(
+                    p='...MISS... ' if not es_deteccion else '',
+                    i=self.img_provider.next_frame_number,
+                ))
+                fue_exitoso, topleft, bottomright = (
+                    self.obj_follower.detect()
+                )
+                es_deteccion = True
+
+            self.save_result(
+                0 if es_deteccion else 1,
+                fue_exitoso,
+                topleft,
+                bottomright
+            )
+
+            # Adelanto un frame
+            self.img_provider.next()
+
+    def save_result(self, method, fue_exitoso, topleft, bottomright):
+        """
+        Formato para guardar:
+
+        frame_number;exito;metodo;fila_sup;col_izq;fila_inf;col_der
+
+        donde:
+        metodo = 0 si deteccion, 1 si seguimiento
+        exito = 0 si fallo, 1 si funciono
+        """
+        nframe = self.img_provider.next_frame_number
+        exito = 1 if fue_exitoso else 0
+
+        values = [nframe, exito, method, topleft[0], topleft[1],
+                  bottomright[0], bottomright[1]]
+
+        self.file.write(b';'.join([str(o) for o in values]))
+        self.file.write(b'\n')
+        self.file.flush()
+
+
+class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataPCD):
+    """
+    Guarda las pruebas en carpetas con el nombre del parametro y el valor
+    que se estan explorando
+    """
+
+    def __init__(self, img_provider, obj_follower, path, param_name, param_val):
+        self.img_provider = img_provider
+        self.obj_follower = obj_follower
+        self.show_following = None
+
+        self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/{p}/{v}')
+        self.results_path = self.results_path.format(
+            s=self.img_provider.scene,
+            sn=self.img_provider.scene_number,
+            o=self.img_provider.obj,
+            on=self.img_provider.obj_number,
+            p=param_name,
+            v=param_val,
+        )
+
+        # Creo la carpeta para ese parametro en la escena y objeto
+        # correspondientes
+        if not os.path.isdir(self.results_path):
+            os.makedirs(self.results_path)
+
+        rc = re.compile('(?P<number>\d{2})')
+        pruebas_dirs = [l for l in os.listdir(self.results_path) if rc.match(l)]
+        pruebas_dirs = pruebas_dirs if pruebas_dirs else ['00']
+        pruebas_dirs.sort()
+        last_test_number = int(rc.match(pruebas_dirs[-1]).groupdict()['number'])
+        new_folder_name = '{n:02d}'.format(n=last_test_number + 1)
+        self.results_path = os.path.join(self.results_path, new_folder_name)
+
+        # Creo una carpeta distinta por numero de corrida
+        if not os.path.isdir(self.results_path):
+            os.makedirs(self.results_path)
+        else:
+            raise Exception('Ojo. Vas a pisar resultados!')
+
+        self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
+
+        # Guardo los valores de los parametros
+        detector = self.obj_follower.detector
+        self.file.write(b'det_template_threshold={v}\n'.format(
+            v=detector.template_threshold
+        ))
+        self.file.write(b'det_templates_to_use={v}\n'.format(
+            v=detector.templates_to_use
+        ))
+        self.file.write(b'det_template_sizes={v}\n'.format(
+            v=detector.template_sizes
+        ))
+        self.file.write(b'det_templates_from_frame={v}\n'.format(
+            v=detector.templates_from_frame
+        ))
+
         self.file.write(b'RESULTS_SECTION\n')
         self.file.flush()

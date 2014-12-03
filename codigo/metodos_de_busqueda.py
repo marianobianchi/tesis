@@ -4,7 +4,7 @@ from __future__ import unicode_literals, division
 
 import numpy as np
 
-class BusquedaEnEspiral(object):
+class BusquedaAlrededor(object):
     def get_positions_and_framesizes(self, topleft, bottomright, filas, columnas):
         top, left = topleft
         bottom, right = bottomright

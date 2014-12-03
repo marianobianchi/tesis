@@ -9,11 +9,11 @@ from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from metodos_comunes import AdaptLeafRatio, AdaptSearchArea, FixedSearchArea
 from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment, AutomaticDetection
-from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingData, \
-    FollowingSquemaExploringParameter
+from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
+    FollowingSquemaExploringParameterPCD
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
-    FrameNamesAndImageProviderPreCharged
+    FrameNamesAndImageProviderPreChargedForPCD
 from seguidores import FollowerWithStaticDetection, \
     FollowerWithStaticDetectionAndPCD, FollowerStaticICPAndObjectModel
 
@@ -49,7 +49,7 @@ def deteccion_estatica():
 
 
 def icp_sin_modelo():
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/',  # scene path
         'desk',  # scene
         '1',  # scene number
@@ -77,7 +77,7 @@ def icp_sin_modelo():
 
 
 def icp_con_modelo():
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
@@ -100,7 +100,7 @@ def icp_con_modelo():
 
 
 def deteccion_automatica_icp_con_modelo():
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '1',
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
@@ -135,7 +135,7 @@ def desk_1_coffee_mug_5():
 
     follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    FollowingSchemeSavingData(
+    FollowingSchemeSavingDataPCD(
         img_provider,
         follower,
         'pruebas_guardadas'
@@ -157,7 +157,7 @@ def desk_2_flashlight_1():
 
     follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    FollowingSchemeSavingData(
+    FollowingSchemeSavingDataPCD(
         img_provider,
         follower,
         'pruebas_guardadas'
@@ -179,7 +179,7 @@ def desk_1_cap_4():
 
     follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    FollowingSchemeSavingData(
+    FollowingSchemeSavingDataPCD(
         img_provider,
         follower,
         'pruebas_guardadas'
@@ -203,7 +203,7 @@ def desk_2_bowl_3():
 
     follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    FollowingSchemeSavingData(
+    FollowingSchemeSavingDataPCD(
         img_provider,
         follower,
         'pruebas_guardadas'
@@ -264,7 +264,7 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
 
     follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
 
-    FollowingSchemeSavingData(
+    FollowingSchemeSavingDataPCD(
         img_provider,
         follower,
         'pruebas_guardadas'
@@ -307,7 +307,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
     find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
@@ -340,7 +340,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
                 finder
             )
 
-            FollowingSquemaExploringParameter(
+            FollowingSquemaExploringParameterPCD(
                 img_provider,
                 follower,
                 'pruebas_guardadas',
@@ -388,7 +388,7 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
     find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
@@ -421,7 +421,7 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
                 finder
             )
 
-            FollowingSquemaExploringParameter(
+            FollowingSquemaExploringParameterPCD(
                 img_provider,
                 follower,
                 'pruebas_guardadas',
@@ -468,7 +468,7 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
     find_adapt_leaf = AdaptLeafRatio(first_leaf=find_obj_scene_leaf)
 
     # Create objects
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
@@ -502,7 +502,7 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
                 finder
             )
 
-            FollowingSquemaExploringParameter(
+            FollowingSquemaExploringParameterPCD(
                 img_provider,
                 follower,
                 'pruebas_guardadas',
@@ -548,7 +548,7 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
     find_perc_obj_model_points = 0.3
 
     # Create objects
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
@@ -582,7 +582,7 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
                 finder
             )
 
-            FollowingSquemaExploringParameter(
+            FollowingSquemaExploringParameterPCD(
                 img_provider,
                 follower,
                 'pruebas_guardadas',
@@ -629,7 +629,7 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
     find_perc_obj_model_points = 0.3
 
     # Create objects
-    img_provider = FrameNamesAndImageProviderPreCharged(
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
@@ -663,7 +663,7 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
                 finder
             )
 
-            FollowingSquemaExploringParameter(
+            FollowingSquemaExploringParameterPCD(
                 img_provider,
                 follower,
                 'pruebas_guardadas',

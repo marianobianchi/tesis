@@ -130,12 +130,15 @@ class FollowerStaticICPAndObjectModel(FollowerWithStaticDetectionAndPCD):
 #################
 class FollowerStaticAndRGBTemplate(FollowerWithStaticDetection):
     def train(self):
-        obj_template = self.img_provider.obj_rgb()
-        obj_mask = self.img_provider.obj_mask()
+        obj_templates, obj_masks = self.img_provider.obj_rgb_templates_and_masks(
+            num_diff_images=self.detector.templates_to_use,
+            sizes=self.detector.template_sizes,
+            start_in_frame=self.detector.templates_from_frame,
+        )
         self._obj_descriptors.update(
             {
-                'object_template': obj_template,
-                'object_mask': obj_mask,
+                'object_templates': obj_templates,
+                'object_masks': obj_masks,
             }
         )
 
@@ -160,10 +163,10 @@ class FollowerStaticAndRGBTemplate(FollowerWithStaticDetection):
 ##########################
 # BORRAR TODO LO DE ABAJO
 ##########################
-from metodos_de_busqueda import BusquedaEnEspiral
+from metodos_de_busqueda import BusquedaAlrededor
 
 class ObjectDetectorAndFollower(object):
-    def __init__(self, image_provider, metodo_de_busqueda=BusquedaEnEspiral()):
+    def __init__(self, image_provider, metodo_de_busqueda=BusquedaAlrededor()):
         self.img_provider = image_provider
         self.metodo_de_busqueda = metodo_de_busqueda
 
@@ -419,7 +422,7 @@ class MatchingTemplateDetectionMixin(object):
 #         MatchingTemplateDetectionMixin, ObjectDetectorAndFollower):
 #
 #     def __init__(self, image_provider, template,
-#                  metodo_de_busqueda=BusquedaEnEspiral()):
+#                  metodo_de_busqueda=BusquedaAlrededor()):
 #         self.img_provider = image_provider
 #         self.metodo_de_busqueda = metodo_de_busqueda
 #
@@ -459,7 +462,7 @@ class MatchingTemplateDetectionMixin(object):
 #                                        MatchingTemplateDetectionMixin,
 #                                        ObjectDetectorAndFollower):
 #     def __init__(self, image_provider, template,
-#                  metodo_de_busqueda=BusquedaEnEspiral()):
+#                  metodo_de_busqueda=BusquedaAlrededor()):
 #         self.img_provider = image_provider
 #         self.metodo_de_busqueda = metodo_de_busqueda
 #
