@@ -9,13 +9,15 @@ from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator
 from esquemas_seguimiento import FollowingScheme, \
     FollowingSquemaExploringParameterRGB
-from detectores import RGBTemplateDetector, StaticDetector
+from detectores import RGBTemplateDetector, StaticDetector, \
+    StaticDetectorForRGBFinder
 from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize, \
     BusquedaAlrededor
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProviderPreChargedForRGB,\
     FrameNamesAndImageProvider, TemplateAndImageProviderFromVideo
-from seguidores import FollowerStaticAndRGBTemplate
+from seguidores import FollowerStaticAndRGBTemplate, \
+    FollowerStaticDetectionAndRGBTemplate
 
 
 def seguir_pelota_naranja_version5():
@@ -60,16 +62,47 @@ def seguir_taza():
         '5',  # object number
     )
 
-    detector = RGBTemplateDetector()
+    # Detector
+    # detector = RGBTemplateDetector(
+    #     template_threshold=0.16,
+    #     templates_to_use=9,
+    #     templates_sizes=[1],
+    #     templates_from_frame=50,
+    # )
+    detector = StaticDetectorForRGBFinder(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
 
-    finder = TemplateAndFrameHistogramFinder()
 
-    follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+    # Buscador
+    metodo_de_busqueda = BusquedaAlrededor()
+    template_comparator = HistogramComparator(
+        method=cv2.cv.CV_COMP_BHATTACHARYYA,
+        threshold=0.6,
+        reverse=False,
+    )
+    frame_comparator = HistogramComparator(
+        method=cv2.cv.CV_COMP_BHATTACHARYYA,
+        threshold=0.4,
+        reverse=False,
+    )
 
+    finder = TemplateAndFrameHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    # Seguidor
+    follower = FollowerStaticDetectionAndRGBTemplate(img_provider, detector, finder)
+
+    # Muestra seguimiento
     show_following = MuestraSeguimientoEnVivo(
         'Deteccion por template - Seguimiento por histograma'
     )
 
+    # Esquema
     FollowingScheme(
         img_provider,
         follower,
@@ -251,7 +284,213 @@ def barrer_find_frame_threshold(objname, objnumber, scenename, scenenumber):
             img_provider.restart()
 
 
+def barrer_find_template_threshold(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    # RGBTemplateDetector parameters for training
+    det_template_threshold = 0.16
+    det_templates_to_use = 3
+    det_template_sizes = [0.25, 0.5, 2]
+    det_templates_from_frame = 1
+
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededor()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_template_threshold in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
+            detector = RGBTemplateDetector(
+                template_threshold=det_template_threshold,
+                templates_to_use=det_templates_to_use,
+                templates_sizes=det_template_sizes,
+                templates_from_frame=det_templates_from_frame,
+            )
+
+            template_comparator = HistogramComparator(
+                method=find_template_comp_method,
+                threshold=find_template_threshold,
+                reverse=find_template_reverse,
+            )
+            frame_comparator = HistogramComparator(
+                method=find_frame_comp_method,
+                threshold=find_frame_threshold,
+                reverse=find_frame_reverse,
+            )
+
+            finder = TemplateAndFrameHistogramFinder(
+                template_comparator,
+                frame_comparator,
+                metodo_de_busqueda,
+            )
+
+            follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+
+            FollowingSquemaExploringParameterRGB(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'RGB_find_template_threshold',
+                find_template_threshold,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_template_threshold(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    # RGBTemplateDetector parameters for training
+    det_template_threshold = 0.16
+    det_templates_to_use = 3
+    det_template_sizes = [0.25, 0.5, 2]
+    det_templates_from_frame = 1
+
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededor()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for det_template_threshold in [0.15, 0.25]:
+        with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
+            detector = RGBTemplateDetector(
+                template_threshold=det_template_threshold,
+                templates_to_use=det_templates_to_use,
+                templates_sizes=det_template_sizes,
+                templates_from_frame=det_templates_from_frame,
+            )
+
+            template_comparator = HistogramComparator(
+                method=find_template_comp_method,
+                threshold=find_template_threshold,
+                reverse=find_template_reverse,
+            )
+            frame_comparator = HistogramComparator(
+                method=find_frame_comp_method,
+                threshold=find_frame_threshold,
+                reverse=find_frame_reverse,
+            )
+
+            finder = TemplateAndFrameHistogramFinder(
+                template_comparator,
+                frame_comparator,
+                metodo_de_busqueda,
+            )
+
+            follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+
+            FollowingSquemaExploringParameterRGB(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'RGB_det_template_threshold',
+                det_template_threshold,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_template_sizes(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    # RGBTemplateDetector parameters for training
+    det_template_threshold = 0.16
+    det_templates_to_use = 3
+    det_template_sizes = [0.25, 0.5, 2]
+    det_templates_from_frame = 1
+
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededor()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for det_template_sizes in [[0.75, 1.5], [0.5, 0.75, 1.5], [0.6, 0.8, 1.2]]:
+        with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
+            detector = RGBTemplateDetector(
+                template_threshold=det_template_threshold,
+                templates_to_use=det_templates_to_use,
+                templates_sizes=det_template_sizes,
+                templates_from_frame=det_templates_from_frame,
+            )
+
+            template_comparator = HistogramComparator(
+                method=find_template_comp_method,
+                threshold=find_template_threshold,
+                reverse=find_template_reverse,
+            )
+            frame_comparator = HistogramComparator(
+                method=find_frame_comp_method,
+                threshold=find_frame_threshold,
+                reverse=find_frame_reverse,
+            )
+
+            finder = TemplateAndFrameHistogramFinder(
+                template_comparator,
+                frame_comparator,
+                metodo_de_busqueda,
+            )
+
+            follower = FollowerStaticAndRGBTemplate(img_provider,
+                                                    detector,
+                                                    finder)
+
+            FollowingSquemaExploringParameterRGB(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'RGB_det_template_sizes',
+                '_'.join(det_template_sizes),
+            ).run()
+
+            img_provider.restart()
+
+
 if __name__ == '__main__':
-    barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
-    barrer_find_frame_threshold('cap', '4', 'desk', '1')
-    barrer_find_frame_threshold('bowl', '3', 'desk', '2')
+    # barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    # barrer_find_frame_threshold('cap', '4', 'desk', '1')
+    # barrer_find_frame_threshold('bowl', '3', 'desk', '2')
+
+    # barrer_find_template_threshold('coffee_mug', '5', 'desk', '1')
+    # barrer_find_template_threshold('cap', '4', 'desk', '1')
+    # barrer_find_template_threshold('bowl', '3', 'desk', '2')
+
+    barrer_det_template_threshold('coffee_mug', '5', 'desk', '1')
+    barrer_det_template_threshold('cap', '4', 'desk', '1')
+    barrer_det_template_threshold('bowl', '3', 'desk', '2')
+
+    # barrer_det_template_sizes('coffee_mug', '5', 'desk', '1')
+    # barrer_det_template_sizes('cap', '4', 'desk', '1')
+    # barrer_det_template_sizes('bowl', '3', 'desk', '2')

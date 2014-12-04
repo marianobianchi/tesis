@@ -150,6 +150,17 @@ class FollowerStaticAndRGBTemplate(FollowerWithStaticDetection):
         return desc
 
 
+class FollowerStaticDetectionAndRGBTemplate(FollowerStaticAndRGBTemplate):
+    def train(self):
+        obj_templates, obj_masks = self.img_provider.obj_rgb_templates_and_masks()
+        self._obj_descriptors.update(
+            {
+                'object_templates': obj_templates,
+                'object_masks': obj_masks,
+            }
+        )
+
+
 
 
 

@@ -79,7 +79,8 @@ class StaticDetector(Detector):
 
     def calculate_descriptors(self, desc):
         img = self._descriptors['scene_rgb']
-        img = img[desc['topleft'][0]:desc['bottomright'][0], desc['topleft'][1]: desc['bottomright'][1]]
+        img = img[desc['topleft'][0]:desc['bottomright'][0],
+                  desc['topleft'][1]: desc['bottomright'][1]]
         desc.update({'object_frame': img})
         # cv2.imwrite('gorra_encontrada.png', img)
         return desc
@@ -455,4 +456,13 @@ class RGBTemplateDetector(Detector):
             desc['object_template'] = template
             desc['object_mask'] = mask
 
+        return desc
+
+
+class StaticDetectorForRGBFinder(StaticDetector):
+    def calculate_descriptors(self, desc):
+        desc = (super(StaticDetectorForRGBFinder, self)
+                .calculate_descriptors(desc))
+        desc['object_template'] = self._descriptors['object_templates'][0]
+        desc['object_mask'] = self._descriptors['object_masks'][0]
         return desc
