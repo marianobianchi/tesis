@@ -24,6 +24,8 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     param_values.sort()
 
     paramval_avgsvarsareas = []
+
+    # Para cada parametro
     for param_value in param_values:
         param_path = os.path.join(
             path,
@@ -32,10 +34,10 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             param,
             param_value,
         )
-        means = []
-        stds = []
+        overlapping_areas = []
+
+        # Para cada corrida
         for run_num in os.listdir(param_path):
-            overlapping_areas = []
             resultfile = os.path.join(param_path, run_num, 'results.txt')
             with codecs.open(resultfile, 'r', 'utf-8') as file_:
                 reach_result_zone = False
@@ -73,29 +75,31 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                         ground_truth_rectangle
                     )
 
+                    # Si el ground truth dice que hay algo, comparamos el
+                    # resultado
                     if ground_truth_rectangle.area() > 0:
                         found_area = rectangle_found.area()
                         ground_truth_area = ground_truth_rectangle.area()
                         intersection_area = intersection.area()
 
-                        # To be considered a correct detection, the area of overlap
-                        # A0 between the predicted bounding box Bp and ground truth
-                        # bounding box Bgt must exceed 50% by the formula:
+                        # To be considered a correct detection, the area of
+                        # overlap A0 between the predicted bounding box Bp and
+                        # ground truth bounding box Bgt must exceed 50% by the
+                        # formula:
                         # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
                         union_area = (
                             found_area + ground_truth_area - intersection_area
                         )
                         overlap_area = intersection_area / union_area
 
+                        if overlap_area < 0:
+                            pass
+
                         overlapping_areas.append(overlap_area)
 
-            means.append(
-                np.mean(overlapping_areas) if overlapping_areas else 0
-            )
-            stds.append(
-                np.std(overlapping_areas) if overlapping_areas else 0
-            )
-        paramval_avgsvarsareas.append((param_value, means, stds))
+        mean = np.mean(overlapping_areas) if overlapping_areas else 0
+        std = np.std(overlapping_areas) if overlapping_areas else 0
+        paramval_avgsvarsareas.append((param_value, mean, std))
 
     # Imprimo en pantalla para cada valor del parametro el promedio de
     # solapamiento en la escena para cada corrida y el promedio de todas las
@@ -107,19 +111,14 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         e=scenenamenum,
     ))
     print('###############')
-    for val, avgs, stds in paramval_avgsvarsareas:
-        strmeans = [unicode(round(m, 2)) for m in avgs]
-        strstds = [unicode(round(m, 2)) for m in stds]
+    for val, avg, std in paramval_avgsvarsareas:
         print('{v}:'.format(v=val))
-        print('    {m} ==> prom: {p}'.format(
-            m=' | '.join(strmeans),
-            p=round(np.mean(np.array(avgs) * 100), 2),
+        print('    prom_overlap: {p}'.format(
+            p=round(np.array(avg) * 100, 2)
         ))
-        print('    {m} ==> prom_std: {p}'.format(
-            m=' | '.join(strstds),
-            p=round(np.mean(np.array(stds) * 100), 2),
+        print('    prom_overlap_std: {p}'.format(
+            p=round(np.array(std) * 100, 2),
         ))
-
 
 
 if __name__ == '__main__':
@@ -240,62 +239,13 @@ if __name__ == '__main__':
     ##################
     # RGB analisis
     ##################
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='RGB_find_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='RGB_find_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='RGB_find_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='RGB_det_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='RGB_det_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='RGB_det_template_threshold',
-    #     path='pruebas_guardadas',
-    # )
-
+    # Find frame threshold
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='RGB_det_template_sizes',
+        param='RGB_find_frame_threshold',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -303,7 +253,7 @@ if __name__ == '__main__':
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='RGB_det_template_sizes',
+        param='RGB_find_frame_threshold',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -311,9 +261,87 @@ if __name__ == '__main__':
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='RGB_det_template_sizes',
+        param='RGB_find_frame_threshold',
         path='pruebas_guardadas',
     )
+
+    # # Find template threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Detection template threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Detection template sizes
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
 
 
 

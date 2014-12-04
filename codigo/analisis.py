@@ -39,10 +39,12 @@ class Rectangle(object):
 
         top = bottom = left = right = 0
 
-        se_solapan = self.top <= other.top <= self.bottom
-        se_solapan = other.top <= self.top <= other.bottom or se_solapan
+        se_solapan_filas = self.top <= other.top <= self.bottom
+        se_solapan_filas |= other.top <= self.top <= other.bottom
+        se_solapan_columnas = self.left <= other.left <= self.right
+        se_solapan_columnas |= other.left <= self.left <= other.right
 
-        if se_solapan:
+        if se_solapan_filas and se_solapan_columnas:
             top = max(self.top, other.top)
             bottom = min(self.bottom, other.bottom)
             left = max(self.left, other.left)
