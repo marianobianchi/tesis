@@ -5,11 +5,13 @@ from __future__ import (unicode_literals, division)
 
 import cv2
 
-from buscadores import TemplateAndFrameHistogramFinder
+from metodos_comunes import Timer
+from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator
 from esquemas_seguimiento import FollowingScheme, \
     FollowingSquemaExploringParameterRGB
 from detectores import RGBTemplateDetector, StaticDetector
-from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize
+from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize, \
+    BusquedaAlrededor
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProviderPreChargedForRGB,\
     FrameNamesAndImageProvider, TemplateAndImageProviderFromVideo
@@ -185,7 +187,7 @@ def seguir_gorra_det_fija():
     ).run()
 
 
-def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
+def barrer_find_frame_threshold(objname, objnumber, scenename, scenenumber):
     # Set parameters values
     # RGBTemplateDetector parameters for training
     det_template_threshold = 0.16
@@ -194,11 +196,15 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
     det_templates_from_frame = 1
 
     # Parametros para el seguimiento
-    # TODO: los parametros son los metodos de comparacion para el template y
-    # para el frame a frame, los umbrales de comparacion para ambos metodos y
-    # el tipo de busqueda (buscar cambiando de tamaño)
-    # IDEA: hacer un objeto al que se le defina el metodo de comparacion y el
-    # umbral y que decida dada la imagen "vieja" y la "nueva" si matchean o no
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededor()
 
     # Create objects
     img_provider = FrameNamesAndImageProviderPreChargedForRGB(
@@ -206,28 +212,46 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    for find_perc_obj_model_points in [1]:
-        detector = RGBTemplateDetector(
-            template_threshold=det_template_threshold,
-            templates_to_use=det_templates_to_use,
-            templates_sizes=det_template_sizes,
-            templates_from_frame=det_templates_from_frame,
-        )
+    for find_frame_threshold in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
+            detector = RGBTemplateDetector(
+                template_threshold=det_template_threshold,
+                templates_to_use=det_templates_to_use,
+                templates_sizes=det_template_sizes,
+                templates_from_frame=det_templates_from_frame,
+            )
 
-        finder = TemplateAndFrameHistogramFinder()
+            template_comparator = HistogramComparator(
+                method=find_template_comp_method,
+                threshold=find_template_threshold,
+                reverse=find_template_reverse,
+            )
+            frame_comparator = HistogramComparator(
+                method=find_frame_comp_method,
+                threshold=find_frame_threshold,
+                reverse=find_frame_reverse,
+            )
 
-        follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+            finder = TemplateAndFrameHistogramFinder(
+                template_comparator,
+                frame_comparator,
+                metodo_de_busqueda,
+            )
 
-        FollowingSquemaExploringParameterRGB(
-            img_provider,
-            follower,
-            'pruebas_guardadas',
-            'PROBANDO_RGB',
-            find_perc_obj_model_points,
-        ).run()
+            follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
 
-        img_provider.restart()
+            FollowingSquemaExploringParameterRGB(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'RGB_find_frame_threshold',
+                find_frame_threshold,
+            ).run()
+
+            img_provider.restart()
 
 
 if __name__ == '__main__':
-    barrer_find_percentage_object('cap', '4', 'desk', '1')
+    barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    barrer_find_frame_threshold('cap', '4', 'desk', '1')
+    barrer_find_frame_threshold('bowl', '3', 'desk', '2')

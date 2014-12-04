@@ -352,13 +352,42 @@ class ICPFinderWithModel(ICPFinder):
 #############
 # RGB Finder
 #############
+
+class HistogramComparator(object):
+    def __init__(self, method, threshold, reverse=False):
+        """
+        Set reverse=True when the result of method is better when bigger.
+        For example, for "Correlation" and "Intersection", reverse should be
+        True
+        """
+        self.method = method
+        self.threshold = threshold
+        self.reverse = reverse
+
+    def compare(self, img1, img2):
+        return cv2.compareHist(img1, img2, self.method)
+
+    def is_better_than_before(self, new_value, old_value):
+        if self.reverse:
+            return new_value > old_value
+        else:
+            return new_value < old_value
+
+
 class TemplateAndFrameHistogramFinder(Finder):
-    def __init__(self, template_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA,
-                 frame_comp_method=cv2.cv.CV_COMP_BHATTACHARYYA):
+    OPENCV_METHODS = {
+        cv2.cv.CV_COMP_CORREL: "Correlation",
+        cv2.cv.CV_COMP_CHISQR: "Chi-Squared",
+        cv2.cv.CV_COMP_INTERSECT: "Intersection",
+        cv2.cv.CV_COMP_BHATTACHARYYA: "Bhattacharyya",
+    }
+
+    def __init__(self, template_comparator, frame_comparator,
+                 metodo_de_busqueda=BusquedaAlrededor()):
         super(TemplateAndFrameHistogramFinder, self).__init__()
-        self.metodo_de_busqueda = BusquedaAlrededor()
-        self.template_comp_method = template_comp_method
-        self.frame_comp_method = frame_comp_method
+        self.metodo_de_busqueda = metodo_de_busqueda
+        self.template_comparator = template_comparator
+        self.frame_comparator = frame_comparator
 
     @staticmethod
     def calculate_rgb_histogram(roi, mask=None):
@@ -413,11 +442,10 @@ class TemplateAndFrameHistogramFinder(Finder):
         return (self._descriptors['object_template_rgb_hist'],
                 self._descriptors['object_frame_hsv_hist'])
 
-    @staticmethod
-    def object_comparisson_base(img):
+    def object_comparisson_base(self, img):
         return {
-            'object_template_comp': 0.6,
-            'object_frame_comp': 0.4,
+            'object_template_comp': self.template_comparator.threshold,  # 0.6,
+            'object_frame_comp': self.frame_comparator.threshold,  # 0.4,
         }
 
     def object_comparisson(self, roi):
@@ -429,15 +457,13 @@ class TemplateAndFrameHistogramFinder(Finder):
             self.saved_object_comparisson()
         )
 
-        template_comp = cv2.compareHist(
+        template_comp = self.template_comparator.compare(
             obj_template_rgb_hist,
             roi_rgb_hist,
-            self.template_comp_method,
         )
-        frame_comp = cv2.compareHist(
+        frame_comp = self.frame_comparator.compare(
             object_frame_hsv_hist,
             roi_hsv_hist,
-            self.frame_comp_method,
         )
 
         return {
@@ -446,10 +472,15 @@ class TemplateAndFrameHistogramFinder(Finder):
         }
 
     def is_best_match(self, new_value, old_value):
-        templ_better = new_value['object_template_comp'] < old_value['object_template_comp']
-        obj_better = new_value['object_frame_comp'] < old_value['object_frame_comp']
+        templ_better = self.template_comparator.is_better_than_before(
+            new_value['object_template_comp'],
+            old_value['object_template_comp']
+        )
+        obj_better = self.frame_comparator.is_better_than_before(
+            new_value['object_frame_comp'],
+            old_value['object_frame_comp']
+        )
         return templ_better and obj_better
-
 
     def simple_follow(self, img, topleft, bottomright, valor_comparativo):
         """

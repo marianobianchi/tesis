@@ -211,8 +211,8 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
         nframe = self.img_provider.next_frame_number
         exito = 1 if fue_exitoso else 0
 
-        values = [nframe, exito, method, topleft[0], topleft[1],
-                  bottomright[0], bottomright[1]]
+        values = [nframe, exito, method, int(topleft[0]), int(topleft[1]),
+                  int(bottomright[0]), int(bottomright[1])]
 
         self.file.write(b';'.join([str(o) for o in values]))
         self.file.write(b'\n')
@@ -345,7 +345,14 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
         # Guardo los valores de los parametros
+        self.write_parameter_values()
+
+    def __del__(self):
+        self.file.close()
+
+    def write_parameter_values(self):
         detector = self.obj_follower.detector
+        finder = self.obj_follower.finder
         self.file.write(b'det_template_threshold={v}\n'.format(
             v=detector.template_threshold
         ))
@@ -359,11 +366,22 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
             v=detector.templates_from_frame
         ))
 
+        self.file.write(b'find_template_comp_method={v}\n'.format(
+            v=finder.OPENCV_METHODS[finder.template_comparator.method]
+        ))
+        self.file.write(b'find_template_threshold={v}\n'.format(
+            v=finder.template_comparator.threshold
+        ))
+
+        self.file.write(b'find_frame_comp_method={v}\n'.format(
+            v=finder.OPENCV_METHODS[finder.frame_comparator.method]
+        ))
+        self.file.write(b'find_frame_threshold={v}\n'.format(
+            v=finder.frame_comparator.threshold
+        ))
+
         self.file.write(b'RESULTS_SECTION\n')
         self.file.flush()
-
-    def __del__(self):
-        self.file.close()
 
     def run(self):
         # ########################
@@ -442,15 +460,15 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         nframe = self.img_provider.next_frame_number
         exito = 1 if fue_exitoso else 0
 
-        values = [nframe, exito, method, topleft[0], topleft[1],
-                  bottomright[0], bottomright[1]]
+        values = [nframe, exito, method, int(topleft[0]), int(topleft[1]),
+                  int(bottomright[0]), int(bottomright[1])]
 
         self.file.write(b';'.join([str(o) for o in values]))
         self.file.write(b'\n')
         self.file.flush()
 
 
-class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataPCD):
+class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataRGB):
     """
     Guarda las pruebas en carpetas con el nombre del parametro y el valor
     que se estan explorando
@@ -493,19 +511,4 @@ class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataPCD):
         self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
         # Guardo los valores de los parametros
-        detector = self.obj_follower.detector
-        self.file.write(b'det_template_threshold={v}\n'.format(
-            v=detector.template_threshold
-        ))
-        self.file.write(b'det_templates_to_use={v}\n'.format(
-            v=detector.templates_to_use
-        ))
-        self.file.write(b'det_template_sizes={v}\n'.format(
-            v=detector.template_sizes
-        ))
-        self.file.write(b'det_templates_from_frame={v}\n'.format(
-            v=detector.templates_from_frame
-        ))
-
-        self.file.write(b'RESULTS_SECTION\n')
-        self.file.flush()
+        self.write_parameter_values()

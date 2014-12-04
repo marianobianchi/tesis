@@ -135,7 +135,7 @@ class FrameNamesAndImageProvider(object):
                 if (resized_template.shape[0] < scene_height and
                         resized_template.shape[1] < scene_width):
                     resized_mask = cv2.resize(
-                        template,
+                        mask,
                         (0, 0),
                         fx=size,
                         fy=size,
