@@ -114,7 +114,7 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'taza2'
+    model_filename = 'taza_modelo'
     model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
 
     # loop over the image paths
@@ -124,22 +124,22 @@ def prueba_histogramas():
                      'taza4']:
         mask = None
         image = cv2.imread(filename + '.png')
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         images[filename] = image_rgb
 
-        # if 'modelo' in filename:
-        #     mask = model_mask
+        if 'modelo' in filename:
+            mask = model_mask
 
         # extract a 3D RGB color histogram from the image,
         # using 8 bins per channel, normalize, and update
         # the index
-        hist = cv2.calcHist([image_rgb], [0, 1, 2], mask, [8, 8, 8], [0, 256, 0, 256, 0, 256])
+        hist = cv2.calcHist([image_rgb], [0], mask, [70], [0, 256])
         hist = cv2.normalize(hist).flatten()
         rgb_index[filename] = hist
 
         # extract a 3D HSV color histogram from the image
-        hist = cv2.calcHist([image_hsv], [1, 2], mask, [8, 16], [0, 256, 0, 256])
+        hist = cv2.calcHist([image_hsv], [0, 2], mask, [16, 32], [0, 180, 0, 256])
         hist = cv2.normalize(hist).flatten()
         hsv_index[filename] = hist
 

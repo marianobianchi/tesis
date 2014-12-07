@@ -198,7 +198,11 @@ def seguir_taza_det_fija():
         'Deteccion por template - Seguimiento por histograma'
     )
 
-    # FollowingSchemeSavingDataRGB
+    # FollowingSchemeSavingDataRGB(
+    #     img_provider,
+    #     follower,
+    #     'pruebas_guardadas'
+    # ).run()
     FollowingScheme(
         img_provider,
         follower,
@@ -216,20 +220,43 @@ def seguir_gorra_det_fija():
         '4',  # object number
     )
 
-    detector = StaticDetector(
+    # Detector
+    detector = StaticDetectorForRGBFinder(
         'videos/rgbd/scenes/desk/desk_1.mat',
         'cap'
     )
 
-    finder = TemplateAndFrameHistogramFinder()
+    # Buscador
+    metodo_de_busqueda = BusquedaAlrededor()
+    template_comparator = HistogramComparator(
+        method=cv2.cv.CV_COMP_BHATTACHARYYA,
+        threshold=0.6,
+        reverse=False,
+    )
+    frame_comparator = HistogramComparator(
+        method=cv2.cv.CV_COMP_BHATTACHARYYA,
+        threshold=0.4,
+        reverse=False,
+    )
 
-    follower = FollowerStaticAndRGBTemplate(img_provider, detector, finder)
+    finder = TemplateAndFrameHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    # Seguidor
+    follower = FollowerStaticDetectionAndRGBTemplate(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo(
         'Deteccion por template - Seguimiento por histograma'
     )
 
-    # FollowingSchemeSavingDataRGB
+    # FollowingSchemeSavingDataRGB(
+    #     img_provider,
+    #     follower,
+    #     'pruebas_guardadas',
+    # ).run()
     FollowingScheme(
         img_provider,
         follower,
@@ -512,4 +539,5 @@ if __name__ == '__main__':
     # barrer_det_template_sizes('cap', '4', 'desk', '1')
     # barrer_det_template_sizes('bowl', '3', 'desk', '2')
 
-    seguir_gorra_det_fija()
+    seguir_taza_det_fija()
+    # seguir_gorra_det_fija()

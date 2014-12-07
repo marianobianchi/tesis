@@ -314,7 +314,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
     for i in range(3):
-        for find_perc_obj_model_points in [0.2, 0.4, 0.5, 0.75]:
+        for find_perc_obj_model_points in [0.1, 0.3, 0.6, 0.8, 0.9]:#[0.2, 0.4, 0.5, 0.75]:
             detector = AutomaticDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
@@ -688,10 +688,10 @@ if __name__ == '__main__':
     # barrer_similarity_threshold('bowl', '3', 'desk', '2')
     #
     # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
-    # barrer_find_percentage_object('cap', '4', 'desk', '1')
+    barrer_find_percentage_object('cap', '4', 'desk', '1')
     # barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
-    barrer_fixed_search_area('coffee_mug', '5', 'desk', '1')
+    # barrer_fixed_search_area('coffee_mug', '5', 'desk', '1')
     # barrer_fixed_search_area('cap', '4', 'desk', '1')
     # barrer_fixed_search_area('bowl', '3', 'desk', '2')
 
