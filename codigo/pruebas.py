@@ -3,8 +3,9 @@
 
 from __future__ import (unicode_literals, division, print_function)
 
-import cv2
+import cv2, numpy as np
 import matplotlib.pyplot as plt
+from scipy.spatial import distance as dist
 
 from cpp.common import get_min_max, filter_cloud, show_clouds, save_pcd, points
 
@@ -114,17 +115,17 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'taza_modelo'
-    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
+    model_filename = 'gorra_modelo'
+    model_mask = cv2.imread('gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
 
     # loop over the image paths
-    for filename in ['taza_modelo', 'taza_maso_encontrada1',
-                     'taza_maso_encontrada2', 'taza_maso_encontrada3',
-                     'taza_maso_encontrada7', 'taza', 'taza2', 'taza3',
-                     'taza4']:
+    for filename in ['gorra_modelo', 'gorra_seguida1',
+                     'gorra_seguida2', 'gorra_seguida3',
+                     'gorra_seguida4', 'gorra_encontrada1', 'gorra_encontrada2',
+                     'gorra_encontrada3', 'gorra_encontrada']:
         mask = None
         image = cv2.imread(filename + '.png')
-        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         images[filename] = image_rgb
 
@@ -134,12 +135,12 @@ def prueba_histogramas():
         # extract a 3D RGB color histogram from the image,
         # using 8 bins per channel, normalize, and update
         # the index
-        hist = cv2.calcHist([image_rgb], [0], mask, [70], [0, 256])
+        hist = cv2.calcHist([image_rgb], [1], mask, [70], [0, 256])
         hist = cv2.normalize(hist).flatten()
         rgb_index[filename] = hist
 
         # extract a 3D HSV color histogram from the image
-        hist = cv2.calcHist([image_hsv], [0, 2], mask, [16, 32], [0, 180, 0, 256])
+        hist = cv2.calcHist([image_hsv], [0, 1, 2], mask, [60, 60, 60], [0, 180, 0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         hsv_index[filename] = hist
 
@@ -222,7 +223,7 @@ def prueba_mejor_canal_hsv_histogramas():
     images = {}
 
     model_filename = 'taza_modelo'
-    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.COLOR_BGR2GRAY)
+    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
 
     # loop over the image paths
     for filename in ['taza_modelo', 'taza_maso_encontrada2',
@@ -236,15 +237,15 @@ def prueba_mejor_canal_hsv_histogramas():
         if 'modelo' in filename:
             mask = model_mask
 
-        h_hist = cv2.calcHist([image_hsv], [0], mask, [4], [0, 180])
+        h_hist = cv2.calcHist([image_hsv], [0], mask, [30], [0, 180])
         h_hist = cv2.normalize(h_hist).flatten()
         h_index[filename] = h_hist
 
-        s_hist = cv2.calcHist([image_hsv], [1], mask, [4], [0, 256])
+        s_hist = cv2.calcHist([image_hsv], [1], mask, [30], [0, 256])
         s_hist = cv2.normalize(s_hist).flatten()
         s_index[filename] = s_hist
 
-        v_hist = cv2.calcHist([image_hsv], [2], mask, [4], [0, 256])
+        v_hist = cv2.calcHist([image_hsv], [2], mask, [30], [0, 256])
         v_hist = cv2.normalize(v_hist).flatten()
         v_index[filename] = v_hist
 
@@ -313,23 +314,239 @@ def prueba_mejor_canal_hsv_histogramas():
     plt.show()
 
 
+def prueba_mejor_canal_rgb_histogramas():
+    OPENCV_METHODS = (
+        ("Correlation", cv2.cv.CV_COMP_CORREL),
+        ("Chi-Squared", cv2.cv.CV_COMP_CHISQR),
+        ("Intersection", cv2.cv.CV_COMP_INTERSECT),
+        ("Hellinger", cv2.cv.CV_COMP_BHATTACHARYYA),
+    )
+
+    # initialize the index dictionary to store the image name
+    # and corresponding histograms and the images dictionary
+    # to store the images themselves
+    r_index = {}
+    g_index = {}
+    b_index = {}
+    images = {}
+
+    model_filename = 'taza_modelo'
+    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+
+    # loop over the image paths
+    for filename in ['taza_modelo', 'taza_maso_encontrada4',
+                     'taza', 'taza4', 'taza2']:
+        mask = None
+        image = cv2.imread(filename + '.png')
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        images[filename] = image_rgb
+
+        if model_filename == filename:
+            mask = model_mask
+
+        b_hist = cv2.calcHist([image], [0], mask, [30], [0, 256])
+        b_hist = cv2.normalize(b_hist).flatten()
+        b_index[filename] = b_hist
+
+        g_hist = cv2.calcHist([image], [1], mask, [30], [0, 256])
+        g_hist = cv2.normalize(g_hist).flatten()
+        g_index[filename] = g_hist
+
+        r_hist = cv2.calcHist([image], [2], mask, [30], [0, 256])
+        r_hist = cv2.normalize(r_hist).flatten()
+        r_index[filename] = r_hist
+
+    # loop over the comparison methods
+    for (methodName, method) in OPENCV_METHODS:
+        # initialize the results dictionary and the sort
+        # direction
+        results = {}
+        reverse = False
+
+        # if we are using the correlation or intersection
+        # method, then sort the results in reverse order
+        if methodName in ("Correlation", "Intersection"):
+            reverse = True
+
+        for (k, hist) in b_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(b_index[model_filename], hist, method)
+            results['{f}#B'.format(f=k)] = d
+
+        for (k, hist) in g_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(g_index[model_filename], hist, method)
+            results['{f}#G'.format(f=k)] = d
+
+        for (k, hist) in r_index.items():
+            # compute the distance between the two histograms
+            # using the method and update the results dictionary
+            d = cv2.compareHist(r_index[model_filename], hist, method)
+            results['{f}#R'.format(f=k)] = d
+
+        # sort the results
+        results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
+
+        # initialize the results figure
+        fig = plt.figure("Results for {m}".format(m=methodName))
+
+        # loop over the results
+        h_res_num = 0
+        s_res_num = 4
+        v_res_num = 8
+        for (v, k) in results:
+            if (model_filename + '#') not in k:
+                # show the result
+                if 'B' in k:
+                    ax = fig.add_subplot(3, 4, h_res_num + 1)
+                    h_res_num += 1
+                elif 'G' in k:
+                    ax = fig.add_subplot(3, 4, s_res_num + 1)
+                    s_res_num += 1
+                elif 'R' in k:
+                    ax = fig.add_subplot(3, 4, v_res_num + 1)
+                    v_res_num += 1
+                else:
+                    raise Exception("ALGO FALLO")
+
+                ax.set_title("%s: %.2f" % (k, v))
+
+                k = k.split('#')[0]
+                ax.imshow(images[k])
+                ax.axis("off")
+
+    # show the OpenCV methods
+    plt.show()
+
+
+def prueba_mezclando_canales_hsv_histogramas():
+    # METHOD #1: UTILIZING OPENCV
+    # initialize OpenCV methods for histogram comparison
+    SCIPY_METHODS = (
+        ("Euclidean", dist.euclidean),
+        ("Manhattan", dist.cityblock),
+        ("Chebysev", dist.chebyshev)
+    )
+
+    # initialize the index dictionary to store the image name
+    # and corresponding histograms and the images dictionary
+    # to store the images themselves
+    h_index = {}
+    s_index = {}
+    v_index = {}
+    images = {}
+
+    model_filename = 'gorra_modelo'
+    model_mask = cv2.imread('gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+
+    # loop over the image paths
+    for filename in ['gorra_modelo', 'gorra_seguida1',
+                     'gorra_seguida2', 'gorra_seguida3',
+                     'gorra_seguida4', 'gorra_encontrada1', 'gorra_encontrada2',
+                     'gorra_encontrada3', 'gorra_encontrada']:
+        mask = None
+        image = cv2.imread(filename + '.png')
+        image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        image_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        images[filename] = image_rgb
+
+        if 'modelo' in filename:
+            mask = model_mask
+
+        # histograma para H
+        hist = cv2.calcHist([image_hsv], [0], mask, [60], [0, 180])
+        hist = cv2.normalize(hist).flatten()
+        h_index[filename] = hist
+
+        # histograma para S
+        hist = cv2.calcHist([image_hsv], [1], mask, [60], [0, 256])
+        hist = cv2.normalize(hist).flatten()
+        s_index[filename] = hist
+
+        # histograma para V
+        hist = cv2.calcHist([image_hsv], [2], mask, [60], [0, 256])
+        hist = cv2.normalize(hist).flatten()
+        v_index[filename] = hist
+
+    # Histogramas del modelo
+    model_h_hist = h_index[model_filename]
+    model_s_hist = s_index[model_filename]
+    model_v_hist = v_index[model_filename]
+
+    # Centro para calcular las distancias
+    center = np.array([0, 1, 1])  # valores tope para battachayyra, correlacion, correlacion
+
+    # loop over the comparison methods
+    for (methodName, method) in SCIPY_METHODS:
+        # initialize the results dictionary and the sort
+        # direction
+        results = {}
+        reverse = False
+
+        for fname in h_index.keys():
+            h_hist = h_index[fname]
+            s_hist = s_index[fname]
+            v_hist = v_index[fname]
+
+            h_point = cv2.compareHist(
+                model_h_hist,
+                h_hist,
+                cv2.cv.CV_COMP_BHATTACHARYYA,
+            )
+            s_point = cv2.compareHist(
+                model_s_hist,
+                s_hist,
+                cv2.cv.CV_COMP_CORREL,
+            )
+            v_point = cv2.compareHist(
+                model_v_hist,
+                v_hist,
+                cv2.cv.CV_COMP_CORREL,
+            )
+            point = np.array([h_point, s_point, v_point])
+
+            metric = method(center, point)
+
+            results[fname] = metric
+
+        # sort the results
+        results = sorted([(v, k) for (k, v) in results.items()], reverse=reverse)
+
+        # initialize the results figure
+        fig = plt.figure("Results: %s" % methodName)
+        fig.suptitle(methodName, fontsize=20)
+
+        # loop over the results
+        for i, (v, k) in enumerate(results):
+            # show the result
+            ax = fig.add_subplot(3, 3, i + 1)
+            ax.set_title("%s: %.2f" % (k, v))
+            ax.imshow(images[k])
+            ax.axis("off")
+
+    # show the OpenCV methods
+    plt.show()
+
+
 def prueba_promedio_histogramas():
-    mod1 = cv2.imread('taza_modelo.png', cv2.COLOR_BGR2RGB)
-    masc1 = cv2.imread('taza_mascara.png', cv2.COLOR_BGR2GRAY)
+    mod1 = cv2.imread('taza_modelo.png', cv2.IMREAD_COLOR)
+    masc1 = cv2.imread('taza_mascara.png', cv2.IMREAD_GRAYSCALE)
     hist1 = cv2.calcHist(
         [mod1], [0, 1, 2], masc1, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
     hist1 = cv2.normalize(hist1).flatten()
 
-    mod2 = cv2.imread('taza_modelo_2.png', cv2.COLOR_BGR2RGB)
-    masc2 = cv2.imread('taza_mascara_2.png', cv2.COLOR_BGR2GRAY)
+    mod2 = cv2.imread('taza_modelo_2.png', cv2.IMREAD_COLOR)
+    masc2 = cv2.imread('taza_mascara_2.png', cv2.IMREAD_GRAYSCALE)
     hist2 = cv2.calcHist(
         [mod2], [0, 1, 2], masc2, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
     hist2 = cv2.normalize(hist2).flatten()
 
-    mod3 = cv2.imread('taza_modelo_3.png', cv2.COLOR_BGR2RGB)
-    masc3 = cv2.imread('taza_mascara_3.png', cv2.COLOR_BGR2GRAY)
+    mod3 = cv2.imread('taza_modelo_3.png', cv2.IMREAD_COLOR)
+    masc3 = cv2.imread('taza_mascara_3.png', cv2.IMREAD_GRAYSCALE)
     hist3 = cv2.calcHist(
         [mod3], [0, 1, 2], masc3, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
@@ -358,5 +575,115 @@ def prueba_promedio_histogramas():
     plt.show()
 
 
+def ver_canales_e_histogramas_hsv(img_path):
+    img_bgr = cv2.imread(img_path, cv2.IMREAD_COLOR)
+    img_hsv = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2HSV)
+
+    shape_gray = (img_hsv.shape[0], img_hsv.shape[1])
+
+    # Separo los canales HSV
+    img_h = np.zeros(shape_gray, np.uint8)
+    img_h[:, :] = img_hsv[:, :, 0]
+
+    img_s = np.zeros(shape_gray, np.uint8)
+    img_s[:, :] = img_hsv[:, :, 1]
+
+    img_v = np.zeros(shape_gray, np.uint8)
+    img_v[:, :] = img_hsv[:, :, 2]
+
+    # Mostrando canales HSV
+    fig = plt.figure()
+    ax = fig.add_subplot(2, 3, 1)
+    ax.set_title('Hue')
+    ax.imshow(img_h, cmap='gray')
+
+    ax = fig.add_subplot(2, 3, 2)
+    ax.set_title('Saturation')
+    ax.imshow(img_s, cmap='gray')
+
+    ax = fig.add_subplot(2, 3, 3)
+    ax.set_title('Value')
+    ax.imshow(img_v, cmap='gray')
+
+    # Mostrando histogramas de control y HSV
+    hist_g = cv2.calcHist([img_h], [0], None, [60], [0, 180])
+    hist_g = cv2.normalize(hist_g)
+    ax = fig.add_subplot(2, 3, 4)
+    ax.set_title('Histograma H')
+    ax.bar(range(0, 60), hist_g)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    hist_g = cv2.calcHist([img_s], [0], None, [60], [0, 256])
+    hist_g = cv2.normalize(hist_g)
+    ax = fig.add_subplot(2, 3, 5)
+    ax.set_title('Histograma S')
+    ax.bar(range(0, 60), hist_g)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    hist_b = cv2.calcHist([img_v], [0], None, [60], [0, 256])
+    hist_b = cv2.normalize(hist_b)
+    ax = fig.add_subplot(2, 3, 6)
+    ax.set_title('Histograma V')
+    ax.bar(np.arange(0, 60), hist_b)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    plt.show()
+
+
+def ver_canales_e_histogramas_rgb(img_path):
+    img_bgr = cv2.imread(img_path, cv2.IMREAD_COLOR)
+
+    shape_gray = (img_bgr.shape[0], img_bgr.shape[1])
+
+    # Separo los canales RGB
+    img_r = np.zeros(shape_gray, np.uint8)
+    img_r[:, :] = img_bgr[:, :, 2]
+
+    img_g = np.zeros(shape_gray, np.uint8)
+    img_g[:, :] = img_bgr[:, :, 1]
+
+    img_b = np.zeros(shape_gray, np.uint8)
+    img_b[:, :] = img_bgr[:, :, 0]
+
+    # Mostrando canales HSV
+    fig = plt.figure()
+    ax = fig.add_subplot(2, 3, 1)
+    ax.set_title('Red')
+    ax.imshow(img_r, cmap='gray')
+
+    ax = fig.add_subplot(2, 3, 2)
+    ax.set_title('Green')
+    ax.imshow(img_g, cmap='gray')
+
+    ax = fig.add_subplot(2, 3, 3)
+    ax.set_title('Blue')
+    ax.imshow(img_b, cmap='gray')
+
+    # Mostrando histogramas RGB
+    hist_r = cv2.calcHist([img_r], [0], None, [60], [0, 256])
+    hist_r = cv2.normalize(hist_r)
+    ax = fig.add_subplot(2, 3, 4)
+    ax.set_title('Histograma R')
+    ax.bar(range(0, 60), hist_r)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    hist_g = cv2.calcHist([img_g], [0], None, [60], [0, 256])
+    hist_g = cv2.normalize(hist_g)
+    ax = fig.add_subplot(2, 3, 5)
+    ax.set_title('Histograma G')
+    ax.bar(range(0, 60), hist_g)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    hist_b = cv2.calcHist([img_b], [0], None, [60], [0, 256])
+    hist_b = cv2.normalize(hist_b)
+    ax = fig.add_subplot(2, 3, 6)
+    ax.set_title('Histograma B')
+    ax.bar(np.arange(0, 60), hist_b)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    plt.show()
+
 if __name__ == '__main__':
-    prueba_histogramas()
+    prueba_mezclando_canales_hsv_histogramas()
+
+

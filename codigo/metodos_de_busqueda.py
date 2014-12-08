@@ -5,7 +5,8 @@ from __future__ import unicode_literals, division
 import numpy as np
 
 class BusquedaAlrededor(object):
-    def get_positions_and_framesizes(self, topleft, bottomright, filas, columnas):
+    def get_positions_and_framesizes(self, topleft, bottomright,
+                                     filas, columnas):
         top, left = topleft
         bottom, right = bottomright
 
@@ -27,40 +28,41 @@ class BusquedaAlrededor(object):
                     next_y = y + y_move * actual_y_diff
                     if (0 <= next_x < next_x + height <= filas and
                             0 <= next_y < next_y + width <= columnas):
-                        yield (next_x, next_y), (next_x + height, next_y + width)
+                        yield ((next_x, next_y),
+                               (next_x + height, next_y + width))
 
 
-class BusquedaEnEspiralCambiandoFrameSize(object):
-    def get_positions_and_framesizes(self, ultima_ubicacion, tam_region_inicial, filas, columnas):
-        mitad_region = tam_region_inicial / 2
-        cuarto_de_region = tam_region_inicial / 4
-        for tam_region in [(mitad_region + (i*cuarto_de_region)) for i in range(5)]:
-            x, y = ultima_ubicacion
+class BusquedaAlrededorCambiandoFrameSize(object):
+    def get_positions_and_framesizes(self, topleft, bottomright,
+                                     filas, columnas):
+        top, left = topleft
+        bottom, right = bottomright
 
-            sum_x = 2
-            sum_y = 2
-            for j in range(10):
-                # Hago 2 busquedas por cada nuevo X
-                x += sum_x/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
+        original_height = bottom - top
+        original_width = right - left
 
-                x += sum_x/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
+        for tam_diff in 0.75, 1, 1.25:
 
-                sum_x *= -2
+            height = max(int(original_height * tam_diff), 1)
+            width = max(int(original_width * tam_diff), 1)
 
-                # Hago 2 busquedas por cada nuevo Y
-                y += sum_y/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
+            diff = 0.25
 
-                y += sum_y/2
-                if (0 <= x <= (x+tam_region) <= filas) and (0 <= y <= (y+tam_region) <= columnas):
-                    yield (x, y, tam_region)
+            for i in [1, 2, 3, 4]:
+                actual_diff = diff * i
+                actual_x_diff = height * actual_diff
+                actual_y_diff = width * actual_diff
+                x = top - actual_x_diff
+                y = left - actual_y_diff
 
-                sum_y *= -2
+                for x_move in range(3):
+                    for y_move in range(3):
+                        next_x = x + x_move * actual_x_diff
+                        next_y = y + y_move * actual_y_diff
+                        if (0 <= next_x < next_x + height <= filas and
+                                0 <= next_y < next_y + width <= columnas):
+                            yield ((next_x, next_y),
+                                   (next_x + height, next_y + width))
 
 
 class BusquedaPorFramesSolapados(object):

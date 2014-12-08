@@ -11,8 +11,8 @@ from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
 from detectores import RGBTemplateDetector, StaticDetector, \
     StaticDetectorForRGBFinder
-from metodos_de_busqueda import BusquedaEnEspiralCambiandoFrameSize, \
-    BusquedaAlrededor
+from metodos_de_busqueda import BusquedaAlrededor, \
+    BusquedaAlrededorCambiandoFrameSize
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProviderPreChargedForRGB,\
     FrameNamesAndImageProvider, TemplateAndImageProviderFromVideo
@@ -172,7 +172,7 @@ def seguir_taza_det_fija():
     )
 
     # Buscador
-    metodo_de_busqueda = BusquedaAlrededor()
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
     template_comparator = HistogramComparator(
         method=cv2.cv.CV_COMP_BHATTACHARYYA,
         threshold=0.6,
