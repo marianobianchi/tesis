@@ -512,6 +512,7 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
 
             img_provider.restart()
 
+
 def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
     # Set parameters values
     ap_defaults = APDefaults()

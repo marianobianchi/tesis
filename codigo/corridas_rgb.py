@@ -522,6 +522,41 @@ def barrer_det_template_sizes(objname, objnumber, scenename, scenenumber):
             img_provider.restart()
 
 
+def correr_battachayyra_verde(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededor()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+
+def correr_chi_squared_verde():
+    pass
+
+
+def correr_correlation_verde():
+    pass
+
+
+def correr_chi_squared_hs():
+    pass
+
+
+def correr_mi_metodo_chebysev():
+    pass
+
+
 if __name__ == '__main__':
     # barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
     # barrer_find_frame_threshold('cap', '4', 'desk', '1')
@@ -539,5 +574,5 @@ if __name__ == '__main__':
     # barrer_det_template_sizes('cap', '4', 'desk', '1')
     # barrer_det_template_sizes('bowl', '3', 'desk', '2')
 
-    seguir_taza_det_fija()
+    # seguir_taza_det_fija()
     # seguir_gorra_det_fija()

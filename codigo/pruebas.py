@@ -140,7 +140,7 @@ def prueba_histogramas():
         rgb_index[filename] = hist
 
         # extract a 3D HSV color histogram from the image
-        hist = cv2.calcHist([image_hsv], [0, 1, 2], mask, [60, 60, 60], [0, 180, 0, 256, 0, 256])
+        hist = cv2.calcHist([image_hsv], [0, 1, 2], mask, [40, 60, 60], [0, 180, 0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         hsv_index[filename] = hist
 
@@ -456,7 +456,7 @@ def prueba_mezclando_canales_hsv_histogramas():
             mask = model_mask
 
         # histograma para H
-        hist = cv2.calcHist([image_hsv], [0], mask, [60], [0, 180])
+        hist = cv2.calcHist([image_hsv], [0], mask, [40], [0, 180])
         hist = cv2.normalize(hist).flatten()
         h_index[filename] = hist
 
@@ -475,8 +475,17 @@ def prueba_mezclando_canales_hsv_histogramas():
     model_s_hist = s_index[model_filename]
     model_v_hist = v_index[model_filename]
 
+    # Metodo de comparacion por canal
+    h_comp = cv2.cv.CV_COMP_BHATTACHARYYA
+    s_comp = cv2.cv.CV_COMP_CHISQR
+    v_comp = cv2.cv.CV_COMP_CHISQR
+
     # Centro para calcular las distancias
-    center = np.array([0, 1, 1])  # valores tope para battachayyra, correlacion, correlacion
+    center = np.array([
+        cv2.compareHist(model_h_hist, model_h_hist, h_comp),
+        cv2.compareHist(model_s_hist, model_s_hist, s_comp),
+        cv2.compareHist(model_v_hist, model_v_hist, v_comp),
+    ])
 
     # loop over the comparison methods
     for (methodName, method) in SCIPY_METHODS:
@@ -490,21 +499,9 @@ def prueba_mezclando_canales_hsv_histogramas():
             s_hist = s_index[fname]
             v_hist = v_index[fname]
 
-            h_point = cv2.compareHist(
-                model_h_hist,
-                h_hist,
-                cv2.cv.CV_COMP_BHATTACHARYYA,
-            )
-            s_point = cv2.compareHist(
-                model_s_hist,
-                s_hist,
-                cv2.cv.CV_COMP_CORREL,
-            )
-            v_point = cv2.compareHist(
-                model_v_hist,
-                v_hist,
-                cv2.cv.CV_COMP_CORREL,
-            )
+            h_point = cv2.compareHist(model_h_hist, h_hist, h_comp)
+            s_point = cv2.compareHist(model_s_hist, s_hist, s_comp)
+            v_point = cv2.compareHist(model_v_hist, v_hist, v_comp)
             point = np.array([h_point, s_point, v_point])
 
             metric = method(center, point)
@@ -684,6 +681,6 @@ def ver_canales_e_histogramas_rgb(img_path):
     plt.show()
 
 if __name__ == '__main__':
-    prueba_mezclando_canales_hsv_histogramas()
+    prueba_histogramas()
 
 
