@@ -14,8 +14,7 @@ from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, 
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreChargedForPCD
-from seguidores import FollowerWithStaticDetection, \
-    FollowerWithStaticDetectionAndPCD, FollowerStaticICPAndObjectModel
+from seguidores import Follower, DepthFollower
 
 
 def deteccion_estatica():
@@ -35,7 +34,7 @@ def deteccion_estatica():
 
     finder = Finder()
 
-    follower = FollowerWithStaticDetection(img_provider, detector, finder)
+    follower = Follower(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo(
         'Deteccion estatica - Sin seguidor'
@@ -65,7 +64,7 @@ def icp_sin_modelo():
 
     finder = ICPFinder()
 
-    follower = FollowerWithStaticDetectionAndPCD(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
 
@@ -88,7 +87,7 @@ def icp_con_modelo():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
 
@@ -109,7 +108,7 @@ def deteccion_automatica_icp_con_modelo():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
 
@@ -133,7 +132,7 @@ def desk_1_coffee_mug_5():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     FollowingSchemeSavingDataPCD(
         img_provider,
@@ -155,7 +154,7 @@ def desk_2_flashlight_1():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     FollowingSchemeSavingDataPCD(
         img_provider,
@@ -177,7 +176,7 @@ def desk_1_cap_4():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     FollowingSchemeSavingDataPCD(
         img_provider,
@@ -201,7 +200,7 @@ def desk_2_bowl_3():
 
     finder = ICPFinderWithModel()
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     FollowingSchemeSavingDataPCD(
         img_provider,
@@ -262,7 +261,7 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
         perc_obj_model_points=find_perc_obj_model_points,
     )
 
-    follower = FollowerStaticICPAndObjectModel(img_provider, detector, finder)
+    follower = DepthFollower(img_provider, detector, finder)
 
     FollowingSchemeSavingDataPCD(
         img_provider,
@@ -334,7 +333,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
                 perc_obj_model_points=find_perc_obj_model_points,
             )
 
-            follower = FollowerStaticICPAndObjectModel(
+            follower = DepthFollower(
                 img_provider,
                 detector,
                 finder
@@ -415,7 +414,7 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
                 perc_obj_model_points=find_perc_obj_model_points,
             )
 
-            follower = FollowerStaticICPAndObjectModel(
+            follower = DepthFollower(
                 img_provider,
                 detector,
                 finder
@@ -496,7 +495,7 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
                 perc_obj_model_points=find_perc_obj_model_points,
             )
 
-            follower = FollowerStaticICPAndObjectModel(
+            follower = DepthFollower(
                 img_provider,
                 detector,
                 finder
@@ -577,7 +576,7 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
                 perc_obj_model_points=find_perc_obj_model_points,
             )
 
-            follower = FollowerStaticICPAndObjectModel(
+            follower = DepthFollower(
                 img_provider,
                 detector,
                 finder
@@ -658,7 +657,7 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
                 perc_obj_model_points=find_perc_obj_model_points,
             )
 
-            follower = FollowerStaticICPAndObjectModel(
+            follower = DepthFollower(
                 img_provider,
                 detector,
                 finder

@@ -410,39 +410,67 @@ if __name__ == '__main__':
     # STATIC DETECTION and RGB analisis
     ####################################
 
-    # Find frame threshold
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='batta_green_channel_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='batta_green_channel_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='batta_green_channel_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
+    # # BATTA GREEN
+    # # Find frame threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find template threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='batta_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='batta_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='batta_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
 
+    # CHISQUARED GREEN
     # Find template threshold
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='batta_green_channel_find_template_threshold',
+        param='chisquared_green_channel_find_template_threshold',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -450,7 +478,7 @@ if __name__ == '__main__':
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='batta_green_channel_find_template_threshold',
+        param='chisquared_green_channel_find_template_threshold',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -458,7 +486,33 @@ if __name__ == '__main__':
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='batta_green_channel_find_template_threshold',
+        param='chisquared_green_channel_find_template_threshold',
+        path='pruebas_guardadas',
+    )
+
+    # Find frame threshold
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='chisquared_green_channel_find_frame_threshold',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='chisquared_green_channel_find_frame_threshold',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='chisquared_green_channel_find_frame_threshold',
         path='pruebas_guardadas',
     )
 

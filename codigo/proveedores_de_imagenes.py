@@ -80,45 +80,37 @@ class FrameNamesAndImageProvider(object):
             raise Exception("La imagen que quiere cargar no existe")
         return cv2.imread(fname, color_scheme)
 
-    def obj_rgb_templates_and_masks(self, num_diff_images=3,
-                                    sizes=None, start_in_frame=1):
+    def obj_rgb_templates_and_masks(self, sizes=None):
+        path = os.path.join(self.obj_path, 'templates_and_masks')
 
         if sizes is None:
-            sizes = [0.25, 0.5, 2]
+            sizes = [0.5, 0.75, 1.25, 1.5]
 
         if 1 in sizes:
             sizes.remove(1)
 
-        # Lista con los numeros de las escenas
-        scenes_list = self.obj_scene_nums[:]
-        # Lo que tengo que estirar la lista para tener "diff_imgs" distintas
-        # rotando las distintas escenas
-        mult = (num_diff_images / len(self.obj_scene_nums)) + 1
-        scenes_rotation = (scenes_list * mult)[:num_diff_images]
+        # Nombres de templates
+        templates_fnames = [fname for fname in os.listdir(path)
+                            if 'mask' not in fname]
+        templates_fnames.sort()
+
+        # Nombres de mascaras
+        masks_fnames = [fname for fname in os.listdir(path)
+                        if 'mask' in fname]
+        masks_fnames.sort()
+
+        # Tamaño de la escena
         scene_sample = self.rgb_img()
         scene_height, scene_width = scene_sample.shape[0], scene_sample.shape[1]
-
-        # Lista de nros de frames que se van a usar potencialmente
-        frames_list = range(start_in_frame, num_diff_images + start_in_frame)
-        frames_list *= len(self.obj_scene_nums)
-        # Me quedo solo con aquellos que si se van a usar
-        frames_rotation = sorted(frames_list)[:num_diff_images]
 
         # Listas resultantes
         templates = []
         masks = []
 
-        for scene_num, frame_num in zip(scenes_rotation, frames_rotation):
-            template_fname = self._obj_fname(
-                obj_scene_number=scene_num,
-                frame_number=frame_num,
-                suffix='_crop.png',
-            )
-            mask_fname = self._obj_fname(
-                obj_scene_number=scene_num,
-                frame_number=frame_num,
-                suffix='_maskcrop.png',
-            )
+        for tmp_fname, msk_fname in zip(templates_fnames, masks_fnames):
+            template_fname = os.path.join(path, tmp_fname)
+            mask_fname = os.path.join(path, msk_fname)
+
             template = self.imread(template_fname, cv2.IMREAD_COLOR)
             mask = self.imread(mask_fname, cv2.IMREAD_GRAYSCALE)
 
@@ -132,8 +124,8 @@ class FrameNamesAndImageProvider(object):
                     fx=size,
                     fy=size,
                 )
-                if (resized_template.shape[0] < scene_height and
-                        resized_template.shape[1] < scene_width):
+                if (0 < resized_template.shape[0] < scene_height and
+                        0 < resized_template.shape[1] < scene_width):
                     resized_mask = cv2.resize(
                         mask,
                         (0, 0),

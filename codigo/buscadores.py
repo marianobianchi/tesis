@@ -517,6 +517,7 @@ class TemplateAndFrameHistogramFinder(Finder):
 
             # Comparo
             nueva_comparacion = self.object_comparisson(roi)
+            print "        Nueva comparación:", nueva_comparacion
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
             # MuestraBusquedaEnVivo('Buscando el objeto').run(
@@ -571,6 +572,7 @@ class TemplateAndFrameHistogramFinder(Finder):
             valor_comparativo,
             valor_comparativo_base,
         )
+        print "    Mejor comparación:", valor_comparativo
         desc = {}
 
         if fue_exitoso:
@@ -676,3 +678,44 @@ class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
             }
         )
         return desc
+
+
+class TemplateAndFrameLearningBaseComparissonHistogramFinder(
+        TemplateAndFrameGreenHistogramFinder):
+    """
+    Toma como base de comparación a la peor de las comparaciones de histogramas
+    entre templates multiplicado por el threshold de cada comparadot. Se puede
+    "retocar" este valor usando el threshold del template comparator y frame
+    comparator
+    """
+    def object_comparisson_base(self, img):
+        if 'base_comparisson' not in self._descriptors:
+            templates = self._descriptors['object_templates']
+            masks = self._descriptors['object_masks']
+            temps_masks = zip(templates, masks)
+
+            max_val = None
+
+            for i, (tmp1, msk1) in enumerate(temps_masks):
+                for j, (tmp2, msk2) in enumerate(temps_masks):
+                    if i != j:
+                        hist1 = self.calculate_rgb_histogram(tmp1, msk1)
+                        hist2 = self.calculate_rgb_histogram(tmp2, msk2)
+                        val = self.template_comparator.compare(hist1, hist2)
+                        if max_val is None:
+                            max_val = val
+
+                        if not (self.template_comparator
+                                .is_better_than_before(val, max_val)):
+                            max_val = val
+
+            self._descriptors['base_comparisson'] = max_val
+            print "Valor de comparación base deteccion:", max_val * self.template_comparator.threshold
+            print "Valor de comparación base seguimiento:", max_val * self.frame_comparator.threshold
+
+        base_comp = self._descriptors['base_comparisson']
+
+        return {
+            'object_template_comp': base_comp * self.template_comparator.threshold,
+            'object_frame_comp': base_comp * self.frame_comparator.threshold
+        }
