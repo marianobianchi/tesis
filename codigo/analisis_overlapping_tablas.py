@@ -23,9 +23,9 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     )
     param_values.sort()
 
-    paramval_avgsvarsareas = []
+    index = {}
 
-    # Para cada parametro
+    # Para cada valor del parametro
     for param_value in param_values:
         param_path = os.path.join(
             path,
@@ -35,6 +35,9 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             param_value,
         )
         overlapping_areas = []
+        times_object_appear = 0
+        times_object_detected = 0
+        times_object_followed = 0
 
         # Para cada corrida
         for run_num in os.listdir(param_path):
@@ -50,7 +53,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
                     nframe = values[0]
                     # fue_exitoso = values[1]
-                    # metodo = values[2]
+                    metodo = values[2]
                     fila_sup = values[3]
                     col_izq = values[4]
                     fila_inf = values[5]
@@ -78,7 +81,14 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                     # Si el ground truth dice que hay algo, comparamos el
                     # resultado
                     if ground_truth_rectangle.area() > 0:
+                        times_object_appear += 1
                         found_area = rectangle_found.area()
+
+                        if found_area > 0 and metodo == 0:
+                            times_object_detected += 1
+                        elif found_area > 0 and metodo == 1:
+                            times_object_followed += 1
+
                         ground_truth_area = ground_truth_rectangle.area()
                         intersection_area = intersection.area()
 
@@ -99,7 +109,13 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
         mean = np.mean(overlapping_areas) if overlapping_areas else 0
         std = np.std(overlapping_areas) if overlapping_areas else 0
-        paramval_avgsvarsareas.append((param_value, mean, std))
+        index[param_value] = {
+            'mean': mean,
+            'std': std,
+            'times_object_appear': times_object_appear,
+            'times_object_detected': times_object_detected,
+            'times_object_followed': times_object_followed,
+        }
 
     # Imprimo en pantalla para cada valor del parametro el promedio de
     # solapamiento en la escena para cada corrida y el promedio de todas las
@@ -111,14 +127,40 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         e=scenenamenum,
     ))
     print('###############')
-    for val, avg, std in paramval_avgsvarsareas:
-        print('{v}:'.format(v=val))
-        print('    prom_overlap: {p}'.format(
-            p=round(np.array(avg) * 100, 2)
-        ))
-        print('    prom_overlap_std: {p}'.format(
-            p=round(np.array(std) * 100, 2),
-        ))
+    just = 18
+    print('Param. value'.rjust(just), end=' ')
+    print('Prom. Overlap'.rjust(just), end=' ')
+    print('Std. Dev. Overlap'.rjust(just), end=' ')
+    print('Cant. frames obj'.rjust(just), end=' ')
+    print('Cant. found obj'.rjust(just), end=' ')
+    print('Cant. follow obj'.rjust(just))
+
+    for val, dd in sorted(index.items()):
+        avg = dd['mean']
+        std = dd['std']
+
+        print('{a}'.format(a=val).rjust(just), end=' ')
+        # print('{v}:'.format(v=val))
+        print('{a:{j}.2f}'.format(a=round(np.array(avg) * 100, 2), j=just), end=' ')
+        # print('    prom_overlap: {p}'.format(
+        #     p=round(np.array(avg) * 100, 2)
+        # ))
+        print('{a:{j}.2f}'.format(a=round(np.array(std) * 100, 2), j=just), end=' ')
+        # print('    prom_overlap_std: {p}'.format(
+        #     p=round(np.array(std) * 100, 2),
+        # ))
+        print('{a:{j}d}'.format(a=dd['times_object_appear'], j=just), end=' ')
+        # print('    veces aparece el obj: {v}'.format(
+        #     v=dd['times_object_appear'])
+        # )
+        print('{a:{j}d}'.format(a=dd['times_object_detected'], j=just), end=' ')
+        # print('    veces encontrado el obj: {v}'.format(
+        #     v=dd['times_object_detected'])
+        # )
+        print('{a:{j}d}'.format(a=dd['times_object_followed'], j=just))
+        # print('    veces seguido el obj: {v}'.format(
+        #     v=dd['times_object_followed'])
+        # )
 
 
 if __name__ == '__main__':

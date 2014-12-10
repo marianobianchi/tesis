@@ -488,6 +488,9 @@ class TemplateAndFrameHistogramFinder(Finder):
         """
         filas, columnas = len(img), len(img[0])
 
+        template = self._descriptors['object_template']
+        tfil, tcol = len(template), len(template[0])
+
         new_topleft = topleft
         new_bottomright = bottomright
 
@@ -496,8 +499,10 @@ class TemplateAndFrameHistogramFinder(Finder):
             self.metodo_de_busqueda.get_positions_and_framesizes(
                 topleft,
                 bottomright,
+                tfil,
+                tcol,
                 filas,
-                columnas
+                columnas,
             )
         )
 
@@ -593,6 +598,81 @@ class TemplateAndFrameHistogramFinder(Finder):
             {
                 'object_frame': frame,
                 'object_frame_hsv_hist': hist,
+            }
+        )
+        return desc
+
+
+class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
+    @staticmethod
+    def calculate_rgb_histogram(roi, mask=None):
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi],  # Imagen
+            [1],  # Canales
+            mask,  # Mascara
+            [60],  # Numero de bins para cada canal
+            [0, 256],  # Rangos válidos para cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist).flatten()
+
+        return hist
+
+    def saved_object_comparisson(self):
+        if 'object_frame_hist' not in self._descriptors:
+            obj = self._descriptors['object_frame']
+            hist = self.calculate_rgb_histogram(obj)
+            self._descriptors['object_frame_hist'] = hist
+
+        if 'object_template_hist' not in self._descriptors:
+            obj = self._descriptors['object_template']
+            mask = self._descriptors['object_mask']
+            hist = self.calculate_rgb_histogram(obj, mask)
+            self._descriptors['object_template_hist'] = hist
+
+        return (self._descriptors['object_template_hist'],
+                self._descriptors['object_frame_hist'])
+
+    def object_comparisson(self, roi):
+        roi_hist = self.calculate_rgb_histogram(roi)
+
+        # Tomo el histograma del objeto para comparar
+        obj_template_hist, object_frame_hist = (
+            self.saved_object_comparisson()
+        )
+
+        template_comp = self.template_comparator.compare(
+            obj_template_hist,
+            roi_hist,
+        )
+        frame_comp = self.frame_comparator.compare(
+            object_frame_hist,
+            roi_hist,
+        )
+
+        return {
+            'object_template_comp': template_comp,
+            'object_frame_comp': frame_comp,
+        }
+
+    def calculate_descriptors(self, desc):
+        img = self._descriptors['scene_rgb']
+        topleft = desc['topleft']
+        bottomright = desc['bottomright']
+
+        frame = img[topleft[0]:bottomright[0],
+                    topleft[1]:bottomright[1]]
+
+        # Actualizo el histograma
+        hist = self.calculate_rgb_histogram(frame)
+
+        desc.update(
+            {
+                'object_frame': frame,
+                'object_frame_hist': hist,
             }
         )
         return desc

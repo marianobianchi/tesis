@@ -6,7 +6,8 @@ from __future__ import (unicode_literals, division)
 import cv2
 
 from metodos_comunes import Timer
-from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator
+from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
+    TemplateAndFrameGreenHistogramFinder
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
 from detectores import RGBTemplateDetector, StaticDetector, \
@@ -175,7 +176,7 @@ def seguir_taza_det_fija():
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
     template_comparator = HistogramComparator(
         method=cv2.cv.CV_COMP_BHATTACHARYYA,
-        threshold=0.6,
+        threshold=0.5,
         reverse=False,
     )
     frame_comparator = HistogramComparator(
@@ -184,7 +185,7 @@ def seguir_taza_det_fija():
         reverse=False,
     )
 
-    finder = TemplateAndFrameHistogramFinder(
+    finder = TemplateAndFrameGreenHistogramFinder(
         template_comparator,
         frame_comparator,
         metodo_de_busqueda,
@@ -522,23 +523,122 @@ def barrer_det_template_sizes(objname, objnumber, scenename, scenenumber):
             img_provider.restart()
 
 
-def correr_battachayyra_verde(objname, objnumber, scenename, scenenumber):
+def correr_battachayyra_verde_find_template_threshold(objname, objnumber, scenename, scenenumber):
     # Parametros para el seguimiento
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    find_template_threshold = 0.6
+    find_template_threshold = 0.5
     find_template_reverse = False
 
     find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
     find_frame_threshold = 0.4
     find_frame_reverse = False
 
-    metodo_de_busqueda = BusquedaAlrededor()
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
 
     # Create objects
     img_provider = FrameNamesAndImageProviderPreChargedForRGB(
         'videos/rgbd/scenes/', scenename, scenenumber,
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
+
+    for find_template_threshold in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = TemplateAndFrameGreenHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            metodo_de_busqueda,
+        )
+
+        follower = FollowerStaticDetectionAndRGBTemplate(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'batta_green_channel_find_template_threshold',
+            find_template_threshold,
+        ).run()
+
+        img_provider.restart()
+
+
+def correr_battachayyra_verde_find_frame_threshold(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.5
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.4
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_frame_threshold in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = TemplateAndFrameGreenHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            metodo_de_busqueda,
+        )
+
+        follower = FollowerStaticDetectionAndRGBTemplate(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'batta_green_channel_find_frame_threshold',
+            find_frame_threshold,
+        ).run()
+
+        img_provider.restart()
 
 
 def correr_chi_squared_verde():
@@ -576,3 +676,10 @@ if __name__ == '__main__':
 
     # seguir_taza_det_fija()
     # seguir_gorra_det_fija()
+    correr_battachayyra_verde_find_template_threshold('coffee_mug', '5', 'desk', '1')
+    correr_battachayyra_verde_find_template_threshold('cap', '4', 'desk', '1')
+    correr_battachayyra_verde_find_template_threshold('bowl', '3', 'desk', '2')
+
+    correr_battachayyra_verde_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    correr_battachayyra_verde_find_frame_threshold('cap', '4', 'desk', '1')
+    correr_battachayyra_verde_find_frame_threshold('bowl', '3', 'desk', '2')

@@ -34,14 +34,15 @@ class BusquedaAlrededor(object):
 
 class BusquedaAlrededorCambiandoFrameSize(object):
     def get_positions_and_framesizes(self, topleft, bottomright,
+                                     template_filas, template_columnas,
                                      filas, columnas):
         top, left = topleft
         bottom, right = bottomright
 
-        original_height = bottom - top
-        original_width = right - left
+        original_height = template_filas
+        original_width = template_columnas
 
-        for tam_diff in 0.75, 1, 1.25:
+        for tam_diff in [0.75, 1, 1.25]:
 
             height = max(int(original_height * tam_diff), 1)
             width = max(int(original_width * tam_diff), 1)
