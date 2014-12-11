@@ -6,12 +6,13 @@ import numpy as np
 
 class BusquedaAlrededor(object):
     def get_positions_and_framesizes(self, topleft, bottomright,
+                                     template_filas, template_columnas,
                                      filas, columnas):
         top, left = topleft
         bottom, right = bottomright
 
-        height = bottom - top
-        width = right - left
+        height = template_filas
+        width = template_columnas
 
         diff = 0.25
 

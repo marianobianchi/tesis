@@ -517,7 +517,6 @@ class TemplateAndFrameHistogramFinder(Finder):
 
             # Comparo
             nueva_comparacion = self.object_comparisson(roi)
-            print "        Nueva comparación:", nueva_comparacion
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
             # MuestraBusquedaEnVivo('Buscando el objeto').run(
@@ -572,7 +571,10 @@ class TemplateAndFrameHistogramFinder(Finder):
             valor_comparativo,
             valor_comparativo_base,
         )
-        print "    Mejor comparación:", valor_comparativo
+        if fue_exitoso:
+            print "    Mejor comparación:", valor_comparativo
+        else:
+            print "    No se siguió"
         desc = {}
 
         if fue_exitoso:
@@ -684,10 +686,21 @@ class TemplateAndFrameLearningBaseComparissonHistogramFinder(
         TemplateAndFrameGreenHistogramFinder):
     """
     Toma como base de comparación a la peor de las comparaciones de histogramas
-    entre templates multiplicado por el threshold de cada comparadot. Se puede
+    entre templates multiplicado por el threshold de cada comparador. Se puede
     "retocar" este valor usando el threshold del template comparator y frame
-    comparator
+    comparator. El valor para el frame threshold puede ponerse estático
     """
+
+    def __init__(self, template_comparator, frame_comparator,
+                 fixed_frame_value=False,
+                 metodo_de_busqueda=BusquedaAlrededor()):
+        (super(TemplateAndFrameLearningBaseComparissonHistogramFinder, self)
+         .__init__(template_comparator, frame_comparator, metodo_de_busqueda))
+        self.fixed_frame_value = fixed_frame_value
+
+    def calculate_histogram(self, roi, mask=None):
+        return self.calculate_rgb_histogram(roi, mask)
+
     def object_comparisson_base(self, img):
         if 'base_comparisson' not in self._descriptors:
             templates = self._descriptors['object_templates']
@@ -699,8 +712,8 @@ class TemplateAndFrameLearningBaseComparissonHistogramFinder(
             for i, (tmp1, msk1) in enumerate(temps_masks):
                 for j, (tmp2, msk2) in enumerate(temps_masks):
                     if i != j:
-                        hist1 = self.calculate_rgb_histogram(tmp1, msk1)
-                        hist2 = self.calculate_rgb_histogram(tmp2, msk2)
+                        hist1 = self.calculate_histogram(tmp1, msk1)
+                        hist2 = self.calculate_histogram(tmp2, msk2)
                         val = self.template_comparator.compare(hist1, hist2)
                         if max_val is None:
                             max_val = val
@@ -711,11 +724,44 @@ class TemplateAndFrameLearningBaseComparissonHistogramFinder(
 
             self._descriptors['base_comparisson'] = max_val
             print "Valor de comparación base deteccion:", max_val * self.template_comparator.threshold
-            print "Valor de comparación base seguimiento:", max_val * self.frame_comparator.threshold
+            if self.fixed_frame_value:
+                print "Valor de comparación base seguimiento:", self.frame_comparator.threshold
+            else:
+                print "Valor de comparación base seguimiento:", max_val * self.frame_comparator.threshold
 
         base_comp = self._descriptors['base_comparisson']
 
         return {
             'object_template_comp': base_comp * self.template_comparator.threshold,
-            'object_frame_comp': base_comp * self.frame_comparator.threshold
+            'object_frame_comp': self.frame_comparator.threshold * (1 if self.fixed_frame_value else base_comp)
+        }
+
+
+class HSHistogramFinder(TemplateAndFrameLearningBaseComparissonHistogramFinder):
+    def calculate_histogram(self, roi, mask=None):
+        return self.calculate_hsv_histogram(roi, mask)
+
+    @staticmethod
+    def calculate_hsv_histogram(roi, mask=None):
+        # Paso la imagen de BGR a RGB
+        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi_hsv],  # Imagen
+            [0, 1],  # Canales
+            mask,  # Mascara
+            [40, 60],  # Numero de bins para cada canal
+            [0, 180, 0, 256],  # Rangos válidos para cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist).flatten()
+
+        return hist
+
+    def object_comparisson_base(self, img):
+        return {
+            'object_template_comp': 80,
+            'object_frame_comp': 25,
         }

@@ -7,7 +7,7 @@ import cv2
 
 from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
-    TemplateAndFrameGreenHistogramFinder, \
+    TemplateAndFrameGreenHistogramFinder, HSHistogramFinder,\
     TemplateAndFrameLearningBaseComparissonHistogramFinder
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
@@ -174,20 +174,21 @@ def seguir_taza_det_fija():
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
     template_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CHISQR,
-        threshold=0.2,
-        reverse=False,
+        method=cv2.cv.CV_COMP_CORREL,
+        threshold=0.9,
+        reverse=True,
     )
     frame_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CHISQR,
-        threshold=0.08,
-        reverse=False,
+        method=cv2.cv.CV_COMP_CORREL,
+        threshold=0.85,
+        reverse=True,
     )
 
     finder = TemplateAndFrameLearningBaseComparissonHistogramFinder(
         template_comparator,
         frame_comparator,
-        metodo_de_busqueda,
+        fixed_frame_value=True,
+        metodo_de_busqueda=metodo_de_busqueda,
     )
 
     # Seguidor
@@ -228,20 +229,21 @@ def seguir_gorra_det_fija():
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
     template_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CHISQR,
-        threshold=1,
-        reverse=False,
+        method=cv2.cv.CV_COMP_CORREL,
+        threshold=0.8,
+        reverse=True,
     )
     frame_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CHISQR,
-        threshold=1,
-        reverse=False,
+        method=cv2.cv.CV_COMP_CORREL,
+        threshold=0.9,
+        reverse=True,
     )
 
     finder = TemplateAndFrameLearningBaseComparissonHistogramFinder(
         template_comparator,
         frame_comparator,
-        metodo_de_busqueda,
+        fixed_frame_value=False,
+        metodo_de_busqueda=metodo_de_busqueda,
     )
 
     # Seguidor
@@ -764,14 +766,248 @@ def correr_chi_squared_verde_find_frame_threshold(objname, objnumber,
 
         img_provider.restart()
 
+def correr_correlation_verde_find_template_threshold(objname, objnumber,
+                                                     scenename, scenenumber):
 
-# TODO: lo de abajo
-def correr_correlation_verde():
-    pass
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_CORREL
+    find_template_threshold = 0.8
+    find_template_reverse = True
+
+    find_frame_comp_method = cv2.cv.CV_COMP_CORREL
+    find_frame_threshold = 0.65
+    find_frame_reverse = True
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_template_threshold in [0.75, 0.85, 0.95]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = TemplateAndFrameLearningBaseComparissonHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            fixed_frame_value=True,
+            metodo_de_busqueda=metodo_de_busqueda,
+        )
+
+        follower = RGBFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'correl_green_channel_find_template_threshold',
+            find_template_threshold,
+        ).run()
+
+        img_provider.restart()
 
 
-def correr_chi_squared_hs():
-    pass
+def correr_correlation_verde_find_frame_threshold(objname, objnumber,
+                                                  scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_CORREL
+    find_template_threshold = 0.8
+    find_template_reverse = True
+
+    find_frame_comp_method = cv2.cv.CV_COMP_CORREL
+    find_frame_threshold = 0.65
+    find_frame_reverse = True
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_frame_threshold in [0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = TemplateAndFrameLearningBaseComparissonHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            fixed_frame_value=True,
+            metodo_de_busqueda=metodo_de_busqueda,
+        )
+
+        follower = RGBFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'correl_green_channel_find_frame_threshold',
+            find_frame_threshold,
+        ).run()
+
+        img_provider.restart()
+
+
+def correr_chi_squared_hs_find_template_threshold(objname, objnumber,
+                                                  scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_CHISQR
+    find_template_threshold = 0.2
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_CHISQR
+    find_frame_threshold = 0.08
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_template_threshold in [1]:#[0.05, 0.1, 0.2, 0.3, 0.4, 0.6, 0.8, 1]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = HSHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            metodo_de_busqueda=metodo_de_busqueda,
+        )
+
+        follower = RGBFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'chisquared_hs_channels_find_template_threshold_fixed',
+            find_template_threshold,
+        ).run()
+
+        img_provider.restart()
+
+
+def correr_chi_squared_hs_find_frame_threshold(objname, objnumber,
+                                               scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_CHISQR
+    find_template_threshold = 0.2
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_CHISQR
+    find_frame_threshold = 0.08
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for find_frame_threshold in [1]: #[0.02, 0.04, 0.06, 0.08, 0.09, 0.1, 0.2, 0.3,
+                                 #0.4]:
+        detector = StaticDetectorForRGBFinder(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+        )
+
+        template_comparator = HistogramComparator(
+            method=find_template_comp_method,
+            threshold=find_template_threshold,
+            reverse=find_template_reverse,
+        )
+        frame_comparator = HistogramComparator(
+            method=find_frame_comp_method,
+            threshold=find_frame_threshold,
+            reverse=find_frame_reverse,
+        )
+
+        finder = HSHistogramFinder(
+            template_comparator,
+            frame_comparator,
+            metodo_de_busqueda=metodo_de_busqueda,
+        )
+
+        follower = RGBFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'chisquared_hs_channels_find_frame_threshold_fixed',
+            find_frame_threshold,
+        ).run()
+
+        img_provider.restart()
 
 
 def correr_mi_metodo_chebysev():
@@ -795,7 +1031,7 @@ if __name__ == '__main__':
     # barrer_det_template_sizes('cap', '4', 'desk', '1')
     # barrer_det_template_sizes('bowl', '3', 'desk', '2')
 
-    # seguir_taza_det_fija()
+    seguir_taza_det_fija()
     # seguir_gorra_det_fija()
     # correr_battachayyra_verde_find_template_threshold('coffee_mug', '5', 'desk', '1')
     # correr_battachayyra_verde_find_template_threshold('cap', '4', 'desk', '1')
@@ -813,3 +1049,20 @@ if __name__ == '__main__':
     # correr_chi_squared_verde_find_frame_threshold('cap', '4', 'desk', '1')
     # correr_chi_squared_verde_find_frame_threshold('bowl', '3', 'desk', '2')
 
+
+    # correr_correlation_verde_find_template_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_correlation_verde_find_template_threshold('cap', '4', 'desk', '1')
+    # correr_correlation_verde_find_template_threshold('bowl', '3', 'desk', '2')
+
+    # correr_correlation_verde_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_correlation_verde_find_frame_threshold('cap', '4', 'desk', '1')
+    # correr_correlation_verde_find_frame_threshold('bowl', '3', 'desk', '2')
+
+
+    # correr_chi_squared_hs_find_template_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_chi_squared_hs_find_template_threshold('cap', '4', 'desk', '1')
+    # correr_chi_squared_hs_find_template_threshold('bowl', '3', 'desk', '2')
+    #
+    # correr_chi_squared_hs_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_chi_squared_hs_find_frame_threshold('cap', '4', 'desk', '1')
+    # correr_chi_squared_hs_find_frame_threshold('bowl', '3', 'desk', '2')
