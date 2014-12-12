@@ -4,11 +4,14 @@ from __future__ import (unicode_literals, division)
 
 
 import cv2
+from scipy.spatial import distance as dist
 
 from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
     TemplateAndFrameGreenHistogramFinder, HSHistogramFinder,\
-    TemplateAndFrameLearningBaseComparissonHistogramFinder
+    TemplateAndFrameLearningBaseComparissonHistogramFinder,\
+    FragmentedHistogramFinder
+
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
 from detectores import RGBTemplateDetector, StaticDetectorForRGBFinder
@@ -174,17 +177,17 @@ def seguir_taza_det_fija():
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
     template_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CORREL,
+        method=cv2.cv.CV_COMP_CHISQR,
         threshold=0.9,
-        reverse=True,
+        reverse=False,
     )
     frame_comparator = HistogramComparator(
-        method=cv2.cv.CV_COMP_CORREL,
+        method=cv2.cv.CV_COMP_CHISQR,
         threshold=0.85,
-        reverse=True,
+        reverse=False,
     )
 
-    finder = TemplateAndFrameLearningBaseComparissonHistogramFinder(
+    finder = HSHistogramFinder(
         template_comparator,
         frame_comparator,
         fixed_frame_value=True,
@@ -1010,9 +1013,6 @@ def correr_chi_squared_hs_find_frame_threshold(objname, objnumber,
         img_provider.restart()
 
 
-def correr_mi_metodo_chebysev():
-    pass
-
 
 if __name__ == '__main__':
     # barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
@@ -1033,6 +1033,8 @@ if __name__ == '__main__':
 
     seguir_taza_det_fija()
     # seguir_gorra_det_fija()
+
+
     # correr_battachayyra_verde_find_template_threshold('coffee_mug', '5', 'desk', '1')
     # correr_battachayyra_verde_find_template_threshold('cap', '4', 'desk', '1')
     # correr_battachayyra_verde_find_template_threshold('bowl', '3', 'desk', '2')

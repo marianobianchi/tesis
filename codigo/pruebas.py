@@ -9,9 +9,14 @@ from scipy.spatial import distance as dist
 
 from cpp.common import get_min_max, filter_cloud, show_clouds, save_pcd, points
 
-from metodos_de_busqueda import BusquedaPorFramesSolapados
+from detectores import StaticDetectorForRGBFinder
+from metodos_de_busqueda import BusquedaPorFramesSolapados, \
+    BusquedaAlrededorCambiandoFrameSize
 from proveedores_de_imagenes import FrameNamesAndImageProvider
-from metodos_comunes import AdaptSearchArea
+from observar_seguimiento import MuestraSeguimientoEnVivo
+from buscadores import FragmentedHistogramFinder
+from esquemas_seguimiento import FollowingScheme
+from seguidores import RGBFollower
 
 
 def probando_filtro_por_ejes():
@@ -680,7 +685,56 @@ def ver_canales_e_histogramas_rgb(img_path):
 
     plt.show()
 
+
+def probando_mi_metodo_chebysev():
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/',  # scene path
+        'desk',  # scene
+        '1',  # scene number
+        'videos/rgbd/objs/',  # object path
+        'coffee_mug',  # object
+        '5',  # object number
+    )
+
+    # Detector
+    detector = StaticDetectorForRGBFinder(
+        'videos/rgbd/scenes/desk/desk_1.mat',
+        'coffee_mug'
+    )
+
+    # Buscador
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+    channels_comparators = [
+        (0, 40, 180, cv2.cv.CV_COMP_BHATTACHARYYA),
+        (1, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
+        (2, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
+    ]
+    base_comparisson = [0, 0, 0]
+    finder = FragmentedHistogramFinder(
+        channels_comparators=channels_comparators,
+        base_comparisson=base_comparisson,
+        distance_comparator=dist.chebyshev,
+        template_threshold=1.5,
+        frame_threshold=0.6,
+        fixed_template_value=False,
+        fixed_frame_value=True,
+        metodo_de_busqueda=metodo_de_busqueda,
+    )
+
+    # Seguidor
+    follower = RGBFollower(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo(
+        'Deteccion estatica - Seguimiento por mi metodo'
+    )
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
+
 if __name__ == '__main__':
-    prueba_histogramas()
+    probando_mi_metodo_chebysev()
 
 

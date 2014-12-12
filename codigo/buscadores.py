@@ -3,6 +3,7 @@
 from __future__ import (unicode_literals, division)
 
 import cv2
+import numpy as np
 
 from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
@@ -762,6 +763,293 @@ class HSHistogramFinder(TemplateAndFrameLearningBaseComparissonHistogramFinder):
 
     def object_comparisson_base(self, img):
         return {
-            'object_template_comp': 80,
-            'object_frame_comp': 25,
+            'object_template_comp': 2,
+            'object_frame_comp': 1.5,
         }
+
+
+class FragmentedHistogramFinder(Finder):
+    """
+    Calcula un histograma por canal HSV, compara canal a canal y compara
+    tuplas de valores (comp_canal1, ... comp_canaln) con una medida de
+    distancia, por ejemplo: chebysev
+    """
+    def __init__(self, channels_comparators, base_comparisson,
+                 distance_comparator, template_threshold, frame_threshold,
+                 fixed_template_value=False, fixed_frame_value=False,
+                 metodo_de_busqueda=BusquedaAlrededor()):
+        """
+        channels_comparators: [(channel_number, nbins, max_val, cv_comp_method)]
+        """
+        super(FragmentedHistogramFinder, self).__init__()
+        self.metodo_de_busqueda = metodo_de_busqueda
+        self._base_comparisson = np.array(base_comparisson)
+        self.template_threshold = template_threshold
+        self.frame_threshold = frame_threshold
+        self.fixed_template_value = fixed_template_value
+        self.fixed_frame_value = fixed_frame_value
+        self.channels_comparator = channels_comparators
+        self.distance_comparator = distance_comparator
+
+    def calculate_histograms(self, roi, mask=None):
+        # Paso la imagen de BGR a HSV
+        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+        # Calculo los histogramas de roi
+        hists = []
+        for chnum, nbins, max_val, _ in self.channels_comparator:
+            hist = cv2.calcHist(
+                [roi_hsv],  # Imagen
+                [chnum],  # Canales
+                mask,  # Mascara
+                [nbins],  # Numero de bins para cada canal
+                [0, max_val],  # Rangos válidos para cada canal
+            )
+
+            # Normalizo el histograma para evitar errores por distinta escala
+            hist = cv2.normalize(hist).flatten()
+
+            hists.append(hist)
+
+        return hists
+
+    def calculate_hist_point(self, hists1, hists2):
+        """
+        Devuelve una tupla en donde cada item es una comparacion entre 2
+        histogramas de un mismo canal
+        """
+        comp_point = []
+        for chnum, _, _, chcomp in self.channels_comparator:
+            comp = cv2.compareHist(
+                hists1[chnum],
+                hists2[chnum],
+                chcomp,
+            )
+            comp_point.append(comp)
+
+        return np.array(comp_point)
+
+    def saved_object_comparisson(self):
+        if 'object_frame_hists' not in self._descriptors:
+            obj = self._descriptors['object_frame']
+            hists = self.calculate_histograms(obj)
+            self._descriptors['object_frame_hists'] = hists
+
+        if 'object_template_hists' not in self._descriptors:
+            obj = self._descriptors['object_template']
+            mask = self._descriptors['object_mask']
+            hists = self.calculate_histograms(obj, mask)
+            self._descriptors['object_template_hists'] = hists
+
+        return (self._descriptors['object_template_hists'],
+                self._descriptors['object_frame_hists'])
+
+    def object_comparisson_base(self, img):
+        if 'base_comparisson' not in self._descriptors:
+            templates = self._descriptors['object_templates']
+            masks = self._descriptors['object_masks']
+            temps_masks = zip(templates, masks)
+            hists_list = []
+            for tmp, msk in temps_masks:
+                hists_list.append(self.calculate_histograms(tmp, msk))
+
+            worst_distance = 0
+
+            for i, hists1 in enumerate(hists_list):
+                for j, hists2 in enumerate(hists_list):
+                    if i != j:
+                        comp_point = self.calculate_hist_point(hists1, hists2)
+
+                        distance = self.distance_comparator(
+                            self._base_comparisson,
+                            comp_point,
+                        )
+
+                        if worst_distance < distance:
+                            worst_distance = distance
+
+            self._descriptors['base_comparisson'] = worst_distance
+            print "Valor de comparación base deteccion:", \
+                worst_distance * self.template_threshold
+            print "Valor de comparación base seguimiento:", \
+                worst_distance * self.frame_threshold
+
+        base_template_comp = (
+            self._descriptors['base_comparisson'] * self.template_threshold
+        )
+        base_frame_comp = (
+            self._descriptors['base_comparisson'] * self.frame_threshold
+        )
+
+        if self.fixed_template_value:
+            base_template_comp = self.template_threshold
+
+        if self.fixed_frame_value:
+            base_frame_comp = self.frame_threshold
+
+        return {
+            'object_template_comp': base_template_comp,
+            'object_frame_comp': base_frame_comp,
+        }
+
+    def object_comparisson(self, roi):
+        roi_hists = self.calculate_histograms(roi)
+
+        # Tomo el histograma del objeto para comparar
+        obj_template_hists, object_frame_hists = (
+            self.saved_object_comparisson()
+        )
+
+        template_point = self.calculate_hist_point(
+            obj_template_hists,
+            roi_hists,
+        )
+        template_comp = self.distance_comparator(
+            self._base_comparisson,
+            template_point
+        )
+
+        frame_point = self.calculate_hist_point(
+            object_frame_hists,
+            roi_hists,
+        )
+        frame_comp = self.distance_comparator(
+            self._base_comparisson,
+            frame_point
+        )
+
+        return {
+            'object_template_comp': template_comp,
+            'object_frame_comp': frame_comp,
+        }
+
+    def is_best_match(self, new_value, old_value):
+        templ_better = (new_value['object_template_comp'] <
+                        old_value['object_template_comp'])
+        obj_better = (new_value['object_frame_comp'] <
+                      old_value['object_frame_comp'])
+        return templ_better and obj_better
+
+    def simple_follow(self, img, topleft, bottomright, valor_comparativo):
+        """
+        Esta funcion es el esquema de seguimiento del objeto.
+        """
+        filas, columnas = len(img), len(img[0])
+
+        template = self._descriptors['object_template']
+        tfil, tcol = len(template), len(template[0])
+
+        new_topleft = topleft
+        new_bottomright = bottomright
+
+        # Seguimiento (busqueda/deteccion acotada)
+        generador_de_ubicaciones = (
+            self.metodo_de_busqueda.get_positions_and_framesizes(
+                topleft,
+                bottomright,
+                tfil,
+                tcol,
+                filas,
+                columnas,
+            )
+        )
+
+        for explored_topleft, explored_bottomright in generador_de_ubicaciones:
+            col_izq = explored_topleft[1]
+            col_der = explored_bottomright[1]
+            fil_arr = explored_topleft[0]
+            fil_aba = explored_bottomright[0]
+
+            # Tomo una region de la imagen donde se busca el objeto
+            roi = img[fil_arr:fil_aba, col_izq:col_der]
+
+            # Comparo
+            nueva_comparacion = self.object_comparisson(roi)
+
+            # Si se quiere ver como va buscando, descomentar la siguiente linea
+            # MuestraBusquedaEnVivo('Buscando el objeto').run(
+            #     img,
+            #     (fil_arr, col_izq),
+            #     (fil_aba, col_der),
+            #     frenar=True,
+            # )
+
+            # Si hubo coincidencia
+            if self.is_best_match(nueva_comparacion, valor_comparativo):
+                # Nueva ubicacion del objeto (esquina superior izquierda del
+                # cuadrado)
+                new_topleft = explored_topleft
+
+                # Esq. inferior derecha
+                new_bottomright = explored_bottomright
+
+                # Actualizo el valor de la comparacion
+                valor_comparativo = nueva_comparacion
+
+        return new_topleft, new_bottomright, valor_comparativo
+
+    def find(self):
+        img = self._descriptors['scene_rgb']
+
+        topleft = self._descriptors['topleft']
+        new_topleft = topleft
+
+        bottomright = self._descriptors['bottomright']
+        new_bottomright = bottomright
+
+        valor_comparativo_base = self.object_comparisson_base(img)
+        valor_comparativo = valor_comparativo_base
+
+        # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
+        # de la ultima mejor ubicacion del objeto encontrada
+        for i in range(3):
+            new_topleft, new_bottomright, new_valor_comparativo = self.simple_follow(
+                img,
+                new_topleft,
+                new_bottomright,
+                valor_comparativo,
+            )
+            # Si no cambio de posicion, no sigo buscando
+            if not self.is_best_match(new_valor_comparativo, valor_comparativo):
+                break
+
+            valor_comparativo = new_valor_comparativo
+
+        fue_exitoso = self.is_best_match(
+            valor_comparativo,
+            valor_comparativo_base,
+        )
+        if fue_exitoso:
+            print "    Mejor comparación:", valor_comparativo
+        else:
+            print "    No se siguió"
+        desc = {}
+
+        if fue_exitoso:
+            desc = {
+                'topleft': new_topleft,
+                'bottomright': new_bottomright,
+            }
+        else:
+            self._descriptors = {}
+
+        return fue_exitoso, desc
+
+    def calculate_descriptors(self, desc):
+        img = self._descriptors['scene_rgb']
+        topleft = desc['topleft']
+        bottomright = desc['bottomright']
+
+        frame = img[topleft[0]:bottomright[0],
+                    topleft[1]:bottomright[1]]
+
+        # Actualizo el histograma
+        hists = self.calculate_histograms(frame)
+
+        desc.update(
+            {
+                'object_frame': frame,
+                'object_frame_hists': hists,
+            }
+        )
+        return desc
