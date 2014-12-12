@@ -120,14 +120,15 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'gorra_modelo'
-    model_mask = cv2.imread('gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+    model_filename = 'imagenes/gorra_modelo'
+    model_mask = cv2.imread('imagenes/gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
 
     # loop over the image paths
-    for filename in ['gorra_modelo', 'gorra_seguida1',
-                     'gorra_seguida2', 'gorra_seguida3',
-                     'gorra_seguida4', 'gorra_encontrada1', 'gorra_encontrada2',
-                     'gorra_encontrada3', 'gorra_encontrada']:
+    for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_seguida1',
+                     'imagenes/gorra_seguida2', 'imagenes/gorra_seguida3',
+                     'imagenes/gorra_seguida4', 'imagenes/gorra_encontrada1',
+                     'imagenes/gorra_encontrada2', 'imagenes/gorra_encontrada3',
+                     'imagenes/gorra_encontrada']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -227,12 +228,16 @@ def prueba_mejor_canal_hsv_histogramas():
     v_index = {}
     images = {}
 
-    model_filename = 'taza_modelo'
-    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+    model_filename = 'imagenes/taza_modelo'
+    model_mask = cv2.imread(
+        'imagenes/taza_modelo_mascara.png',
+        cv2.IMREAD_GRAYSCALE
+    )
 
     # loop over the image paths
-    for filename in ['taza_modelo', 'taza_maso_encontrada2',
-                     'taza_maso_encontrada7', 'taza', 'taza3']:
+    for filename in ['imagenes/taza_modelo', 'imagenes/taza_maso_encontrada2',
+                     'imagenes/taza_maso_encontrada7', 'imagenes/taza',
+                     'imagenes/taza3']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -335,12 +340,15 @@ def prueba_mejor_canal_rgb_histogramas():
     b_index = {}
     images = {}
 
-    model_filename = 'taza_modelo'
-    model_mask = cv2.imread('taza_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+    model_filename = 'imagenes/taza_modelo'
+    model_mask = cv2.imread(
+        'imagenes/taza_modelo_mascara.png',
+        cv2.IMREAD_GRAYSCALE
+    )
 
     # loop over the image paths
-    for filename in ['taza_modelo', 'taza_maso_encontrada4',
-                     'taza', 'taza4', 'taza2']:
+    for filename in ['imagenes/taza_modelo', 'imagenes/taza_maso_encontrada4',
+                     'imagenes/taza', 'imagenes/taza4', 'imagenes/taza2']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -443,14 +451,18 @@ def prueba_mezclando_canales_hsv_histogramas():
     v_index = {}
     images = {}
 
-    model_filename = 'gorra_modelo'
-    model_mask = cv2.imread('gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+    model_filename = 'imagenes/gorra_modelo'
+    model_mask = cv2.imread(
+        'imagenes/gorra_modelo_mascara.png',
+        cv2.IMREAD_GRAYSCALE
+    )
 
     # loop over the image paths
-    for filename in ['gorra_modelo', 'gorra_seguida1',
-                     'gorra_seguida2', 'gorra_seguida3',
-                     'gorra_seguida4', 'gorra_encontrada1', 'gorra_encontrada2',
-                     'gorra_encontrada3', 'gorra_encontrada']:
+    for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_seguida1',
+                     'imagenes/gorra_seguida2', 'imagenes/gorra_seguida3',
+                     'imagenes/gorra_seguida4', 'imagenes/gorra_encontrada1',
+                     'imagenes/gorra_encontrada2', 'imagenes/gorra_encontrada3',
+                     'imagenes/gorra_encontrada']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -533,22 +545,22 @@ def prueba_mezclando_canales_hsv_histogramas():
 
 
 def prueba_promedio_histogramas():
-    mod1 = cv2.imread('taza_modelo.png', cv2.IMREAD_COLOR)
-    masc1 = cv2.imread('taza_mascara.png', cv2.IMREAD_GRAYSCALE)
+    mod1 = cv2.imread('imagenes/taza_modelo.png', cv2.IMREAD_COLOR)
+    masc1 = cv2.imread('imagenes/taza_mascara.png', cv2.IMREAD_GRAYSCALE)
     hist1 = cv2.calcHist(
         [mod1], [0, 1, 2], masc1, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
     hist1 = cv2.normalize(hist1).flatten()
 
-    mod2 = cv2.imread('taza_modelo_2.png', cv2.IMREAD_COLOR)
-    masc2 = cv2.imread('taza_mascara_2.png', cv2.IMREAD_GRAYSCALE)
+    mod2 = cv2.imread('imagenes/taza_modelo_2.png', cv2.IMREAD_COLOR)
+    masc2 = cv2.imread('imagenes/taza_mascara_2.png', cv2.IMREAD_GRAYSCALE)
     hist2 = cv2.calcHist(
         [mod2], [0, 1, 2], masc2, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
     hist2 = cv2.normalize(hist2).flatten()
 
-    mod3 = cv2.imread('taza_modelo_3.png', cv2.IMREAD_COLOR)
-    masc3 = cv2.imread('taza_mascara_3.png', cv2.IMREAD_GRAYSCALE)
+    mod3 = cv2.imread('imagenes/taza_modelo_3.png', cv2.IMREAD_COLOR)
+    masc3 = cv2.imread('imagenes/taza_mascara_3.png', cv2.IMREAD_GRAYSCALE)
     hist3 = cv2.calcHist(
         [mod3], [0, 1, 2], masc3, [16, 8, 8], [0, 256, 0, 256, 0, 256]
     )
