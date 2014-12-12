@@ -67,12 +67,15 @@ class Follower(object):
     ######################
     # Funcion de busqueda
     ######################
-    def follow(self):
+    def follow(self, es_deteccion):
+        """
+        es_deteccion indica si en el frame anterior se realizo una deteccion
+        """
         # Actualizo descriptores e imagen en comparador
         self.finder.update(self.descriptors())
 
         # Busco el objeto
-        fue_exitoso, descriptors = self.finder.find()
+        fue_exitoso, descriptors = self.finder.find(es_deteccion)
         topleft = (0, 0)
         bottomright = (0, 0)
 

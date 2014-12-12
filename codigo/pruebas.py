@@ -721,15 +721,15 @@ def probando_mi_metodo_chebysev():
         (1, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
         (2, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
     ]
-    base_comparisson = [0, 0, 0]
+    center_point = [0, 0, 0]
+    extern_point = [1, 1, 1]
     finder = FragmentedHistogramFinder(
         channels_comparators=channels_comparators,
-        base_comparisson=base_comparisson,
+        center_point=center_point,
+        extern_point=extern_point,
         distance_comparator=dist.chebyshev,
-        template_threshold=1.5,
-        frame_threshold=0.6,
-        fixed_template_value=False,
-        fixed_frame_value=True,
+        template_perc=0.5,
+        frame_perc=0.2,
         metodo_de_busqueda=metodo_de_busqueda,
     )
 

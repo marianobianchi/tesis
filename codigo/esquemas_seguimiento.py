@@ -45,12 +45,16 @@ class FollowingScheme(object):
         # Adelanto un frame
         self.img_provider.next()
 
+        es_deteccion = True
+
         while self.img_provider.have_images():
-            es_deteccion = False
+
             if fue_exitoso:
                 fue_exitoso, topleft, bottomright = (
-                    self.obj_follower.follow()
+                    self.obj_follower.follow(es_deteccion)
                 )
+                if fue_exitoso:
+                    es_deteccion = False
 
             if not fue_exitoso:
                 es_deteccion = True
@@ -161,6 +165,8 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
         # Adelanto un frame
         self.img_provider.next()
 
+        es_deteccion = True
+
         while self.img_provider.have_images():
 
             if fue_exitoso:
@@ -171,11 +177,10 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
                     ''
                 )
                 fue_exitoso, topleft, bottomright = (
-                    self.obj_follower.follow()
+                    self.obj_follower.follow(es_deteccion)
                 )
                 if fue_exitoso:
-                    print('')
-                es_deteccion = False
+                    es_deteccion = False
 
             if not fue_exitoso:
 
@@ -410,6 +415,8 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         # Adelanto un frame
         self.img_provider.next()
 
+        es_deteccion = True
+
         while self.img_provider.have_images():
 
             if fue_exitoso:
@@ -420,11 +427,10 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
                     ''
                 )
                 fue_exitoso, topleft, bottomright = (
-                    self.obj_follower.follow()
+                    self.obj_follower.follow(es_deteccion)
                 )
                 if fue_exitoso:
-                    print('')
-                es_deteccion = False
+                    es_deteccion = False
 
             if not fue_exitoso:
 

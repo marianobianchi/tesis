@@ -51,7 +51,7 @@ class Finder(object):
     #####################################
     # Esquema de seguimiento del objeto
     #####################################
-    def find(self):
+    def find(self, es_deteccion):
         return False, {}
 
 
@@ -116,7 +116,7 @@ class ICPFinder(Finder):
 
         return icp_result
 
-    def find(self):
+    def find(self, es_deteccion):
         # Obtengo pcd's y depth
         object_cloud = self._descriptors['object_cloud']
         target_cloud = self._descriptors['pcd']
@@ -230,7 +230,7 @@ class ICPFinderWithModel(ICPFinder):
         )
         return target_cloud
 
-    def find(self):
+    def find(self, es_deteccion):
         # Obtengo pcd's y depth
         object_cloud = self._descriptors['object_cloud']
         target_cloud = self._descriptors['pcd']
@@ -541,7 +541,7 @@ class TemplateAndFrameHistogramFinder(Finder):
 
         return new_topleft, new_bottomright, valor_comparativo
 
-    def find(self):
+    def find(self, es_deteccion):
         img = self._descriptors['scene_rgb']
 
         topleft = self._descriptors['topleft']
@@ -774,20 +774,18 @@ class FragmentedHistogramFinder(Finder):
     tuplas de valores (comp_canal1, ... comp_canaln) con una medida de
     distancia, por ejemplo: chebysev
     """
-    def __init__(self, channels_comparators, base_comparisson,
-                 distance_comparator, template_threshold, frame_threshold,
-                 fixed_template_value=False, fixed_frame_value=False,
+    def __init__(self, channels_comparators, center_point, extern_point,
+                 distance_comparator, template_perc, frame_perc,
                  metodo_de_busqueda=BusquedaAlrededor()):
         """
         channels_comparators: [(channel_number, nbins, max_val, cv_comp_method)]
         """
         super(FragmentedHistogramFinder, self).__init__()
         self.metodo_de_busqueda = metodo_de_busqueda
-        self._base_comparisson = np.array(base_comparisson)
-        self.template_threshold = template_threshold
-        self.frame_threshold = frame_threshold
-        self.fixed_template_value = fixed_template_value
-        self.fixed_frame_value = fixed_frame_value
+        self.center_point = np.array(center_point)
+        self.extern_point = np.array(extern_point)
+        self.template_perc = template_perc
+        self.frame_perc = frame_perc
         self.channels_comparator = channels_comparators
         self.distance_comparator = distance_comparator
 
@@ -846,50 +844,23 @@ class FragmentedHistogramFinder(Finder):
 
     def object_comparisson_base(self, img):
         if 'base_comparisson' not in self._descriptors:
-            templates = self._descriptors['object_templates']
-            masks = self._descriptors['object_masks']
-            temps_masks = zip(templates, masks)
-            hists_list = []
-            for tmp, msk in temps_masks:
-                hists_list.append(self.calculate_histograms(tmp, msk))
 
-            worst_distance = 0
-
-            for i, hists1 in enumerate(hists_list):
-                for j, hists2 in enumerate(hists_list):
-                    if i != j:
-                        comp_point = self.calculate_hist_point(hists1, hists2)
-
-                        distance = self.distance_comparator(
-                            self._base_comparisson,
-                            comp_point,
-                        )
-
-                        if worst_distance < distance:
-                            worst_distance = distance
+            worst_distance = self.distance_comparator(
+                self.center_point,
+                self.extern_point,
+            )
 
             self._descriptors['base_comparisson'] = worst_distance
             print "Valor de comparación base deteccion:", \
-                worst_distance * self.template_threshold
+                worst_distance * self.template_perc
             print "Valor de comparación base seguimiento:", \
-                worst_distance * self.frame_threshold
+                worst_distance * self.frame_perc
 
-        base_template_comp = (
-            self._descriptors['base_comparisson'] * self.template_threshold
-        )
-        base_frame_comp = (
-            self._descriptors['base_comparisson'] * self.frame_threshold
-        )
-
-        if self.fixed_template_value:
-            base_template_comp = self.template_threshold
-
-        if self.fixed_frame_value:
-            base_frame_comp = self.frame_threshold
+        base_comp = self._descriptors['base_comparisson']
 
         return {
-            'object_template_comp': base_template_comp,
-            'object_frame_comp': base_frame_comp,
+            'object_template_comp': self.template_perc * base_comp,
+            'object_frame_comp': self.frame_perc * base_comp,
         }
 
     def object_comparisson(self, roi):
@@ -905,7 +876,7 @@ class FragmentedHistogramFinder(Finder):
             roi_hists,
         )
         template_comp = self.distance_comparator(
-            self._base_comparisson,
+            self.center_point,
             template_point
         )
 
@@ -914,7 +885,7 @@ class FragmentedHistogramFinder(Finder):
             roi_hists,
         )
         frame_comp = self.distance_comparator(
-            self._base_comparisson,
+            self.center_point,
             frame_point
         )
 
@@ -923,14 +894,15 @@ class FragmentedHistogramFinder(Finder):
             'object_frame_comp': frame_comp,
         }
 
-    def is_best_match(self, new_value, old_value):
+    def is_best_match(self, new_value, old_value, es_deteccion):
         templ_better = (new_value['object_template_comp'] <
                         old_value['object_template_comp'])
         obj_better = (new_value['object_frame_comp'] <
                       old_value['object_frame_comp'])
-        return templ_better and obj_better
+        return templ_better and (es_deteccion or obj_better)
 
-    def simple_follow(self, img, topleft, bottomright, valor_comparativo):
+    def simple_follow(self, img, topleft, bottomright, valor_comparativo,
+                      es_deteccion):
         """
         Esta funcion es el esquema de seguimiento del objeto.
         """
@@ -975,7 +947,9 @@ class FragmentedHistogramFinder(Finder):
             # )
 
             # Si hubo coincidencia
-            if self.is_best_match(nueva_comparacion, valor_comparativo):
+            print "        comparacion_parcial:", nueva_comparacion
+            if self.is_best_match(nueva_comparacion, valor_comparativo,
+                                  es_deteccion):
                 # Nueva ubicacion del objeto (esquina superior izquierda del
                 # cuadrado)
                 new_topleft = explored_topleft
@@ -988,7 +962,7 @@ class FragmentedHistogramFinder(Finder):
 
         return new_topleft, new_bottomright, valor_comparativo
 
-    def find(self):
+    def find(self, es_deteccion):
         img = self._descriptors['scene_rgb']
 
         topleft = self._descriptors['topleft']
@@ -1008,9 +982,11 @@ class FragmentedHistogramFinder(Finder):
                 new_topleft,
                 new_bottomright,
                 valor_comparativo,
+                es_deteccion,
             )
             # Si no cambio de posicion, no sigo buscando
-            if not self.is_best_match(new_valor_comparativo, valor_comparativo):
+            if not self.is_best_match(new_valor_comparativo, valor_comparativo,
+                                      es_deteccion):
                 break
 
             valor_comparativo = new_valor_comparativo
@@ -1018,6 +994,7 @@ class FragmentedHistogramFinder(Finder):
         fue_exitoso = self.is_best_match(
             valor_comparativo,
             valor_comparativo_base,
+            es_deteccion,
         )
         if fue_exitoso:
             print "    Mejor comparación:", valor_comparativo
