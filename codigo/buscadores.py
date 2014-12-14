@@ -45,7 +45,7 @@ class Finder(object):
     def comparisson(self, roi):
         return 0
 
-    def is_best_match(self, new_value, old_value):
+    def is_best_match(self, new_value, old_value, es_deteccion):
         return False
 
     #####################################
@@ -355,14 +355,15 @@ class ICPFinderWithModel(ICPFinder):
 #############
 
 class HistogramComparator(object):
-    def __init__(self, method, threshold, reverse=False):
+    def __init__(self, method, perc, worst_case, reverse=False):
         """
         Set reverse=True when the result of method is better when bigger.
         For example, for "Correlation" and "Intersection", reverse should be
         True
         """
         self.method = method
-        self.threshold = threshold
+        self.perc = perc
+        self.worst_case = worst_case
         self.reverse = reverse
 
     def compare(self, img1, img2):
@@ -373,6 +374,9 @@ class HistogramComparator(object):
             return new_value > old_value
         else:
             return new_value < old_value
+
+    def base(self):
+        return self.perc * self.worst_case
 
 
 class TemplateAndFrameHistogramFinder(Finder):
@@ -445,8 +449,8 @@ class TemplateAndFrameHistogramFinder(Finder):
 
     def object_comparisson_base(self, img):
         return {
-            'object_template_comp': self.template_comparator.threshold,  # 0.6,
-            'object_frame_comp': self.frame_comparator.threshold,  # 0.4,
+            'object_template_comp': self.template_comparator.base(),
+            'object_frame_comp': self.frame_comparator.base(),
         }
 
     def object_comparisson(self, roi):
@@ -472,7 +476,7 @@ class TemplateAndFrameHistogramFinder(Finder):
             'object_frame_comp': frame_comp,
         }
 
-    def is_best_match(self, new_value, old_value):
+    def is_best_match(self, new_value, old_value, es_deteccion):
         templ_better = self.template_comparator.is_better_than_before(
             new_value['object_template_comp'],
             old_value['object_template_comp']
@@ -481,9 +485,10 @@ class TemplateAndFrameHistogramFinder(Finder):
             new_value['object_frame_comp'],
             old_value['object_frame_comp']
         )
-        return templ_better and obj_better
+        return templ_better and (es_deteccion or obj_better)
 
-    def simple_follow(self, img, topleft, bottomright, valor_comparativo):
+    def simple_follow(self, img, topleft, bottomright, valor_comparativo,
+                      es_deteccion):
         """
         Esta funcion es el esquema de seguimiento del objeto.
         """
@@ -528,7 +533,8 @@ class TemplateAndFrameHistogramFinder(Finder):
             # )
 
             # Si hubo coincidencia
-            if self.is_best_match(nueva_comparacion, valor_comparativo):
+            if self.is_best_match(nueva_comparacion, valor_comparativo,
+                                  es_deteccion):
                 # Nueva ubicacion del objeto (esquina superior izquierda del
                 # cuadrado)
                 new_topleft = explored_topleft
@@ -561,9 +567,11 @@ class TemplateAndFrameHistogramFinder(Finder):
                 new_topleft,
                 new_bottomright,
                 valor_comparativo,
+                es_deteccion
             )
             # Si no cambio de posicion, no sigo buscando
-            if not self.is_best_match(new_valor_comparativo, valor_comparativo):
+            if not self.is_best_match(new_valor_comparativo, valor_comparativo,
+                                      es_deteccion):
                 break
 
             valor_comparativo = new_valor_comparativo
@@ -571,6 +579,7 @@ class TemplateAndFrameHistogramFinder(Finder):
         fue_exitoso = self.is_best_match(
             valor_comparativo,
             valor_comparativo_base,
+            es_deteccion
         )
         if fue_exitoso:
             print "    Mejor comparación:", valor_comparativo
@@ -611,7 +620,6 @@ class TemplateAndFrameHistogramFinder(Finder):
 class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
     @staticmethod
     def calculate_rgb_histogram(roi, mask=None):
-
         # Calculo el histograma del roi (para H y S)
         hist = cv2.calcHist(
             [roi],  # Imagen
@@ -626,23 +634,26 @@ class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
 
         return hist
 
+    def calculate_histogram(self, roi, mask=None):
+        return self.calculate_rgb_histogram(roi, mask)
+
     def saved_object_comparisson(self):
         if 'object_frame_hist' not in self._descriptors:
             obj = self._descriptors['object_frame']
-            hist = self.calculate_rgb_histogram(obj)
+            hist = self.calculate_histogram(obj)
             self._descriptors['object_frame_hist'] = hist
 
         if 'object_template_hist' not in self._descriptors:
             obj = self._descriptors['object_template']
             mask = self._descriptors['object_mask']
-            hist = self.calculate_rgb_histogram(obj, mask)
+            hist = self.calculate_histogram(obj, mask)
             self._descriptors['object_template_hist'] = hist
 
         return (self._descriptors['object_template_hist'],
                 self._descriptors['object_frame_hist'])
 
     def object_comparisson(self, roi):
-        roi_hist = self.calculate_rgb_histogram(roi)
+        roi_hist = self.calculate_histogram(roi)
 
         # Tomo el histograma del objeto para comparar
         obj_template_hist, object_frame_hist = (
@@ -672,7 +683,7 @@ class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
                     topleft[1]:bottomright[1]]
 
         # Actualizo el histograma
-        hist = self.calculate_rgb_histogram(frame)
+        hist = self.calculate_histogram(frame)
 
         desc.update(
             {
@@ -683,62 +694,7 @@ class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
         return desc
 
 
-class TemplateAndFrameLearningBaseComparissonHistogramFinder(
-        TemplateAndFrameGreenHistogramFinder):
-    """
-    Toma como base de comparación a la peor de las comparaciones de histogramas
-    entre templates multiplicado por el threshold de cada comparador. Se puede
-    "retocar" este valor usando el threshold del template comparator y frame
-    comparator. El valor para el frame threshold puede ponerse estático
-    """
-
-    def __init__(self, template_comparator, frame_comparator,
-                 fixed_frame_value=False,
-                 metodo_de_busqueda=BusquedaAlrededor()):
-        (super(TemplateAndFrameLearningBaseComparissonHistogramFinder, self)
-         .__init__(template_comparator, frame_comparator, metodo_de_busqueda))
-        self.fixed_frame_value = fixed_frame_value
-
-    def calculate_histogram(self, roi, mask=None):
-        return self.calculate_rgb_histogram(roi, mask)
-
-    def object_comparisson_base(self, img):
-        if 'base_comparisson' not in self._descriptors:
-            templates = self._descriptors['object_templates']
-            masks = self._descriptors['object_masks']
-            temps_masks = zip(templates, masks)
-
-            max_val = None
-
-            for i, (tmp1, msk1) in enumerate(temps_masks):
-                for j, (tmp2, msk2) in enumerate(temps_masks):
-                    if i != j:
-                        hist1 = self.calculate_histogram(tmp1, msk1)
-                        hist2 = self.calculate_histogram(tmp2, msk2)
-                        val = self.template_comparator.compare(hist1, hist2)
-                        if max_val is None:
-                            max_val = val
-
-                        if not (self.template_comparator
-                                .is_better_than_before(val, max_val)):
-                            max_val = val
-
-            self._descriptors['base_comparisson'] = max_val
-            print "Valor de comparación base deteccion:", max_val * self.template_comparator.threshold
-            if self.fixed_frame_value:
-                print "Valor de comparación base seguimiento:", self.frame_comparator.threshold
-            else:
-                print "Valor de comparación base seguimiento:", max_val * self.frame_comparator.threshold
-
-        base_comp = self._descriptors['base_comparisson']
-
-        return {
-            'object_template_comp': base_comp * self.template_comparator.threshold,
-            'object_frame_comp': self.frame_comparator.threshold * (1 if self.fixed_frame_value else base_comp)
-        }
-
-
-class HSHistogramFinder(TemplateAndFrameLearningBaseComparissonHistogramFinder):
+class HSHistogramFinder(TemplateAndFrameGreenHistogramFinder):
     def calculate_histogram(self, roi, mask=None):
         return self.calculate_hsv_histogram(roi, mask)
 
@@ -760,12 +716,6 @@ class HSHistogramFinder(TemplateAndFrameLearningBaseComparissonHistogramFinder):
         hist = cv2.normalize(hist).flatten()
 
         return hist
-
-    def object_comparisson_base(self, img):
-        return {
-            'object_template_comp': 2,
-            'object_frame_comp': 1.5,
-        }
 
 
 class FragmentedHistogramFinder(Finder):
@@ -947,7 +897,6 @@ class FragmentedHistogramFinder(Finder):
             # )
 
             # Si hubo coincidencia
-            print "        comparacion_parcial:", nueva_comparacion
             if self.is_best_match(nueva_comparacion, valor_comparativo,
                                   es_deteccion):
                 # Nueva ubicacion del objeto (esquina superior izquierda del
@@ -1030,3 +979,40 @@ class FragmentedHistogramFinder(Finder):
             }
         )
         return desc
+
+
+class FragmentedReverseCompHistogramFinder(FragmentedHistogramFinder):
+    def __init__(self, channels_comparators, center_point, extern_point,
+                 distance_comparator, template_perc, frame_perc, reverse_comp,
+                 metodo_de_busqueda=BusquedaAlrededor()):
+        """
+        channels_comparators: [(channel_number, nbins, max_val, cv_comp_method)]
+
+        reverse_comp: [reverse_or_not_channel1_comp, ..reverse_or_not_channelN_comp]
+        """
+        (super(FragmentedReverseCompHistogramFinder, self)
+         .__init__(channels_comparators, center_point, extern_point,
+            distance_comparator, template_perc, frame_perc, metodo_de_busqueda))
+        self.reverse_comp = reverse_comp
+
+    def calculate_hist_point(self, hists1, hists2):
+        """
+        Devuelve una tupla en donde cada item es una comparacion entre 2
+        histogramas de un mismo canal
+        """
+        comp_point = []
+        for chnum, _, _, chcomp in self.channels_comparator:
+            comp = cv2.compareHist(
+                hists1[chnum],
+                hists2[chnum],
+                chcomp,
+            )
+            if self.reverse_comp[chnum]:
+                try:
+                    comp = 1/comp
+                except ZeroDivisionError:
+                    comp = self.extern_point[chnum] * 1000
+
+            comp_point.append(comp)
+
+        return np.array(comp_point)

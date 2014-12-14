@@ -89,7 +89,8 @@ def test_rectangle():
     print(".", end='')
 
 
-def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
+def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
+                           param_values=None):
     # TODO: tratar de reducir los NEGROS (NN). Esto está relacionado con la
     # robustes del algoritmo
 
@@ -106,10 +107,14 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path):
     )
 
     objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
-    param_values = os.listdir(
-        os.path.join(path, scenenamenum, objnamenum, param)
-    )
-    param_values.sort()
+    if param_values is None:
+        param_values = os.listdir(
+            os.path.join(path, scenenamenum, objnamenum, param)
+        )
+        param_values.sort()
+    else:
+        param_values = [unicode(p) for p in param_values]
+        param_values.sort()
 
     # Valor de parametro y el promedio de solapamiento por frame
     paramval_avgsareaperframe = []
@@ -361,134 +366,421 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
 
 if __name__ == '__main__':
-    # Frame size
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='detection_frame_size',
-        path='pruebas_guardadas',
-    )
-
-    # Similarity threshold
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='detection_similarity_threshold',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='detection_similarity_threshold',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='detection_similarity_threshold',
-        path='pruebas_guardadas',
-    )
-
-    # Inlier fraction
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='detection_inlier_fraction',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='detection_inlier_fraction',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='detection_inlier_fraction',
-        path='pruebas_guardadas',
-    )
-
-    # Find percentage obj. model points
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='find_perc_obj_model_points',
-        path='pruebas_guardadas',
-    )
-
-    # Fixed search area
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='find_fixed_search_area',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='find_fixed_search_area',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='find_fixed_search_area',
-        path='pruebas_guardadas',
-    )
+    # # Frame size
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_frame_size',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Similarity threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_similarity_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_similarity_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_similarity_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Inlier fraction
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='detection_inlier_fraction',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='detection_inlier_fraction',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='detection_inlier_fraction',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find percentage obj. model points
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='find_perc_obj_model_points',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Fixed search area
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='find_fixed_search_area',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='find_fixed_search_area',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='find_fixed_search_area',
+    #     path='pruebas_guardadas',
+    # )
 
     # dibujar_cuadros_encontrados_y_del_ground_truth()
+
+
+    ####################################
+    # STATIC DETECTION and RGB analisis
+    ####################################
+
+    # # BATTA GREEN
+    # # Find template threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='batta_green_channel_find_template_threshold',
+    #     param_values=[0.5],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='batta_green_channel_find_template_threshold',
+    #     param_values=[0.5],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='batta_green_channel_find_template_threshold',
+    #     param_values=[0.5],
+    #     path='pruebas_guardadas',
+    # )
+    # # Find frame threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     param_values=[0.2],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     param_values=[0.2],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='batta_green_channel_find_frame_threshold',
+    #     param_values=[0.2],
+    #     path='pruebas_guardadas',
+    # )
+
+    # # CHISQUARED GREEN
+    # # Find template threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='chisquared_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='chisquared_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='chisquared_green_channel_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find frame threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='chisquared_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='chisquared_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='chisquared_green_channel_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+
+    # # CORRELATION GREEN
+    # # Find template threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='correl_green_channel_find_template_threshold',
+    #     param_values=[600],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='correl_green_channel_find_template_threshold',
+    #     param_values=[600],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='correl_green_channel_find_template_threshold',
+    #     param_values=[600],
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find frame threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='correl_green_channel_find_frame_threshold',
+    #     param_values=[850],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='correl_green_channel_find_frame_threshold',
+    #     param_values=[850],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='correl_green_channel_find_frame_threshold',
+    #     param_values=[850],
+    #     path='pruebas_guardadas',
+    # )
+
+    # # CHISQUARED HS
+    # # Find template threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='chisquared_hs_channels_find_template_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='chisquared_hs_channels_find_template_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='chisquared_hs_channels_find_template_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find frame threshold
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='chisquared_hs_channels_find_frame_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='chisquared_hs_channels_find_frame_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='chisquared_hs_channels_find_frame_threshold_fixed',
+    #     param_values=[0.03],
+    #     path='pruebas_guardadas',
+    # )
+
+    # MI METODO BHATTA BHATTA BHATTA
+    # Find template threshold
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='mi_metodo_bhatta_bhatta_bhatta_template_perc',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='mi_metodo_bhatta_bhatta_bhatta_template_perc',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='mi_metodo_bhatta_bhatta_bhatta_template_perc',
+        path='pruebas_guardadas',
+    )
+
+    # Find frame threshold
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='mi_metodo_bhatta_bhatta_bhatta_frame_perc',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='mi_metodo_bhatta_bhatta_bhatta_frame_perc',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='mi_metodo_bhatta_bhatta_bhatta_frame_perc',
+        path='pruebas_guardadas',
+    )

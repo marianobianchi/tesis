@@ -356,35 +356,6 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         self.file.close()
 
     def write_parameter_values(self):
-        detector = self.obj_follower.detector
-        finder = self.obj_follower.finder
-        # self.file.write(b'det_template_threshold={v}\n'.format(
-        #     v=detector.template_threshold
-        # ))
-        # self.file.write(b'det_templates_to_use={v}\n'.format(
-        #     v=detector.templates_to_use
-        # ))
-        # self.file.write(b'det_template_sizes={v}\n'.format(
-        #     v=detector.template_sizes
-        # ))
-        # self.file.write(b'det_templates_from_frame={v}\n'.format(
-        #     v=detector.templates_from_frame
-        # ))
-
-        self.file.write(b'find_template_comp_method={v}\n'.format(
-            v=finder.OPENCV_METHODS[finder.template_comparator.method]
-        ))
-        self.file.write(b'find_template_threshold={v}\n'.format(
-            v=finder.template_comparator.threshold
-        ))
-
-        self.file.write(b'find_frame_comp_method={v}\n'.format(
-            v=finder.OPENCV_METHODS[finder.frame_comparator.method]
-        ))
-        self.file.write(b'find_frame_threshold={v}\n'.format(
-            v=finder.frame_comparator.threshold
-        ))
-
         self.file.write(b'RESULTS_SECTION\n')
         self.file.flush()
 

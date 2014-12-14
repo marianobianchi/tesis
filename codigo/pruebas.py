@@ -619,26 +619,27 @@ def ver_canales_e_histogramas_hsv(img_path):
     ax.set_title('Value')
     ax.imshow(img_v, cmap='gray')
 
+    bins = 20
     # Mostrando histogramas de control y HSV
-    hist_g = cv2.calcHist([img_h], [0], None, [60], [0, 180])
+    hist_g = cv2.calcHist([img_h], [0], None, [bins], [0, 180])
     hist_g = cv2.normalize(hist_g)
     ax = fig.add_subplot(2, 3, 4)
     ax.set_title('Histograma H')
-    ax.bar(range(0, 60), hist_g)
+    ax.bar(range(0, bins), hist_g)
     ax.set_yticks(np.arange(0, 1.1, 0.1))
 
-    hist_g = cv2.calcHist([img_s], [0], None, [60], [0, 256])
+    hist_g = cv2.calcHist([img_s], [0], None, [bins], [0, 256])
     hist_g = cv2.normalize(hist_g)
     ax = fig.add_subplot(2, 3, 5)
     ax.set_title('Histograma S')
-    ax.bar(range(0, 60), hist_g)
+    ax.bar(range(0, bins), hist_g)
     ax.set_yticks(np.arange(0, 1.1, 0.1))
 
-    hist_b = cv2.calcHist([img_v], [0], None, [60], [0, 256])
+    hist_b = cv2.calcHist([img_v], [0], None, [bins], [0, 256])
     hist_b = cv2.normalize(hist_b)
     ax = fig.add_subplot(2, 3, 6)
     ax.set_title('Histograma V')
-    ax.bar(np.arange(0, 60), hist_b)
+    ax.bar(np.arange(0, bins), hist_b)
     ax.set_yticks(np.arange(0, 1.1, 0.1))
 
     plt.show()
@@ -747,6 +748,6 @@ def probando_mi_metodo_chebysev():
     ).run()
 
 if __name__ == '__main__':
-    probando_mi_metodo_chebysev()
+    prueba_mejor_canal_hsv_histogramas()
 
 
