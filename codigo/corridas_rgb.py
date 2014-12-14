@@ -1488,6 +1488,239 @@ def correr_find_frame_threshold(objname, objnumber, scenename, scenenumber):
 
         img_provider.restart()
 
+#####################################################
+# Corridas con los valores de parámetros definitivos
+#####################################################
+
+def definitivo_battachayyra_verde(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    template_perc = 0.5
+    template_worst = 1
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    frame_perc = 0.2
+    frame_worst = 1
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+    )
+
+    template_comparator = HistogramComparator(
+        method=find_template_comp_method,
+        perc=template_perc,
+        worst_case=template_worst,
+        reverse=find_template_reverse,
+    )
+    frame_comparator = HistogramComparator(
+        method=find_frame_comp_method,
+        perc=frame_perc,
+        worst_case=frame_worst,
+        reverse=find_frame_reverse,
+    )
+
+    finder = TemplateAndFrameGreenHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    follower = RGBFollower(
+        img_provider,
+        detector,
+        finder
+    )
+
+    FollowingSquemaExploringParameterRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        'definitivo_batta_green_channel',
+        'DEFINITIVOS',
+    ).run()
+
+
+def definitivo_correlation_verde(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_CORREL
+    find_template_perc = 600
+    template_worst = 0.001
+    find_template_reverse = True
+
+    find_frame_comp_method = cv2.cv.CV_COMP_CORREL
+    find_frame_perc = 850
+    frame_worst = 0.001
+    find_frame_reverse = True
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+    )
+
+    template_comparator = HistogramComparator(
+        method=find_template_comp_method,
+        perc=find_template_perc,
+        worst_case=template_worst,
+        reverse=find_template_reverse,
+    )
+    frame_comparator = HistogramComparator(
+        method=find_frame_comp_method,
+        perc=find_frame_perc,
+        worst_case=frame_worst,
+        reverse=find_frame_reverse,
+    )
+
+    finder = TemplateAndFrameGreenHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    follower = RGBFollower(
+        img_provider,
+        detector,
+        finder
+    )
+
+    FollowingSquemaExploringParameterRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        'definitivo_correl_green_channel',
+        'DEFINITIVOS',
+    ).run()
+
+    img_provider.restart()
+
+
+def definitivo_mi_metodo_bhatta_bhatta_bhatta(objname, objnumber,
+                                              scenename, scenenumber):
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/',  # scene path
+        scenename,  # scene
+        scenenumber,  # scene number
+        'videos/rgbd/objs/',  # object path
+        objname,  # object
+        objnumber,  # object number
+    )
+
+    # Detector
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+    )
+
+    # Buscador
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+    channels_comparators = [
+        (0, 40, 180, cv2.cv.CV_COMP_BHATTACHARYYA),
+        (1, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
+        (2, 60, 256, cv2.cv.CV_COMP_BHATTACHARYYA),
+    ]
+    center_point = [0, 0, 0]
+    extern_point = [1, 1, 1]
+    template_perc = 0.6
+    frame_perc = 0.3
+
+
+    finder = FragmentedHistogramFinder(
+        channels_comparators=channels_comparators,
+        center_point=center_point,
+        extern_point=extern_point,
+        distance_comparator=dist.euclidean,
+        template_perc=template_perc,
+        frame_perc=frame_perc,
+        metodo_de_busqueda=metodo_de_busqueda,
+    )
+
+    # Seguidor
+    follower = RGBFollower(img_provider, detector, finder)
+
+    FollowingSquemaExploringParameterRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        'definitivo_mi_metodo_bhatta_bhatta_bhatta',
+        'DEFINITIVO',
+    ).run()
+
+
+def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.6
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.3
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+    )
+
+    template_comparator = HistogramComparator(
+        method=find_template_comp_method,
+        perc=find_template_threshold,
+        worst_case=1,
+        reverse=find_template_reverse,
+    )
+    frame_comparator = HistogramComparator(
+        method=find_frame_comp_method,
+        perc=find_frame_threshold,
+        worst_case=1,
+        reverse=find_frame_reverse,
+    )
+
+    finder = TemplateAndFrameHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    follower = RGBFollower(img_provider, detector, finder)
+
+    FollowingSquemaExploringParameterRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        'definitivo_RGB_staticdet',
+        'DEFINITIVO',
+    ).run()
+
+    img_provider.restart()
 
 
 if __name__ == '__main__':
@@ -1609,17 +1842,34 @@ if __name__ == '__main__':
     # correr_mi_metodo_bhatta_inter_inter_frame_perc('cap', '4', 'desk', '1')
     # correr_mi_metodo_bhatta_inter_inter_frame_perc('bowl', '3', 'desk', '2')
 
+    # print "#################################################################"
+    # print "correr_find_template_threshold"
+    # print "#################################################################"
+    # correr_find_template_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_find_template_threshold('cap', '4', 'desk', '1')
+    # correr_find_template_threshold('bowl', '3', 'desk', '2')
+    #
+    # print "#################################################################"
+    # print "correr_find_frame_threshold"
+    # print "#################################################################"
+    # correr_find_frame_threshold('coffee_mug', '5', 'desk', '1')
+    # correr_find_frame_threshold('cap', '4', 'desk', '1')
+    # correr_find_frame_threshold('bowl', '3', 'desk', '2')
 
-    print "#################################################################"
-    print "correr_find_template_threshold"
-    print "#################################################################"
-    correr_find_template_threshold('coffee_mug', '5', 'desk', '1')
-    correr_find_template_threshold('cap', '4', 'desk', '1')
-    correr_find_template_threshold('bowl', '3', 'desk', '2')
+    definitivo_battachayyra_verde('coffee_mug', '5', 'desk', '1')
+    definitivo_battachayyra_verde('cap', '4', 'desk', '1')
+    definitivo_battachayyra_verde('bowl', '3', 'desk', '2')
 
-    print "#################################################################"
-    print "correr_find_frame_threshold"
-    print "#################################################################"
-    correr_find_frame_threshold('coffee_mug', '5', 'desk', '1')
-    correr_find_frame_threshold('cap', '4', 'desk', '1')
-    correr_find_frame_threshold('bowl', '3', 'desk', '2')
+    definitivo_correlation_verde('coffee_mug', '5', 'desk', '1')
+    definitivo_correlation_verde('cap', '4', 'desk', '1')
+    definitivo_correlation_verde('bowl', '3', 'desk', '2')
+
+    definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    definitivo_rgb_hsv('cap', '4', 'desk', '1')
+    definitivo_rgb_hsv('bowl', '3', 'desk', '2')
+
+    definitivo_mi_metodo_bhatta_bhatta_bhatta('coffee_mug', '5', 'desk', '1')
+    definitivo_mi_metodo_bhatta_bhatta_bhatta('cap', '4', 'desk', '1')
+    definitivo_mi_metodo_bhatta_bhatta_bhatta('bowl', '3', 'desk', '2')
+
+

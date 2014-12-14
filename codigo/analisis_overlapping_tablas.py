@@ -782,12 +782,67 @@ if __name__ == '__main__':
 
     # RGB y HSV
     # Find template threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_staticdet_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_staticdet_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_staticdet_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find frame threshold
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_staticdet_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_staticdet_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_staticdet_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+
+    ##################
+    # DEFINITIVOS
+    ##################
+    # Bhatta verde
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='RGB_staticdet_find_template_threshold',
+        param='definitivo_batta_green_channel',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -795,7 +850,7 @@ if __name__ == '__main__':
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='RGB_staticdet_find_template_threshold',
+        param='definitivo_batta_green_channel',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -803,17 +858,17 @@ if __name__ == '__main__':
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='RGB_staticdet_find_template_threshold',
+        param='definitivo_batta_green_channel',
         path='pruebas_guardadas',
     )
 
-    # Find frame threshold
+    # Correlation verde
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='RGB_staticdet_find_frame_threshold',
+        param='definitivo_correl_green_channel',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -821,7 +876,7 @@ if __name__ == '__main__':
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='RGB_staticdet_find_frame_threshold',
+        param='definitivo_correl_green_channel',
         path='pruebas_guardadas',
     )
     analizar_overlapping_por_parametro(
@@ -829,6 +884,60 @@ if __name__ == '__main__':
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='RGB_staticdet_find_frame_threshold',
+        param='definitivo_correl_green_channel',
         path='pruebas_guardadas',
     )
+
+    # Mi metodo tripe bhatachayyra
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+        path='pruebas_guardadas',
+    )
+
+    # RGB y HSV
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+
+
