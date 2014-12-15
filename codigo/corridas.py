@@ -674,6 +674,85 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
             img_provider.restart()
 
 
+def barrer_(objname, objnumber, scenename, scenenumber):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.004
+    ap_defaults.max_ransac_iters = 1000
+    ap_defaults.points_to_sample = 5
+    ap_defaults.nearest_features_used = 3
+    ap_defaults.simil_threshold = 0.1
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.004
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        detector = StaticDetectorWithModelAlignment(
+            'videos/rgbd/scenes/desk/desk_1.mat',
+            'coffee_mug',
+            ap_defaults=ap_defaults,
+            icp_defaults=icp_detection_defaults,
+            leaf_size=det_obj_scene_leaf,
+            ap_threshold=det_umbral_score,
+            perc_obj_model_pts=det_perc_obj_model_points
+        )
+
+        finder = ICPFinderWithModel(
+            icp_defaults=icp_finder_defaults,
+            umbral_score=find_umbral_score,
+            adapt_area=find_adapt_area,
+            adapt_leaf=find_adapt_leaf,
+            first_leaf_size=find_obj_scene_leaf,
+            perc_obj_model_points=find_perc_obj_model_points,
+        )
+
+        follower = DepthFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        # FollowingSquemaExploringParameterPCD(
+        FollowingSchemeSavingDataPCD(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            # 'find_fixed_search_area',
+            # find_adapt_area.obj_size_times + 1,
+        ).run()
+
+        img_provider.restart()
+
+
 if __name__ == '__main__':
     # barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')  # 4 hs
     # barrer_detection_frame_size('cap', '4', 'desk', '1')  # 4.9 hs
@@ -688,10 +767,15 @@ if __name__ == '__main__':
     # barrer_similarity_threshold('bowl', '3', 'desk', '2')
     #
     # barrer_find_percentage_object('coffee_mug', '5', 'desk', '1')
-    barrer_find_percentage_object('cap', '4', 'desk', '1')
+    # barrer_find_percentage_object('cap', '4', 'desk', '1')
     # barrer_find_percentage_object('bowl', '3', 'desk', '2')
 
     # barrer_fixed_search_area('coffee_mug', '5', 'desk', '1')
     # barrer_fixed_search_area('cap', '4', 'desk', '1')
     # barrer_fixed_search_area('bowl', '3', 'desk', '2')
+
+
+    barrer_('coffee_mug', '5', 'desk', '1')
+    barrer_('cap', '4', 'desk', '1')
+    barrer_('bowl', '3', 'desk', '2')
 

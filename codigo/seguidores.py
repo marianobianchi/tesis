@@ -4,6 +4,7 @@ from __future__ import (unicode_literals, division)
 
 import cv2
 
+from cpp.common import points
 
 class Follower(object):
     """
@@ -107,7 +108,14 @@ class Follower(object):
 class DepthFollower(Follower):
     def train(self):
         obj_model = self.img_provider.obj_pcd()
-        self._obj_descriptors.update({'obj_model': obj_model})
+        pts = points(obj_model)
+        self._obj_descriptors.update(
+            {
+                'obj_model': obj_model,
+                'obj_model_points': pts,
+            }
+        )
+
 
     def descriptors(self):
         desc = super(DepthFollower, self).descriptors()

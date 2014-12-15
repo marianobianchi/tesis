@@ -145,6 +145,23 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
 
 
 class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
+    def __init__(self, matfile_path, obj_rgbd_name, ap_defaults=APDefaults(),
+                 icp_defaults=ICPDefaults(), leaf_size=0.002,
+                 ap_threshold=1e-3, perc_obj_model_pts=0.5):
+        (super(StaticDetectorWithModelAlignment, self)
+         .__init__(matfile_path, obj_rgbd_name))
+        self._ap_defaults = ap_defaults
+        self._icp_defaults = icp_defaults
+
+        # El tamaño del radio de la esfera para buscar puntos en la escena
+        self.leaf_size = leaf_size
+
+        # Umbral de aceptacion para alignment prerejective
+        self.ap_threshold = ap_threshold
+
+        # Porcentaje minimo de puntos del modelo que deben detectarse
+        self.perc_obj_model_pts = perc_obj_model_pts
+
     def calculate_descriptors(self, detected_descriptors):
         """
         Obtengo la nube de puntos correspondiente a la ubicacion y region
@@ -156,36 +173,25 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         )
 
         model_cloud = self._descriptors['obj_model']
+
+        # Esta es la nube de puntos proveniente de filtrar el cuadrado marcado
+        # por la base de datos en la imagen RGB
         detected_cloud = detected_descriptors['object_cloud']
 
+        # Voy a intentar filtrar aun mas esta nube de puntos alineandola con el
+        # modelo
         # Calculate alignment prerejective
-        ap_defaults = APDefaults()
-        ap_defaults.leaf = 0.004
-        ap_defaults.max_ransac_iters = 1000
-        ap_defaults.points_to_sample = 5
-        ap_defaults.nearest_features_used = 3
-        ap_defaults.simil_threshold = 0.1
-        ap_defaults.inlier_threshold = 1.5
-        ap_defaults.inlier_fraction = 0.7
-        #ap_defaults.show_values = True
+        ap_result = align(model_cloud, detected_cloud, self._ap_defaults)
 
-        ap_result = align(model_cloud, detected_cloud, ap_defaults)
-
-        # show_clouds(
-        #     b"alineacion en zona de deteccion",
-        #     detected_cloud,
-        #     ap_result.cloud
-        # )
+        show_clouds(
+            b"alineacion en zona de deteccion",
+            detected_cloud,
+            ap_result.cloud
+        )
 
         if ap_result.has_converged:
             # Calculate ICP
-            icp_defaults = ICPDefaults()
-            icp_defaults.euc_fit = 1e-15
-            icp_defaults.max_corr_dist = 3
-            icp_defaults.max_iter = 50
-            icp_defaults.transf_epsilon = 1e-15
-            # icp_defaults.show_values = True
-            icp_result = icp(ap_result.cloud, detected_cloud, icp_defaults)
+            icp_result = icp(ap_result.cloud, detected_cloud, self._icp_defaults)
 
             # show_clouds(
             #     b"icp de alineacion en zona de deteccion",
@@ -199,7 +205,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
                 obj_scene_cloud = filter_object_from_scene_cloud(
                     icp_result.cloud,  # object
                     detected_cloud,  # scene
-                    0.001,  # radius
+                    self.leaf_size,  # radius
                     False,  # show values
                 )
 
@@ -214,7 +220,8 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
                     'min_z_cloud': minmax.min_z,
                     'max_z_cloud': minmax.max_z,
                     'object_cloud': obj_scene_cloud,
-                    'obj_model': obj_scene_cloud,
+                    'detected_cloud': obj_scene_cloud,
+                    'obj_model': icp_result.cloud,
                 })
 
         return detected_descriptors
@@ -267,7 +274,7 @@ class AutomaticDetection(Detector):
 
     def detect(self):
         model_cloud = self._descriptors['obj_model']
-        model_cloud_points = points(model_cloud)
+        model_cloud_points = self._descriptors['obj_model_points']
 
         accepted_points = model_cloud_points * self.perc_obj_model_points
 
