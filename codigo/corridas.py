@@ -678,7 +678,7 @@ def barrer_(objname, objnumber, scenename, scenenumber):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.004
-    ap_defaults.max_ransac_iters = 1000
+    ap_defaults.max_ransac_iters = 100
     ap_defaults.points_to_sample = 5
     ap_defaults.nearest_features_used = 3
     ap_defaults.simil_threshold = 0.1
@@ -722,7 +722,7 @@ def barrer_(objname, objnumber, scenename, scenenumber):
             ap_defaults=ap_defaults,
             icp_defaults=icp_detection_defaults,
             leaf_size=det_obj_scene_leaf,
-            ap_threshold=det_umbral_score,
+            icp_threshold=det_umbral_score,
             perc_obj_model_pts=det_perc_obj_model_points
         )
 
