@@ -77,21 +77,16 @@ class StaticDetector(Detector):
 
         return fue_exitoso, detected_descriptors
 
-    def calculate_descriptors(self, desc):
-        img = self._descriptors['scene_rgb']
-        img = img[desc['topleft'][0]:desc['bottomright'][0],
-                  desc['topleft'][1]: desc['bottomright'][1]]
-        desc.update({'object_frame': img})
-        # cv2.imwrite('gorra_encontrada.png', img)
-        return desc
 
+class DepthStaticDetectorWithPCDFiltering(StaticDetector):
+    def detect(self):
+        fue_exitoso, detected_descriptors = (
+            super(DepthStaticDetectorWithPCDFiltering, self).detect()
+        )
 
-class StaticDetectorWithPCDFiltering(StaticDetector):
-    def calculate_descriptors(self, detected_descriptors):
-        """
-        Obtengo la nube de puntos correspondiente a la ubicacion y region
-        pasadas por parametro.
-        """
+        # Si lo que se detecto en RGB no posee la cantidad de puntos minimos
+        # necesarios en depth, se considera no detectado aunque la BD diga lo
+        # contrario
         ubicacion = detected_descriptors['location']
         tam_region = detected_descriptors['size']
 
@@ -141,10 +136,22 @@ class StaticDetectorWithPCDFiltering(StaticDetector):
             }
         )
 
-        return detected_descriptors
+        accepted_points = (
+            self._descriptors['obj_model_points'] * self.perc_obj_model_pts
+        )
+        if points(cloud) < accepted_points:
+            detected_descriptors = {
+                'size': 0,
+                'location': (0, 0),  # location=(fila, columna)
+                'topleft': (0, 0),
+                'bottomright': (0, 0),
+            }
+            fue_exitoso = False
+
+        return fue_exitoso, detected_descriptors
 
 
-class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
+class StaticDetectorWithModelAlignment(DepthStaticDetectorWithPCDFiltering):
     def __init__(self, matfile_path, obj_rgbd_name, ap_defaults=APDefaults(),
                  icp_defaults=ICPDefaults(), leaf_size=0.002,
                  icp_threshold=1e-3, perc_obj_model_pts=0.5):
@@ -173,7 +180,7 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         )
 
         model_cloud = self._descriptors['obj_model']
-        scene_cloud = self._descriptors['pcd']
+        # scene_cloud = self._descriptors['pcd']
 
         # Esta es la nube de puntos proveniente de filtrar el cuadrado marcado
         # por la base de datos en la imagen RGB
@@ -538,8 +545,12 @@ class RGBTemplateDetector(Detector):
 
 class StaticDetectorForRGBFinder(StaticDetector):
     def calculate_descriptors(self, desc):
-        desc = (super(StaticDetectorForRGBFinder, self)
-                .calculate_descriptors(desc))
+        img = self._descriptors['scene_rgb']
+        img = img[desc['topleft'][0]:desc['bottomright'][0],
+                  desc['topleft'][1]: desc['bottomright'][1]]
+        desc.update({'object_frame': img})
+        # cv2.imwrite('gorra_encontrada.png', img)
+
         desc['object_template'] = self._descriptors['object_templates'][0]
         desc['object_mask'] = self._descriptors['object_masks'][0]
         return desc

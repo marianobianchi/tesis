@@ -7,7 +7,7 @@ from cpp.icp import ICPDefaults
 
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from metodos_comunes import AdaptLeafRatio, AdaptSearchArea, FixedSearchArea
-from detectores import StaticDetector, StaticDetectorWithPCDFiltering, \
+from detectores import StaticDetector, DepthStaticDetectorWithPCDFiltering, \
     StaticDetectorWithModelAlignment, AutomaticDetection
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
     FollowingSquemaExploringParameterPCD
@@ -57,7 +57,7 @@ def icp_sin_modelo():
         '5',  # object number
     )
 
-    detector = StaticDetectorWithPCDFiltering(
+    detector = DepthStaticDetectorWithPCDFiltering(
         'videos/rgbd/scenes/desk/desk_1.mat',
         'coffee_mug'
     )
