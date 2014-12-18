@@ -22,12 +22,7 @@ class FrameNamesAndImageProvider(object):
         self.scene = scene
         self.scene_number = scene_number
 
-        obj_path = os.path.join(obj_path, obj)
-        obj_path = os.path.join(obj_path, obj + '_' + obj_number)
-        self.obj_path = obj_path
-        self.obj = obj
-        self.obj_number = obj_number
-        self.obj_scene_nums = self._get_obj_scene_numbers()
+        self._initialize_object(obj_path, obj, obj_number)
 
         # get the number of frames available
         filenames = os.listdir(scene_path)
@@ -43,6 +38,18 @@ class FrameNamesAndImageProvider(object):
         self.offset_frame_count = 1
         self.next_frame_number = self.offset_frame_count
         self.last_frame_number = last_frame_number
+
+    def _initialize_object(self, obj_path, obj, obj_number):
+        self.base_objs_path = obj_path
+        obj_path = os.path.join(obj_path, obj)
+        obj_path = os.path.join(obj_path, obj + '_' + obj_number)
+        self.obj_path = obj_path
+        self.obj = obj
+        self.obj_number = obj_number
+        self.obj_scene_nums = self._get_obj_scene_numbers()
+
+    def reinitialize_object(self, obj, obj_number):
+        self._initialize_object(self.base_objs_path, obj, obj_number)
 
     def _get_obj_scene_numbers(self):
         reg_text = '{o}_{n}_(?P<scene>\d+)_\d+.*'.format(

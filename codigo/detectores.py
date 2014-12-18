@@ -205,16 +205,19 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
         # Corro varias veces alignment e icp tratando de hacer bien la
         # alineacion
         transformed_model_cloud = model_cloud
-        show_clouds(
-            b'Objeto detectado cuadrado vs escena',
-            scene_cloud,
-            detected_cloud,
-        )
-        show_clouds(
-            b'Modelo vs objeto detectado cuadrado',
-            model_cloud,
-            detected_cloud,
-        )
+        # show_clouds(
+        #     b'Objeto detectado cuadrado vs escena',
+        #     scene_cloud,
+        #     detected_cloud,
+        # )
+        # show_clouds(
+        #     b'Modelo vs objeto detectado cuadrado',
+        #     model_cloud,
+        #     detected_cloud,
+        # )
+        best_result_cloud = None
+        best_threshold = self.icp_threshold
+
         for i in range(3):
             # Calculate alignment
             ap_result = align(
@@ -224,73 +227,72 @@ class StaticDetectorWithModelAlignment(StaticDetectorWithPCDFiltering):
             )
 
             # Calculate ICP
-            if not ap_result.has_converged:
-                icp_res = icp(
-                    transformed_model_cloud,
-                    detected_cloud,
-                    self._icp_defaults
-                )
-            else:
+            if ap_result.has_converged:
                 transformed_model_cloud = ap_result.cloud
-                icp_res = icp(
-                    transformed_model_cloud,
-                    detected_cloud,
-                    self._icp_defaults
-                )
+
+            icp_res = icp(
+                transformed_model_cloud,
+                detected_cloud,
+                self._icp_defaults
+            )
 
             if icp_res.has_converged:
                 transformed_model_cloud = icp_res.cloud
 
-            if icp_res.has_converged and icp_res.score < self.icp_threshold:
-                # Filtro los puntos de la escena que se corresponden con el
-                # objeto que estoy buscando
-                show_clouds(
-                    b'Modelo detectado vs escena',
-                    scene_cloud,
-                    transformed_model_cloud,
-                )
-                obj_scene_cloud = filter_object_from_scene_cloud(
-                    icp_res.cloud,  # object
-                    detected_cloud,  # complete scene
-                    self.leaf_size,  # radius
-                    False,  # show values
-                )
-                show_clouds(
-                    b'Modelo detectado y filtrado vs escena',
-                    scene_cloud,
-                    obj_scene_cloud,
-                )
+            if icp_res.has_converged and icp_res.score < best_threshold:
+                best_threshold = icp_res.score
+                best_result_cloud = icp_res.cloud
 
-                obj_scene_points = points(obj_scene_cloud)
+                # show_clouds(
+                #     b'Modelo detectado vs escena',
+                #     scene_cloud,
+                #     transformed_model_cloud,
+                # )
 
-                fue_exitoso = obj_scene_points > accepted_points
+        if best_result_cloud is not None:
+            # Filtro los puntos de la escena que se corresponden con el
+            # objeto que estoy buscando
+            obj_scene_cloud = filter_object_from_scene_cloud(
+                best_result_cloud,  # object
+                detected_cloud,  # partial scene
+                self.leaf_size,  # radius
+                False,  # show values
+            )
+            # show_clouds(
+            #     b'Modelo detectado y filtrado vs escena',
+            #     scene_cloud,
+            #     obj_scene_cloud,
+            # )
 
-                if fue_exitoso:
-                    minmax = get_min_max(obj_scene_cloud)
+            obj_scene_points = points(obj_scene_cloud)
 
-                    detected_descriptors.update({
-                        'min_x_cloud': minmax.min_x,
-                        'max_x_cloud': minmax.max_x,
-                        'min_y_cloud': minmax.min_y,
-                        'max_y_cloud': minmax.max_y,
-                        'min_z_cloud': minmax.min_z,
-                        'max_z_cloud': minmax.max_z,
-                        'object_cloud': obj_scene_cloud,
+            extraccion_exitosa = obj_scene_points > accepted_points
 
-                        # original model transformed
-                        'obj_model': transformed_model_cloud,
+            if extraccion_exitosa:
+                minmax = get_min_max(obj_scene_cloud)
 
-                        # lo guardo solo para que se guarde la nube de puntos
-                        # cuando hago las corridas
-                        'detected_cloud': transformed_model_cloud,
-                    })
+                detected_descriptors.update({
+                    'min_x_cloud': minmax.min_x,
+                    'max_x_cloud': minmax.max_x,
+                    'min_y_cloud': minmax.min_y,
+                    'max_y_cloud': minmax.max_y,
+                    'min_z_cloud': minmax.min_z,
+                    'max_z_cloud': minmax.max_z,
+                    'object_cloud': obj_scene_cloud,
 
-                    show_clouds(
-                        b'Modelo detectado vs escena',
-                        scene_cloud,
-                        transformed_model_cloud,
-                    )
-                    break
+                    # original model transformed
+                    'obj_model': transformed_model_cloud,
+
+                    # lo guardo solo para que se guarde la nube de puntos
+                    # cuando hago las corridas
+                    'detected_cloud': transformed_model_cloud,
+                })
+
+                # show_clouds(
+                #     b'Extraccion EXITOSA. Viendo objeto transformado',
+                #     scene_cloud,
+                #     transformed_model_cloud,
+                # )
 
         return detected_descriptors
 
