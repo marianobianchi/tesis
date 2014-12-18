@@ -30,13 +30,13 @@ Para esta primera etapa existen varias posibilidades distintas que van desde uti
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{0.5\textwidth}
+	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/primercuadrante.png}
 		\caption{Primer frame de búsqueda}
 		\label{frames_solapados_1}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{0.5\textwidth}
+	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/segundocuadrante.png}
 		\caption{Segundo frame de búsqueda}
 		\label{frames_solapados_2}
@@ -117,23 +117,23 @@ Cosas a escribir:
 La utilización del algoritmo ICP \cite{zhang94icp,besl92icp} para realizar el seguimiento resulta natural e intuitiva. Por ello, es que en esta tesis se estudiará el algoritmo ICP y sus variantes \cite{estepar2004robust,segal2009generalized}, con el fin de evaluar cómo sus parámetros afectan cuantitativamente al sistema de seguimiento y la performance computacional del mismo. Asimismo, se evaluará la adaptabilidad del filtro de Kalman \cite{welch1995introduction} para seguimiento de objetos 3D en imágenes RGB-D con posibilidad de desempeño en tiempo real. El filtro de Kalman es un filtro muy popular y estudiado extensivamente en la literatura \cite{julier1997new,wan2000unscented} debido a su gran desempeño para realizar seguimiento en imágenes 2D. Por lo tanto, su aplicación en seguimiento de objetos 3D resulta de especial interés.
 
 \section{Elección de parámetros}\label{eleccion_parametros}
+
 \begin{table}[h]
+\scriptsize
     \begin{tabular}{|l|*{3}{c|}*{3}{c|}*{3}{c|}}
         \hline 
-	    Método & \multicolumn{3}{|c|}{coffee\_mug\_5} & \multicolumn{3}{|c|}{cap\_4} & \multicolumn{3}{|c|}{bowl\_3}\\
-	    \hline 
-         & \% Over. & STD & \% foll. & \% Over. & STD & \% foll. & \% Over. & STD & \% foll. \\
-        \hline
-        \textbf{Bhatta. ch. verde} & 38.52 & 32.5 & 85.53 & 54.37 & 18.52 & 87.8 & 64.95 & 43.44 & 40\\
-        \hline
-        	Correl. ch. verde & 21.68 & 31.54 & 90.79 & 49.88 & 11.07 & 97.56 & 46.84 & 44.30 & 60.91\\
-	    \hline
-	    Bhatta. x canal & 33.76 & 20.11 & 94.74 & 49.95 & 14.01 & 95.12 & 10.96 & 22.78 & 97.27\\
-	    \hline
-	    RGB y HSV & 39.32 & 25.19 & 92.11 & 56.69 & 21.39 & 82.93 & 73.32 & 40.7 & 30.91\\
-	    \hline
+    Método & \multicolumn{3}{|c|}{coffee\_mug\_5} & \multicolumn{3}{|c|}{cap\_4} & \multicolumn{3}{|c|}{bowl\_3}\\
+    \hline 
+                  & \% Over. & STD & \% foll. & \% Over. & STD & \% foll. & \% Over. & STD & \% foll. \\
+    \hline
+    \textbf{Bhatta. ch. verde} & 38.52 & 32.50 & 85.53 & 54.37 & 18.52 & 87.80 & 64.95 & 43.44 & 40.00\\
+    \hline
+    Correl. ch. verde          & 21.68 & 31.54 & 90.79 & 49.88 & 11.07 & 97.56 & 46.84 & 44.30 & 60.91\\
+    \hline
+    Bhatta. x canal            & 33.76 & 20.11 & 94.74 & 49.95 & 14.01 & 95.12 & 10.96 & 22.78 & 97.27\\
+    \hline
+    RGB y HSV                  & 39.32 & 25.19 & 92.11 & 56.69 & 21.39 & 82.93 & 73.32 & 40.70 & 30.91\\
+    \hline
     \end{tabular}
-	\caption{}
+\caption{Corregir valores!}
 \end{table}
-
-

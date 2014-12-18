@@ -37,6 +37,10 @@ class BusquedaAlrededorCambiandoFrameSize(object):
     def get_positions_and_framesizes(self, topleft, bottomright,
                                      template_filas, template_columnas,
                                      filas, columnas):
+        # Como manejo porcentajes, puede ser que repita frames. Los acumulo para
+        # descartar los repetidos
+        puntos_ya_visitados = set()
+
         top, left = topleft
 
         original_height = template_filas
@@ -44,26 +48,41 @@ class BusquedaAlrededorCambiandoFrameSize(object):
 
         for tam_diff in [0.75, 1, 1.25]:
 
-            height = max(int(original_height * tam_diff), 1)
-            width = max(int(original_width * tam_diff), 1)
+            height = max(int(original_height * tam_diff), 2)
+            width = max(int(original_width * tam_diff), 2)
 
-            diff = 0.25
+            # Voy a ir desplazando de a diff pixeles
+            diff = max(int(0.25 * min(height, width)), 1)
 
             for i in [1, 2, 3, 4]:
-                actual_diff = diff * i
-                actual_x_diff = height * actual_diff
-                actual_y_diff = width * actual_diff
-                x = top - actual_x_diff
-                y = left - actual_y_diff
+                # Diferencia entre la esquina superior izquierda inicial y la
+                # que estoy explorando ahora
+                starting_diff = diff * i
 
-                for x_move in range(3):
-                    for y_move in range(3):
-                        next_x = x + x_move * actual_x_diff
-                        next_y = y + y_move * actual_y_diff
+                # Nueva coordenada para la esquina superior izquierda en la
+                # busqueda
+                x = top - starting_diff
+                y = left - starting_diff
+
+                # Calculando cuantas veces entra el cuadrante en la zona de
+                # busqueda si me desplazo de a diff pixeles
+                x_most_bottom = top + height + starting_diff
+                y_most_right = left + width + starting_diff
+                cant_repes_x = int((x_most_bottom - (x + height) + 1) / diff)
+                cant_repes_y = int((y_most_right - (y + width) + 1) / diff)
+
+                for x_move in range(cant_repes_x):
+                    for y_move in range(cant_repes_y):
+                        next_x = int(x + x_move * diff)
+                        next_y = int(y + y_move * diff)
                         if (0 <= next_x < next_x + height <= filas and
                                 0 <= next_y < next_y + width <= columnas):
-                            yield ((next_x, next_y),
-                                   (next_x + height, next_y + width))
+                            new_topleft = (next_x, next_y)
+                            new_bottomright = (next_x + height, next_y + width)
+
+                            if not (new_topleft, new_bottomright) in puntos_ya_visitados:
+                                puntos_ya_visitados.add((new_topleft, new_bottomright))
+                                yield (new_topleft, new_bottomright)
 
 
 class BusquedaPorFramesSolapados(object):

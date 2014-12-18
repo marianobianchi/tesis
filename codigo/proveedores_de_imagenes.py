@@ -40,8 +40,7 @@ class FrameNamesAndImageProvider(object):
                 last_frame_number = frame_number
 
         # Set initial and last frame number
-        print "CAMBIAR INICIO"
-        self.offset_frame_count = 95
+        self.offset_frame_count = 1
         self.next_frame_number = self.offset_frame_count
         self.last_frame_number = last_frame_number
 
