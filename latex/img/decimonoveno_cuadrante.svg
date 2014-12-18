@@ -15,7 +15,10 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.48.4 r9939"
-   sodipodi:docname="sexto_cuadrante.svg">
+   sodipodi:docname="sexto_cuadrante.svg"
+   inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
+   inkscape:export-xdpi="90"
+   inkscape:export-ydpi="90">
   <defs
      id="defs4">
     <linearGradient
@@ -48,10 +51,10 @@
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="true"
-     inkscape:window-width="1301"
-     inkscape:window-height="744"
-     inkscape:window-x="65"
-     inkscape:window-y="24"
+     inkscape:window-width="1366"
+     inkscape:window-height="713"
+     inkscape:window-x="0"
+     inkscape:window-y="27"
      inkscape:window-maximized="1"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -100,7 +103,7 @@
        height="120"
        x="2.8571429"
        y="775.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -110,7 +113,7 @@
        height="120"
        x="122.85714"
        y="775.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -120,7 +123,7 @@
        height="120"
        x="242.85715"
        y="775.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -130,7 +133,7 @@
        height="120"
        x="2.8571429"
        y="895.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -140,7 +143,7 @@
        height="120"
        x="122.85714"
        y="895.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -150,7 +153,7 @@
        height="120"
        x="242.85715"
        y="895.21936"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -160,7 +163,7 @@
        height="120"
        x="2.8571429"
        y="1015.2194"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -170,7 +173,7 @@
        height="120"
        x="122.85714"
        y="1015.2194"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -180,7 +183,7 @@
        height="120"
        x="242.85715"
        y="1015.2194"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <rect
@@ -188,9 +191,9 @@
        id="rect2997-8"
        width="120"
        height="120"
-       x="1.4285606"
-       y="835.21942"
-       inkscape:export-filename="/home/mbianchi/tesis/latex/img/sextocuadrante.png"
+       x="182.85713"
+       y="953.79083"
+       inkscape:export-filename="/home/mbianchi/tesis/latex/img/decimonoveno_cuadrante.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
   </g>

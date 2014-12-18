@@ -1,81 +1,108 @@
-\section{Trabajo relacionado}
+\chapter{Sistema de seguimiento}
 
-En el artículo \cite{park2011texture} se implementan las tres etapas de un sistema de seguimiento nombradas anteriormente. Cada una de estas etapas es abordada de distintas maneras según la literatura actual.
-La etapa de entrenamiento consiste en obtener una representación tridimensional del objeto al cuál se pretende seguir. En el artículo \cite{drummond1999real} se utiliza un entrenamiento off-line que consiste en obtener un modelo CAD (computer-aided design) del objeto que se desea seguir. Luego, en el artículo \cite{park2011texture} se presenta una etapa de entrenamiento novedosa que se realiza de manera on-line, en donde utiliza un marcador conocido para definir las coordenadas de los objetos y calibrar la cámara.
+Un sistema de seguimiento se puede dividir en tres etapas bien definidas:
+\begin{enumerate}
+ \item Entrenamiento
+ \item Detección
+ \item Seguimiento cuadro a cuadro
+\end{enumerate}
 
-La etapa de detección tiene como objetivo obtener la ubicación del objeto a seguir en un frame dado. En el artículo \cite{park2011texture} utilizan el método propuesto en \cite{hinterstoisser2010dominant} para detección de objetos en imágenes 2D y lo extienden para estimar la pose 3D. Otros métodos conocidos en la literatura son los propuestos en \cite{brunelli2009template,korman13fast}. 
+La etapa de entrenamiento consiste en obtener una representación del objeto al cuál se pretende seguir. Para llevarla a cabo se puede utilizar un patrón (template) ya conocido o aprenderlo de imágenes capturadas del mismo objeto. Luego se utiliza en la detección para ubicar la representación del objeto dentro de una imagen cualquiera. Una vez conocido el template no se requiere de una nueva ejecución del entrenamiento.
 
-La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. En el artículo \cite{park2011texture} utilizan el algoritmo ``Iterative Closest Point'' (ICP) propuesto en \cite{zhang94icp,besl92icp}, refinando el resultado con datos de bordes tomados durante la fase de entrenamiento. El método utilizado por \cite{drummond1999real} se basa en la detección de bordes para realizar el seguimiento frame a frame.
+La segunda etapa, la de detección, radica en encontrar dentro de un frame del video al objeto en cuestión utilizando el método de detección deseado, valiéndose de la información obtenida en la etapa de entrenamiento. Esta etapa se ejecuta, con el propósito de encontrar en la imagen el objeto a seguir, al comienzo del sistema de seguimiento y cuando el seguimiento cuadro a cuadro falla. Dado que la etapa de detección suele ser la más costosa en términos de desempeño computacional es deseable que se ejecute la menor cantidad de veces posible.
 
-\section{Base de datos RGB-D}\label{base_rgbd}
-Durante el desarrollo de este trabajo se utilizaron datos de imágenes RGB-D anotados para aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Los datos fueron tomados del trabajo \cite{lai2011large} en donde se creó una base de objetos y escenas anotada frame a frame. Esta base cuenta por un lado con varias escenas. Cada una de ellas consta de varios frames RGB con su respectiva información de profundidad. Además, la base provee información frame a frame de qué objetos aparecen y cuál es su ubicación en el plano RGB.
+Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detectado en la etapa anterior. Es decir, teniendo la ubicación del objeto en un cuadro de video se desea identificar la posición del mismo objeto en el siguiente frame. Esta etapa es la más importante ya que es la que se ejecuta en cada frame del video. La eficiencia del método de seguimiento es lo que determinará que todo el sistema de seguimiento se consiga realizar eficientemente. Si la técnica de seguimiento tiene una efectividad baja, es decir, no logra identificar la nueva posición del objeto en el siguiente cuadro, se debe volver a la etapa de detección cuyo desempeño computacional es mayor.
 
-Por otra parte, la base provee imágenes RGB de los objetos anotados frame a frame en las escenas antes mencionadas. Para tomar estas imágenes los objetos fueron posados en una base circular giratoria y manteniendo la cámara en una posición fija se tomaron muestras con cierta regularidad cubriendo toda la circunferencia de cada objeto. Esto se hizo además desde distintas alturas permitiendo apreciar la profundidad del objeto y así obtener una mejor descripción del mismo. Cada una de estas imágenes es acompañada además por una máscara que segmenta al objeto buscado y la información de profundidad (nube de puntos) del objeto segmentado.
+Tomando como base estas etapas, proponemos distintos métodos para cada una de ellas tanto para RGB como para D y RGB-D. La primera etapa del sistema puede ser prescindible si contamos con el modelo RGB-D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
 
-Los objetos elegidos para esta base se organizaron de una manera jerárquica tomada de las relaciones hiperónimo/hipónimo de WordNet. Cada objeto pertenece a una clase de objetos y hay varias instancias por cada clase. Por ejemplo, en la categoría ``taza'' existen varias instancias diferentes, que se corresponden simplemente a distintas tazas ya sea por forma o por color.
+\section{Método propuesto RGB}
+\subsection{Entrenamiento}
+\subsection{Detección}
+\subsection{Seguimiento}
 
-Existen distintas escenas que contienen a los objetos mencionados y en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase. De esta manera la base otorga la posibilidad de generar algoritmos capaces de identificar instancias de objetos particulares o familias de objetos según la clasificación antes mencionada.
+\section{Método propuesto en D}
+\subsection{Alignment prerejective}\label{alignment_prerejective}
 
+\subsection{Iterative Closest Point (ICP)}
 
-\section{Alignment prerejective}\label{alignment_prerejective}
-
-\section{Iterative Closest Point (ICP)}
-
-\section{Esquema de seguimiento}
-Cosas a escribir:
-\begin{itemize}
-	\item cómo separé las etapas en el código y por qué
-	\item cómo se "comunican"
-\end{itemize}
-
-
-\section{Método propuesto}\label{metodo_propuesto}
-Tomando como base las etapas antes mencionadas, proponemos distintos métodos para cada una de ellas. La primera etapa del sistema puede ser prescindible si contamos con el modelo 3D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
-Para esta primer etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D. Lo ideal sería que esta nube de puntos sea lo más completa posible, acercándose así al modelo 3D completo del objeto pero esto no es muy factible ni se puede obtener desde la base que usamos. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto que otorga la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado. Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la primera según orden alfanumérico del nombre del archivo proveniente de la base.
+Para esta primera etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. \comentarioM{La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D.}\comentarioP{Quedó afuera porque nos enfocamos en tracking} Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la que posee rotación 0. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto presentes en la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado.
 
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{0.25\textwidth}
+	\begin{subfigure}[b]{0.5\textwidth}
 		\includegraphics[width=\textwidth]{img/primercuadrante.png}
 		\caption{Primer frame de búsqueda}
 		\label{frames_solapados_1}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{0.25\textwidth}
+	\begin{subfigure}[b]{0.5\textwidth}
 		\includegraphics[width=\textwidth]{img/segundocuadrante.png}
 		\caption{Segundo frame de búsqueda}
 		\label{frames_solapados_2}
 	\end{subfigure}	
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/sextocuadrante.png}
-		\caption{Sexto frame de búsqueda}
+		\includegraphics[width=\textwidth]{img/decimonovenocuadrante.png}
+		\caption{$19^{\circ}$ frame de búsqueda}
 		\label{frames_solapados_3}
 	\end{subfigure}
 	\caption{Se busca en cada cuadrante de la grilla y en los recuadros del mismo tamaño que cubren los bordes de la grilla principal}
 	\label{frames_solapados}
 \end{figure}
 
-Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. A través de estas pruebas se pudo observar que el método era robusto para ciertos valores de los parámetros y un objeto en particular pero que al cambiar de objeto los valores de los parámetros debían ser modificados para lograr una detección. También se observó en las pruebas que si la escena donde se buscaba el objeto era lo suficientemente pequeña, la búsqueda volvía a ser robusta no solo para un objeto en particular sino para aquellos elegidos para estas pruebas. Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tenía como primer etapa obtener el alto y el ancho del modelo del objeto y multiplicarlos por un cierto valor, llamado \param{detection\_frame\_size}. Considerando estos valores dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Como el objeto a detectar puede haber quedado justo entre dos cuadrantes, la división se hizo de manera tal que estos cuadrantes se solapen entre si, como puede observarse en el gráfico \ref{frames_solapados} \comentarioM{Notar que la división no se hizo en el eje de la profundidad ya que las pruebas preeliminares dieron buenos resultados de esta manera y hacer eso implicaba agregarle complejidad algoritmica al método.} o \comentarioM{Notar que esta división solo se hizo en los ejes ``x'' e ``y'' y no en el eje ``z''}. La detección se corre en cada uno de estos cuadrantes y pueden suceder varias cosas:
+Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas también se observó que si la región donde se buscaba el objeto era lo suficientemente pequeña la búsqueda era más robusta.\comentarioP{Mejor más chica?} Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos según un valor, llamado \param{detection\_frame\_size}. Considerando estos valores dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en el gráfico \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje de profundidad ya que las pruebas preeliminares dieron buenos resultados de esta manera y hacer eso implicaba agregarle complejidad algoritmica al método. La detección se corre en cada uno de estos cuadrantes y pueden suceder varias cosas:
 \begin{itemize}
 	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
 	\item Se encontró el objeto en un cuadrante
-	\item Se encontró el objeto en varios cuadrantes: el algoritmo devuelve la mejor alineación encontrada
+	\item Se encontró el objeto en varios cuadrantes: el algoritmo devuelve la mejor posición encontrada según un puntaje de buena alineación devuelto por el algoritmo \ap.
 \end{itemize}
 
-Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el método ``alignment prerejective'' y el cuadrante de la escena donde fue encontrado el mismo. Para tratar de mejorar aún más el resultado y con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando frame a frame, ya sea por movimientos de la cámara o del objeto. Dado que el modelo con el que se cuenta es incompleto, como se explicó en la etapa de entrenamiento, es preferible contar con el objeto de la escena en vez del modelo del objeto. Una de las formas para obtener los puntos del modelo del objeto en la escena es utilizando un k-dtree. Se arma un k-dtree con los puntos provenientes del modelo alineado y se filtran uno a uno los puntos de la escena que se encuentren cerca de al menos un punto del modelo en un cierto radio de distancia. Este valor de radio es uno de los parámetros explorados durante las pruebas, llamado \param{leaf\_size}. Los puntos que surjan de esta búsqueda son los considerados encontrados en la escena. Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la siguiente etapa, la de seguimiento. Si cualquiera de estos pasos fallara, se comienza nuevamente con la etapa de detección en el siguiente frame.
+Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el método ``alignment prerejective'' y el cuadrante de la escena donde fue encontrado el mismo. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una de las formas para obtener los puntos del modelo del objeto en la escena es utilizando un \kdt\footnote{AGREGAR REFERENCIA A KDTREE}. \comentarioP{Explicar un poco que es un kdtree} Se arma un \kdt con los puntos provenientes del modelo alineado y se filtran uno a uno los puntos de la escena que se encuentren cerca de al menos un punto del modelo en un cierto radio de distancia. Este valor de radio es uno de los parámetros explorados durante las pruebas, llamado \param{leaf\_size}. Los puntos que surjan de esta búsqueda son los considerados encontrados en la escena. Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la siguiente etapa de seguimiento. Si cualquiera de estos pasos fallara, se comienza nuevamente con la etapa de detección en el siguiente frame.
 
-La tercera y última etapa
+La tercera y última etapa BLABLABLA
 
+\subsection{Entrenamiento}
 
-
-
-
-
+\subsection{Detección}
 
 
+\subsection{Seguimiento}
 
+\section{Método propuesto en RGB-D}
+
+\subsection{Entrenamiento}
+
+\subsection{Detección}
+
+\subsection{Seguimiento}
+
+
+
+
+
+
+
+
+
+
+\chapter{Base de datos RGB-D}\label{base_rgbd}
+Durante el desarrollo de este trabajo se utilizaron secuencias con información de ground truth de imágenes RGB-D anotadas para aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Las escenas fueron tomados del trabajo \cite{lai2011large} en donde se creó una base de objetos y escenas. Esta base cuenta con varias escenas. Cada una de ellas consta de varios frames RGB con su respectiva información de profundidad. Además, la base provee información frame a frame de qué objetos aparecen y cuál es su ubicación en el plano RGB.
+
+{\huge Figura con ejemplos de las escenas, por ejemplo: 2 filas con varias columnas cada una en donde haya frames RGB arriba y sus equivalentes en depth abajo}
+
+Por otra parte, la base provee imágenes RGB-D de los objetos presentes en las escenas antes mencionadas con el objetivo de obtener su representación 3D.\comentarioP{Comentar como fueron adquiridas la resolución, longitud y ¿?} Cada una de estas imágenes es acompañada además por una máscara que segmenta al objeto buscado y la información de profundidad (nube de puntos) del objeto segmentado. Para tomar estas imágenes los objetos fueron posados en una base circular giratoria y manteniendo la cámara en una posición fija se tomaron muestras con cierta regularidad cubriendo toda la circunferencia de cada objeto. Esto se hizo además desde distintas alturas permitiendo apreciar la profundidad del objeto y así obtener una mejor descripción del mismo.
+
+Los objetos elegidos para esta base se organizaron de una manera jerárquica tomada de las relaciones hiperónimo/hipónimo de WordNet. Cada objeto pertenece a una clase de objetos y hay varias instancias por cada clase. Por ejemplo, en la categoría ``taza'' existen varias instancias diferentes, que se corresponden simplemente a distintas tazas ya sea por forma o por color.\comentarioM{No hice pruebas usando varias instancias de un mismo objeto...}
+
+Existen distintas escenas que contienen a los objetos mencionados y en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase. De esta manera la base otorga la posibilidad de verificar algoritmos capaces de identificar instancias de objetos particulares o familias de objetos según la clasificación antes mencionada.
+
+
+
+
+
+
+\section{Parte de la propuesta que quedó afuera}
 
 
 

@@ -1,4 +1,4 @@
-
+\chapter{Introducción}
 En la actualidad, las posibles aplicaciones de métodos de seguimiento o tracking son muchas y van desde el uso en la industria hasta juegos de consola. Un ejemplo de ello es la fabricación de barcos y autos mediante el uso de robots. Estas tareas se caracterizan por la necesidad de posicionar de manera precisa una herramienta sobre una pieza de trabajo. A través del uso de métodos de tracking se puede conocer la ubicación y pose de la pieza que se desea utilizar con respecto a la ubicación de la cámara y de esta forma saber cómo posicionar la herramienta necesaria para trabajar sobre la pieza en cuestión.
 
 Otra área en donde se utiliza tracking de objetos intensamente es para la generación de estadísticas deportivas, por ejemplo, durante un partido de fútbol, tanto de jugadores como de un equipo. Las posibles aplicaciones en este contexto son mucho más amplias, como por ejemplo análisis de tácticas, verificación de las decisiones del árbitro, resúmenes automáticos de un partido, etc.
@@ -9,26 +9,18 @@ La utilización de sensores RGB-D se ha popularizado en los últimos años, cobr
 
 La información de profundidad obtenida por un sensor RGB-D es un dato fundamental que nos posibilita encontrar la distancia de un objeto con respecto al sensor pudiendo recuperar su información tridimensional (3D) junto a su textura RGB en tiempo real (30 cuadros por segundo). El video RGB-D que se obtiene provee una gran ayuda al mejoramiento y desarrollo de nuevas técnicas de procesamiento de imágenes y video ya conocidas. En particular, en esta tesis nos enfocamos en el seguimiento de objetos en secuencias de imágenes RGB-D.
 
-%################################## ESTO VA A OTRA SECCION ##########################
-Un sistema de seguimiento se puede dividir en tres etapas bien definidas:
-\begin{enumerate}
- \item Entrenamiento
- \item Detección
- \item Seguimiento cuadro a cuadro
-\end{enumerate}
+%###################################################
+\comentarioM{Esto va en la introduccion? (ex ``trabajo relacionado'')}
+En el artículo \cite{park2011texture} se implementan las tres etapas de un sistema de seguimiento nombradas anteriormente. Cada una de estas etapas es abordada de distintas maneras según la literatura actual.
+La etapa de entrenamiento consiste en obtener una representación tridimensional del objeto al cuál se pretende seguir. En el artículo \cite{drummond1999real} se utiliza un entrenamiento off-line que consiste en obtener un modelo CAD (computer-aided design) del objeto que se desea seguir. Luego, en el artículo \cite{park2011texture} se presenta una etapa de entrenamiento novedosa que se realiza de manera on-line, en donde utiliza un marcador conocido para definir las coordenadas de los objetos y calibrar la cámara.
 
-La etapa de entrenamiento consiste en obtener una representación del objeto al cuál se pretende seguir. Para llevarla a cabo se puede utilizar un patrón (template) ya conocido o aprenderlo de imágenes capturadas del mismo objeto. Este template luego se utiliza en la detección para ubicar la representación del objeto dentro de una imagen cualquiera. Una vez conocido el template no se requiere de una nueva ejecución del entrenamiento.
+La etapa de detección tiene como objetivo obtener la ubicación del objeto a seguir en un frame dado. En el artículo \cite{park2011texture} utilizan el método propuesto en \cite{hinterstoisser2010dominant} para detección de objetos en imágenes 2D y lo extienden para estimar la pose 3D. Otros métodos conocidos en la literatura son los propuestos en \cite{brunelli2009template,korman13fast}. 
 
-La segunda etapa, la de detección, radica en encontrar dentro de un frame del video al objeto en cuestión utilizando el método de detección deseado, valiéndose de la información registrada en la etapa de entrenamiento. Esta etapa se ejecuta, con el propósito de encontrar en la imagen el objeto a seguir, al comienzo del sistema de seguimiento y cuando el seguimiento cuadro a cuadro falla. Dado que la etapa de detección suele ser la más costosa en términos de desempeño computacional es deseable que se ejecute la menor cantidad de veces posible.
+La etapa de seguimiento 3D cuadro a cuadro es la más importante y de la que depende el éxito o fracaso de todo el sistema de seguimiento. En el artículo \cite{park2011texture} utilizan el algoritmo ``Iterative Closest Point'' (ICP) propuesto en \cite{zhang94icp,besl92icp}, refinando el resultado con datos de bordes tomados durante la fase de entrenamiento. El método utilizado por \cite{drummond1999real} se basa en la detección de bordes para realizar el seguimiento frame a frame.
+%###################################################
 
-Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detectado en la etapa anterior. Es decir, teniendo la ubicación del objeto en un cuadro de video se desea identificar la posición del mismo objeto en el siguiente frame. Esta etapa es la más importante ya que es la que se ejecuta en cada frame del video. La eficiencia del método de seguimiento es lo que determinará que todo el sistema de seguimiento se consiga realizar eficientemente. Si la técnica de seguimiento tiene una efectividad baja, es decir, no logra identificar la nueva posición del objeto en el siguiente cuadro, se debe volver a la etapa de detección cuyo desempeño computacional es mayor.
-%####################################################################################
 
-\section{Objetivos ¿va?}
 
-El objetivo principal de esta tesis es la implementación, estudio y evaluación de un sistema de seguimiento de objetos en secuencias de imágenes RGB-D, con las siguientes características:
-\begin{itemize}
- \item Performance Real-time: procesamiento de imágenes mayor a 10 cuadros por segundo
- \item Seguimiento de objetos tridimensionales con forma conocida previamente y de objetos aprendidos mediante una fase de entrenamiento previa
- \item Funcionamiento en sensores de profundidad de bajo costo (Kinect, XTion, etc.)
-\end{itemize}
+El objetivo principal de esta tesis es la implementación, estudio y evaluación de un sistema de seguimiento de objetos en secuencias de imágenes RGB-D de objetos tridimensionales con forma conocida previamente que se pueda aplicar a datos/escenas obtenidas a través de sensores de profundidad de bajo costo (Kinect, XTion, etc.).
+
+\comentarioM{Falta escribir: aportes e importancia, breve resultados y conclusiones y organizacion de la tesis por capitulo}

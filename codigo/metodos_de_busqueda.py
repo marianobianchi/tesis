@@ -38,7 +38,6 @@ class BusquedaAlrededorCambiandoFrameSize(object):
                                      template_filas, template_columnas,
                                      filas, columnas):
         top, left = topleft
-        bottom, right = bottomright
 
         original_height = template_filas
         original_width = template_columnas
