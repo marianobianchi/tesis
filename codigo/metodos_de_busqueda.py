@@ -85,6 +85,31 @@ class BusquedaAlrededorCambiandoFrameSize(object):
                                 yield (new_topleft, new_bottomright)
 
 
+class BusquedaCambiandoSizePeroMismoCentro(object):
+    def get_positions_and_framesizes(self, topleft, bottomright,
+                                     template_filas, template_columnas,
+                                     filas, columnas):
+        original_height = template_filas
+        original_width = template_columnas
+
+        for tam_diff in [0.5, 1, 1.5, 2]:
+
+            height = max(int(original_height * tam_diff), 2)
+            diff_height = int((height - original_height) / 2)
+            width = max(int(original_width * tam_diff), 2)
+            diff_width = int((width - original_width) / 2)
+
+            new_top = topleft[0] - diff_height
+            new_bottom = topleft[0] + template_filas + diff_height
+
+            new_left = topleft[1] - diff_width
+            new_right = topleft[1] + template_columnas + diff_width
+
+            if (0 <= new_top < new_bottom <= filas and
+                    0 <= new_left < new_right <= columnas):
+                yield (new_top, new_left), (new_bottom, new_right)
+
+
 class BusquedaPorFramesSolapados(object):
     @staticmethod
     def iterate_frame_boxes(obj_limits, scene_limits, obj_mult=2, step=2):

@@ -1016,3 +1016,27 @@ class FragmentedReverseCompHistogramFinder(FragmentedHistogramFinder):
             comp_point.append(comp)
 
         return np.array(comp_point)
+
+
+########################
+# Buscadores para RGB-D
+########################
+
+class ImproveObjectFoundWithHistogramFinder(TemplateAndFrameGreenHistogramFinder):
+    def saved_object_comparisson(self):
+        if 'object_frame_hist' not in self._descriptors:
+            scene = self._descriptors['scene_rgb']
+            top, left = self._descriptors['topleft']
+            bottom, right = self._descriptors['bottomright']
+            obj = scene[top:bottom, left:right]
+            hist = self.calculate_histogram(obj)
+            self._descriptors['object_frame_hist'] = hist
+
+        if 'object_template_hist' not in self._descriptors:
+            obj = self._descriptors['object_template']
+            mask = self._descriptors['object_mask']
+            hist = self.calculate_histogram(obj, mask)
+            self._descriptors['object_template_hist'] = hist
+
+        return (self._descriptors['object_template_hist'],
+                self._descriptors['object_frame_hist'])

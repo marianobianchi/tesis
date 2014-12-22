@@ -278,13 +278,13 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
 
 def dibujar_cuadros_encontrados_y_del_ground_truth():
-    results_path = ('pruebas_guardadas/desk_1/coffee_mug_5/'
-                    'detection_frame_size/2/01/results.txt')
-    img_path_re = 'videos/rgbd/scenes/desk/desk_1/desk_1_{nframe}.png'
+    results_path = ('/home/mbianchi/Dropbox/marianobianchi08@gmail.com/Dropbox/pruebas_guardadas/desk_2/bowl_3/'
+                    'definitivo_mi_metodo_bhatta_bhatta_bhatta/DEFINITIVO/01/results.txt')
+    img_path_re = 'videos/rgbd/scenes/desk/desk_2/desk_2_{nframe}.png'
 
     ground_truth = StaticDetector(
-        matfile_path='videos/rgbd/scenes/desk/desk_1.mat',
-        obj_rgbd_name='coffee_mug',
+        matfile_path='videos/rgbd/scenes/desk/desk_2.mat',
+        obj_rgbd_name='bowl',
     )
 
     with codecs.open(results_path, 'r', 'utf-8') as file_:
@@ -354,15 +354,15 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
                 )
 
                 # Muestro el resultado y espero que se apriete la tecla q
-                # cv2.imshow(
-                #     'Frame {n}, {obj}, {scene}'.format(n=nframe, obj='coffee_mug', scene='desk_1'),
-                #     img
-                # )
-                #
-                # while cv2.waitKey(1) & 0xFF != ord('q'):
-                #     pass
-                #
-                # cv2.destroyAllWindows()
+                cv2.imshow(
+                    'Frame {n}, {obj}, {scene}'.format(n=nframe, obj='coffee_mug', scene='desk_1'),
+                    img
+                )
+
+                while cv2.waitKey(1) & 0xFF != ord('q'):
+                    pass
+
+                cv2.destroyAllWindows()
 
 
 if __name__ == '__main__':
@@ -789,105 +789,106 @@ if __name__ == '__main__':
     # DEFINITIVOS
     ##################
     # Bhatta verde
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_batta_green_channel',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_batta_green_channel',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_batta_green_channel',
-        path='pruebas_guardadas',
-    )
-
-    # Correlation verde
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_correl_green_channel',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_correl_green_channel',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_correl_green_channel',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_batta_green_channel',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_batta_green_channel',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_batta_green_channel',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Correlation verde
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_correl_green_channel',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_correl_green_channel',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_correl_green_channel',
+    #     path='pruebas_guardadas',
+    # )
 
     # Mi metodo tripe bhatachayyra
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_mi_metodo_bhatta_bhatta_bhatta',
+    #     path='/home/mbianchi/Dropbox/marianobianchi08@gmail.com/Dropbox/pruebas_guardadas/',
+    # )
 
     # RGB y HSV
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_RGB_staticdet',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_RGB_staticdet',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_RGB_staticdet',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_RGB_staticdet',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_RGB_staticdet',
+    #     path='pruebas_guardadas',
+    # )
+    dibujar_cuadros_encontrados_y_del_ground_truth()

@@ -554,3 +554,22 @@ class StaticDetectorForRGBFinder(StaticDetector):
         desc['object_template'] = self._descriptors['object_templates'][0]
         desc['object_mask'] = self._descriptors['object_masks'][0]
         return desc
+
+
+###################
+# Detectores RGB-D
+###################
+
+class StaticDetectorForRGBD(StaticDetectorWithModelAlignment,
+                            StaticDetectorForRGBFinder):
+    def calculate_descriptors(self, detected_descriptors):
+        desc = StaticDetectorWithModelAlignment.calculate_descriptors(
+            self,
+            detected_descriptors
+        )
+        desc = StaticDetectorForRGBFinder.calculate_descriptors(
+            self,
+            desc
+        )
+
+        return desc

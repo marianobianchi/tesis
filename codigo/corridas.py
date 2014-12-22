@@ -902,78 +902,78 @@ def barrer_find_correspondence_distance(img_provider, scenename, scenenumber, ob
             img_provider.restart()
 
 
-# def barrer_find_PARAMNAME(img_provider, scenename, scenenumber, objname):
-#     # Set detection parameters values
-#     ap_defaults = APDefaults()
-#     ap_defaults.leaf = 0.005
-#     ap_defaults.max_ransac_iters = 100
-#     ap_defaults.points_to_sample = 3
-#     ap_defaults.nearest_features_used = 2
-#     ap_defaults.simil_threshold = 0.4
-#     ap_defaults.inlier_threshold = 1.5
-#     ap_defaults.inlier_fraction = 0.7
-#
-#     icp_detection_defaults = ICPDefaults()
-#     icp_detection_defaults.euc_fit = 1e-15
-#     icp_detection_defaults.max_corr_dist = 3
-#     icp_detection_defaults.max_iter = 50
-#     icp_detection_defaults.transf_epsilon = 1e-15
-#
-#     det_umbral_score = 1e-3
-#     det_obj_scene_leaf = 0.005
-#     det_perc_obj_model_points = 0.5
-#
-#     # Set following parameters values
-#     icp_finder_defaults = ICPDefaults()
-#     icp_finder_defaults.euc_fit = 1e-5
-#     icp_finder_defaults.max_corr_dist = 0.5
-#     icp_finder_defaults.max_iter = 50
-#     icp_finder_defaults.transf_epsilon = 1e-5
-#
-#     find_umbral_score = 1e-4
-#     find_adapt_area = FixedSearchArea(3)
-#     find_adapt_leaf = AdaptLeafRatio()
-#     find_obj_scene_leaf = 0.002
-#     find_perc_obj_model_points = 0.5
-#
-#     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
-#     for i in range(3):
-#         for PARAMNAME in []:
-#             detector = StaticDetectorWithModelAlignment(
-#                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
-#                           .format(sname=scenename, snum=scenenumber)),
-#                 obj_rgbd_name=objname,
-#                 ap_defaults=ap_defaults,
-#                 icp_defaults=icp_detection_defaults,
-#                 leaf_size=det_obj_scene_leaf,
-#                 icp_threshold=det_umbral_score,
-#                 perc_obj_model_pts=det_perc_obj_model_points
-#             )
-#
-#             finder = ICPFinderWithModel(
-#                 icp_defaults=icp_finder_defaults,
-#                 umbral_score=find_umbral_score,
-#                 adapt_area=find_adapt_area,
-#                 adapt_leaf=find_adapt_leaf,
-#                 first_leaf_size=find_obj_scene_leaf,
-#                 perc_obj_model_points=find_perc_obj_model_points,
-#             )
-#
-#             follower = DepthFollower(
-#                 img_provider,
-#                 detector,
-#                 finder
-#             )
-#
-#             FollowingSquemaExploringParameterPCD(
-#                 img_provider,
-#                 follower,
-#                 'pruebas_guardadas',
-#                 'STATIC_PARAMNAME',
-#                 PARAMNAME,
-#             ).run()
-#
-#             img_provider.restart()
+def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(3):
+        for find_perc_obj_model_points in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'STATIC_find_perc_obj_model_points',
+                find_perc_obj_model_points,
+            ).run()
+
+            img_provider.restart()
 #
 #
 # def barrer_find_PARAMNAME(img_provider, scenename, scenenumber, objname):
@@ -1076,67 +1076,78 @@ if __name__ == '__main__':
     # barrer_fixed_search_area('bowl', '3', 'desk', '2')
 
 
-    #######################
-    # barrer_find_euclidean_fitness
-    #######################
-    # Primer escena
+    #####################
+    # Cargo las imagenes
+    #####################
     desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '5',
+        'videos/rgbd/objs/', 'cap', '4',
     )  # path, objname, number
-    barrer_find_euclidean_fitness(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_find_euclidean_fitness(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
-    barrer_find_euclidean_fitness(desk_2_img_provider, 'desk', '2', 'bowl')
+    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '2',
+    #     'videos/rgbd/objs/', 'bowl', '3',
+    # )  # path, objname, number
 
 
-    #######################
-    # barrer_find_transformation_epsilon
-    #######################
-    # Primer escena
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '5',
-    )  # path, objname, number
-    barrer_find_transformation_epsilon(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_find_transformation_epsilon(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
-    barrer_find_transformation_epsilon(desk_2_img_provider, 'desk', '2', 'bowl')
+    # #######################
+    # # barrer_find_euclidean_fitness
+    # #######################
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_find_euclidean_fitness(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_find_euclidean_fitness(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_find_euclidean_fitness(desk_2_img_provider, 'desk', '2', 'bowl')
+    #
+    #
+    # #######################
+    # # barrer_find_transformation_epsilon
+    # #######################
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_find_transformation_epsilon(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_find_transformation_epsilon(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_find_transformation_epsilon(desk_2_img_provider, 'desk', '2', 'bowl')
 
     #######################
     # barrer_find_correspondence_distance
     #######################
     # Primer escena
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '5',
-    )  # path, objname, number
-    barrer_find_correspondence_distance(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_find_correspondence_distance(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
     # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
+    # desk_1_img_provider.reinitialize_object('cap', '4')
     barrer_find_correspondence_distance(desk_1_img_provider, 'desk', '1', 'cap')
 
     # Tercer escena
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
-    barrer_find_correspondence_distance(desk_2_img_provider, 'desk', '2', 'bowl')
+    # barrer_find_correspondence_distance(desk_2_img_provider, 'desk', '2', 'bowl')
+
+    #######################
+    # barrer_find_perc_obj_model_points
+    #######################
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_find_perc_obj_model_points(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_find_perc_obj_model_points(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_find_perc_obj_model_points(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+
+
 
