@@ -969,14 +969,538 @@ def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objn
                 img_provider,
                 follower,
                 'pruebas_guardadas',
-                'STATIC_find_perc_obj_model_points',
+                'DEPTH_find_perc_obj_model_points',
                 find_perc_obj_model_points,
             ).run()
 
             img_provider.restart()
-#
-#
-# def barrer_find_PARAMNAME(img_provider, scenename, scenenumber, objname):
+
+
+def barrer_find_umbral_score(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for find_umbral_score in [1e-15, 1e-12, 1e-10, 1e-7, 1e-5, 1e-2, 1e-1]:
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_find_umbral_score',
+                find_umbral_score,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_max_iter(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_max_iter in [30, 40, 50, 80, 100, 120, 150]:
+            ap_defaults.max_ransac_iters = det_max_iter
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_max_iter',
+                det_max_iter,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_points_to_sample(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_points_to_sample in [3, 4, 5, 6, 10, 15, 20, 30]:
+            ap_defaults.points_to_sample = det_points_to_sample
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_points_to_sample',
+                det_points_to_sample,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_nearest_features(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_nearest_features in [2, 3, 4, 5, 10, 15, 20]:
+            ap_defaults.nearest_features_used = det_nearest_features
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_nearest_features',
+                det_nearest_features,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_simil_thresh(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_simil_thresh in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]:
+            ap_defaults.simil_threshold = det_simil_thresh
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_simil_thresh',
+                det_simil_thresh,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_inlier_thresh(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_inlier_thresh in [0.1, 0.2, 0.5, 0.7, 1, 1.5, 2, 3]:
+            ap_defaults.inlier_threshold = det_inlier_thresh
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_inlier_thresh',
+                det_inlier_thresh,
+            ).run()
+
+            img_provider.restart()
+
+
+def barrer_det_inlier_fraction(img_provider, scenename, scenenumber, objname):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 100
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 2
+    ap_defaults.simil_threshold = 0.4
+    ap_defaults.inlier_threshold = 1.5
+    ap_defaults.inlier_fraction = 0.7
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-15
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.5
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(1):
+        for det_inlier_fraction in [0.1, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9]:
+            ap_defaults.inlier_fraction = det_inlier_fraction
+            detector = StaticDetectorWithModelAlignment(
+                matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+                obj_rgbd_name=objname,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                leaf_size=det_obj_scene_leaf,
+                icp_threshold=det_umbral_score,
+                perc_obj_model_pts=det_perc_obj_model_points
+            )
+
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
+
+            follower = DepthFollower(
+                img_provider,
+                detector,
+                finder
+            )
+
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                'pruebas_guardadas',
+                'DEPTH_det_inlier_fraction',
+                det_inlier_fraction,
+            ).run()
+
+            img_provider.restart()
+
+
+# def barrer_PARAMNAME(img_provider, scenename, scenenumber, objname):
 #     # Set detection parameters values
 #     ap_defaults = APDefaults()
 #     ap_defaults.leaf = 0.005
@@ -1012,7 +1536,7 @@ def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objn
 #
 #     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
 #     for i in range(3):
-#         for PARAMNAME in []:
+#         for PARAMNAME in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]:
 #             detector = StaticDetectorWithModelAlignment(
 #                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
 #                           .format(sname=scenename, snum=scenenumber)),
@@ -1043,15 +1567,11 @@ def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objn
 #                 img_provider,
 #                 follower,
 #                 'pruebas_guardadas',
-#                 'STATIC_PARAMNAME',
+#                 'DEPTH_PARAMNAME',
 #                 PARAMNAME,
 #             ).run()
 #
 #             img_provider.restart()
-
-
-
-
 
 
 if __name__ == '__main__':
@@ -1084,10 +1604,10 @@ if __name__ == '__main__':
         'videos/rgbd/objs/', 'cap', '4',
     )  # path, objname, number
 
-    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'desk', '2',
-    #     'videos/rgbd/objs/', 'bowl', '3',
-    # )  # path, objname, number
+    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'bowl', '3',
+    )  # path, objname, number
 
 
     # #######################
@@ -1128,7 +1648,7 @@ if __name__ == '__main__':
 
     # Segunda escena
     # desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_find_correspondence_distance(desk_1_img_provider, 'desk', '1', 'cap')
+    # barrer_find_correspondence_distance(desk_1_img_provider, 'desk', '1', 'cap')
 
     # Tercer escena
     # barrer_find_correspondence_distance(desk_2_img_provider, 'desk', '2', 'bowl')
@@ -1148,6 +1668,107 @@ if __name__ == '__main__':
     # barrer_find_perc_obj_model_points(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
+    #######################
+    # barrer_find_umbral_score
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_find_umbral_score(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_find_umbral_score(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_find_umbral_score(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
 
+    #######################
+    # barrer_det_max_iter
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_max_iter(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+    #######################
+    # barrer_det_points_to_sample
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_points_to_sample(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+    #######################
+    # barrer_det_nearest_features
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_nearest_features(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+    #######################
+    # barrer_det_simil_thresh
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_simil_thresh(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+    #######################
+    # barrer_det_inlier_thresh
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_inlier_thresh(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_inlier_thresh(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_inlier_thresh(desk_2_img_provider, 'desk', '2', 'bowl')
+
+
+    #######################
+    # barrer_det_inlier_fraction
+    #######################
+    # Primer escena
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    # Segunda escena
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # Tercer escena
+    barrer_det_inlier_fraction(desk_2_img_provider, 'desk', '2', 'bowl')

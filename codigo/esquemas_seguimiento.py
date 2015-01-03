@@ -111,6 +111,10 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
             os.makedirs(self.results_path)
         self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
+        self.write_parameter_values()
+
+
+    def write_parameter_values(self):
         # Guardo los valores de los parametros
         ap_defaults = self.obj_follower.detector._ap_defaults
         self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
@@ -281,6 +285,9 @@ class FollowingSquemaExploringParameterPCD(FollowingSchemeSavingDataPCD):
 
         self.file = open(os.path.join(self.results_path, 'results.txt'), 'w')
 
+        self.write_parameter_values()
+
+    def write_parameter_values(self):
         # Guardo los valores de los parametros
         ap_defaults = self.obj_follower.detector._ap_defaults
         self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
@@ -489,3 +496,9 @@ class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataRGB):
 
         # Guardo los valores de los parametros
         self.write_parameter_values()
+
+
+class FollowingSchemeSavingDataRGBD(FollowingSchemeSavingDataPCD):
+    def write_parameter_values(self):
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()

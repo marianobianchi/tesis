@@ -13,7 +13,7 @@ from metodos_comunes import AdaptLeafRatio, FixedSearchArea
 from metodos_de_busqueda import BusquedaCambiandoSizePeroMismoCentro
 from detectores import StaticDetectorForRGBD
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
-    FollowingSquemaExploringParameterPCD
+    FollowingSquemaExploringParameterPCD, FollowingSchemeSavingDataRGBD
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreChargedForPCD
@@ -57,12 +57,12 @@ def correr(img_provider, scenename, scenenumber, objname):
 
     # Set RGB following parameters values
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    template_perc = 0.5
+    template_perc = 0.6
     template_worst = 1
     find_template_reverse = False
 
     find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    frame_perc = 0.2
+    frame_perc = 0.3
     frame_worst = 1
     find_frame_reverse = False
 
@@ -116,26 +116,36 @@ def correr(img_provider, scenename, scenenumber, objname):
             depth_finder=depth_finder,
         )
 
-        mostrar_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
+        # mostrar_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
 
-        FollowingScheme(img_provider, follower, mostrar_seguimiento).run()
-        # FollowingSquemaExploringParameterPCD(
-        #     img_provider,
-        #     follower,
-        #     'pruebas_guardadas',
-        #     'STATIC_find_perc_obj_model_points',
-        #     find_perc_obj_model_points,
-        # ).run()
+        # FollowingScheme(img_provider, follower, mostrar_seguimiento).run()
+        FollowingSchemeSavingDataRGBD(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            # 'STATIC_find_perc_obj_model_points',
+            # find_perc_obj_model_points,
+        ).run()
 
         # img_provider.restart()
 
 
 if __name__ == '__main__':
-    desk_1_img_provider = FrameNamesAndImageProvider(
+    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '5',
+        'videos/rgbd/objs/', 'cap', '4',
     )  # path, objname, number
-    correr(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    correr(desk_1_img_provider, 'desk', '1', 'cap')
+
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # correr(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+
+    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'bowl', '3',
+    )  # path, objname, number
+    correr(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
 

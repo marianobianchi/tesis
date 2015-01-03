@@ -838,10 +838,10 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # ##################
-    # # DEFINITIVOS RGB
-    # ##################
-    # # Bhatta verde
+    ##################
+    # DEFINITIVOS RGB
+    ##################
+    # Bhatta verde
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -974,28 +974,113 @@ if __name__ == '__main__':
         path='pruebas_guardadas',
     )
 
-    # # Similarity threshold
+    # Transformation epsilon
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='DEPTH_find_transformation_epsilon',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='DEPTH_find_transformation_epsilon',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='DEPTH_find_transformation_epsilon',
+        path='pruebas_guardadas',
+    )
+
+    # Correspondence distance
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='DEPTH_find_correspondence_distance',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='DEPTH_find_correspondence_distance',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='DEPTH_find_correspondence_distance',
+        path='pruebas_guardadas',
+    )
+
+    # Percentage obj. model points
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='DEPTH_find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='DEPTH_find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='DEPTH_find_perc_obj_model_points',
+        path='pruebas_guardadas',
+    )
+
+
+
+
+
+
+    # Prueba colgada del RGBD
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
     #     objname='coffee_mug',
     #     objnum='5',
-    #     param='detection_similarity_threshold',
+    #     param='prueba_002',
     #     path='pruebas_guardadas',
     # )
+    #
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
     #     objname='cap',
     #     objnum='4',
-    #     param='detection_similarity_threshold',
+    #     param='prueba_001',
     #     path='pruebas_guardadas',
     # )
+    #
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
     #     scenenamenum='desk_2',
     #     objname='bowl',
     #     objnum='3',
-    #     param='detection_similarity_threshold',
+    #     param='prueba_001',
     #     path='pruebas_guardadas',
     # )
