@@ -1012,7 +1012,7 @@ def barrer_find_umbral_score(img_provider, scenename, scenenumber, objname):
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
     for i in range(1):
-        for find_umbral_score in [1e-15, 1e-12, 1e-10, 1e-7, 1e-5, 1e-2, 1e-1]:
+        for find_umbral_score in [0.04, 1e-3, 1e-4]:
             detector = StaticDetectorWithModelAlignment(
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
@@ -1386,7 +1386,7 @@ def barrer_det_inlier_thresh(img_provider, scenename, scenenumber, objname):
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
     for i in range(1):
-        for det_inlier_thresh in [0.1, 0.2, 0.5, 0.7, 1, 1.5, 2, 3]:
+        for det_inlier_thresh in [4, 5, 6]:
             ap_defaults.inlier_threshold = det_inlier_thresh
             detector = StaticDetectorWithModelAlignment(
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
@@ -1687,67 +1687,67 @@ if __name__ == '__main__':
     #######################
     # barrer_det_max_iter
     #######################
-    # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    barrer_det_max_iter(desk_2_img_provider, 'desk', '2', 'bowl')
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_det_max_iter(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_det_max_iter(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
     #######################
     # barrer_det_points_to_sample
     #######################
-    # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    barrer_det_points_to_sample(desk_2_img_provider, 'desk', '2', 'bowl')
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_det_points_to_sample(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_det_points_to_sample(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
     #######################
     # barrer_det_nearest_features
     #######################
-    # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    barrer_det_nearest_features(desk_2_img_provider, 'desk', '2', 'bowl')
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_det_nearest_features(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_det_nearest_features(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
     #######################
     # barrer_det_simil_thresh
     #######################
-    # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    barrer_det_simil_thresh(desk_2_img_provider, 'desk', '2', 'bowl')
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_det_simil_thresh(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_det_simil_thresh(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
     #######################
     # barrer_det_inlier_thresh
     #######################
-    # Primer escena
+    # # Primer escena
     desk_1_img_provider.reinitialize_object('coffee_mug', '5')
     barrer_det_inlier_thresh(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
@@ -1762,13 +1762,13 @@ if __name__ == '__main__':
     #######################
     # barrer_det_inlier_fraction
     #######################
-    # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'coffee_mug')
-
-    # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'cap')
-
-    # Tercer escena
-    barrer_det_inlier_fraction(desk_2_img_provider, 'desk', '2', 'bowl')
+    # # Primer escena
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    #
+    # # Segunda escena
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # barrer_det_inlier_fraction(desk_1_img_provider, 'desk', '1', 'cap')
+    #
+    # # Tercer escena
+    # barrer_det_inlier_fraction(desk_2_img_provider, 'desk', '2', 'bowl')

@@ -18,7 +18,7 @@ ICPResult icp(PointCloud3D::Ptr source_cloud,
     // Set the transformation epsilon (termination critera 2) Ejemplo: 1e-8
     icp.setTransformationEpsilon(icp_defaults.transf_epsilon);
 
-    // Set the euclidean distance difference epsilon (termination critera 2) Ejemplo: 1
+    // Set the euclidean distance difference epsilon (termination critera 3) Ejemplo: 1
     icp.setEuclideanFitnessEpsilon(icp_defaults.euc_fit);
 
     icp.setRANSACIterations(icp_defaults.ran_iter);

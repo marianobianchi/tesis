@@ -17,8 +17,11 @@
 \def\spanishoptions{activeacute}
 \usepackage[english, spanish]{babel}
 
+% Colores
+\usepackage{xcolor}
 
-
+% Indice
+\usepackage[bookmarks, colorlinks=false, allbordercolors=white]{hyperref}
 
 % Espaciado
 %\usepackage[left=3cm,right=3cm,bottom=3.5cm,top=3.5cm]{geometry}
@@ -89,9 +92,12 @@
 
 
 %%%% BIBLIOGRAFIA
-\chapter{Bibliografía}
+%\chapter{Bibliografía}
 \backmatter
 \bibliographystyle{alpha}
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{Bibliografía}
 \bibliography{tesis}
 
 \end{document}
