@@ -1,6 +1,39 @@
 \chapter{Resultados}
 
 \section{Experimentación}
+Con el objetivo de elegir los métodos definitivos que usamos en cada etapa de cada sistema de seguimiento se realizaron variadas pruebas. En esta sección explicaremos cuales fueron las pruebas realizadas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para D. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+
+Para lograr una buena comparación entre métodos de tracking, tanto para RGB como para D, se utilizó como método de detección el método ideal. El mismo consta simplemente de tomar los datos provistos por el ground truth para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en D estos datos se tomaban como punto de partida y luego se los refinaba tomando los datos del modelo 3D del objeto a buscar para correr AP e ICP y finalmente filtrar los puntos de la escena del objeto usando kdtree.
+
+\subsection{Elección del método de seguimiento RGB}
+Durante el proceso de selección de métodos se corrieron muchas pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos probados y cómo llegamos a elegir el definitivo, previamente explicado en la sección \ref{metodo_rgb}.
+
+En un comienzo se tuvieron en cuenta dos métodos distintos para el seguimiento RGB. El primero utilizaba la técnica de SURF para obtener keypoints y features y luego se utilizaba un comparador para hacer matching frame a frame. El segundo método consistía en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento. Estos métodos se probaron con una escena tomada por una cámara web siguiendo distintos objetos. La misma no estaba anotada y sólo se utilizó para realizar pruebas preeliminares.
+
+Luego de realizar varias pruebas manuales se concluyó que el método que mejor se desempeñaba era el basado en histogramas por lo que se pasó a explorar distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tenía distintas variables a explorar:
+\begin{itemize}
+	\item Esquema de colores: RGB o HSV
+	\item Canales a utilizar de cada esquema
+	\item Cantidad de bines por canal
+	\item Método de comparación de histogramas: Bhattachayyra, Chi-Squared, Correlation, Intersection
+	\item Umbral para la comparación frame a frame
+	\item Umbral para la comparación modelo-frame	
+\end{itemize}
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/results_chi-squared_rgb_16r_4g_4b.png}
+	\caption{Ordenando muestras según comparación por chi-squared, tomando los canales RGB, 16 bines para el canal rojo y 4 para el verde y el azul. El modelo utilizado es un template de la taza sacado de la escena.}
+	\label{pruebas_eleccion_canales}
+\end{figure}
+
+Para decidir que esquema de colores, que canales y cuantos bines por cada canal se iban a utilizar se eligieron dos objetos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió un metodo de comparación de histogramas y un template del objeto como modelo y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de mejor a peor. Un ejemplo de esto se puede ver en la figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
+
+Este análisis nos permitió verificar que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente.
+
+
+
 \comentarioM{Breve introducción de la experimentación en general (explicar subsecciones y cosas generales)}
 
 

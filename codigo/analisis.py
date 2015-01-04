@@ -222,16 +222,24 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         n = len(avg_per_frame)
         avg_per_frame = np.array(avg_per_frame) * 100
         explanation_per_frame = paramval_explanationperframe[param_val]
-        fps_x = [i+1 for i, exp in enumerate(explanation_per_frame)
-                 if exp == 'FP']
-        fns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
-                 if exp == 'FN']
-        bfs_x = [i+1 for i, exp in enumerate(explanation_per_frame)
-                 if exp == 'BF']
-        vns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
-                 if exp == 'VN']
-        nns_x = [i+1 for i, exp in enumerate(explanation_per_frame)
-                 if exp == 'NN']
+
+        fps_x = []
+        fns_x = []
+        bfs_x = []
+        vns_x = []
+        nns_x = []
+
+        for i, exp in enumerate(explanation_per_frame):
+            if exp == 'FP':
+                fps_x.append(i+1)
+            elif exp == 'FN':
+                fns_x.append(i+1)
+            elif exp == 'BF':
+                bfs_x.append(i+1)
+            elif exp == 'VN':
+                vns_x.append(i+1)
+            elif exp == 'NN':
+                nns_x.append(i+1)
 
         # # plot
         line, = ax.plot(np.arange(1, n + 1), avg_per_frame, '-o')
@@ -1255,4 +1263,30 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    dibujar_cuadros_encontrados_y_del_ground_truth()
+    # Definitivo DEPTH
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+
+    # dibujar_cuadros_encontrados_y_del_ground_truth()
