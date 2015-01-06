@@ -9,7 +9,8 @@ from scipy.spatial import distance as dist
 from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
     TemplateAndFrameGreenHistogramFinder, HSHistogramFinder,\
-    FragmentedHistogramFinder, FragmentedReverseCompHistogramFinder
+    FragmentedHistogramFinder, FragmentedReverseCompHistogramFinder, \
+    MoreBinsPerChannelTemplateAndFrameHistogramFinder
 
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
@@ -1723,6 +1724,62 @@ def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
     img_provider.restart()
 
 
+def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.85
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.6
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+    )
+
+    template_comparator = HistogramComparator(
+        method=find_template_comp_method,
+        perc=find_template_threshold,
+        worst_case=1,
+        reverse=find_template_reverse,
+    )
+    frame_comparator = HistogramComparator(
+        method=find_frame_comp_method,
+        perc=find_frame_threshold,
+        worst_case=1,
+        reverse=find_frame_reverse,
+    )
+
+    finder = MoreBinsPerChannelTemplateAndFrameHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    follower = RGBFollower(img_provider, detector, finder)
+
+    FollowingSchemeSavingDataRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        #'definitivo_RGB_staticdet',
+        #'DEFINITIVO',
+    ).run()
+
+    img_provider.restart()
+
+
 if __name__ == '__main__':
     # barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
     # barrer_find_frame_threshold('cap', '4', 'desk', '1')
@@ -1856,20 +1913,23 @@ if __name__ == '__main__':
     # correr_find_frame_threshold('cap', '4', 'desk', '1')
     # correr_find_frame_threshold('bowl', '3', 'desk', '2')
 
-    definitivo_battachayyra_verde('coffee_mug', '5', 'desk', '1')
-    definitivo_battachayyra_verde('cap', '4', 'desk', '1')
-    definitivo_battachayyra_verde('bowl', '3', 'desk', '2')
+    # definitivo_battachayyra_verde('coffee_mug', '5', 'desk', '1')
+    # definitivo_battachayyra_verde('cap', '4', 'desk', '1')
+    # definitivo_battachayyra_verde('bowl', '3', 'desk', '2')
+    #
+    # definitivo_correlation_verde('coffee_mug', '5', 'desk', '1')
+    # definitivo_correlation_verde('cap', '4', 'desk', '1')
+    # definitivo_correlation_verde('bowl', '3', 'desk', '2')
+    #
+    # definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    # definitivo_rgb_hsv('cap', '4', 'desk', '1')
+    # definitivo_rgb_hsv('bowl', '3', 'desk', '2')
+    #
+    # definitivo_mi_metodo_bhatta_bhatta_bhatta('coffee_mug', '5', 'desk', '1')
+    # definitivo_mi_metodo_bhatta_bhatta_bhatta('cap', '4', 'desk', '1')
+    # definitivo_mi_metodo_bhatta_bhatta_bhatta('bowl', '3', 'desk', '2')
 
-    definitivo_correlation_verde('coffee_mug', '5', 'desk', '1')
-    definitivo_correlation_verde('cap', '4', 'desk', '1')
-    definitivo_correlation_verde('bowl', '3', 'desk', '2')
 
-    definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
-    definitivo_rgb_hsv('cap', '4', 'desk', '1')
-    definitivo_rgb_hsv('bowl', '3', 'desk', '2')
-
-    definitivo_mi_metodo_bhatta_bhatta_bhatta('coffee_mug', '5', 'desk', '1')
-    definitivo_mi_metodo_bhatta_bhatta_bhatta('cap', '4', 'desk', '1')
-    definitivo_mi_metodo_bhatta_bhatta_bhatta('bowl', '3', 'desk', '2')
-
-
+    prueba_mas_bines_en_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    prueba_mas_bines_en_rgb_hsv('cap', '4', 'desk', '1')
+    prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')

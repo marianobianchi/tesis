@@ -23,7 +23,7 @@ Tomando como base estas etapas, proponemos distintos métodos para cada una de e
 \section{Método propuesto en D}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
 
-\subsection{Iterative Closest Point (ICP)}
+\subsection{Iterative Closest Point (ICP)}\label{ICP}
 
 Para esta primera etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. \comentarioM{La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D.}\comentarioP{Quedó afuera porque nos enfocamos en tracking} Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la que posee rotación 0. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto presentes en la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado.
 

@@ -617,6 +617,50 @@ class TemplateAndFrameHistogramFinder(Finder):
         return desc
 
 
+class MoreBinsPerChannelTemplateAndFrameHistogramFinder(TemplateAndFrameHistogramFinder):
+    @staticmethod
+    def calculate_rgb_histogram(roi, mask=None):
+        # Paso la imagen de BGR a RGB
+        roi_rgb = cv2.cvtColor(roi, cv2.COLOR_BGR2RGB)
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi_rgb],  # Imagen
+            #[0, 1, 2],  # Canales
+            [1],
+            mask,  # Mascara
+            #[60, 60, 60],  # Numero de bins para cada canal
+            #[0, 256, 0, 256, 0, 256],  # Rangos válidos para cada canal
+            [60],  # Numero de bins para cada canal
+            [0, 256],  # Rangos válidos para cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist).flatten()
+
+        return hist
+
+    @staticmethod
+    def calculate_hsv_histogram(roi, mask=None):
+        # Paso la imagen de BGR a RGB
+        roi_hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
+
+        # Calculo el histograma del roi (para H y S)
+        hist = cv2.calcHist(
+            [roi_hsv],  # Imagen
+            [1, 2],  # Canales
+            mask,  # Mascara
+            [60, 60],  # Numero de bins para cada canal
+            [0, 256, 0, 256],  # Rangos válidos para cada canal
+        )
+
+        # Normalizo el histograma para evitar errores por distinta escala
+        hist = cv2.normalize(hist).flatten()
+
+        return hist
+
+
+
 class TemplateAndFrameGreenHistogramFinder(TemplateAndFrameHistogramFinder):
     @staticmethod
     def calculate_rgb_histogram(roi, mask=None):

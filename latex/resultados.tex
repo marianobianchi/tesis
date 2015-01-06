@@ -1,16 +1,16 @@
 \chapter{Resultados}
 
 \section{Experimentación}
-Con el objetivo de elegir los métodos definitivos que usamos en cada etapa de cada sistema de seguimiento se realizaron variadas pruebas. En esta sección explicaremos cuales fueron las pruebas realizadas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para D. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+Con el objetivo de elegir los métodos definitivos que usamos en cada etapa de cada sistema de seguimiento se realizaron variadas pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para D. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
 
 Para lograr una buena comparación entre métodos de tracking, tanto para RGB como para D, se utilizó como método de detección el método ideal. El mismo consta simplemente de tomar los datos provistos por el ground truth para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en D estos datos se tomaban como punto de partida y luego se los refinaba tomando los datos del modelo 3D del objeto a buscar para correr AP e ICP y finalmente filtrar los puntos de la escena del objeto usando kdtree.
 
 \subsection{Elección del método de seguimiento RGB}
-Durante el proceso de selección de métodos se corrieron muchas pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos probados y cómo llegamos a elegir el definitivo, previamente explicado en la sección \ref{metodo_rgb}.
+Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos probados y cómo llegamos a elegir el definitivo, previamente explicado en la sección \ref{metodo_rgb}.
 
 En un comienzo se tuvieron en cuenta dos métodos distintos para el seguimiento RGB. El primero utilizaba la técnica de SURF para obtener keypoints y features y luego se utilizaba un comparador para hacer matching frame a frame. El segundo método consistía en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento. Estos métodos se probaron con una escena tomada por una cámara web siguiendo distintos objetos. La misma no estaba anotada y sólo se utilizó para realizar pruebas preeliminares.
 
-Luego de realizar varias pruebas manuales se concluyó que el método que mejor se desempeñaba era el basado en histogramas por lo que se pasó a explorar distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tenía distintas variables a explorar:
+Luego de correr varias pruebas manuales se concluyó que el método que mejor se desempeñaba era el basado en histogramas por lo que se pasó a explorar distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tenía distintas variables a explorar:
 \begin{itemize}
 	\item Esquema de colores: RGB o HSV
 	\item Canales a utilizar de cada esquema
@@ -28,20 +28,9 @@ Luego de realizar varias pruebas manuales se concluyó que el método que mejor 
 	\label{pruebas_eleccion_canales}
 \end{figure}
 
-Para decidir que esquema de colores, que canales y cuantos bines por cada canal se iban a utilizar se eligieron dos objetos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió un metodo de comparación de histogramas y un template del objeto como modelo y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de mejor matching a peor. Un ejemplo de esto se puede ver en la figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
+Para decidir qué esquema de colores, qué canales y cuántos bines por cada canal se iban a utilizar se eligieron dos objetos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió una como template/modelo del objeto y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de mejor a peor matching. Esto se hizo fijando un método de comparación de histogramas. Un ejemplo de esto se puede ver en la figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
 
-Este análisis nos permitió verificar que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas que método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
-
-
-
-
-
-\comentarioM{Breve introducción de la experimentación en general (explicar subsecciones y cosas generales)}
-
-
-\comentarioM{Comentar brevemente la evaluación del tracking y eleccion de parametros y explicar por que se eligio usar como deteccion el valor sacado del ground truth.}
-
-Para cuantificar la efectividad y robustes del tracking del algoritmo elegido decidimos evaluar las siguientes variables:
+De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal \comentarioM{Probé con 60 bines por canal y mejoró el de la taza considerablemente. Hacer bien las pruebas con 60 bines por canal.} y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados. Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}. Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
 	\item Taza de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
 	\item Taza de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen
@@ -50,9 +39,58 @@ Para cuantificar la efectividad y robustes del tracking del algoritmo elegido de
 	\item Porcentaje de veces seguido: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso	
 \end{itemize}
 
-\subsection{Elección de parámetros RGB}
-\comentarioM{No se donde explicar esto ni donde explicar todos los métodos que probé y que fui descartando con pruebas mas sencillas.}
-EL método de seguimiento por comparación de histogramas explicado en la sección \comentarioM{SECCION DONDE SE EXPLICA LA COMPARACION DE HISTOGRAMAS} es un método sencillo pero que posee muchas variables para explorar que permiten modificar la eficacia del algoritmo. Decidimos reducir el número de variables a explorar variando únicamente el método de comparación de histogramas, el modelo de color elegido para comparar (RGB o HSV), un umbral para la comparación entre el objeto en el frame actual y el objeto encontrado en el frame anterior y otro para comparar el objeto en el frame actual y el modelo del objeto buscado.
+\begin{table}
+	\begin{tabular}{|c|c|c|c|c|c|}
+	    \hline
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+		Objeto & & overlap STD & & &\\
+	    \hline
+	    Taza   & 29.69      & 35.24       & 86.84             & 0                & 0\\
+	    \hline
+	    Gorra  & 55.23      & 18.08       & 87.80             & 0                & 0\\
+	    \hline
+	    Bowl   & 66.60      & 42.51       & 39.09             & 0                & 0\\
+	    \hline
+    \end{tabular}
+	\caption{Mejores resultados usando comparación de histogramas por Bhattachayyra para el canal verde con 60 bines}
+	\label{pruebas_definitivas_bhatta_green}
+\end{table}
+
+\begin{table}
+	\begin{tabular}{|c|c|c|c|c|c|}
+	    \hline
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+		Objeto & & overlap STD & & &\\
+	    \hline
+	    Taza   & 24.69      & 33.94       & 88.16             & 0                & 0\\
+	    \hline
+	    Gorra  & 50.44      & 10.83       & 97.56             & 0                & 0\\
+	    \hline
+	    Bowl   & 50.68      & 42.37       & 60.00             & 10               & 0\\
+	    \hline
+    \end{tabular}
+	\caption{Mejores resultados usando comparación de histogramas por Correlation para el canal verde con 60 bines}
+	\label{pruebas_definitivas_correl_green}
+\end{table}
+
+\begin{table}
+	\begin{tabular}{|c|c|c|c|c|c|}
+	    \hline
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+		Objeto & & overlap STD & & &\\
+	    \hline
+	    Taza   & 36.75      & 26.20       & 90.79             & 0                & 0\\
+	    \hline
+	    Gorra  & 57.93      & 21.77       & 80.49             & 0                & 0\\
+	    \hline
+	    Bowl   & 74.13      & 40.24       & 30.91             & 0                & 0\\
+	    \hline
+    \end{tabular}
+	\caption{Mejores resultados combinando comparación de histogramas por Bhattachayyra para RGB y para SV (del esquema HSV)}
+	\label{pruebas_definitivas_rgb_sv}
+\end{table}
+
+
 
 \subsection{Evaluación del tracking RGB}
 A continuación se muestran los resultados del algoritmo de seguimiento elegido para las imágenes RGB con los valores de los parámetros ya fijados. Para todas las pruebas se eligieron tres objetos distintos que aparecen en dos escenas, todos sacados de la base de datos indicada en la sección \ref{base_rgbd}.
@@ -104,5 +142,18 @@ En la figura \ref{frame_frame} se intenta visualizar mejor el comportamiento del
 
 Se puede ver en el gráfico \ref{frame_frame_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una hipótesis es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena. \comentarioM{No estaría bueno indicar el porcentaje de solapamiento promedio del algoritmo de seguimiento sin tener en cuenta las detecciones????}
 
+
+
+\subsection{Método de seguimiento en D}
+El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. Esta elección surge de manera natural e intuitiva por las características del mismo. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
+
+La implementación de ICP utilizada es la incluida en la librería ``Point Cloud Library''. Esta implementación admite distintos parámetros para modificar el comportamiento del método. Los parámetros explorados son los siguientes:
+
+\begin{enumerate}
+	\item Distancia máxima de correspondencia: Si entre dos puntos existe una distancia mayor a este valor no se van a tener en cuenta para la búsqueda de correspondencias.
+	\item Número de iteraciones máximo: Criterio de corte. 
+	\item Distancia mínima entre transformaciones: Criterio de corte. Si dos transformaciones consecutivas tienen una distancia menor a este valor, el algoritmo converge.
+	\item Suma euclidiana mínima: Criterio de corte. Si 
+\end{enumerate}
 
 \section{Discusión}

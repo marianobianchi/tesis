@@ -117,6 +117,12 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         param_values = [unicode(p) for p in param_values]
         param_values.sort()
 
+    # Para que funcione con las pruebas_xxx
+    param_values = [pv for pv in param_values
+                    if os.path.isdir(os.path.join(path, scenenamenum, objnamenum, param, pv))]
+    if len(param_values) == 0:
+        param_values = ['']
+
     # Valor de parametro y el promedio de solapamiento por frame
     paramval_avgsareaperframe = []
 
@@ -135,7 +141,12 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         frames_overlappedareas = []
         frames_explanations = []
 
-        for run_num in os.listdir(param_path):
+        run_nums = os.listdir(param_path)
+        run_nums = [rn for rn in run_nums if os.path.isdir(os.path.join(param_path, rn))]
+        if len(run_nums) == 0:
+            run_nums = ['']
+
+        for run_num in run_nums:
             frames_overlappedareas_per_run = []
             frames_explanations_per_run = []
 
@@ -803,7 +814,7 @@ if __name__ == '__main__':
     ##################
     # DEFINITIVOS
     ##################
-    # # Bhatta verde
+    # Bhatta verde
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -828,8 +839,8 @@ if __name__ == '__main__':
     #     param='definitivo_batta_green_channel',
     #     path='pruebas_guardadas',
     # )
-    # #
-    # # # Correlation verde
+    #
+    # # Correlation verde
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1264,29 +1275,57 @@ if __name__ == '__main__':
     # )
 
     # Definitivo DEPTH
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+
+    # dibujar_cuadros_encontrados_y_del_ground_truth()
+
+    # Prueba colgada hsv-rgb
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='definitivo_DEPTH',
+        param='prueba_003',
         path='pruebas_guardadas',
     )
+
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='definitivo_DEPTH',
+        param='prueba_002',
         path='pruebas_guardadas',
     )
+
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='definitivo_DEPTH',
+        param='prueba_002',
         path='pruebas_guardadas',
     )
-
-    # dibujar_cuadros_encontrados_y_del_ground_truth()

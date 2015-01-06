@@ -21,7 +21,12 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     param_values = os.listdir(
         os.path.join(path, scenenamenum, objnamenum, param)
     )
+    param_values = [pv for pv in param_values
+                    if os.path.isdir(os.path.join(path, scenenamenum, objnamenum, param, pv))]
     param_values.sort()
+
+    if len(param_values) == 0:
+        param_values = ['']
 
     index = {}
 
@@ -40,7 +45,12 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         times_object_followed = 0
 
         # Para cada corrida
-        for run_num in os.listdir(param_path):
+        run_nums = os.listdir(param_path)
+        run_nums = [rn for rn in run_nums if os.path.isdir(os.path.join(param_path, rn))]
+        if len(run_nums) == 0:
+            run_nums = ['']
+
+        for run_num in run_nums:
             resultfile = os.path.join(param_path, run_num, 'results.txt')
             with codecs.open(resultfile, 'r', 'utf-8') as file_:
                 reach_result_zone = False
@@ -841,7 +851,7 @@ if __name__ == '__main__':
     ##################
     # DEFINITIVOS RGB
     ##################
-    # Bhatta verde
+    # # Bhatta verde
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1241,31 +1251,31 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # Definitivo DEPTH
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
-    analizar_overlapping_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
+    # # Definitivo DEPTH
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
 
 
 
@@ -1299,3 +1309,32 @@ if __name__ == '__main__':
     #     param='prueba_001',
     #     path='pruebas_guardadas',
     # )
+
+    # Prueba colgada del RGB-HSV
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='prueba_003',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='prueba_002',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='prueba_002',
+        path='pruebas_guardadas',
+    )
+
