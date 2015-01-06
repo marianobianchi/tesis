@@ -3,6 +3,7 @@
 
 from __future__ import (unicode_literals, division, print_function)
 
+import math
 import cv2, numpy as np
 import matplotlib.pyplot as plt
 from scipy.spatial import distance as dist
@@ -120,15 +121,26 @@ def prueba_histogramas():
     hsv_index = {}
     images = {}
 
-    model_filename = 'imagenes/gorra_modelo'
+    # Taza
+    # model_filename = 'imagenes/taza_modelo'
+    # model_mask = cv2.imread('imagenes/taza_mascara.png', cv2.IMREAD_GRAYSCALE)
+
+    # Gorra
+    model_filename = 'imagenes/gorra_encontrada1'
     model_mask = cv2.imread('imagenes/gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
 
+    # Taza
+    # for filename in ['imagenes/taza_modelo', 'imagenes/taza2',
+    #                  'imagenes/taza3', 'imagenes/taza4',
+    #                  'imagenes/taza_maso_encontrada1', 'imagenes/taza_maso_encontrada2',
+    #                  'imagenes/taza_maso_encontrada5', 'imagenes/taza',
+    #                  'imagenes/taza_maso_encontrada7']:
     # loop over the image paths
-    for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_seguida1',
+    for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_encontrada',
+                     'imagenes/gorra_encontrada1', 'imagenes/gorra_encontrada2',
+                     'imagenes/gorra_encontrada3', 'imagenes/gorra_seguida1',
                      'imagenes/gorra_seguida2', 'imagenes/gorra_seguida3',
-                     'imagenes/gorra_seguida4', 'imagenes/gorra_encontrada1',
-                     'imagenes/gorra_encontrada2', 'imagenes/gorra_encontrada3',
-                     'imagenes/gorra_encontrada']:
+                     'imagenes/gorra_seguida4']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -141,12 +153,12 @@ def prueba_histogramas():
         # extract a 3D RGB color histogram from the image,
         # using 8 bins per channel, normalize, and update
         # the index
-        hist = cv2.calcHist([image_rgb], [1], mask, [70], [0, 256])
+        hist = cv2.calcHist([image_rgb], [0, 1, 2], mask, [8, 8, 8], [0, 256, 0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         rgb_index[filename] = hist
 
         # extract a 3D HSV color histogram from the image
-        hist = cv2.calcHist([image_hsv], [0, 1, 2], mask, [40, 60, 60], [0, 180, 0, 256, 0, 256])
+        hist = cv2.calcHist([image_hsv], [1, 2], mask, [8, 16], [0, 256, 0, 256])
         hist = cv2.normalize(hist).flatten()
         hsv_index[filename] = hist
 
@@ -159,19 +171,31 @@ def prueba_histogramas():
 
         # if we are using the correlation or intersection
         # method, then sort the results in reverse order
-        if methodName in ("Correlation", "Intersection"):
-            reverse = True
+        # if methodName in ("Correlation", "Intersection"):
+        #     reverse = True
 
         for (k, hist) in rgb_index.items():
             # compute the distance between the two histograms
             # using the method and update the results dictionary
             d = cv2.compareHist(rgb_index[model_filename], hist, method)
+            if methodName == 'Correlation':
+                d = 1 - abs(d)
+            elif methodName == 'Intersection':
+                d = 1.0 / (d + 1)
+            elif methodName == 'Chi-Squared':
+                d = 1 - 1.0 / math.log(d + 10)
             results['{f}#RGB'.format(f=k)] = d
 
         for (k, hist) in hsv_index.items():
             # compute the distance between the two histograms
             # using the method and update the results dictionary
             d = cv2.compareHist(hsv_index[model_filename], hist, method)
+            if methodName == 'Correlation':
+                d = 1 - abs(d)
+            elif methodName == 'Intersection':
+                d = 1.0 / (d + 1)
+            elif methodName == 'Chi-Squared':
+                d = 1 - 1.0 / math.log(d + 10)
             results['{f}#HSV'.format(f=k)] = d
 
         # sort the results
@@ -202,7 +226,7 @@ def prueba_histogramas():
                 ax = fighsv.add_subplot(3, 3, hsv_res_num + 1)
                 hsv_res_num += 1
 
-            ax.set_title("%s: %.2f" % (k, v))
+            ax.set_title("%s: %.5f" % (k, v))
 
             k = k.split('#')[0]
             ax.imshow(images[k])
@@ -748,6 +772,6 @@ def probando_mi_metodo_chebysev():
     ).run()
 
 if __name__ == '__main__':
-    prueba_mejor_canal_hsv_histogramas()
+    prueba_histogramas()
 
 

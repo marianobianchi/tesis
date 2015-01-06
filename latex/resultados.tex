@@ -28,9 +28,11 @@ Luego de realizar varias pruebas manuales se concluyó que el método que mejor 
 	\label{pruebas_eleccion_canales}
 \end{figure}
 
-Para decidir que esquema de colores, que canales y cuantos bines por cada canal se iban a utilizar se eligieron dos objetos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió un metodo de comparación de histogramas y un template del objeto como modelo y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de mejor a peor. Un ejemplo de esto se puede ver en la figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
+Para decidir que esquema de colores, que canales y cuantos bines por cada canal se iban a utilizar se eligieron dos objetos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió un metodo de comparación de histogramas y un template del objeto como modelo y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de mejor matching a peor. Un ejemplo de esto se puede ver en la figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
 
-Este análisis nos permitió verificar que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente.
+Este análisis nos permitió verificar que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas que método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
+
+
 
 
 
