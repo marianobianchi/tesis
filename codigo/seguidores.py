@@ -151,7 +151,7 @@ class RGBFollower(Follower):
 # Seguidores RGB-D
 ###################
 
-class RGBDFollowerWithStaticDetection(Follower):
+class RGBDPreferDFollowerWithStaticDetection(Follower):
     """
     Combina los seguidores RGB y D usando la deteccion estatica de profundidad,
     ya que inserta en los descriptores a las nubes de puntos
@@ -176,7 +176,7 @@ class RGBDFollowerWithStaticDetection(Follower):
     # Descriptores comunes
     ########################
     def descriptors(self):
-        desc = super(RGBDFollowerWithStaticDetection, self).descriptors()
+        desc = super(RGBDPreferDFollowerWithStaticDetection, self).descriptors()
         desc.update({
             'scene_rgb': self.img_provider.rgb_img(),
             'depth_img': self.img_provider.depth_img(),

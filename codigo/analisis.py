@@ -299,7 +299,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
 def dibujar_cuadros_encontrados_y_del_ground_truth():
 
-    result_path = 'pruebas_guardadas/desk_1/coffee_mug_5/DEPTH_det_inlier_thresh/4/01/'
+    result_path = 'pruebas_guardadas/desk_1/coffee_mug_5/definitivo_DEPTH/DEFINITIVO/01/'
     result_data_path = result_path + 'results.txt'
 
     found_cloud_path_re = 'obj_found_scenepoints_frame_{nframe:03d}.pcd'
@@ -385,9 +385,9 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
                 cv2.destroyAllWindows()
 
-                cloud_fname = cloud_path_re.format(nframe=nframe)
-                found_cloud_fname = result_path + found_cloud_path_re.format(nframe=nframe)
-                subprocess.call(['pcl_viewer', cloud_fname, found_cloud_fname])
+                # cloud_fname = cloud_path_re.format(nframe=nframe)
+                # found_cloud_fname = result_path + found_cloud_path_re.format(nframe=nframe)
+                # subprocess.call(['pcl_viewer', cloud_fname, found_cloud_fname])
 
 
 
@@ -1300,32 +1300,32 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # dibujar_cuadros_encontrados_y_del_ground_truth()
+    dibujar_cuadros_encontrados_y_del_ground_truth()
 
-    # Prueba colgada hsv-rgb
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='prueba_003',
-        path='pruebas_guardadas',
-    )
-
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='prueba_002',
-        path='pruebas_guardadas',
-    )
-
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='prueba_002',
-        path='pruebas_guardadas',
-    )
+    # # Prueba colgada hsv-rgb
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='prueba_003',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='prueba_002',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='prueba_002',
+    #     path='pruebas_guardadas',
+    # )

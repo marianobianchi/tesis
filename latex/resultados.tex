@@ -120,32 +120,32 @@ Como podemos ver en la tabla \ref{tabla_rgb} el tracking se comporta de manera m
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
-		\label{frame_frame_taza}
+		\label{frame_frame_rgb_taza}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
-		\label{frame_frame_gorra}
+		\label{frame_frame_rgb_gorra}
 	\end{subfigure}	
 	\quad
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
-		\label{frame_frame_bowl}
+		\label{frame_frame_rgb_bowl}
 	\end{subfigure}
 	\caption{\comentarioM{Descripcion}}
-	\label{frame_frame}
+	\label{frame_frame_rgb}
 \end{figure}
 
-En la figura \ref{frame_frame} se intenta visualizar mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada gráfico se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth. Los puntos que están en 0 de color verde indican que el objeto no fue encontrado y que eso coincide con el ground truth, como es el caso de los gráficos \ref{frame_frame_taza} y \ref{frame_frame_gorra}. En el gráfico \ref{frame_frame_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para los tres gráficos, todas los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento. 
+En la figura \ref{frame_frame_rgb} se intenta visualizar mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada gráfico se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth. Los puntos que están en 0 de color verde indican que el objeto no fue encontrado y que eso coincide con el ground truth, como es el caso de los gráficos \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En el gráfico \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para los tres gráficos, todas los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento. 
 
-Se puede ver en el gráfico \ref{frame_frame_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una hipótesis es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena. \comentarioM{No estaría bueno indicar el porcentaje de solapamiento promedio del algoritmo de seguimiento sin tener en cuenta las detecciones????}
+Se puede ver en el gráfico \ref{frame_frame_rgb_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una hipótesis es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena. \comentarioM{No estaría bueno indicar el porcentaje de solapamiento promedio del algoritmo de seguimiento sin tener en cuenta las detecciones????}
 
 
 
 \subsection{Método de seguimiento en D}
-El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. Esta elección surge de manera natural e intuitiva por las características del mismo. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
+El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
 
 La implementación de ICP utilizada es la incluida en la librería ``Point Cloud Library''. Esta implementación admite distintos parámetros para modificar el comportamiento del método. Los parámetros explorados son los siguientes:
 
@@ -153,7 +153,96 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 	\item Distancia máxima de correspondencia: Si entre dos puntos existe una distancia mayor a este valor no se van a tener en cuenta para la búsqueda de correspondencias.
 	\item Número de iteraciones máximo: Criterio de corte. 
 	\item Distancia mínima entre transformaciones: Criterio de corte. Si dos transformaciones consecutivas tienen una distancia menor a este valor, el algoritmo converge.
-	\item Suma euclidiana mínima: Criterio de corte. Si 
+	\item Suma euclidiana mínima: Criterio de corte. Es diferencia euclideana mínima permitido entre dos pasos del algoritmo.
 \end{enumerate}
+
+Además una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utilizó como umbral para decidir si la respuesta encontrada se consideraba correcta o no, por lo que también se exploró como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procedia a tomar los puntos de la escena que suponían ser los del objeto que se estaba buscando. La explicación de cómo se realizó este filtrado se puede ver en \comentarioM{EXPLICACION USO DE KDTREE. EXPLICAR EL AUTOAJUSTE DEL LEAF PARA KDTREE}. Una vez filtrados los puntos de la escena se comparaba esta cantidad de puntos con la cantidad de puntos que tenía el modelo del objeto. Si esa cantidad superaba un porcentaje de puntos del modelo se consideraba que el objeto habia sido encontrado. Este porcentaje también fue uno de los parámetros que se exploró.
+
+\subsection{Evaluación del tracking en D}
+En esta sección se muestran los resultados de ICP para las imágenes D con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB.
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza   & 49.12      & 18.74       & 91.67             & 0                & 2\footnote{NO TIENE SENTIDO QUE HAYA FALSOS NEGATIVOS PORQUE SI NO SE SIGUE SE TIENE QUE ENCONTRAR PORQUE LA DETECCION ES IDEAL. VER EL ANALISIS. VER SI ESTO SUCEDE PORQUE FALLO EL FILTRO DE PUNTOS DE LA ESCENA LUEGO DE LA DETECCION}\\
+    \hline
+    Gorra  & 47.65      & 17.53       & 93.50             & 1                & 0\\
+    \hline
+    Bowl   & 38.24      & 23.50       & 93.94             & 4                & 0\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking D utilizando como detección los valores sacados de la base de datos más una etapa de refinamiento de estos datos usando AP e ICP.}
+\label{tabla_d}
+\end{table}
+
+En la tabla \ref{tabla_d} se puede ver que el tracking se comporta de manera más regular que el algoritmo de RGB. Los tres ejemplos tienen una alta taza de seguimiento, en particular, todas por encima del 90\%. En los casos de la taza y la gorra además se tiene un buen balance entre el promedio de solapamiento del área encontrada y el área reportada por el ground truth y el desvío estándar. 
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/frame_98_taza_rgb.png}
+		\caption{Seguimiento reportado por el tracking en D y proyectado en RGB.}
+		\label{taza_ocluida_rgb}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/frame_98_taza_pcd.png}
+		\caption{Visualización de la nube de puntos reportada por el tracking en D}
+		\label{taza_ocluida_pcd}
+	\end{subfigure}	
+	\caption{Muestra de un resultado de la detección en D. Las áreas se solapan en un 47\%.}
+	\label{taza_ocluida}
+\end{figure}
+
+Un problema que encontramos es que en nuestra solución no hacemos un ajuste del tamaño del área reportada si el objeto está ocluído. En la figura \ref{taza_ocluida} podemos ver como el algoritmo detecta de manera exitosa a la taza pero que solo reporta el área de la taza que está visible y no ajusta el tamaño al del modelo del objeto que se obtuvo en la etapa de entrenamiento. La subfigura \ref{taza_ocluida_rgb} muestra en color azul el recuadro reportado por nuestro algoritmo de seguimiento en donde se encuentra la taza. El recuadro verde corresponde al área que indica el ground truth como correcta. Se puede observar que el recuadro verde incluye además de la parte visible de la taza una porción importante de la lata que está delante de ella y que si se tiene en cuenta el tamaño de la taza este área está incluyendo a la parte de la taza que se encuentra ocluida. A pesar de no ser algo que suceda reiteradas veces en las escenas y objetos elegidos para estas pruebas, puede ser un punto de mejora para nuestro algoritmo. 
+
+Otra decisión que se tomó al implementar nuestro algoritmo fue que no se utilice el modelo del objeto para refinar el seguimiento, por ejemplo, para realizar el filtrado de puntos de la escena que corresponden al objeto que se busca. Esto es porque dependiendo de la forma del objeto, de la pose del objeto en el frame actual y de la pose que tiene el modelo del objeto no resulta sencillo decidir si es conveniente utilizar el modelo para hacer este filtrado. En cambio, decidimos utilizar la nube de puntos hallada en el frame anterior como base para filtrar los puntos en el frame actual una vez que se quiera refinar el resultado. Por este motivo es que en ocaciones el algoritmo devuelve como parte del resultado puntos que no corresponden al objeto que se busca. En la imagen \ref{taza_ocluida_pcd} se pueden ver tres regiones de puntos de color rojo. Esas regiones son las reportadas por el algoritmo como puntos de la taza. Si las enumeramos de arriba hacia abajo, la primer región no forma parte de la taza sino que es parte de la caja de pañuelos que está detrás de la misma. Esto podría evitarse en este caso si se filtraran los puntos de la escena usando el modelo de la taza pero sólo porque la forma de la misma es simétrica si no se tiene en cuenta su asa. En el caso de la gorra por ejemplo ya no queda tan claro que sirva filtrar usando el modelo porque la visera la hace asimétrica y el tamaño de la misma no permite despreciar esos puntos. 
+
+Haciendo un análisis de los frames anteriores al de las figuras \ref{taza_ocluida} y de cómo se fue desarrollando el seguimiento notamos que el motivo por el cual se incluye parte de la caja de pañuelos como puntos de la taza es porque en la etapa de detección falló el refinamiento por AP, ICP y el filtrado de puntos. En la figura \ref{filtro_en_deteccion} mostramos como se ve una detección sacada directa desde la base de datos y un refinado de la detección utilizando el modelo del objeto y alineándolo usando AP e ICP y filtrando los puntos de la escena.
+\comentarioM{Ver frame 52,53,54,55 y decidir si conviene definir que hay deteccion si y solo si AP, ICP y el filtrado en la escena son exitosos porque cuando no lo son la nube de puntos reportada como detectada es enorme y no distingue bien cual es el objeto...}
+
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/taza_filtrado_exitoso_definitivo_depth_frame12.png}
+	\includegraphics[width=\textwidth]{img/taza_filtrado_fallido_depth_simil_thresh_01_frame66.png}
+	\caption{PONER ALGO ACA}
+	\label{filtro_en_deteccion}
+\end{figure}
+
+En las figuras \ref{frame_frame_d} se muestran para cada escena y objeto como se comportó el tracking frame a frame. El análisis es el mismo que se explicó para la figura \ref{frame_frame_rgb}, aunque en estos gráficos aparecen algunas referencias nuevas. En la subfigura \ref{frame_frame_d_taza} se observan dos puntos de color naranja con valor 0\%. Estos valores corresponden a los frames 32 y 52. Estos puntos indican que el algoritmo de tracking reportó no encontrar al objeto cuando en realidad el objeto está en la imagen según los datos del ground truth. Estos puntos se corresponden con los dos falsos negativos reportados en la tabla \ref{tabla_d} para la taza. En la figura \ref{frame_frame_d_gorra} se puede identificar un punto rojo correspondiente al frame 66 con un valor del 0\%. Lo que indica este color es que el algoritmo de tracking reportó haber encontrado al objeto pero el ground truth indica que el objeto no se encuentra en ese frame, es decir, es un falso positivo. Por último, en la figura \ref{frame_frame_d_bowl} existen múltiples puntos de color negro. Estos puntos indican que en las múltiples corridas del algoritmo para esta escena y con estos valores de parámetros hubo distintos resultados para el mismo frame. Entre los frames 72 y 108 el ground truth indica que el bowl no se encuentra en la escena. Los puntos negros en el gráfico \ref{frame_frame_d_bowl} entre dichos frames con valor 0\% indican que alguna de las corridas el algoritmo reportó haber encontrado al objeto, es decir que hubo falsos positivos y en otras reportó correctamente que el objeto no se hallaba en esos frames. Luego, entre los frames 109 y 122 además de haber puntos negros con valor 0\% existen algunos con valores mayormente cercanos al 15\%. Eso significa que en alguna de las corridas el algoritmo reportó haber encontrado al objeto y en otras no lo encontró en cuyo caso fueron falsos negativos. Lo que buscamos con este análisis es reducir la cantidad de puntos negros al mínimo ya que es un indicador de que tan robusto es el algoritmo.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-taza.png}
+		\caption{Seguimiento frame a frame para la taza}
+		\label{frame_frame_d_taza}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-gorra.png}
+		\caption{Seguimiento frame a frame para la gorra}
+		\label{frame_frame_d_gorra}
+	\end{subfigure}	
+	\quad
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
+		\caption{Seguimiento frame a frame para el bowl}
+		\label{frame_frame_d_bowl}
+	\end{subfigure}
+	\caption{\comentarioM{Descripcion}}
+	\label{frame_frame_d}
+\end{figure}
+
+
+\subsection{Evaluación del tracking en RGB-D}
+
+
+
+
 
 \section{Discusión}

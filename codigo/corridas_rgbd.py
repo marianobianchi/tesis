@@ -12,31 +12,31 @@ from buscadores import ICPFinderWithModel, HistogramComparator, \
 from metodos_comunes import AdaptLeafRatio, FixedSearchArea
 from metodos_de_busqueda import BusquedaCambiandoSizePeroMismoCentro
 from detectores import StaticDetectorForRGBD
-from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
-    FollowingSquemaExploringParameterPCD, FollowingSchemeSavingDataRGBD
+from esquemas_seguimiento import FollowingSchemeSavingDataRGBD, \
+    FollowingSchemeExploringParameterRGBD
 from observar_seguimiento import MuestraSeguimientoEnVivo
 from proveedores_de_imagenes import FrameNamesAndImageProvider, \
     FrameNamesAndImageProviderPreChargedForPCD
-from seguidores import RGBDFollowerWithStaticDetection
+from seguidores import RGBDPreferDFollowerWithStaticDetection
 
 
 
-def correr(img_provider, scenename, scenenumber, objname):
+def correr_con_depth_como_principal(img_provider, scenename, scenenumber, objname):
     # Set alignment detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
-    ap_defaults.max_ransac_iters = 100
+    ap_defaults.max_ransac_iters = 120
     ap_defaults.points_to_sample = 3
-    ap_defaults.nearest_features_used = 2
-    ap_defaults.simil_threshold = 0.4
-    ap_defaults.inlier_threshold = 1.5
-    ap_defaults.inlier_fraction = 0.7
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.6
+    ap_defaults.inlier_threshold = 4
+    ap_defaults.inlier_fraction = 0.3
 
     icp_detection_defaults = ICPDefaults()
-    icp_detection_defaults.euc_fit = 1e-15
+    icp_detection_defaults.euc_fit = 1e-10
     icp_detection_defaults.max_corr_dist = 3
     icp_detection_defaults.max_iter = 50
-    icp_detection_defaults.transf_epsilon = 1e-15
+    icp_detection_defaults.transf_epsilon = 1e-6
 
     det_umbral_score = 1e-3
     det_obj_scene_leaf = 0.005
@@ -44,16 +44,16 @@ def correr(img_provider, scenename, scenenumber, objname):
 
     # Set depth following parameters values
     icp_finder_defaults = ICPDefaults()
-    icp_finder_defaults.euc_fit = 1e-5
-    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.euc_fit = 1e-10
+    icp_finder_defaults.max_corr_dist = 0.1
     icp_finder_defaults.max_iter = 50
-    icp_finder_defaults.transf_epsilon = 1e-5
+    icp_finder_defaults.transf_epsilon = 1e-6
 
-    find_umbral_score = 1e-4
+    find_umbral_score = 0.04
     find_adapt_area = FixedSearchArea(3)
     find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
-    find_perc_obj_model_points = 0.5
+    find_perc_obj_model_points = 0.4
 
     # Set RGB following parameters values
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
@@ -69,7 +69,7 @@ def correr(img_provider, scenename, scenenumber, objname):
     metodo_de_busqueda = BusquedaCambiandoSizePeroMismoCentro()
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
-    for i in range(1):
+    for i in range(3):
         detector = StaticDetectorForRGBD(
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
@@ -109,7 +109,7 @@ def correr(img_provider, scenename, scenenumber, objname):
             perc_obj_model_points=find_perc_obj_model_points,
         )
 
-        follower = RGBDFollowerWithStaticDetection(
+        follower = RGBDPreferDFollowerWithStaticDetection(
             image_provider=img_provider,
             depth_static_detector=detector,
             rgb_finder=rgb_finder,
@@ -119,33 +119,33 @@ def correr(img_provider, scenename, scenenumber, objname):
         # mostrar_seguimiento = MuestraSeguimientoEnVivo('Seguimiento')
 
         # FollowingScheme(img_provider, follower, mostrar_seguimiento).run()
-        FollowingSchemeSavingDataRGBD(
+        FollowingSchemeExploringParameterRGBD(
             img_provider,
             follower,
             'pruebas_guardadas',
-            # 'STATIC_find_perc_obj_model_points',
-            # find_perc_obj_model_points,
+            'definitivo_RGBD',
+            'DEFINITIVO',
         ).run()
 
-        # img_provider.restart()
+        img_provider.restart()
 
 
 if __name__ == '__main__':
     desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'cap', '4',
+        'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    correr(desk_1_img_provider, 'desk', '1', 'cap')
+    correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
-    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    # correr(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    desk_1_img_provider.reinitialize_object('cap', '4')
+    correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'cap')
 
     desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
         'videos/rgbd/scenes/', 'desk', '2',
         'videos/rgbd/objs/', 'bowl', '3',
     )  # path, objname, number
-    correr(desk_2_img_provider, 'desk', '2', 'bowl')
+    correr_con_depth_como_principal(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
 

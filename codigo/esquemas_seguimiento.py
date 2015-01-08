@@ -502,3 +502,9 @@ class FollowingSchemeSavingDataRGBD(FollowingSchemeSavingDataPCD):
     def write_parameter_values(self):
         self.file.write(b'RESULTS_SECTION\n')
         self.file.flush()
+
+
+class FollowingSchemeExploringParameterRGBD(FollowingSquemaExploringParameterPCD):
+    def write_parameter_values(self):
+        self.file.write(b'RESULTS_SECTION\n')
+        self.file.flush()
