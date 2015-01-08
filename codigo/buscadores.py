@@ -582,9 +582,9 @@ class TemplateAndFrameHistogramFinder(Finder):
             es_deteccion
         )
         if fue_exitoso:
-            print "    Mejor comparación:", valor_comparativo
+            print "    Mejor comparación en RGB:", valor_comparativo
         else:
-            print "    No se siguió"
+            print "    No se siguió en RGB"
         desc = {}
 
         if fue_exitoso:
@@ -1066,20 +1066,20 @@ class FragmentedReverseCompHistogramFinder(FragmentedHistogramFinder):
 # Buscadores para RGB-D
 ########################
 
-class ImproveObjectFoundWithHistogramFinder(TemplateAndFrameGreenHistogramFinder):
+class ImproveObjectFoundWithHistogramFinder(TemplateAndFrameHistogramFinder):
     def saved_object_comparisson(self):
         if 'object_frame_hist' not in self._descriptors:
             scene = self._descriptors['scene_rgb']
             top, left = self._descriptors['topleft']
             bottom, right = self._descriptors['bottomright']
             obj = scene[top:bottom, left:right]
-            hist = self.calculate_histogram(obj)
+            hist = self.calculate_hsv_histogram(obj)
             self._descriptors['object_frame_hist'] = hist
 
         if 'object_template_hist' not in self._descriptors:
             obj = self._descriptors['object_template']
             mask = self._descriptors['object_mask']
-            hist = self.calculate_histogram(obj, mask)
+            hist = self.calculate_rgb_histogram(obj, mask)
             self._descriptors['object_template_hist'] = hist
 
         return (self._descriptors['object_template_hist'],

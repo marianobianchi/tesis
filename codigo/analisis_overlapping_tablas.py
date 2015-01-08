@@ -1282,22 +1282,24 @@ if __name__ == '__main__':
 
 
 
-    # Prueba colgada del RGBD
+    ##################################################################
+    # STATIC DETECTION y seguimiento RGB-D, preferentemente D PRUEBAS
+    ##################################################################
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
     #     objname='coffee_mug',
     #     objnum='5',
-    #     param='prueba_002',
+    #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
-    #
+
     # analizar_overlapping_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
     #     objname='cap',
     #     objnum='4',
-    #     param='prueba_001',
+    #     param='RGBD_preferD_pruebas',
     #     path='pruebas_guardadas',
     # )
     #
@@ -1306,7 +1308,7 @@ if __name__ == '__main__':
     #     scenenamenum='desk_2',
     #     objname='bowl',
     #     objnum='3',
-    #     param='prueba_001',
+    #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
 
@@ -1335,6 +1337,16 @@ if __name__ == '__main__':
     #     objname='bowl',
     #     objnum='3',
     #     param='prueba_002',
+    #     path='pruebas_guardadas',
+    # )
+
+    # # Prueba colgada del DEPTH
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='DEPTH_probando_definitivo',
     #     path='pruebas_guardadas',
     # )
 

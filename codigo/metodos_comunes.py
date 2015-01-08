@@ -357,9 +357,9 @@ class FixedSearchArea(AdaptSearchArea):
 
         obj_tam = val * 2
         eje_tam = obj_tam + obj_tam * self.obj_size_times
-        print "    tam. objeto en el eje:", obj_tam
-        print "    tam. busqueda en el eje:", eje_tam
-        print "    relacion-tamaño:", eje_tam * 1.0 / obj_tam
+        # print "    tam. objeto en el eje:", obj_tam
+        # print "    tam. busqueda en el eje:", eje_tam
+        # print "    relacion-tamaño:", eje_tam * 1.0 / obj_tam
 
         return val * self.obj_size_times
 

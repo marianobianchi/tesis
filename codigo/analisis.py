@@ -299,7 +299,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
 def dibujar_cuadros_encontrados_y_del_ground_truth():
 
-    result_path = 'pruebas_guardadas/desk_1/coffee_mug_5/definitivo_DEPTH/DEFINITIVO/01/'
+    result_path = 'pruebas_guardadas/desk_1/cap_4/definitivo_RGBD_preferD/DEFINITIVO/01/'
     result_data_path = result_path + 'results.txt'
 
     found_cloud_path_re = 'obj_found_scenepoints_frame_{nframe:03d}.pcd'
@@ -308,7 +308,7 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
 
     ground_truth = StaticDetector(
         matfile_path='videos/rgbd/scenes/desk/desk_1.mat',
-        obj_rgbd_name='coffee_mug',
+        obj_rgbd_name='cap',
     )
 
     with codecs.open(result_data_path, 'r', 'utf-8') as file_:
@@ -348,10 +348,11 @@ def dibujar_cuadros_encontrados_y_del_ground_truth():
                 ground_truth_rectangle
             )
 
-            if intersection.area() > 0:
-                union_area = (
-                    rectangle_found.area() + ground_truth_rectangle.area() - intersection.area()
-                )
+            union_area = (
+                rectangle_found.area() + ground_truth_rectangle.area() - intersection.area()
+            )
+
+            if union_area > 0:
                 overlap_area = intersection.area() / union_area
                 print("Overlap_area: " + unicode(overlap_area))
 
@@ -1043,7 +1044,7 @@ if __name__ == '__main__':
     #     objnum='5',
     #     param='DEPTH_find_umbral_score',
     #     path='pruebas_guardadas',
-    #     param_values=['0.04', '0.03', '0.01', '0.001', '0.0001'],
+    #     param_values=['0.04', '0.0001'],
     # )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -1052,7 +1053,7 @@ if __name__ == '__main__':
     #     objnum='4',
     #     param='DEPTH_find_umbral_score',
     #     path='pruebas_guardadas',
-    #     param_values=['0.04', '0.03', '0.01', '0.001', '0.0001'],
+    #     param_values=['0.04', '0.0001'],
     # )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
@@ -1061,7 +1062,7 @@ if __name__ == '__main__':
     #     objnum='3',
     #     param='DEPTH_find_umbral_score',
     #     path='pruebas_guardadas',
-    #     param_values=['0.04'],
+    #     param_values=['0.04', '0.0001'],
     # )
 
 
@@ -1244,9 +1245,9 @@ if __name__ == '__main__':
     #     param_values=['0.3'],
     # )
 
-    ###################
-    # Seguimiento RGBD
-    ###################
+    ##################################################################
+    # STATIC DETECTION y seguimiento RGB-D, preferentemente D PRUEBAS
+    ##################################################################
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1261,7 +1262,7 @@ if __name__ == '__main__':
     #     scenenamenum='desk_1',
     #     objname='cap',
     #     objnum='4',
-    #     param='prueba_001',
+    #     param='RGBD_preferD_pruebas',
     #     path='pruebas_guardadas',
     # )
     #
@@ -1270,37 +1271,39 @@ if __name__ == '__main__':
     #     scenenamenum='desk_2',
     #     objname='bowl',
     #     objnum='3',
-    #     param='prueba_001',
+    #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
 
-    # Definitivo DEPTH
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
+    ##########################################################
+    # STATIC DETECTION y definitivo DEPTH
+    ##########################################################
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
 
-    dibujar_cuadros_encontrados_y_del_ground_truth()
+    # dibujar_cuadros_encontrados_y_del_ground_truth()
 
     # # Prueba colgada hsv-rgb
     # promedio_frame_a_frame(
@@ -1327,5 +1330,15 @@ if __name__ == '__main__':
     #     objname='bowl',
     #     objnum='3',
     #     param='prueba_002',
+    #     path='pruebas_guardadas',
+    # )
+
+    # Prueba colgada del DEPTH
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='DEPTH_probando_definitivo',
     #     path='pruebas_guardadas',
     # )

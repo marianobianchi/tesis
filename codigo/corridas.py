@@ -1528,7 +1528,7 @@ def definitivo_depth(img_provider, scenename, scenenumber, objname):
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-6
 
-    find_umbral_score = 0.04
+    find_umbral_score = 1e-4
     find_adapt_area = FixedSearchArea(3)
     find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002

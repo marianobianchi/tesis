@@ -54,6 +54,7 @@ class Follower(object):
 
         # Detectar
         fue_exitoso, descriptors = self.detector.detect()
+
         topleft = (0, 0)
         bottomright = (0, 0)
 
@@ -249,11 +250,12 @@ class RGBDPreferDFollowerWithStaticDetection(Follower):
             # no moviendo el centro del cuadrante
             self.upgrade_depth_followed_descriptors(descriptors)
             self.rgb_finder.update(self.descriptors())
-            mejora_fue_exitosa, new_descriptors = self.rgb_finder.find(es_deteccion=False)
+            mejora_fue_exitosa, new_descriptors = self.rgb_finder.find(es_deteccion)
 
             if mejora_fue_exitosa:
                 # Calculo y actualizo los descriptores con los valores encontrados
                 self.upgrade_rgb_followed_descriptors(new_descriptors)
+                print "Se mejoró el seguimiento con RGB"
 
             topleft = self.descriptors()['topleft']
             bottomright = self.descriptors()['bottomright']

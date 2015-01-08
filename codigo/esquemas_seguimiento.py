@@ -6,13 +6,16 @@ import os
 import re
 
 from cpp.common import save_pcd
+from observar_seguimiento import MuestraDelSeguimiento
 
 
 class FollowingScheme(object):
 
-    def __init__(self, img_provider, obj_follower, show_following):
+    def __init__(self, img_provider, obj_follower, show_following=None):
         self.img_provider = img_provider
         self.obj_follower = obj_follower
+        if show_following is None:
+            show_following = MuestraDelSeguimiento('Seguimiento')
         self.show_following = show_following
 
     def run(self):
@@ -81,11 +84,11 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
     """
     Guarda las pruebas en carpetas consecutivas llamadas prueba_###
     """
-    def __init__(self, img_provider, obj_follower, path):
+    def __init__(self, img_provider, obj_follower, path, show_following=None):
         super(FollowingSchemeSavingDataPCD, self).__init__(
             img_provider,
             obj_follower,
-            None,
+            show_following,
         )
 
         # para no pisar nunca los resultados voy a ir creando carpetas sucesivas
@@ -160,6 +163,16 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
             self.obj_follower.detect()
         )
 
+        # Muestro el seguimiento para hacer pruebas
+        self.show_following.run(
+            img_provider=self.img_provider,
+            topleft=topleft,
+            bottomright=bottomright,
+            fue_exitoso=fue_exitoso,
+            es_deteccion=True,
+            frenar=True,
+        )
+
         self.save_result(0, fue_exitoso, topleft, bottomright)
 
         #######################
@@ -196,6 +209,16 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
                     self.obj_follower.detect()
                 )
                 es_deteccion = True
+
+            # Muestro el seguimiento
+            self.show_following.run(
+                img_provider=self.img_provider,
+                topleft=topleft,
+                bottomright=bottomright,
+                fue_exitoso=fue_exitoso,
+                es_deteccion=es_deteccion,
+                frenar=True,
+            )
 
             self.save_result(
                 0 if es_deteccion else 1,
@@ -249,10 +272,14 @@ class FollowingSquemaExploringParameterPCD(FollowingSchemeSavingDataPCD):
     que se estan explorando
     """
 
-    def __init__(self, img_provider, obj_follower, path, param_name, param_val):
+    def __init__(self, img_provider, obj_follower, path, param_name, param_val,
+                 show_following=None):
         self.img_provider = img_provider
         self.obj_follower = obj_follower
-        self.show_following = None
+
+        if show_following is None:
+            show_following = MuestraDelSeguimiento('Seguimiento')
+        self.show_following = show_following
 
         self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/{p}/{v}')
         self.results_path = self.results_path.format(
@@ -329,9 +356,9 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
     """
     Guarda las pruebas en carpetas consecutivas llamadas prueba_###
     """
-    def __init__(self, img_provider, obj_follower, path):
+    def __init__(self, img_provider, obj_follower, path, show_following=None):
         (super(FollowingSchemeSavingDataRGB, self)
-         .__init__(img_provider, obj_follower, None))
+         .__init__(img_provider, obj_follower, show_following))
 
         # para no pisar nunca los resultados voy a ir creando carpetas sucesivas
         # llamadas prueba_###
@@ -384,6 +411,16 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
             self.obj_follower.detect()
         )
 
+        # Muestro el seguimiento para hacer pruebas
+        self.show_following.run(
+            img_provider=self.img_provider,
+            topleft=topleft,
+            bottomright=bottomright,
+            fue_exitoso=fue_exitoso,
+            es_deteccion=True,
+            frenar=True,
+        )
+
         self.save_result(0, fue_exitoso, topleft, bottomright)
 
         #######################
@@ -420,6 +457,16 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
                     self.obj_follower.detect()
                 )
                 es_deteccion = True
+
+            # Muestro el seguimiento
+            self.show_following.run(
+                img_provider=self.img_provider,
+                topleft=topleft,
+                bottomright=bottomright,
+                fue_exitoso=fue_exitoso,
+                es_deteccion=es_deteccion,
+                frenar=True,
+            )
 
             self.save_result(
                 0 if es_deteccion else 1,
@@ -458,10 +505,14 @@ class FollowingSquemaExploringParameterRGB(FollowingSchemeSavingDataRGB):
     que se estan explorando
     """
 
-    def __init__(self, img_provider, obj_follower, path, param_name, param_val):
+    def __init__(self, img_provider, obj_follower, path, param_name, param_val,
+                 show_following=None):
         self.img_provider = img_provider
         self.obj_follower = obj_follower
-        self.show_following = None
+
+        if show_following is None:
+            show_following = MuestraDelSeguimiento('Seguimiento')
+        self.show_following = show_following
 
         self.results_path = os.path.join(path, '{s}_{sn}/{o}_{on}/{p}/{v}')
         self.results_path = self.results_path.format(

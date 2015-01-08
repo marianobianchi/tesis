@@ -49,7 +49,7 @@ def correr_con_depth_como_principal(img_provider, scenename, scenenumber, objnam
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-6
 
-    find_umbral_score = 0.04
+    find_umbral_score = 1e-4
     find_adapt_area = FixedSearchArea(3)
     find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
@@ -136,16 +136,16 @@ if __name__ == '__main__':
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    # correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
     desk_1_img_provider.reinitialize_object('cap', '4')
     correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'cap')
 
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
-    correr_con_depth_como_principal(desk_2_img_provider, 'desk', '2', 'bowl')
+    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '2',
+    #     'videos/rgbd/objs/', 'bowl', '3',
+    # )  # path, objname, number
+    # correr_con_depth_como_principal(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
 
