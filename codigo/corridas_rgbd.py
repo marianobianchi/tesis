@@ -136,16 +136,16 @@ if __name__ == '__main__':
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    # correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
     desk_1_img_provider.reinitialize_object('cap', '4')
     correr_con_depth_como_principal(desk_1_img_provider, 'desk', '1', 'cap')
 
-    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'desk', '2',
-    #     'videos/rgbd/objs/', 'bowl', '3',
-    # )  # path, objname, number
-    # correr_con_depth_como_principal(desk_2_img_provider, 'desk', '2', 'bowl')
+    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'bowl', '3',
+    )  # path, objname, number
+    correr_con_depth_como_principal(desk_2_img_provider, 'desk', '2', 'bowl')
 
 
 

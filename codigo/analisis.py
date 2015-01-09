@@ -1248,60 +1248,60 @@ if __name__ == '__main__':
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D PRUEBAS
     ##################################################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='prueba_002',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='RGBD_preferD_pruebas',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-
-    ##########################################################
-    # STATIC DETECTION y definitivo DEPTH
-    ##########################################################
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='definitivo_DEPTH',
+        param='definitivo_RGBD',
         path='pruebas_guardadas',
     )
+
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='definitivo_DEPTH',
+        param='definitivo_RGBD',
         path='pruebas_guardadas',
     )
+
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='definitivo_DEPTH',
+        param='definitivo_RGBD',
         path='pruebas_guardadas',
     )
+
+    ##########################################################
+    # STATIC DETECTION y definitivo DEPTH
+    ##########################################################
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
 
     # dibujar_cuadros_encontrados_y_del_ground_truth()
 

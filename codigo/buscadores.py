@@ -9,6 +9,7 @@ from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
+from analisis import Rectangle
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
     AdaptLeafRatio
 from metodos_de_busqueda import BusquedaAlrededor
@@ -559,6 +560,9 @@ class TemplateAndFrameHistogramFinder(Finder):
         valor_comparativo_base = self.object_comparisson_base(img)
         valor_comparativo = valor_comparativo_base
 
+        r = Rectangle(topleft, bottomright)
+        print "Area del rectangulo hallado por D:", r.area()
+
         # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
         # de la ultima mejor ubicacion del objeto encontrada
         for i in range(3):
@@ -583,6 +587,8 @@ class TemplateAndFrameHistogramFinder(Finder):
         )
         if fue_exitoso:
             print "    Mejor comparación en RGB:", valor_comparativo
+            r = Rectangle(new_topleft, new_bottomright)
+            print "    Area del rectangulo hallado por RGB:", r.area()
         else:
             print "    No se siguió en RGB"
         desc = {}

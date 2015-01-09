@@ -47,11 +47,11 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 \end{figure}
 
 \subsection{Detección}
-Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{¿Hay que explicarlo?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Pero aplicar este método de manera directa no es posible. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa del entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir el tamaño del objeto en cada escena.
+Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{¿Hay que explicarlo?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir el tamaño del objeto en cada escena.
 
 Teniendo en cuenta estos problemas decidimos realizar varias pasadas del algoritmo de template matching. En primer medida se iba modificando el template y máscara utilizado como parámetro del mismo, aprovechando los templates obtenidos en la etapa anterior. Con esto se atacaba de mejor manera 
 
-\subsection{Seguimiento}
+\subsection{Seguimiento}\label{tracking_rgb}
 
 \section{Método propuesto en D}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
@@ -102,7 +102,7 @@ La tercera y última etapa BLABLABLA
 
 \subsection{Seguimiento}
 
-\section{Método propuesto en RGB-D}
+\section{Método propuesto en RGB-D}\label{metodo_rgbd}
 
 \subsection{Entrenamiento}
 
