@@ -1006,7 +1006,7 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # Percentage obj. model points
+    # # Percentage obj. model points
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1014,7 +1014,7 @@ if __name__ == '__main__':
     #     objnum='5',
     #     param='DEPTH_find_perc_obj_model_points',
     #     path='pruebas_guardadas',
-    #     param_values=['0.4', '0.3'],
+    #     param_values=['0.4', '0.6'],
     # )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -1023,7 +1023,7 @@ if __name__ == '__main__':
     #     objnum='4',
     #     param='DEPTH_find_perc_obj_model_points',
     #     path='pruebas_guardadas',
-    #     param_values=['0.4', '0.3'],
+    #     param_values=['0.4', '0.6'],
     # )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
@@ -1032,7 +1032,7 @@ if __name__ == '__main__':
     #     objnum='3',
     #     param='DEPTH_find_perc_obj_model_points',
     #     path='pruebas_guardadas',
-    #     param_values=['0.4', '0.3'],
+    #     param_values=['0.4', '0.6'],
     # )
 
 

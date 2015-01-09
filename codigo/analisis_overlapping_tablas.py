@@ -1251,7 +1251,9 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # # Definitivo DEPTH
+    ##########################################################
+    # STATIC DETECTION y definitivo DEPTH
+    ##########################################################
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',

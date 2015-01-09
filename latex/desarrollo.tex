@@ -9,15 +9,48 @@ Un sistema de seguimiento se puede dividir en tres etapas bien definidas:
 
 La etapa de entrenamiento consiste en obtener una representación del objeto al cuál se pretende seguir. Para llevarla a cabo se puede utilizar un patrón (template) ya conocido o aprenderlo de imágenes capturadas del mismo objeto. Luego se utiliza en la detección para ubicar la representación del objeto dentro de una imagen cualquiera. Una vez conocido el template no se requiere de una nueva ejecución del entrenamiento.
 
-La segunda etapa, la de detección, radica en encontrar dentro de un frame del video al objeto en cuestión utilizando el método de detección deseado, valiéndose de la información obtenida en la etapa de entrenamiento. Esta etapa se ejecuta, con el propósito de encontrar en la imagen el objeto a seguir, al comienzo del sistema de seguimiento y cuando el seguimiento cuadro a cuadro falla. Dado que la etapa de detección suele ser la más costosa en términos de desempeño computacional es deseable que se ejecute la menor cantidad de veces posible.
+La segunda etapa, la de detección, radica en encontrar dentro de un frame del video al objeto en cuestión utilizando el método de detección deseado, valiéndose de la información obtenida en la etapa de entrenamiento. Esta etapa se ejecuta, con el propósito de encontrar en la imagen el objeto a seguir, al comienzo del sistema de seguimiento y cuando el seguimiento cuadro a cuadro falla. Dado que la etapa de detección suele ser la más costosa en términos de desempeño computacional es deseable que se ejecute la menor cantidad de veces posible. Esta etapa es de suma importancia ya que de ella va a depender la eficacia final de todo el sistema.
 
 Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detectado en la etapa anterior. Es decir, teniendo la ubicación del objeto en un cuadro de video se desea identificar la posición del mismo objeto en el siguiente frame. Esta etapa es la más importante ya que es la que se ejecuta en cada frame del video. La eficiencia del método de seguimiento es lo que determinará que todo el sistema de seguimiento se consiga realizar eficientemente. Si la técnica de seguimiento tiene una efectividad baja, es decir, no logra identificar la nueva posición del objeto en el siguiente cuadro, se debe volver a la etapa de detección cuyo desempeño computacional es mayor.
 
 Tomando como base estas etapas, proponemos distintos métodos para cada una de ellas tanto para RGB como para D y RGB-D. La primera etapa del sistema puede ser prescindible si contamos con el modelo RGB-D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos descripta en la sección \ref{base_rgbd}.
 
 \section{Método propuesto RGB}\label{metodo_rgb}
+En esta sección explicaremos como se implementó el sistema de seguimiento para RGB basándonos en las etapas explicadas previamente. 
+
 \subsection{Entrenamiento}
+La etapa de entrenamiento en este método consta de tomar de la base de datos cuatro templates del objeto que se desea seguir con sus respectivas máscaras. Cada uno de los templates corresponde a una pose distinta. Primero se elige de manera arbitraria una de las varias escenas por objeto que tiene la base de datos. Una vez elegida la escena se toman cuatro templates de manera que se cubran las distintas caras del objeto. Si se toma la primer imagen de la escena como la imagen con rotación 0 el resto de las imagenes se eligieron de manera tal que cada una difiera de la anterior en 90 grados. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera para un objeto de la base de datos. De esta manera con cuatro templates es suficiente para cubrir todas las caras del objeto. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/0_crop.png}
+		\caption{Rotacion $0^{\circ}$}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/90_crop.png}
+		\caption{Rotacion $90^{\circ}$}
+	\end{subfigure}	
+
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/180_crop.png}
+		\caption{Rotacion $180^{\circ}$}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.25\textwidth}
+		\includegraphics[width=\textwidth]{img/270_crop.png}
+		\caption{Rotacion $270^{\circ}$}
+	\end{subfigure}
+	\caption{Templates de una gorra tomados de la base de datos}
+	\label{templates_objeto}
+\end{figure}
+
 \subsection{Detección}
+Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{¿Hay que explicarlo?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Pero aplicar este método de manera directa no es posible. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa del entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir el tamaño del objeto en cada escena.
+
+Teniendo en cuenta estos problemas decidimos realizar varias pasadas del algoritmo de template matching. En primer medida se iba modificando el template y máscara utilizado como parámetro del mismo, aprovechando los templates obtenidos en la etapa anterior. Con esto se atacaba de mejor manera 
+
 \subsection{Seguimiento}
 
 \section{Método propuesto en D}

@@ -1532,10 +1532,10 @@ def definitivo_depth(img_provider, scenename, scenenumber, objname):
     find_adapt_area = FixedSearchArea(3)
     find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
-    find_perc_obj_model_points = 0.4
+    find_perc_obj_model_points = 0.6
 
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
-    for i in range(3):
+    for i in range(6):
         detector = StaticDetectorWithModelAlignment(
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
@@ -1781,8 +1781,8 @@ if __name__ == '__main__':
     definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
     # Segunda escena
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    definitivo_depth(desk_1_img_provider, 'desk', '1', 'cap')
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'cap')
 
     # Tercer escena
     definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl')

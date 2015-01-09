@@ -53,7 +53,7 @@ def correr_con_depth_como_principal(img_provider, scenename, scenenumber, objnam
     find_adapt_area = FixedSearchArea(3)
     find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
-    find_perc_obj_model_points = 0.4
+    find_perc_obj_model_points = 0.6
 
     # Set RGB following parameters values
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
