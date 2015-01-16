@@ -2,9 +2,10 @@
 
 from __future__ import (unicode_literals, division)
 
-import cv2
-
 from cpp.common import points
+
+from analisis import Rectangle
+
 
 class Follower(object):
     """
@@ -152,21 +153,21 @@ class RGBFollower(Follower):
 # Seguidores RGB-D
 ###################
 
-class RGBDPreferDFollowerWithStaticDetection(Follower):
+class CombinedFollowerWithStaticDetection(Follower):
     """
     Combina los seguidores RGB y D usando la deteccion estatica de profundidad,
     ya que inserta en los descriptores a las nubes de puntos
     """
 
     def __init__(self, image_provider, depth_static_detector,
-                 rgb_finder, depth_finder):
+                 main_finder, secondary_finder):
 
         self.img_provider = image_provider
 
         # Following helpers
         self.depth_static_detector = depth_static_detector
-        self.rgb_finder = rgb_finder
-        self.depth_finder = depth_finder
+        self.main_finder = main_finder
+        self.secondary_finder = secondary_finder
 
         # Object descriptors
         self._obj_topleft = (0, 0)  # (Fila, columna)
@@ -177,7 +178,7 @@ class RGBDPreferDFollowerWithStaticDetection(Follower):
     # Descriptores comunes
     ########################
     def descriptors(self):
-        desc = super(RGBDPreferDFollowerWithStaticDetection, self).descriptors()
+        desc = super(CombinedFollowerWithStaticDetection, self).descriptors()
         desc.update({
             'scene_rgb': self.img_provider.rgb_img(),
             'depth_img': self.img_provider.depth_img(),
@@ -237,10 +238,10 @@ class RGBDPreferDFollowerWithStaticDetection(Follower):
         es_deteccion indica si en el frame anterior se realizo una deteccion
         """
         # Actualizo descriptores e imagen en comparador
-        self.depth_finder.update(self.descriptors())
+        self.main_finder.update(self.descriptors())
 
         # Busco el objeto
-        fue_exitoso, descriptors = self.depth_finder.find(es_deteccion)
+        fue_exitoso, descriptors = self.main_finder.find(es_deteccion)
         topleft = (0, 0)
         bottomright = (0, 0)
 
@@ -248,14 +249,19 @@ class RGBDPreferDFollowerWithStaticDetection(Follower):
             # Me quedo con el resultado del depth finder para la nube de puntos
             # y corro el detector RGB buscando solo con diferentes tamaños, pero
             # no moviendo el centro del cuadrante
-            self.upgrade_depth_followed_descriptors(descriptors)
-            self.rgb_finder.update(self.descriptors())
-            mejora_fue_exitosa, new_descriptors = self.rgb_finder.find(es_deteccion)
+            r = Rectangle(descriptors['topleft'], descriptors['bottomright'])
+            print "Area segun el seguidor principal:", r.area()
+            self.upgrade_main_followed_descriptors(descriptors)
+            self.secondary_finder.update(self.descriptors())
+            mejora_fue_exitosa, new_descriptors = self.secondary_finder.find(es_deteccion)
 
             if mejora_fue_exitosa:
                 # Calculo y actualizo los descriptores con los valores encontrados
-                self.upgrade_rgb_followed_descriptors(new_descriptors)
-                print "Se mejoró el seguimiento con RGB"
+                self.upgrade_secondary_followed_descriptors(new_descriptors)
+                last_descriptors = self.descriptors()
+                print "    Se mejoró el seguimiento con el seguidor secundario"
+                r = Rectangle(last_descriptors['topleft'], last_descriptors['bottomright'])
+                print "    Area segun seguidor secundario:", r.area()
 
             topleft = self.descriptors()['topleft']
             bottomright = self.descriptors()['bottomright']
@@ -269,10 +275,11 @@ class RGBDPreferDFollowerWithStaticDetection(Follower):
         desc = self.depth_static_detector.calculate_descriptors(descriptors)
         self.set_object_descriptors(desc)
 
-    def upgrade_depth_followed_descriptors(self, descriptors):
-        desc = self.depth_finder.calculate_descriptors(descriptors)
+    def upgrade_main_followed_descriptors(self, descriptors):
+        desc = self.main_finder.calculate_descriptors(descriptors)
         self.set_object_descriptors(desc)
 
-    def upgrade_rgb_followed_descriptors(self, descriptors):
-        desc = self.rgb_finder.calculate_descriptors(descriptors)
+    def upgrade_secondary_followed_descriptors(self, descriptors):
+        desc = self.secondary_finder.calculate_descriptors(descriptors)
         self.set_object_descriptors(desc)
+

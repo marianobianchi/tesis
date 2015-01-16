@@ -736,7 +736,8 @@ def probando_mi_metodo_chebysev():
     # Detector
     detector = StaticDetectorForRGBFinder(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
+        'coffee_mug',
+        '5'
     )
 
     # Buscador

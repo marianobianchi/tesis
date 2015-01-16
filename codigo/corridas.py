@@ -29,7 +29,8 @@ def deteccion_estatica():
 
     detector = StaticDetector(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
+        'coffee_mug',
+        '5',
     )
 
     finder = Finder()
@@ -59,7 +60,8 @@ def icp_sin_modelo():
 
     detector = DepthStaticDetectorWithPCDFiltering(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
+        'coffee_mug',
+        '5',
     )
 
     finder = ICPFinder()
@@ -77,12 +79,14 @@ def icp_sin_modelo():
 
 def icp_con_modelo():
     img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1', 'videos/rgbd/objs/', 'coffee_mug', '5',
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
     detector = StaticDetectorWithModelAlignment(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
+        'coffee_mug',
+        '5',
     )
 
     finder = ICPFinderWithModel()
@@ -677,7 +681,8 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
 ######################################
 # Corridas con la deteccion estatica
 ######################################
-def barrer_find_euclidean_fitness(img_provider, scenename, scenenumber, objname):
+def barrer_find_euclidean_fitness(img_provider, scenename, scenenumber,
+                                  objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -719,6 +724,7 @@ def barrer_find_euclidean_fitness(img_provider, scenename, scenenumber, objname)
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -752,7 +758,8 @@ def barrer_find_euclidean_fitness(img_provider, scenename, scenenumber, objname)
             img_provider.restart()
 
 
-def barrer_find_transformation_epsilon(img_provider, scenename, scenenumber, objname):
+def barrer_find_transformation_epsilon(img_provider, scenename, scenenumber,
+                                       objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -794,6 +801,7 @@ def barrer_find_transformation_epsilon(img_provider, scenename, scenenumber, obj
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -827,7 +835,8 @@ def barrer_find_transformation_epsilon(img_provider, scenename, scenenumber, obj
             img_provider.restart()
 
 
-def barrer_find_correspondence_distance(img_provider, scenename, scenenumber, objname):
+def barrer_find_correspondence_distance(img_provider, scenename, scenenumber,
+                                        objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -869,6 +878,7 @@ def barrer_find_correspondence_distance(img_provider, scenename, scenenumber, ob
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -902,7 +912,8 @@ def barrer_find_correspondence_distance(img_provider, scenename, scenenumber, ob
             img_provider.restart()
 
 
-def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objname):
+def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber,
+                                      objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -943,6 +954,7 @@ def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objn
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -976,7 +988,8 @@ def barrer_find_perc_obj_model_points(img_provider, scenename, scenenumber, objn
             img_provider.restart()
 
 
-def barrer_find_umbral_score(img_provider, scenename, scenenumber, objname):
+def barrer_find_umbral_score(img_provider, scenename, scenenumber,
+                             objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1017,6 +1030,7 @@ def barrer_find_umbral_score(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1050,7 +1064,8 @@ def barrer_find_umbral_score(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_max_iter(img_provider, scenename, scenenumber, objname):
+def barrer_det_max_iter(img_provider, scenename, scenenumber,
+                        objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1092,6 +1107,7 @@ def barrer_det_max_iter(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1125,7 +1141,8 @@ def barrer_det_max_iter(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_points_to_sample(img_provider, scenename, scenenumber, objname):
+def barrer_det_points_to_sample(img_provider, scenename, scenenumber,
+                                objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1167,6 +1184,7 @@ def barrer_det_points_to_sample(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1200,7 +1218,8 @@ def barrer_det_points_to_sample(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_nearest_features(img_provider, scenename, scenenumber, objname):
+def barrer_det_nearest_features(img_provider, scenename, scenenumber,
+                                objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1242,6 +1261,7 @@ def barrer_det_nearest_features(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1275,7 +1295,8 @@ def barrer_det_nearest_features(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_simil_thresh(img_provider, scenename, scenenumber, objname):
+def barrer_det_simil_thresh(img_provider, scenename, scenenumber,
+                            objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1317,6 +1338,7 @@ def barrer_det_simil_thresh(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1350,7 +1372,8 @@ def barrer_det_simil_thresh(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_inlier_thresh(img_provider, scenename, scenenumber, objname):
+def barrer_det_inlier_thresh(img_provider, scenename, scenenumber,
+                             objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1392,6 +1415,7 @@ def barrer_det_inlier_thresh(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1425,7 +1449,8 @@ def barrer_det_inlier_thresh(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def barrer_det_inlier_fraction(img_provider, scenename, scenenumber, objname):
+def barrer_det_inlier_fraction(img_provider, scenename, scenenumber,
+                               objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1467,6 +1492,7 @@ def barrer_det_inlier_fraction(img_provider, scenename, scenenumber, objname):
                 matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
                 obj_rgbd_name=objname,
+                obj_rgbd_num=objnum,
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 leaf_size=det_obj_scene_leaf,
@@ -1500,7 +1526,8 @@ def barrer_det_inlier_fraction(img_provider, scenename, scenenumber, objname):
             img_provider.restart()
 
 
-def definitivo_depth(img_provider, scenename, scenenumber, objname):
+def definitivo_depth(img_provider, scenename, scenenumber,
+                     objname, objnum):
     # Set detection parameters values
     ap_defaults = APDefaults()
     ap_defaults.leaf = 0.005
@@ -1540,6 +1567,7 @@ def definitivo_depth(img_provider, scenename, scenenumber, objname):
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnum,
             ap_defaults=ap_defaults,
             icp_defaults=icp_detection_defaults,
             leaf_size=det_obj_scene_leaf,
@@ -1598,15 +1626,22 @@ if __name__ == '__main__':
     #####################
     # Cargo las imagenes
     #####################
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'cap', '4',
+    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '1',
+    #     'videos/rgbd/objs/', 'cap', '4',
+    # )  # path, objname, number
+    #
+    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '2',
+    #     'videos/rgbd/objs/', 'bowl', '3',
+    # )  # path, objname, number
+
+    table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'table', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '1',
     )  # path, objname, number
 
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
+
 
 
     # #######################
@@ -1777,13 +1812,25 @@ if __name__ == '__main__':
     # definitivo_depth
     #######################
     # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug')
 
     # Segunda escena
     # desk_1_img_provider.reinitialize_object('cap', '4')
     # definitivo_depth(desk_1_img_provider, 'desk', '1', 'cap')
 
     # Tercer escena
-    definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl')
+    # definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl')
 
+    table_1_img_provider.reinitialize_object('coffee_mug', '1')
+    definitivo_depth(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
+
+    # table_1_img_provider.reinitialize_object('soda_can', '4')
+    # definitivo_depth(table_1_img_provider, 'table', '1', 'soda_can', '4')
+    #
+    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table_small', '2',
+    #     'videos/rgbd/objs/', 'cereal_box', '4',
+    # )  # path, objname, number
+    # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
+    # definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')

@@ -26,6 +26,7 @@ def analizar_precision_recall_por_parametro(matfile, scenenamenum, objname,
     ground_truth = StaticDetector(
         matfile,
         objname,
+        objnum,
     )
     objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
     param_values = os.listdir(

@@ -87,7 +87,7 @@ plot3(data_aligned(:,1), data_aligned(:,2), data_aligned(:,3), '.')
 grid on
 
 %% Objetos que aparecen en una escena
-load('scenes/meeting_small/meeting_small_1.mat');
+load('scenes/table_small/table_small_1.mat');
 
 [a nframes] = size(bboxes);
 

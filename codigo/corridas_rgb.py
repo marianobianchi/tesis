@@ -171,7 +171,8 @@ def seguir_taza_det_fija():
     # Detector
     detector = StaticDetectorForRGBFinder(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'coffee_mug'
+        'coffee_mug',
+        '5',
     )
 
     # Buscador
@@ -226,7 +227,8 @@ def seguir_gorra_det_fija():
     # Detector
     detector = StaticDetectorForRGBFinder(
         'videos/rgbd/scenes/desk/desk_1.mat',
-        'cap'
+        'cap',
+        '4'
     )
 
     # Buscador
@@ -556,6 +558,7 @@ def correr_battachayyra_verde_find_template_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -620,6 +623,7 @@ def correr_battachayyra_verde_find_frame_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -684,6 +688,7 @@ def correr_chi_squared_verde_find_template_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -748,6 +753,7 @@ def correr_chi_squared_verde_find_frame_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -811,6 +817,7 @@ def correr_correlation_verde_find_template_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -875,6 +882,7 @@ def correr_correlation_verde_find_frame_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -939,6 +947,7 @@ def correr_chi_squared_hs_find_template_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -1003,6 +1012,7 @@ def correr_chi_squared_hs_find_frame_threshold(objname, objnumber,
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -1057,7 +1067,9 @@ def correr_mi_metodo_bhatta_bhatta_bhatta_template_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1113,7 +1125,9 @@ def correr_mi_metodo_bhatta_bhatta_bhatta_frame_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1168,7 +1182,9 @@ def correr_mi_metodo_chi_chi_bhatta_template_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1223,7 +1239,9 @@ def correr_mi_metodo_chi_chi_bhatta_frame_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1278,7 +1296,9 @@ def correr_mi_metodo_bhatta_inter_inter_template_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1334,7 +1354,9 @@ def correr_mi_metodo_bhatta_inter_inter_frame_perc(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1399,6 +1421,7 @@ def correr_find_template_threshold(objname, objnumber, scenename, scenenumber):
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -1456,6 +1479,7 @@ def correr_find_frame_threshold(objname, objnumber, scenename, scenenumber):
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                           .format(sname=scenename, snum=scenenumber)),
             obj_rgbd_name=objname,
+            obj_rgbd_num=objnumber,
         )
 
         template_comparator = HistogramComparator(
@@ -1517,7 +1541,9 @@ def definitivo_battachayyra_verde(objname, objnumber, scenename, scenenumber):
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     template_comparator = HistogramComparator(
         method=find_template_comp_method,
@@ -1577,7 +1603,9 @@ def definitivo_correlation_verde(objname, objnumber, scenename, scenenumber):
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     template_comparator = HistogramComparator(
         method=find_template_comp_method,
@@ -1631,7 +1659,9 @@ def definitivo_mi_metodo_bhatta_bhatta_bhatta(objname, objnumber,
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1690,7 +1720,9 @@ def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     template_comparator = HistogramComparator(
         method=find_template_comp_method,
@@ -1727,11 +1759,11 @@ def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
 def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
     # Parametros para el seguimiento
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    find_template_threshold = 0.85
+    find_template_threshold = 0.6
     find_template_reverse = False
 
     find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    find_frame_threshold = 0.6
+    find_frame_threshold = 0.4
     find_frame_reverse = False
 
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1746,7 +1778,9 @@ def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
         matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
                       .format(sname=scenename, snum=scenenumber)),
         obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
     )
+
 
     template_comparator = HistogramComparator(
         method=find_template_comp_method,
@@ -1930,6 +1964,11 @@ if __name__ == '__main__':
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('bowl', '3', 'desk', '2')
 
 
-    prueba_mas_bines_en_rgb_hsv('coffee_mug', '5', 'desk', '1')
-    prueba_mas_bines_en_rgb_hsv('cap', '4', 'desk', '1')
-    prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')
+    # prueba_mas_bines_en_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    # prueba_mas_bines_en_rgb_hsv('cap', '4', 'desk', '1')
+    # prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')
+
+
+    definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
+    # definitivo_rgb_hsv('soda_can', '4', 'table', '1')
+    # definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')

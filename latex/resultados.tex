@@ -293,9 +293,141 @@ Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre 
 	\label{mejora_rgb_en_tracking_rgbd}
 \end{figure}
 
-Una mejora para este algoritmo sería utilizar las máscaras tomadas durante el entrenamiento para calcular los histogramas de los recuadros del frame anterior y del actual. De esta manera, si la pose del objeto en estos recuadros coincide con alguna de las poses de los templates la comparación va a ser más robusta y permita evitar este tipo de inconvenientes en la mejora RGB. 
+Una mejora para este algoritmo sería utilizar las máscaras tomadas durante el entrenamiento para calcular los histogramas de los recuadros del frame anterior y del actual. De esta manera, si la pose del objeto en estos recuadros coincide con alguna de las poses de los templates la comparación va a ser más robusta y permitiría evitar este tipo de inconvenientes en la mejora RGB.
 
 
+La segunda combinación para el tracking RGB-D es la que le da prioridad al tracking RGB e intenta mejorar el resultado utilizando el tracking D. Esta combinación se explica en detalle en la sección \ref{tracking_rgbd}.
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza   & 35.45      & 25.79       & 89.47             & 0                & 2\\
+    \hline
+    Gorra  & 70.37      & 19.79       & 79.67             & 0                & 0\\
+    \hline
+    Bowl   & 74.53      & 39.85       & 30.91             & 0                & 2\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking RGB.}
+\label{tabla_rgbd_rgb}
+\end{table}
+
+
+Como se puede observar en la tabla \ref{tabla_rgbd_rgb} y si se comparan los resultados con los de la tabla \ref{tabla_rgb} podemos observar una notoria mejoría en la escena de la gorra. Para este objeto se mejoró casi un 13\% el promedio de solapamiento de áreas con un 2\% menos de desvío estándar casi sin variar el porcentaje de veces que se utilizó el tracking en toda la escena. Sin embargo el análisis para los otros dos objetos no varió mucho con respecto al seguimiento RGB.
+
+Este resultado parece reafirmar la hipótesis hecha en la primer combinación RGB-D. En ese caso lo que vimos fue una baja importante en el porcentaje de solapamiento en comparación con el tracking en D para el caso de la gorra. Aquí parece suceder al revés: El algoritmo de seguimiento en RGB reporta un área pequeña dentro de la superficie de la gorra que se ve en la imagen RGB y a la hora de correr la mejora en D, esta trata de alinear la nube de puntos del frame anterior en la nube que proviene de tomar el resultado de RGB y proyectarlo en la escena en D. Como esta alineación es exitosa, el área reportada por el tracking en D proyectada en RGB es más grande que la reportada por el tracking RGB y por lo tanto se asemeja más a la indicada por el ground truth que contiene en el recuadro a la superficie de la gorra.
+
+
+
+
+\subsection{Evaluación de los métodos de tracking en objetos desconocidos}
+\comentarioM{Estas explicaciones están un poco escuetas. Después las puedo explicar mejor si Pachi me dice que vale la pena.}
+
+Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos objetos y son estos los que se utilizaron durante la selección de métodos y luego la de parámetros. En esta sección se analizarán pruebas corridas con los métodos de las secciones anteriores pero utilizando objetos y escenas nuevas. Estas pruebas se realizaron con el objetivo de verificar el funcionamiento de los algoritmos en condiciones más realistas.
+
+Los objetos elegidos tienen distintas características y fueron elegidos bajo las siguientes hipótesis:
+\begin{enumerate}
+	\item Caja de cereales: al ser mayoritariamente plana debería perjudicar al tracking en D y por su textura bien definida beneficiar al tracking RGB
+	\item Lata de gaseosa: posee una textura bien definida pero el fondo de la imagen es oscuro al igual que la lata por lo que debería perjudicar al tracking RGB
+	\item Taza: es una taza diferente a la analizada antes. La forma debería beneficiar al tracking en D y sus colores a RGB.
+\end{enumerate}
+
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza 2  & 32.79      & 27.88       & 88.68             & 0                & 0\\
+    \hline
+    Lata    &  9.67      & 29.42       & 90.41             & 16               & 0\\
+    \hline
+    Caja    & 63.49      & 26.61       & 69.20             & 1                & 0\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking RGB utilizando la detección ideal para objetos nuevos.}
+\label{tabla_rgb_nuevos}
+\end{table}
+
+
+Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el cual se eligió cada uno de ellos, analizaremos como se comportaron los algoritmos en estos casos. En la tabla \ref{tabla_rgb_nuevos} se pueden observar los resultados de estas pruebas. Como se esperaba, el algoritmo se comportó muy mal en el caso de la lata. Durante toda la escena el algoritmo reportó encontrar la lata en una zona que no se solapa con la reportada por el ground truth haciendo que el porcentaje de solapamiento sea muy bajo. En el caso de la nueva taza, el algoritmo funcionó de manera muy similar al caso de la taza que se utilizó durante el proceso de pruebas y selección de parámetros. En cuanto a la caja de cereales respecta, el algoritmo funcionó muy bien. A pesar del porcentaje relativamente bajo de veces que se siguió al objeto, las veces en las que hubo seguimiento el porcentaje de solapamiento fue bastante alto, como se puede ver en la figura \ref{frame_frame_rgb_nuevo}. Un inconveniente que sufrió el algoritmo para esta escena es que la caja de cereales entre los frames 136 y 185 cambia la pose y en vez de estar de frente pasa a estar de costado. Esto provoca que el histograma que describe a la caja en esos frames cambie mucho con respecto al del template que está tomado de frente y de esta manera el seguimiento reporta no encontrar al objeto. Si no se tienen en cuenta esos frames, el porcentaje de veces que se utiliza el algoritmo de seguimiento pasaría a ser de un 89\%.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-nuevo-caja.png}
+	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en RGB}
+	\label{frame_frame_rgb_nuevo}
+\end{figure}
+
+
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza 2  & 45.32      & 30.71       & 87.74             & 1                & 1\\
+    \hline
+    Lata    & 10.54      & 24.70       & 93.84             & >40              & >20\\
+    \hline
+    Caja    & 74.02      & 31.42       & 48.96             & 0                & 0\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking D utilizando la detección ideal para objetos nuevos.}
+\label{tabla_d_nuevos}
+\end{table}
+
+En la tabla \ref{tabla_d_nuevos} están los resultados del análisis del tracking en D para estos nuevos objetos. Para el ejemplo de la taza nueva el algoritmo se comporta de manera similar a la que lo hizo con la taza de las pruebas de selección de parámetros. En el caso de la lata los resultados fueron muy malos. El problema se debe a que en la primer detección indicada por el ground truth la taza apenas se aparecía en la nube de puntos de la escena. Esto hizo que la alineación del modelo fallara y que la nube de puntos resultante de esa detección sea casi por completo el plano de la mesa. Por este motivo el algoritmo alinea siempre ya que la mesa nunca sale del cuadro de la cámara. 
+Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un bajo porcentaje de veces que siguió al objeto. Si se observa la figura \ref{frame_frame_d_nuevo} debemos separar el análisis en tres partes. Por un lado, desde el inicio de la escena hasta el frame 136 el algoritmo funciona correctamente con un porcentaje de solapamiento promedio cercano al 45\% y una alta tasa de seguimiento. Luego, entre el frame 136 y el frame 185 sucede lo mismo que con el tracking RGB: el cambio de pose de la caja hace que el seguimiento falle y siempre se utilice la detección. Por último, entre el frame 185 y el fin de la escena el algoritmo vuelve a tener un buen porcentaje de solapamiento promedio y una tasa de seguimiento aceptable.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-nuevo-caja.png}
+	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en D}
+	\label{frame_frame_d_nuevo}
+\end{figure}
+
+
+Finalmente analizamos los resultados de los algoritmos que combinan RGB con D. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza. \comentarioM{Después comento mas cosas.}
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza 2  & 46.71      & 30.46       & 86.79             & 0                & 0\\
+    \hline
+    Lata    &  8.84      & 21.37       & 95.43             & >40              & >20\\
+    \hline
+    Caja    & 69.25      & 35.54       & 48.36             & 0                & 0\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking RGB-D con preferencia en D para objetos nuevos.}
+\label{tabla_rgbd_d_nuevos}
+\end{table}
+
+\begin{table}
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+    \hline
+    Taza 2  & 35.58      & 29.37       & 88.68             & 0                & 0\\
+    \hline
+    Lata    &  9.67      & 29.42       & 90.41             & 16               & 0\\
+    \hline
+    Caja    & 63.49      & 26.61       & 69.20             & 1                & 0\\
+    \hline
+    \end{tabular}
+\caption{Resultados del tracking RGB-D con preferencia en RGB para objetos nuevos.}
+\label{tabla_rgbd_rgb_nuevos}
+\end{table}
 
 
 

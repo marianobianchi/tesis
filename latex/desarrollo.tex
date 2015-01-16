@@ -19,7 +19,7 @@ Tomando como base estas etapas, proponemos distintos métodos para cada una de e
 En esta sección explicaremos como se implementó el sistema de seguimiento para RGB basándonos en las etapas explicadas previamente. 
 
 \subsection{Entrenamiento}
-La etapa de entrenamiento en este método consta de tomar de la base de datos cuatro templates del objeto que se desea seguir con sus respectivas máscaras. Cada uno de los templates corresponde a una pose distinta. Primero se elige de manera arbitraria una de las varias escenas por objeto que tiene la base de datos. Una vez elegida la escena se toman cuatro templates de manera que se cubran las distintas caras del objeto. Si se toma la primer imagen de la escena como la imagen con rotación 0 el resto de las imagenes se eligieron de manera tal que cada una difiera de la anterior en 90 grados. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera para un objeto de la base de datos. De esta manera con cuatro templates es suficiente para cubrir todas las caras del objeto. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
+La etapa de entrenamiento en este método consta de tomar de la base de datos cuatro templates del objeto que se desea seguir con sus respectivas máscaras. Cada uno de los templates corresponde a una pose distinta. Primero se elige de manera arbitraria una de las varias escenas por objeto que tiene la base de datos. Una vez elegida la escena se toman cuatro templates de manera que se cubran las distintas caras del objeto. Si se toma la primer imagen de la escena como la imagen con rotación 0 el resto de las imagenes se eligieron de manera tal que cada una difiera de la anterior en 90 grados. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera para un objeto de la base de datos. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
 
 \begin{figure}
 	\centering
@@ -47,18 +47,18 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 \end{figure}
 
 \subsection{Detección}
-Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{¿Hay que explicarlo?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir el tamaño del objeto en cada escena.
+Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{Hay que explicarlo, ¿no?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. En este caso como tenemos la máscara disponible este parámetro lo usamos. El último parámetro le indica al algoritmo de template matching que comparación usar para matchear el template a la imagen. Nosotros decidimos utilizar la diferencia cuadrática pixel por pixel normalizada, descripta por la siguiente fórmula:
 
-Teniendo en cuenta estos problemas decidimos realizar varias pasadas del algoritmo de template matching. En primer medida se iba modificando el template y máscara utilizado como parámetro del mismo, aprovechando los templates obtenidos en la etapa anterior. Con esto se atacaba de mejor manera 
+\comentarioM{Insertar formula aqui.}% http://docs.opencv.org/modules/imgproc/doc/object_detection.html?highlight=matchtemplate#matchtemplate
+
+Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir el tamaño del objeto en cada escena.
+
+Teniendo en cuenta estos problemas decidimos realizar varias pasadas del algoritmo de template matching. En primera medida en cada pasada se iba modificando el par template-máscara utilizados como parámetros del mismo aprovechando los datos obtenidos en la etapa anterior. Con esto se atacaba de mejor manera el problema de las distintas poses en las que puede estar el objeto en la escena. Además, para que la detección sea más robusta frente a cambios de tamaño del objeto que se desea encontrar se tomó a cada uno de los templates con su respectiva máscara y se los amplió y achicó y esas muestras también fueron utilizadas como entrada para el algoritmo de template matching. Una vez corrido el algoritmo para cada par template-máscara, nos quedamos con el resultado que tenga menor diferencia cuadrática que esté por debajo de un umbral predefinido. La información que se almacena como resultado son las coordenadas del cuadrante que contiene al objeto encontrado. Una vez almacenada esta información, el sistema pasa a la etapa de seguimiento.
 
 \subsection{Seguimiento}\label{tracking_rgb}
+Como se explicó al comienzo del capítulo, esta etapa consta de seguir al objeto detectado en la etapa anterior frame a frame. Para concretar este objetivo se necesita encontrar una manera de combinar la información obtenida durante las dos etapas anteriores. Existen muchas maneras de llevar a cabo esta tarea. La forma que elegimos para este trabajo fue utilizar un método de comparación por histogramas.
 
-\section{Método propuesto en D}
-\subsection{Alignment prerejective}\label{alignment_prerejective}
-
-\subsection{Iterative Closest Point (ICP)}\label{ICP}
-
-Para esta primera etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. \comentarioM{La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D.}\comentarioP{Quedó afuera porque nos enfocamos en tracking} Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la que posee rotación 0. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto presentes en la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado.
+Cada imagen RGB consta de tres imagenes, una por cada canal. Para calcular el histograma de una imagen se toman los distintos valores (intensidad) de cada pixel y se cuenta la cantidad de veces que se repite cada uno de esos valores en la imagen. Las imágenes que utilizamos durante el transcurso de este trabajo son de 8 bits por pixel, por lo que cada pixel puede tomar un valor entre 0 y 255. Para que las comparaciones entre histogramas sean más robustas lo que se decidió fue trabajar con histogramas normalizados.
 
 
 \begin{figure}
@@ -84,6 +84,25 @@ Para esta primera etapa existen varias posibilidades distintas que van desde uti
 	\label{frames_solapados}
 \end{figure}
 
+
+El algoritmo de tracking implementado se puede separar en dos partes. Por un lado tenemos el método de búsqueda y por el otro el algoritmo de comparación por histogramas. El método de búsqueda se utiliza para explorar un espacio predefinido en donde se asume estará el objeto en el siguiente frame. Este algoritmo toma un área de tamaño 9 veces mayor a la del cuadrante reportado por el algoritmo de detección respetando el centro del mismo. Luego divide esta área en cuadrantes los que serán utilizados por el algoritmo de comparación para definir si el objeto está o no allí. En la figura \ref{frames_solapados} se muestra una secuencia de búsqueda por cuadrantes. Para hacer más robusta la búsqueda frente a cambios de tamaño del objeto este mismo método de búsqueda por cuadrantes se realiza varias veces cambiando el tamaño del cuadrante.
+
+La segunda parte del algoritmo de tracking consta en definir cuál de todos los cuadrantes explorados en la etapa de búsqueda es el que contiene el objeto que se está buscando o en caso de fallar en la búsqueda, indicar que el objeto no se encontró en el frame. En un principio en esta etapa se comparaba el histograma de cada uno de los cuadrantes explorados con el cuadrante del frame anterior reportado por el algoritmo de detección. Para esta comparación se tomaba de cada recuadro su histograma para los canales S y V del esquema de colores HSV y se los comparaba utilizando la implementación de comparación de histogramas presente en la librería OpenCV. El método de comparación utilizado se basaba en la diferencia de \textit{Bhattachayyra}. El resultado de estas comparaciones era aquel cuadrante cuya comparación arrojara el menor valor y que se encontrara por debajo de un umbral definido. Si ningún cuadrante arrojaba una comparación menor a este umbral el algoritmo indicaba que el objeto no se encontraba en ese frame.
+
+El problema con esta aproximación era que al basarse únicamente en el recuadro encontrado en el frame anterior el objeto iba quedando de a poco fuera del recuadro resultante hasta que en un momento quedaba completamente fuera del mismo. Como la diferencia entre los cuadrantes resultantes de cada frame era baja, el algoritmo seguía reportando al objeto como encontrado aunque no fuera así. Para evitar este inconveniente se decidió además comparar el histograma de cada cuadrante de búsqueda con el histograma de uno de los templates del objeto obtenido en la etapa de entrenamiento. En este caso la comparación se realizó utilizando el esquema RGB, calculando el histograma para los tres canales. Esto se hizo para 
+
+
+
+\section{Método propuesto en D}
+\subsection{Alignment prerejective}\label{alignment_prerejective}
+
+\subsection{Iterative Closest Point (ICP)}\label{ICP}
+
+Para esta primera etapa existen varias posibilidades distintas que van desde utilizar una única nube de puntos hasta generar un modelo completo del objeto 3D alineando todas las nubes de puntos disponibles en la base. \comentarioM{La tarea de generar un modelo completo excede el tema de estudio de esta tesis. Además el modelo resultante se utilizara únicamente para la etapa de detección por lo que se optó por el método más simple que es tomar una nube de puntos cualquiera del objeto a seguir como modelo 3D.}\comentarioP{Quedó afuera porque nos enfocamos en tracking} Por estos motivos se decidió elegir una nube de puntos fija para cada objeto, en particular, la que posee rotación 0. Otra posibilidad es elegir de todas las nubes de puntos de cada objeto presentes en la base alguna cualquiera al azar. Esto resulta más realista pero sería un problema al momento de analizar los resultados ya que se agregaría una variante azarosa y se deberían correr muchas veces la misma prueba para lograr un análisis más acertado.
+
+
+
+
 Para la segunda etapa, la de detección, se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas también se observó que si la región donde se buscaba el objeto era lo suficientemente pequeña la búsqueda era más robusta.\comentarioP{Mejor más chica?} Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos según un valor, llamado \param{detection\_frame\_size}. Considerando estos valores dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en el gráfico \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje de profundidad ya que las pruebas preeliminares dieron buenos resultados de esta manera y hacer eso implicaba agregarle complejidad algoritmica al método. La detección se corre en cada uno de estos cuadrantes y pueden suceder varias cosas:
 \begin{itemize}
 	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
@@ -108,7 +127,7 @@ La tercera y última etapa BLABLABLA
 
 \subsection{Detección}
 
-\subsection{Seguimiento}
+\subsection{Seguimiento}\label{tracking_rgbd}
 
 
 

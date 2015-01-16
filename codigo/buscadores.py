@@ -9,9 +9,8 @@ from cpp.icp import icp, ICPDefaults, ICPResult
 from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
     filter_object_from_scene_cloud, show_clouds
 
-from analisis import Rectangle
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
-    AdaptLeafRatio
+    AdaptLeafRatio, from_flat_to_cloud_limits
 from metodos_de_busqueda import BusquedaAlrededor
 from observar_seguimiento import MuestraBusquedaEnVivo
 
@@ -351,6 +350,159 @@ class ICPFinderWithModel(ICPFinder):
         return detected_descriptors
 
 
+class ICPFinderWithModelToImproveRGB(ICPFinderWithModel):
+
+    def find(self, es_deteccion):
+        # Obtengo pcd's y depth
+        object_cloud = self._descriptors['obj_model']
+        target_cloud = self._descriptors['pcd']
+
+        obj_model = self._descriptors['obj_model']
+        model_points = self._descriptors['obj_model_points']
+        self.adapt_area.set_default_distances(obj_model)
+        if not self.adapt_leaf.was_started():
+            self.adapt_leaf.set_first_values(model_points)
+
+        accepted_points = model_points * self.perc_obj_model_points
+
+        icp_result = self.simple_follow(
+            object_cloud,
+            target_cloud,
+        )
+
+        points_from_scene = 0
+        if icp_result.has_converged:
+            obj_from_scene_points = self.get_object_points_from_scene(
+                icp_result.cloud,
+                target_cloud,
+            )
+            points_from_scene = points(obj_from_scene_points)
+
+        fue_exitoso = icp_result.score < self.umbral_score
+        fue_exitoso = (
+            fue_exitoso and
+            points_from_scene >= accepted_points
+        )
+
+        descriptors = {}
+
+        ############################
+        # show_clouds(
+        #     b'Modelo luego de icp vs zona de busqueda en la escena. Fue exitoso: {t}'.format(t=b'Y' if fue_exitoso else b'N'),
+        #     icp_result.cloud,
+        #     target_cloud
+        # )
+        ############################
+
+        if fue_exitoso:
+            self.adapt_leaf.set_found_points(points_from_scene)
+
+            # filas = len(depth_img)
+            # columnas = len(depth_img[0])
+
+            # Busco los limites en el dominio de las filas y columnas del RGB
+            topleft, bottomright = from_cloud_to_flat_limits(
+                obj_from_scene_points
+            )
+            ############################
+            # show_clouds(
+            #     b'Nube de puntos tomada de la escena vs zona de busqueda en la escena',
+            #     target_cloud,
+            #     obj_from_scene_points
+            # )
+            ############################
+
+            descriptors.update({
+                'topleft': topleft,
+                'bottomright': bottomright,
+                'detected_cloud': obj_from_scene_points,
+                'detected_transformation': icp_result.transformation,
+            })
+        else:
+            self.adapt_leaf.reset()
+
+        return fue_exitoso, descriptors
+
+    def simple_follow(self, object_cloud, target_cloud):
+        """
+        Tomando como centro el centro del cuadrado que contiene al objeto
+        en el frame anterior, busco el mismo objeto en una zona N veces mayor
+        a la original.
+        """
+        topleft = self._descriptors['topleft']
+        bottomright = self._descriptors['bottomright']
+        img = self._descriptors['scene_rgb']
+
+        height = bottomright[0] - topleft[0]
+        width = bottomright[1] - topleft[1]
+
+        height_move = int(height / 2) + 1
+        width_move = int(width / 2) + 1
+
+        depth_img = self._descriptors['depth_img']
+        filas = len(depth_img)
+        columnas = len(depth_img[0])
+
+        search_topleft = (
+            max(topleft[0] - height_move, 0),
+            max(topleft[1] - width_move, 0)
+        )
+        search_bottomright = (
+            min(bottomright[0] + height_move, filas - 1),
+            min(bottomright[1] + width_move, columnas - 1)
+        )
+
+        rows_cols_limits = from_flat_to_cloud_limits(
+            search_topleft,
+            search_bottomright,
+            depth_img,
+        )
+
+        r_top_limit = rows_cols_limits[0][0]
+        r_bottom_limit = rows_cols_limits[0][1]
+        c_left_limit = rows_cols_limits[1][0]
+        c_right_limit = rows_cols_limits[1][1]
+
+        target_cloud = filter_cloud(
+            target_cloud,
+            str("y"),
+            float(r_top_limit),
+            float(r_bottom_limit)
+        )
+        target_cloud = filter_cloud(
+            target_cloud,
+            str("x"),
+            float(c_left_limit),
+            float(c_right_limit)
+        )
+
+        #################################################
+        # show_clouds(
+        #     b'Modelo vs zona de busqueda en la escena',
+        #     target_cloud,
+        #     object_cloud
+        # )
+        #
+        # # Si se quiere ver como va buscando, descomentar la siguiente linea
+        # MuestraBusquedaEnVivo('Buscando el objeto').run(
+        #     img,
+        #     search_topleft,
+        #     search_bottomright,
+        #     frenar=True,
+        # )
+        #################################################
+
+        if points(target_cloud) > 0:
+            # Calculate ICP
+            icp_result = icp(object_cloud, target_cloud, self._icp_defaults)
+        else:
+            icp_result = ICPResult()
+            icp_result.has_converged = False
+            icp_result.score = 100
+
+        return icp_result
+
+
 #############
 # RGB Finder
 #############
@@ -560,9 +712,6 @@ class TemplateAndFrameHistogramFinder(Finder):
         valor_comparativo_base = self.object_comparisson_base(img)
         valor_comparativo = valor_comparativo_base
 
-        r = Rectangle(topleft, bottomright)
-        print "Area del rectangulo hallado por D:", r.area()
-
         # Repito 3 veces (cantidad arbitraria) una busqueda, partiendo siempre
         # de la ultima mejor ubicacion del objeto encontrada
         for i in range(3):
@@ -587,8 +736,6 @@ class TemplateAndFrameHistogramFinder(Finder):
         )
         if fue_exitoso:
             print "    Mejor comparación en RGB:", valor_comparativo
-            r = Rectangle(new_topleft, new_bottomright)
-            print "    Area del rectangulo hallado por RGB:", r.area()
         else:
             print "    No se siguió en RGB"
         desc = {}

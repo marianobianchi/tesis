@@ -5,12 +5,12 @@
 PointCloud3D::Ptr voxel_grid_downsample(PointCloud3D::Ptr cloud, float leaf){
 
     PointCloud3D::Ptr downsampled_cloud(new PointCloud3D);
-    
+
     pcl::VoxelGrid<Point3D> grid;
     grid.setLeafSize (leaf, leaf, leaf);
     grid.setInputCloud (cloud);
     grid.filter (*downsampled_cloud);
-    
+
     return downsampled_cloud;
 
 }
@@ -116,17 +116,17 @@ VectorMat mat_to_vector(const Mat& m){
     s[0][1] = m(0,1);
     s[0][2] = m(0,2);
     s[0][3] = m(0,3);
-    
+
     s[1][0] = m(1,0);
     s[1][1] = m(1,1);
     s[1][2] = m(1,2);
     s[1][3] = m(1,3);
-    
+
     s[2][0] = m(2,0);
     s[2][1] = m(2,1);
     s[2][2] = m(2,2);
     s[2][3] = m(2,3);
-    
+
     return s;
 }
 
@@ -136,7 +136,7 @@ Mat vector_to_mat(const VectorMat& s){
     m(0,1) = s[0][1];
     m(0,2) = s[0][2];
     m(0,3) = s[0][3];
-    
+
     m(1,0) = s[1][0];
     m(1,1) = s[1][1];
     m(1,2) = s[1][2];
@@ -146,7 +146,7 @@ Mat vector_to_mat(const VectorMat& s){
     m(2,1) = s[2][1];
     m(2,2) = s[2][2];
     m(2,3) = s[2][3];
-    
+
     return m;
 }
 
@@ -175,6 +175,7 @@ void show_clouds(std::string title, PointCloud3D::Ptr first_cloud, PointCloud3D:
     visu.addPointCloud (first_cloud, ColorHandler3D (first_cloud, 0.0, 255.0, 0.0), "first_cloud");
     visu.addPointCloud (second_cloud, ColorHandler3D (second_cloud, 0.0, 0.0, 255.0), "second_cloud");
     visu.spin ();
+    visu.close();
 }
 
 MinMax3D get_min_max3D(PointCloud3D::Ptr cloud){
@@ -196,59 +197,59 @@ MinMax3D get_min_max3D(PointCloud3D::Ptr cloud){
 
 // Align a rigid object to a scene with clutter and occlusions
 Point3D compute_centroid(float x1, float y1, float z1, float x2, float y2, float z2){
-    
+
     // Point cloud
     PointCloud3D::Ptr cloud(new PointCloud3D);
-    
+
     cloud->width = 8;
     cloud->height = 1;
     cloud->points.resize(cloud->width * cloud->height);
-    
+
     // Tapa de arriba (de un prisma/cubo)
     cloud->points[0].x = x1;
     cloud->points[0].y = y1;
     cloud->points[0].z = z1;
-    
+
     cloud->points[1].x = x1;
     cloud->points[1].y = y2;
     cloud->points[1].z = z1;
-    
+
     cloud->points[2].x = x1;
     cloud->points[2].y = y1;
     cloud->points[2].z = z2;
-    
+
     cloud->points[3].x = x1;
     cloud->points[3].y = y2;
     cloud->points[3].z = z2;
-    
+
     // Tapa de abajo
     cloud->points[4].x = x2;
     cloud->points[4].y = y1;
     cloud->points[4].z = z1;
-    
+
     cloud->points[5].x = x2;
     cloud->points[5].y = y2;
     cloud->points[5].z = z1;
-    
+
     cloud->points[6].x = x2;
     cloud->points[6].y = y1;
     cloud->points[6].z = z2;
-    
+
     cloud->points[7].x = x2;
     cloud->points[7].y = y2;
     cloud->points[7].z = z2;
-    
+
     // centroid
     Eigen::Matrix<float,4,1> centroid;
-    
+
     // Compute centroid
     pcl::compute3DCentroid(*cloud, centroid);
-    
+
     Point3D res;
     res.x = centroid(0,0);
     res.y = centroid(1,0);
     res.z = centroid(2,0);
-    
+
     return res;
 
 }

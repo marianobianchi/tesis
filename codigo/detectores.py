@@ -43,10 +43,11 @@ class StaticDetector(Detector):
     imagen valiendose de los datos provistos por la base de datos RGBD.
     Los datos se encuentran almacenados en un archivo ".mat".
     """
-    def __init__(self, matfile_path, obj_rgbd_name):
+    def __init__(self, matfile_path, obj_rgbd_name, obj_rgbd_num):
         super(StaticDetector, self).__init__()
         self._matfile = scipy.io.loadmat(matfile_path)['bboxes']
         self._obj_rgbd_name = obj_rgbd_name
+        self._obj_rgbd_num = obj_rgbd_num
 
     def detect(self):
         nframe = self._descriptors['nframe']
@@ -60,7 +61,8 @@ class StaticDetector(Detector):
         bottomright = (0, 0)
 
         for obj in objs:
-            if obj[0][0] == self._obj_rgbd_name:
+            if (obj[0][0] == self._obj_rgbd_name and
+                    unicode(obj[1][0][0]) == self._obj_rgbd_num):
                 fue_exitoso = True
                 location = (int(obj[2][0][0]), int(obj[4][0][0]))
                 bottomright = (int(obj[3][0][0]), int(obj[5][0][0]))
@@ -152,11 +154,11 @@ class DepthStaticDetectorWithPCDFiltering(StaticDetector):
 
 
 class StaticDetectorWithModelAlignment(DepthStaticDetectorWithPCDFiltering):
-    def __init__(self, matfile_path, obj_rgbd_name, ap_defaults=APDefaults(),
+    def __init__(self, matfile_path, obj_rgbd_name, obj_rgbd_num, ap_defaults=APDefaults(),
                  icp_defaults=ICPDefaults(), leaf_size=0.002,
                  icp_threshold=1e-3, perc_obj_model_pts=0.5):
         (super(StaticDetectorWithModelAlignment, self)
-         .__init__(matfile_path, obj_rgbd_name))
+         .__init__(matfile_path, obj_rgbd_name, obj_rgbd_num))
         self._ap_defaults = ap_defaults
         self._icp_defaults = icp_defaults
 

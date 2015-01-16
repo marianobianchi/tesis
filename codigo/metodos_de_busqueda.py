@@ -43,6 +43,9 @@ class BusquedaAlrededorCambiandoFrameSize(object):
 
         top, left = topleft
 
+        # Utilizo el tamaño del template porque si uso el original (es decir, si
+        # uso bottomright) puede pasar que siempre "gane" la comparación el
+        # frame más chico y que termine evaluando un cuadrante muy chico
         original_height = template_filas
         original_width = template_columnas
 
