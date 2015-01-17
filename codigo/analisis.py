@@ -382,44 +382,54 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
                 overlap_area = intersection.area() / union_area
                 print("Overlap_area: " + unicode(overlap_area))
 
-                fname = img_path_re.format(nframe=nframe)
-                img = cv2.imread(fname, cv2.IMREAD_COLOR)
+            fname = img_path_re.format(nframe=nframe)
+            img = cv2.imread(fname, cv2.IMREAD_COLOR)
 
-                img = dibujar_cuadrado(
-                    img,
-                    (gt_fila_sup, gt_col_izq),
-                    (gt_fila_inf, gt_col_der),
-                    color=(0, 255, 0)
-                )
-                algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
-                if metodo == 1:  # si fue seguimiento
-                    algoritmo_color = (255, 0, 0)  # azul
-                img = dibujar_cuadrado(
-                    img,
-                    (fila_sup, col_izq),
-                    (fila_inf, col_der),
-                    color=algoritmo_color,
-                )
+            img = dibujar_cuadrado(
+                img,
+                (gt_fila_sup, gt_col_izq),
+                (gt_fila_inf, gt_col_der),
+                color=(0, 255, 0)
+            )
+            algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
+            if metodo == 1:  # si fue seguimiento
+                algoritmo_color = (255, 0, 0)  # azul
+            img = dibujar_cuadrado(
+                img,
+                (fila_sup, col_izq),
+                (fila_inf, col_der),
+                color=algoritmo_color,
+            )
 
-                # Muestro el resultado y espero que se apriete la tecla q
-                cv2.imshow(
-                    'Frame {n}, {obj}, {scene}'.format(
-                        n=nframe,
-                        obj=objname,
-                        scene=scenename+'_'+scenenum
-                    ),
-                    img
-                )
+            # Muestro el resultado y espero que se apriete la tecla q
+            cv2.imshow(
+                'Frame {n}, {obj}, {scene}'.format(
+                    n=nframe,
+                    obj=objname,
+                    scene=scenename+'_'+scenenum
+                ),
+                img
+            )
 
-                while cv2.waitKey(1) & 0xFF != ord('q'):
-                    pass
+            key_pressed = cv2.waitKey(1) & 0xFF
+            while key_pressed != ord('q'):
+                key_pressed = cv2.waitKey(1) & 0xFF
+                if key_pressed == ord('s'):
+                    cv2.imwrite(
+                        'solo_frame-{scene}-{obj}-frame_{n}.png'.format(
+                            n=nframe,
+                            obj=objname+'_'+objnum,
+                            scene=scenename+'_'+scenenum
+                        ),
+                        img
+                    )
 
-                cv2.destroyAllWindows()
+            cv2.destroyAllWindows()
 
-                if show_clouds:
-                    cloud_fname = cloud_path_re.format(nframe=nframe)
-                    found_cloud_fname = result_path + found_cloud_path_re.format(nframe=nframe)
-                    subprocess.call(['pcl_viewer', cloud_fname, found_cloud_fname])
+            if show_clouds:
+                cloud_fname = cloud_path_re.format(nframe=nframe)
+                found_cloud_fname = result_path + found_cloud_path_re.format(nframe=nframe)
+                subprocess.call(['pcl_viewer', cloud_fname, found_cloud_fname])
 
 
 
@@ -1339,30 +1349,30 @@ if __name__ == '__main__':
     #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_RGBD_preferD',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_RGBD_preferD',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenenamenum='table_small_2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_RGBD_preferD',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_RGBD_preferD',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferD',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenenamenum='table_small_2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferD',
+    #     path='pruebas_guardadas',
+    # )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente RGB
@@ -1393,30 +1403,30 @@ if __name__ == '__main__':
     #     param='definitivo_RGBD_preferRGB',
     #     path='pruebas_guardadas',
     # )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_RGBD_preferRGB',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_RGBD_preferRGB',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenenamenum='table_small_2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_RGBD_preferRGB',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_RGBD_preferRGB',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferRGB',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenenamenum='table_small_2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferRGB',
+    #     path='pruebas_guardadas',
+    # )
 
     ##########################################################
     # STATIC DETECTION y definitivo DEPTH
@@ -1445,30 +1455,30 @@ if __name__ == '__main__':
     #     param='definitivo_DEPTH',
     #     path='pruebas_guardadas',
     # )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenenamenum='table_1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenenamenum='table_small_2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenenamenum='table_small_2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
 
     # dibujar_cuadros_encontrados_y_del_ground_truth(
     #     'table', '1',
@@ -1487,7 +1497,7 @@ if __name__ == '__main__':
     #     scenenamenum='desk_1',
     #     objname='coffee_mug',
     #     objnum='5',
-    #     param='prueba_002',
+    #     param='probando_RGB_solo_frame',
     #     path='pruebas_guardadas',
     # )
     #
@@ -1496,7 +1506,7 @@ if __name__ == '__main__':
     #     scenenamenum='desk_1',
     #     objname='cap',
     #     objnum='4',
-    #     param='prueba_002',
+    #     param='probando_RGB_solo_frame',
     #     path='pruebas_guardadas',
     # )
     #
@@ -1505,9 +1515,16 @@ if __name__ == '__main__':
     #     scenenamenum='desk_2',
     #     objname='bowl',
     #     objnum='3',
-    #     param='prueba_002',
+    #     param='probando_RGB_solo_frame',
     #     path='pruebas_guardadas',
     # )
+
+    dibujar_cuadros_encontrados_y_del_ground_truth(
+        'desk', '1',
+        'coffee_mug', '5',
+        'probando_RGB_frame_y_template', 'UNICO',
+    )
+
 
     # Prueba colgada del DEPTH
     # promedio_frame_a_frame(

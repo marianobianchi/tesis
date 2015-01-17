@@ -10,7 +10,7 @@ from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
     TemplateAndFrameGreenHistogramFinder, HSHistogramFinder,\
     FragmentedHistogramFinder, FragmentedReverseCompHistogramFinder, \
-    MoreBinsPerChannelTemplateAndFrameHistogramFinder
+    MoreBinsPerChannelTemplateAndFrameHistogramFinder, OnlyFrameHistogramFinder
 
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
@@ -1756,14 +1756,72 @@ def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
     img_provider.restart()
 
 
-def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
+def definitivo_rgb_hsv_pruebas(objname, objnumber, scenename, scenenumber):
     # Parametros para el seguimiento
     find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
     find_template_threshold = 0.6
     find_template_reverse = False
 
     find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
-    find_frame_threshold = 0.4
+    find_frame_threshold = 0.3
+    find_frame_reverse = False
+
+    metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
+
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDetectorForRGBFinder(
+        matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                      .format(sname=scenename, snum=scenenumber)),
+        obj_rgbd_name=objname,
+        obj_rgbd_num=objnumber,
+    )
+
+    template_comparator = HistogramComparator(
+        method=find_template_comp_method,
+        perc=find_template_threshold,
+        worst_case=1,
+        reverse=find_template_reverse,
+    )
+    frame_comparator = HistogramComparator(
+        method=find_frame_comp_method,
+        perc=find_frame_threshold,
+        worst_case=1,
+        reverse=find_frame_reverse,
+    )
+
+    # finder = OnlyFrameHistogramFinder(
+    finder = TemplateAndFrameHistogramFinder(
+        template_comparator,
+        frame_comparator,
+        metodo_de_busqueda,
+    )
+
+    follower = RGBFollower(img_provider, detector, finder)
+
+    FollowingSquemaExploringParameterRGB(
+        img_provider,
+        follower,
+        'pruebas_guardadas',
+        'probando_RGB_frame_y_template',
+        'UNICO',
+    ).run()
+
+    img_provider.restart()
+
+
+def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
+    # Parametros para el seguimiento
+    find_template_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_template_threshold = 0.85
+    find_template_reverse = False
+
+    find_frame_comp_method = cv2.cv.CV_COMP_BHATTACHARYYA
+    find_frame_threshold = 0.6
     find_frame_reverse = False
 
     metodo_de_busqueda = BusquedaAlrededorCambiandoFrameSize()
@@ -1803,12 +1861,12 @@ def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
 
     follower = RGBFollower(img_provider, detector, finder)
 
-    FollowingSchemeSavingDataRGB(
+    FollowingSquemaExploringParameterRGB(
         img_provider,
         follower,
         'pruebas_guardadas',
-        #'definitivo_RGB_staticdet',
-        #'DEFINITIVO',
+        'probando_RGB_mas_bines',
+        'DEFINITIVO',
     ).run()
 
     img_provider.restart()
@@ -1969,6 +2027,11 @@ if __name__ == '__main__':
     # prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')
 
 
-    definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
+    # definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
     # definitivo_rgb_hsv('soda_can', '4', 'table', '1')
     # definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')
+
+
+    definitivo_rgb_hsv_pruebas('coffee_mug', '5', 'desk', '1')
+    definitivo_rgb_hsv_pruebas('cap', '4', 'desk', '1')
+    definitivo_rgb_hsv_pruebas('bowl', '3', 'desk', '2')

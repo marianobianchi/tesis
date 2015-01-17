@@ -770,6 +770,19 @@ class TemplateAndFrameHistogramFinder(Finder):
         return desc
 
 
+class OnlyFrameHistogramFinder(TemplateAndFrameHistogramFinder):
+    def is_best_match(self, new_value, old_value, es_deteccion):
+        # templ_better = self.template_comparator.is_better_than_before(
+        #     new_value['object_template_comp'],
+        #     old_value['object_template_comp']
+        # )
+        obj_better = self.frame_comparator.is_better_than_before(
+            new_value['object_frame_comp'],
+            old_value['object_frame_comp']
+        )
+        return obj_better
+
+
 class MoreBinsPerChannelTemplateAndFrameHistogramFinder(TemplateAndFrameHistogramFinder):
     @staticmethod
     def calculate_rgb_histogram(roi, mask=None):
@@ -779,13 +792,10 @@ class MoreBinsPerChannelTemplateAndFrameHistogramFinder(TemplateAndFrameHistogra
         # Calculo el histograma del roi (para H y S)
         hist = cv2.calcHist(
             [roi_rgb],  # Imagen
-            #[0, 1, 2],  # Canales
-            [1],
+            [0, 1, 2],  # Canales
             mask,  # Mascara
-            #[60, 60, 60],  # Numero de bins para cada canal
-            #[0, 256, 0, 256, 0, 256],  # Rangos válidos para cada canal
-            [60],  # Numero de bins para cada canal
-            [0, 256],  # Rangos válidos para cada canal
+            [40, 40, 40],  # Numero de bins para cada canal
+            [0, 256, 0, 256, 0, 256],  # Rangos válidos para cada canal
         )
 
         # Normalizo el histograma para evitar errores por distinta escala
@@ -803,7 +813,7 @@ class MoreBinsPerChannelTemplateAndFrameHistogramFinder(TemplateAndFrameHistogra
             [roi_hsv],  # Imagen
             [1, 2],  # Canales
             mask,  # Mascara
-            [60, 60],  # Numero de bins para cada canal
+            [40, 40],  # Numero de bins para cada canal
             [0, 256, 0, 256],  # Rangos válidos para cada canal
         )
 
