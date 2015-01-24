@@ -1493,13 +1493,13 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # # Prueba colgada del DEPTH
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='DEPTH_probando_definitivo',
-    #     path='pruebas_guardadas',
-    # )
+    # Prueba colgada del DEPTH
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='probando_deteccion_estatica_DEPTH',
+        path='pruebas_guardadas',
+    )
 

@@ -2013,9 +2013,9 @@ if __name__ == '__main__':
     # definitivo_correlation_verde('cap', '4', 'desk', '1')
     # definitivo_correlation_verde('bowl', '3', 'desk', '2')
     #
-    # definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
-    # definitivo_rgb_hsv('cap', '4', 'desk', '1')
-    # definitivo_rgb_hsv('bowl', '3', 'desk', '2')
+    definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    definitivo_rgb_hsv('cap', '4', 'desk', '1')
+    definitivo_rgb_hsv('bowl', '3', 'desk', '2')
     #
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('coffee_mug', '5', 'desk', '1')
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('cap', '4', 'desk', '1')
@@ -2027,11 +2027,11 @@ if __name__ == '__main__':
     # prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')
 
 
-    # definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
-    # definitivo_rgb_hsv('soda_can', '4', 'table', '1')
-    # definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')
+    definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
+    definitivo_rgb_hsv('soda_can', '4', 'table', '1')
+    definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')
 
 
-    definitivo_rgb_hsv_pruebas('coffee_mug', '5', 'desk', '1')
-    definitivo_rgb_hsv_pruebas('cap', '4', 'desk', '1')
-    definitivo_rgb_hsv_pruebas('bowl', '3', 'desk', '2')
+    # definitivo_rgb_hsv_pruebas('coffee_mug', '5', 'desk', '1')
+    # definitivo_rgb_hsv_pruebas('cap', '4', 'desk', '1')
+    # definitivo_rgb_hsv_pruebas('bowl', '3', 'desk', '2')

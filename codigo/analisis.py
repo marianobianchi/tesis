@@ -1540,19 +1540,19 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    dibujar_cuadros_encontrados_y_del_ground_truth(
-        'desk', '1',
-        'coffee_mug', '5',
-        'probando_RGB_frame_y_template', 'UNICO',
-    )
+    # dibujar_cuadros_encontrados_y_del_ground_truth(
+    #     'desk', '1',
+    #     'coffee_mug', '5',
+    #     'probando_RGB_frame_y_template', 'UNICO',
+    # )
 
 
     # Prueba colgada del DEPTH
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='DEPTH_probando_definitivo',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='probando_deteccion_estatica_DEPTH',
     #     path='pruebas_guardadas',
     # )

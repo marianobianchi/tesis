@@ -1594,7 +1594,8 @@ def definitivo_depth(img_provider, scenename, scenenumber,
             img_provider,
             follower,
             'pruebas_guardadas',
-            'definitivo_DEPTH',
+            # 'definitivo_DEPTH',
+            'probando_deteccion_estatica_DEPTH',
             'DEFINITIVO',
         ).run()
 
@@ -1626,23 +1627,21 @@ if __name__ == '__main__':
     #####################
     # Cargo las imagenes
     #####################
-    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'desk', '1',
-    #     'videos/rgbd/objs/', 'cap', '4',
-    # )  # path, objname, number
+    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'cap', '4',
+    )  # path, objname, number
     #
     # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
     #     'videos/rgbd/scenes/', 'desk', '2',
     #     'videos/rgbd/objs/', 'bowl', '3',
     # )  # path, objname, number
 
-    table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'table', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '1',
-    )  # path, objname, number
-
-
-
+    # table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table', '1',
+    #     'videos/rgbd/objs/', 'coffee_mug', '1',
+    # )  # path, objname, number
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
 
     # #######################
     # # barrer_find_euclidean_fitness
@@ -1812,8 +1811,8 @@ if __name__ == '__main__':
     # definitivo_depth
     #######################
     # Primer escena
-    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug')
+    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug', '5')
 
     # Segunda escena
     # desk_1_img_provider.reinitialize_object('cap', '4')
@@ -1822,8 +1821,8 @@ if __name__ == '__main__':
     # Tercer escena
     # definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl')
 
-    table_1_img_provider.reinitialize_object('coffee_mug', '1')
-    definitivo_depth(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
+    # table_1_img_provider.reinitialize_object('coffee_mug', '1')
+    # definitivo_depth(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
 
     # table_1_img_provider.reinitialize_object('soda_can', '4')
     # definitivo_depth(table_1_img_provider, 'table', '1', 'soda_can', '4')

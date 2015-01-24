@@ -57,25 +57,44 @@ class StaticDetector(Detector):
 
         fue_exitoso = False
         tam_region = 0
-        location = (0, 0)
+        topleft = (0, 0)
         bottomright = (0, 0)
 
         for obj in objs:
             if (obj[0][0] == self._obj_rgbd_name and
                     unicode(obj[1][0][0]) == self._obj_rgbd_num):
                 fue_exitoso = True
-                location = (int(obj[2][0][0]), int(obj[4][0][0]))
-                bottomright = (int(obj[3][0][0]), int(obj[5][0][0]))
-                tam_region = max(int(obj[3][0][0]) - int(obj[2][0][0]),
-                                 int(obj[5][0][0]) - int(obj[4][0][0]))
+                topleft = (int(obj[2][0][0]) - 1, int(obj[4][0][0]) - 1)
+                bottomright = (int(obj[3][0][0]) - 1, int(obj[5][0][0]) - 1)
+                tam_region = max(bottomright[0] - topleft[0],
+                                 bottomright[1] - topleft[1])
                 break
+
+        if 'scene_rgb' in self._descriptors:
+            img = self._descriptors['scene_rgb']
+        elif 'depth_img' in self._descriptors:
+            img = self._descriptors['depth_img']
+        else:
+            img = [[i for i in range(640)]] + [[i for i in range(479)]]
+        ult_fila = len(img) - 1
+        ult_columna = len(img[0]) - 1
+
+        is_on_top_or_left = topleft[0] == 0 or topleft[1] == 0
+        is_on_bottom_or_right = (
+            bottomright[0] == ult_fila or bottomright[1] == ult_columna
+        )
 
         detected_descriptors = {
             'size': tam_region,
-            'location': location,  # location=(fila, columna)
-            'topleft': location,
+            'location': topleft,  # topleft=(fila, columna)
+            'topleft': topleft,
             'bottomright': bottomright,
         }
+
+        # Solo doy por deteccion a aquellos cuadrantes del ground truth que no
+        # esten pegados a uno de los bordes de la imagen
+        if is_on_top_or_left or is_on_bottom_or_right:
+            fue_exitoso = False
 
         return fue_exitoso, detected_descriptors
 
