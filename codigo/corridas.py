@@ -8,7 +8,7 @@ from cpp.icp import ICPDefaults
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from metodos_comunes import AdaptLeafRatio, AdaptSearchArea, FixedSearchArea
 from detectores import StaticDetector, DepthStaticDetectorWithPCDFiltering, \
-    StaticDetectorWithModelAlignment, AutomaticDetection
+    StaticDetectorWithModelAlignment, DepthDetection
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
     FollowingSquemaExploringParameterPCD
 from observar_seguimiento import MuestraSeguimientoEnVivo
@@ -108,7 +108,7 @@ def deteccion_automatica_icp_con_modelo():
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    detector = AutomaticDetection()
+    detector = DepthDetection()
 
     finder = ICPFinderWithModel()
 
@@ -132,7 +132,7 @@ def desk_1_coffee_mug_5():
         'videos/rgbd/objs/', 'coffee_mug', '5',
     )  # path, objname, number
 
-    detector = AutomaticDetection()
+    detector = DepthDetection()
 
     finder = ICPFinderWithModel()
 
@@ -154,7 +154,7 @@ def desk_2_flashlight_1():
         'videos/rgbd/objs/', 'flashlight', '1',
     )  # path, objname, number
 
-    detector = AutomaticDetection()
+    detector = DepthDetection()
 
     finder = ICPFinderWithModel()
 
@@ -176,7 +176,7 @@ def desk_1_cap_4():
         'videos/rgbd/objs/', 'cap', '4',
     )  # path, objname, number
 
-    detector = AutomaticDetection()
+    detector = DepthDetection()
 
     finder = ICPFinderWithModel()
 
@@ -200,7 +200,7 @@ def desk_2_bowl_3():
         'videos/rgbd/objs/', 'bowl', '3',
     )  # path, objname, number
 
-    detector = AutomaticDetection()
+    detector = DepthDetection()
 
     finder = ICPFinderWithModel()
 
@@ -250,7 +250,7 @@ def correr_ejemplo(objname, objnumber, scenename, scenenumber):
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    detector = AutomaticDetection(
+    detector = DepthDetection(
         ap_defaults=ap_defaults,
         icp_defaults=icp_detection_defaults,
         umbral_score=det_umbral_score,
@@ -318,7 +318,7 @@ def barrer_find_percentage_object(objname, objnumber, scenename, scenenumber):
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
     for i in range(3):
         for find_perc_obj_model_points in [0.1, 0.3, 0.6, 0.8, 0.9]:#[0.2, 0.4, 0.5, 0.75]:
-            detector = AutomaticDetection(
+            detector = DepthDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 umbral_score=det_umbral_score,
@@ -399,7 +399,7 @@ def barrer_detection_frame_size(objname, objnumber, scenename, scenenumber):
     # Repetir 3 veces para evitar detecciones fallidas por RANSAC
     for i in range(3):
         for det_obj_mult in [2, 3, 5, 7]:
-            detector = AutomaticDetection(
+            detector = DepthDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 umbral_score=det_umbral_score,
@@ -480,7 +480,7 @@ def barrer_inlier_fraction(objname, objnumber, scenename, scenenumber):
     for i in range(1):
         for inlier_fraction in [0.7, 0.9, 0.2, 0.4, 0.6, 0.7, 0.9]:
             ap_defaults.inlier_fraction = inlier_fraction
-            detector = AutomaticDetection(
+            detector = DepthDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 umbral_score=det_umbral_score,
@@ -561,7 +561,7 @@ def barrer_similarity_threshold(objname, objnumber, scenename, scenenumber):
     for i in range(3):
         for simil_threshold in [0.2, 0.4, 0.6, 0.7, 0.9]:
             ap_defaults.simil_threshold = simil_threshold
-            detector = AutomaticDetection(
+            detector = DepthDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 umbral_score=det_umbral_score,
@@ -642,7 +642,7 @@ def barrer_fixed_search_area(objname, objnumber, scenename, scenenumber):
     for i in range(3):
         for obj_size_times in [1.5, 2, 3, 4]:
             find_adapt_area = FixedSearchArea(obj_size_times=obj_size_times)
-            detector = AutomaticDetection(
+            detector = DepthDetection(
                 ap_defaults=ap_defaults,
                 icp_defaults=icp_detection_defaults,
                 umbral_score=det_umbral_score,
@@ -1594,12 +1594,87 @@ def definitivo_depth(img_provider, scenename, scenenumber,
             img_provider,
             follower,
             'pruebas_guardadas',
-            # 'definitivo_DEPTH',
-            'probando_deteccion_estatica_DEPTH',
+            'definitivo_DEPTH',
             'DEFINITIVO',
         ).run()
 
         img_provider.restart()
+
+
+def prueba_deteccion_automatica_sola(img_provider, scenename, scenenumber,
+                                     objname, objnum):
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 120
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.6
+    ap_defaults.inlier_threshold = 4
+    ap_defaults.inlier_fraction = 0.3
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-10
+    icp_detection_defaults.max_corr_dist = 3
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-6
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.5
+
+    # Set following parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-10
+    icp_finder_defaults.max_corr_dist = 0.1
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-6
+
+    find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.6
+
+    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    for i in range(6):
+        detector = StaticDetectorWithModelAlignment(
+            matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
+                          .format(sname=scenename, snum=scenenumber)),
+            obj_rgbd_name=objname,
+            obj_rgbd_num=objnum,
+            ap_defaults=ap_defaults,
+            icp_defaults=icp_detection_defaults,
+            leaf_size=det_obj_scene_leaf,
+            icp_threshold=det_umbral_score,
+            perc_obj_model_pts=det_perc_obj_model_points
+        )
+
+        finder = ICPFinderWithModel(
+            icp_defaults=icp_finder_defaults,
+            umbral_score=find_umbral_score,
+            adapt_area=find_adapt_area,
+            adapt_leaf=find_adapt_leaf,
+            first_leaf_size=find_obj_scene_leaf,
+            perc_obj_model_points=find_perc_obj_model_points,
+        )
+
+        follower = DepthFollower(
+            img_provider,
+            detector,
+            finder
+        )
+
+        FollowingSquemaExploringParameterPCD(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'definitivo_DEPTH',
+            'DEFINITIVO',
+        ).run()
+
+        img_provider.restart()
+
 
 
 if __name__ == '__main__':
@@ -1627,11 +1702,11 @@ if __name__ == '__main__':
     #####################
     # Cargo las imagenes
     #####################
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'cap', '4',
-    )  # path, objname, number
-    #
+    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '1',
+    #     'videos/rgbd/objs/', 'cap', '4',
+    # )  # path, objname, number
+
     # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
     #     'videos/rgbd/scenes/', 'desk', '2',
     #     'videos/rgbd/objs/', 'bowl', '3',
@@ -1641,7 +1716,6 @@ if __name__ == '__main__':
     #     'videos/rgbd/scenes/', 'table', '1',
     #     'videos/rgbd/objs/', 'coffee_mug', '1',
     # )  # path, objname, number
-    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
 
     # #######################
     # # barrer_find_euclidean_fitness
@@ -1811,25 +1885,29 @@ if __name__ == '__main__':
     # definitivo_depth
     #######################
     # Primer escena
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug', '5')
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'coffee_mug', '5')
 
     # Segunda escena
     # desk_1_img_provider.reinitialize_object('cap', '4')
-    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'cap')
+    # definitivo_depth(desk_1_img_provider, 'desk', '1', 'cap', '4')
 
     # Tercer escena
-    # definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl')
+    # definitivo_depth(desk_2_img_provider, 'desk', '2', 'bowl', '3')
 
+    # Cuarta escena
     # table_1_img_provider.reinitialize_object('coffee_mug', '1')
     # definitivo_depth(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
 
+    # Quinta escena
     # table_1_img_provider.reinitialize_object('soda_can', '4')
     # definitivo_depth(table_1_img_provider, 'table', '1', 'soda_can', '4')
-    #
-    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'table_small', '2',
-    #     'videos/rgbd/objs/', 'cereal_box', '4',
-    # )  # path, objname, number
-    # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
-    # definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
+
+    # Sexta escena
+    table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'table_small', '2',
+        'videos/rgbd/objs/', 'cereal_box', '4',
+    )  # path, objname, number
+
+    table_small_2_img_provider.reinitialize_object('cereal_box', '4')
+    definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')

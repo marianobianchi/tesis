@@ -8,13 +8,14 @@ from scipy.spatial import distance as dist
 
 from metodos_comunes import Timer
 from buscadores import TemplateAndFrameHistogramFinder, HistogramComparator, \
-    TemplateAndFrameGreenHistogramFinder, HSHistogramFinder,\
+    TemplateAndFrameGreenHistogramFinder, HSHistogramFinder, Finder, \
     FragmentedHistogramFinder, FragmentedReverseCompHistogramFinder, \
     MoreBinsPerChannelTemplateAndFrameHistogramFinder, OnlyFrameHistogramFinder
 
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataRGB,\
     FollowingSquemaExploringParameterRGB
-from detectores import RGBTemplateDetector, StaticDetectorForRGBFinder
+from detectores import RGBTemplateDetector, StaticDetectorForRGBFinder, \
+    RGBTemplateDetector
 from metodos_de_busqueda import BusquedaAlrededor, \
     BusquedaAlrededorCambiandoFrameSize
 from observar_seguimiento import MuestraSeguimientoEnVivo
@@ -66,12 +67,7 @@ def seguir_taza():
     )
 
     # Detector
-    detector = RGBTemplateDetector(
-        template_threshold=0.16,
-        templates_to_use=9,
-        templates_sizes=[1],
-        templates_from_frame=50,
-    )
+    detector = RGBTemplateDetector(template_threshold=0.16)
 
     # Buscador
     metodo_de_busqueda = BusquedaAlrededor()
@@ -300,9 +296,6 @@ def barrer_find_frame_threshold(objname, objnumber, scenename, scenenumber):
         with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
             detector = RGBTemplateDetector(
                 template_threshold=det_template_threshold,
-                templates_to_use=det_templates_to_use,
-                templates_sizes=det_template_sizes,
-                templates_from_frame=det_templates_from_frame,
             )
 
             template_comparator = HistogramComparator(
@@ -364,9 +357,6 @@ def barrer_find_template_threshold(objname, objnumber, scenename, scenenumber):
         with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
             detector = RGBTemplateDetector(
                 template_threshold=det_template_threshold,
-                templates_to_use=det_templates_to_use,
-                templates_sizes=det_template_sizes,
-                templates_from_frame=det_templates_from_frame,
             )
 
             template_comparator = HistogramComparator(
@@ -428,9 +418,6 @@ def barrer_det_template_threshold(objname, objnumber, scenename, scenenumber):
         with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
             detector = RGBTemplateDetector(
                 template_threshold=det_template_threshold,
-                templates_to_use=det_templates_to_use,
-                templates_sizes=det_template_sizes,
-                templates_from_frame=det_templates_from_frame,
             )
 
             template_comparator = HistogramComparator(
@@ -492,9 +479,6 @@ def barrer_det_template_sizes(objname, objnumber, scenename, scenenumber):
         with Timer('SEGUIMIENTO EN LA ESCENA ENTERA') as t:
             detector = RGBTemplateDetector(
                 template_threshold=det_template_threshold,
-                templates_to_use=det_templates_to_use,
-                templates_sizes=det_template_sizes,
-                templates_from_frame=det_templates_from_frame,
             )
 
             template_comparator = HistogramComparator(
@@ -508,7 +492,7 @@ def barrer_det_template_sizes(objname, objnumber, scenename, scenenumber):
                 reverse=find_frame_reverse,
             )
 
-            finder = TemplateAndFrameHistogramFinder(
+            finder = Finder(
                 template_comparator,
                 frame_comparator,
                 metodo_de_busqueda,
@@ -1872,6 +1856,31 @@ def prueba_mas_bines_en_rgb_hsv(objname, objnumber, scenename, scenenumber):
     img_provider.restart()
 
 
+def prueba_deteccion_automatica_sola(objname, objnumber, scenename, scenenumber):
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForRGB(
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    for template_threshold in [0.15]:#[0.006, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1]:
+        detector = RGBTemplateDetector(template_threshold=template_threshold)
+
+        finder = Finder()
+
+        follower = RGBFollower(img_provider, detector, finder)
+
+        FollowingSquemaExploringParameterRGB(
+            img_provider,
+            follower,
+            'pruebas_guardadas',
+            'deteccion_template_threshold',
+            template_threshold,
+        ).run()
+
+        img_provider.restart()
+
+
 if __name__ == '__main__':
     # barrer_find_frame_threshold('coffee_mug', '5', 'desk', '1')
     # barrer_find_frame_threshold('cap', '4', 'desk', '1')
@@ -2012,26 +2021,30 @@ if __name__ == '__main__':
     # definitivo_correlation_verde('coffee_mug', '5', 'desk', '1')
     # definitivo_correlation_verde('cap', '4', 'desk', '1')
     # definitivo_correlation_verde('bowl', '3', 'desk', '2')
-    #
-    definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
-    definitivo_rgb_hsv('cap', '4', 'desk', '1')
-    definitivo_rgb_hsv('bowl', '3', 'desk', '2')
-    #
+
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('coffee_mug', '5', 'desk', '1')
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('cap', '4', 'desk', '1')
     # definitivo_mi_metodo_bhatta_bhatta_bhatta('bowl', '3', 'desk', '2')
-
 
     # prueba_mas_bines_en_rgb_hsv('coffee_mug', '5', 'desk', '1')
     # prueba_mas_bines_en_rgb_hsv('cap', '4', 'desk', '1')
     # prueba_mas_bines_en_rgb_hsv('bowl', '3', 'desk', '2')
 
-
-    definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
-    definitivo_rgb_hsv('soda_can', '4', 'table', '1')
-    definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')
-
-
     # definitivo_rgb_hsv_pruebas('coffee_mug', '5', 'desk', '1')
     # definitivo_rgb_hsv_pruebas('cap', '4', 'desk', '1')
     # definitivo_rgb_hsv_pruebas('bowl', '3', 'desk', '2')
+
+    prueba_deteccion_automatica_sola('coffee_mug', '5', 'desk', '1')
+    prueba_deteccion_automatica_sola('cap', '4', 'desk', '1')
+    prueba_deteccion_automatica_sola('bowl', '3', 'desk', '2')
+
+
+    ############################################################################
+    # DEFINITIVOS
+    ############################################################################
+    # definitivo_rgb_hsv('coffee_mug', '5', 'desk', '1')
+    # definitivo_rgb_hsv('cap', '4', 'desk', '1')
+    # definitivo_rgb_hsv('bowl', '3', 'desk', '2')
+    # definitivo_rgb_hsv('coffee_mug', '1', 'table', '1')
+    # definitivo_rgb_hsv('soda_can', '4', 'table', '1')
+    # definitivo_rgb_hsv('cereal_box', '4', 'table_small', '2')
