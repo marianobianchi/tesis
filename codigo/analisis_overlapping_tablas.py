@@ -1557,3 +1557,34 @@ if __name__ == '__main__':
         include_detections_in_overlap=True,
     )
 
+    # Pruebas deteccion RGBD
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+        include_detections_in_overlap=True,
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+        include_detections_in_overlap=True,
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+        include_detections_in_overlap=True,
+    )
+

@@ -153,19 +153,17 @@ class RGBFollower(Follower):
 # Seguidores RGB-D
 ###################
 
-class CombinedFollowerWithStaticDetection(Follower):
+class DetectionWithCombinedFollowers(Follower):
     """
     Combina los seguidores RGB y D usando la deteccion estatica de profundidad,
     ya que inserta en los descriptores a las nubes de puntos
     """
-
-    def __init__(self, image_provider, depth_static_detector,
-                 main_finder, secondary_finder):
+    def __init__(self, image_provider, detector, main_finder, secondary_finder):
 
         self.img_provider = image_provider
 
         # Following helpers
-        self.depth_static_detector = depth_static_detector
+        self.detector = detector
         self.main_finder = main_finder
         self.secondary_finder = secondary_finder
 
@@ -178,7 +176,7 @@ class CombinedFollowerWithStaticDetection(Follower):
     # Descriptores comunes
     ########################
     def descriptors(self):
-        desc = super(CombinedFollowerWithStaticDetection, self).descriptors()
+        desc = super(DetectionWithCombinedFollowers, self).descriptors()
         desc.update({
             'scene_rgb': self.img_provider.rgb_img(),
             'depth_img': self.img_provider.depth_img(),
@@ -214,10 +212,10 @@ class CombinedFollowerWithStaticDetection(Follower):
     #######################
     def detect(self):
         # Actualizo descriptores e imagen en detector
-        self.depth_static_detector.update(self.descriptors())
+        self.detector.update(self.descriptors())
 
         # Detectar
-        fue_exitoso, descriptors = self.depth_static_detector.detect()
+        fue_exitoso, descriptors = self.detector.detect()
 
         topleft = (0, 0)
         bottomright = (0, 0)
@@ -225,8 +223,9 @@ class CombinedFollowerWithStaticDetection(Follower):
         if fue_exitoso:
             # Calculo y actualizo los descriptores con los valores encontrados
             self.upgrade_detected_descriptors(descriptors)
-            topleft = self.descriptors()['topleft']
-            bottomright = self.descriptors()['bottomright']
+            desc = self.descriptors()
+            topleft = desc['topleft']
+            bottomright = desc['bottomright']
 
         return fue_exitoso, topleft, bottomright
 
@@ -249,8 +248,8 @@ class CombinedFollowerWithStaticDetection(Follower):
             # Me quedo con el resultado del depth finder para la nube de puntos
             # y corro el detector RGB buscando solo con diferentes tamaños, pero
             # no moviendo el centro del cuadrante
-            r = Rectangle(descriptors['topleft'], descriptors['bottomright'])
-            print "Area segun el seguidor principal:", r.area()
+            # r = Rectangle(descriptors['topleft'], descriptors['bottomright'])
+            # print "Area segun el seguidor principal:", r.area()
             self.upgrade_main_followed_descriptors(descriptors)
             self.secondary_finder.update(self.descriptors())
             mejora_fue_exitosa, new_descriptors = self.secondary_finder.find(es_deteccion)
@@ -258,13 +257,14 @@ class CombinedFollowerWithStaticDetection(Follower):
             if mejora_fue_exitosa:
                 # Calculo y actualizo los descriptores con los valores encontrados
                 self.upgrade_secondary_followed_descriptors(new_descriptors)
-                last_descriptors = self.descriptors()
-                print "    Se mejoró el seguimiento con el seguidor secundario"
-                r = Rectangle(last_descriptors['topleft'], last_descriptors['bottomright'])
-                print "    Area segun seguidor secundario:", r.area()
+                # last_descriptors = self.descriptors()
+                # print "    Se mejoró el seguimiento con el seguidor secundario"
+                # r = Rectangle(last_descriptors['topleft'], last_descriptors['bottomright'])
+                # print "    Area segun seguidor secundario:", r.area()
 
-            topleft = self.descriptors()['topleft']
-            bottomright = self.descriptors()['bottomright']
+            desc = self.descriptors()
+            topleft = desc['topleft']
+            bottomright = desc['bottomright']
 
         return fue_exitoso, topleft, bottomright
 
@@ -272,7 +272,7 @@ class CombinedFollowerWithStaticDetection(Follower):
     # Actualizar descriptores
     ##########################
     def upgrade_detected_descriptors(self, descriptors):
-        desc = self.depth_static_detector.calculate_descriptors(descriptors)
+        desc = self.detector.calculate_descriptors(descriptors)
         self.set_object_descriptors(desc)
 
     def upgrade_main_followed_descriptors(self, descriptors):
@@ -282,4 +282,3 @@ class CombinedFollowerWithStaticDetection(Follower):
     def upgrade_secondary_followed_descriptors(self, descriptors):
         desc = self.secondary_finder.calculate_descriptors(descriptors)
         self.set_object_descriptors(desc)
-

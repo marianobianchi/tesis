@@ -13,6 +13,7 @@ from cpp.alignment_prerejective import align, APDefaults
 from metodos_comunes import from_flat_to_cloud_limits, \
     from_cloud_to_flat_limits, AdaptLeafRatio
 from metodos_de_busqueda import BusquedaPorFramesSolapados
+from observar_seguimiento import MuestraBusquedaEnVivo
 
 
 class Detector(object):
@@ -524,14 +525,13 @@ class RGBTemplateDetector(Detector):
 
             # Busco la posición
             min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
-            print ('        El template numero {i:02d} tiene un umbral de '
-                   'comparacion de {u}'.format(i=i, u=min_val))
+            # print ('        El template numero {i:02d} tiene un umbral de '
+            #        'comparacion de {u}'.format(i=i, u=min_val))
 
             # cv2.imshow('Template usado', template)
             # print "Valor de la comparacion:", min_val
             # cv2.waitKey()
 
-            # TODO: revisar este umbral
             if min_val < best_threshold:
                 # min_loc y max_loc tienen primero las columnas y despues las filas,
                 # entonces lo doy vuelta
@@ -599,12 +599,16 @@ class StaticDetectorForRGBD(StaticDetectorWithModelAlignment,
 
 class RGBDDetector(RGBTemplateDetector, DepthDetection):
     def __init__(self, template_threshold=0.02, ap_defaults=None,
-                 icp_defaults=None, umbral_score=1e-3, **kwargs):
-        super(RGBTemplateDetector, self).__init__(template_threshold)
-        (super(DepthDetection, self)
-         .__init__(ap_defaults, icp_defaults, umbral_score, **kwargs))
+                 icp_defaults=None, umbral_score=1e-3, depth_area_extra=0.33,
+                 **kwargs):
+        RGBTemplateDetector.__init__(self, template_threshold)
+        DepthDetection.__init__(self, ap_defaults, icp_defaults, umbral_score, **kwargs)
+        # Esto sirve para extender el area de busqueda para algoritmo de depth
+        # tomando como referencia el area reportada por la deteccion RGB
+        self.depth_area_extra = depth_area_extra
 
     def detect(self):
+        # from analisis import Rectangle
         # Deteccion RGB
         rgb_fue_exitoso, rgb_desc = super(RGBDDetector, self).detect()
 
@@ -629,22 +633,25 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
             # Nube de puntos de la escena
             scene_cloud = self._descriptors['pcd']
 
-            # Obtengo tamaño del modelo del objeto a detectar
-            obj_limits = get_min_max(model_cloud)
-
-            # Obtengo limites de la escena
-            scene_limits = get_min_max(scene_cloud)
+            # Tamaño de la escena RGB
             rgb_height = self._descriptors['scene_rgb'].shape[0]
             rgb_width = self._descriptors['scene_rgb'].shape[1]
 
-            # Obtengo un bounding rectangulo cuya longitud en x e y es el doble
-            # del encontrado por RGB pero con mismo centro de masa
             topleft = rgb_desc['topleft']
             bottomright = rgb_desc['bottomright']
+
+            # MuestraBusquedaEnVivo('Deteccion RGB').run(
+            #     self._descriptors['scene_rgb'],
+            #     topleft,
+            #     bottomright,
+            # )
+
+            # Obtengo un bounding rectangulo cuya longitud en x e y es el doble
+            # del encontrado por RGB pero con mismo centro de masa
             width = abs(bottomright[1] - topleft[1])
             height = abs(bottomright[0] - topleft[0])
-            extra_width = max(int(width / 2), 1)
-            extra_height = max(int(height / 2), 1)
+            extra_width = max(int(width * self.depth_area_extra), 1)
+            extra_height = max(int(height * self.depth_area_extra), 1)
 
             new_topleft = (
                 max(topleft[0] - extra_height, 0),
@@ -654,29 +661,41 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
                 min(bottomright[0] + extra_height, rgb_height - 1),
                 min(bottomright[1] + extra_width, rgb_width - 1)
             )
+            # Rectangulo RGB y rectangulo nuevo
+            # found_rgb = Rectangle(topleft, bottomright)
+            # new_rgb = Rectangle(new_topleft, new_bottomright)
+            # print "Rectangulo RGB detectado:", found_rgb.area()
+            # print "Rectangulo RGB para Depth:", new_rgb.area()
+            #
+            # MuestraBusquedaEnVivo('Deteccion RGB').run(
+            #     self._descriptors['scene_rgb'],
+            #     new_topleft,
+            #     new_bottomright,
+            # )
 
             # Paso los valores del nuevo bounding box de RGB a DEPTH
             depth_img = self._descriptors['depth_img']
-            depth_topleft, depth_bottomright = from_flat_to_cloud_limits(
+            top_bottom, left_right = from_flat_to_cloud_limits(
                 new_topleft,
                 new_bottomright,
                 depth_img
             )
+            # print "Depth topleft: (", top_bottom[0], ",", left_right[0], ")"
+            # print "Depth bottomright: (", top_bottom[1], ",", left_right[1], ")"
 
             # Filtro la escena y obtengo solo los puntos señalados por la
             # deteccion RGB
-            # TODO: ver si esta bien como estoy filtrando
-            cloud = filter_cloud(
+            first_cloud = filter_cloud(
                 scene_cloud,
                 b'x',  # X son las columnas
-                min(depth_topleft[1], depth_bottomright[1]),
-                max(depth_topleft[1], depth_bottomright[1]),
+                left_right[0],
+                left_right[1],
             )
             cloud = filter_cloud(
-                cloud,
+                first_cloud,
                 b'y',  # Y son las filas
-                min(depth_topleft[0], depth_bottomright[0]),
-                max(depth_topleft[0], depth_bottomright[0]),
+                top_bottom[0],
+                top_bottom[1],
             )
 
             best_aligned_scene = None
@@ -690,21 +709,34 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
                 for i in range(3):
                     # Calculate alignment
                     ap_result = align(model_cloud, cloud, self._ap_defaults)
-                    if (ap_result.has_converged and
-                            ap_result.score < best_alignment_score):
-                        best_alignment_score = ap_result.score
-                        best_aligned_scene = ap_result.cloud
-                    model_cloud = ap_result.cloud
+                    if ap_result.has_converged:
+                        model_cloud = ap_result.cloud
+                        if ap_result.score < best_alignment_score:
+                            best_alignment_score = ap_result.score
+                            best_aligned_scene = ap_result.cloud
+
 
             # Su hubo una buena alineacion
             if best_aligned_scene is not None:
+                # print "        HUBO UNA ALINEACION CORRECTA!!!!"
                 # Calculate ICP
                 icp_result = icp(best_aligned_scene, cloud, self._icp_defaults)
 
                 if (icp_result.has_converged and
                         icp_result.score < self.umbral_score):
+                    # print "        HUBO UN ICP CORRECTO!!!!"
                     # Filtro los puntos de la escena que se corresponden con el
                     # objeto que estoy buscando
+                    # show_clouds(
+                    #     b'Modelo alineado por AP e ICP vs escena parcial segun RGB',
+                    #     icp_result.cloud,
+                    #     cloud,
+                    # )
+                    # show_clouds(
+                    #     b'Modelo alineado por AP e ICP vs escena completa',
+                    #     icp_result.cloud,
+                    #     scene_cloud,
+                    # )
                     obj_scene_cloud = filter_object_from_scene_cloud(
                         icp_result.cloud,  # object
                         cloud,  # partial scene
@@ -714,10 +746,11 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
 
                     obj_scene_points = points(obj_scene_cloud)
 
-                    fue_exitoso = obj_scene_points > accepted_points
+                    depth_fue_exitoso = obj_scene_points > accepted_points
 
-                    if fue_exitoso:
+                    if depth_fue_exitoso:
                         self.adapt_leaf.set_found_points(obj_scene_points)
+                        # print "        HUBO UNA DETECCION!!!!"
                     else:
                         self.adapt_leaf.reset()
 
@@ -766,5 +799,3 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
         })
 
         return desc
-
-

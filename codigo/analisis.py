@@ -1559,7 +1559,7 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # # Pruebas deteccion por templates
+    # Pruebas deteccion por templates
     promedio_frame_a_frame(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
@@ -1590,8 +1590,30 @@ if __name__ == '__main__':
         param_values=[0.2],
     )
 
-    # dibujar_cuadros_encontrados_y_del_ground_truth(
-    #     'desk', '1',
-    #     'coffee_mug', '5',
-    #     'prueba_001', 'UNICO', corr_num='01', show_clouds=False,
-    # )
+    # Pruebas deteccion RGBD
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='probando_deteccion_automatica_RGBD',
+        path='pruebas_guardadas',
+    )

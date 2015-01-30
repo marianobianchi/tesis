@@ -95,7 +95,7 @@ class BusquedaCambiandoSizePeroMismoCentro(object):
         original_height = template_filas
         original_width = template_columnas
 
-        for tam_diff in [0.5, 1, 1.5, 2]:
+        for tam_diff in [0.5, 1.5, 2, 1]:
 
             height = max(int(original_height * tam_diff), 2)
             diff_height = int((height - original_height) / 2)
