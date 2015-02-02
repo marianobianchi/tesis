@@ -143,6 +143,10 @@ def analizar_precision_recall_por_parametro(matfile, scenenamenum, objname,
     ax.set_ylim(0, 100)
     ax.set_xlabel('Precision')
     ax.set_ylabel('Recall')
+    xticks = sorted(range(0, 101, 20) + precs)
+    yticks = sorted(range(0, 101, 20) + recs)
+    plt.xticks(xticks)
+    plt.yticks(yticks)
     ax.set_title(
         'Precision vs recall para {scn}, {obj} y el parametro {prm}'.format(
             scn=scenenamenum,
@@ -218,39 +222,119 @@ if __name__ == '__main__':
     # Analisis RGB
     ###############
 
-    # Find frame threshold
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='RGB_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='RGB_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='RGB_find_frame_threshold',
-        path='pruebas_guardadas',
-    )
+    # # Find frame threshold
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_find_frame_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Find template threshold
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_find_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Detection template threshold
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_det_template_threshold',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # # Detection template sizes
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='RGB_det_template_sizes',
+    #     path='pruebas_guardadas',
+    # )
 
-    # Find template threshold
+    ###########################################################################
+    # SISTEMA DE SEGUIMIENTO RGB-D
+    ###########################################################################
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenenamenum='desk_1',
         objname='coffee_mug',
         objnum='5',
-        param='RGB_find_template_threshold',
+        param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
     )
     analizar_precision_recall_por_parametro(
@@ -258,7 +342,7 @@ if __name__ == '__main__':
         scenenamenum='desk_1',
         objname='cap',
         objnum='4',
-        param='RGB_find_template_threshold',
+        param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
     )
     analizar_precision_recall_por_parametro(
@@ -266,58 +350,6 @@ if __name__ == '__main__':
         scenenamenum='desk_2',
         objname='bowl',
         objnum='3',
-        param='RGB_find_template_threshold',
-        path='pruebas_guardadas',
-    )
-
-    # Detection template threshold
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='RGB_det_template_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='RGB_det_template_threshold',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='RGB_det_template_threshold',
-        path='pruebas_guardadas',
-    )
-
-    # Detection template sizes
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='RGB_det_template_sizes',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='RGB_det_template_sizes',
-        path='pruebas_guardadas',
-    )
-    analizar_precision_recall_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='RGB_det_template_sizes',
+        param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
     )

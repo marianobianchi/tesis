@@ -373,7 +373,7 @@ Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un baj
 \end{figure}
 
 
-Finalmente analizamos los resultados de los algoritmos que combinan RGB con Depth. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza. \comentarioM{Después comento mas cosas.}\comentarioP{Falta decir que es mejor y cuando.}
+Finalmente analizamos los resultados de los algoritmos de tracking que combinan RGB con Depth. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza. \comentarioM{Después comento mas cosas.}\comentarioP{Falta decir que es mejor y cuando.}
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
@@ -409,6 +409,35 @@ Finalmente analizamos los resultados de los algoritmos que combinan RGB con Dept
 \label{tabla_rgbd_rgb_nuevos}
 \end{table}
 
+
+
+\subsection{Evaluación del sistema en RGB-D}
+Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}. 
+
+\begin{table}[h]
+    \begin{tabular}{|c|c|c|c|c|c|}
+    \hline
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & overlap STD & & &\\
+	\hline
+    Taza    & 46.46      & 30.29       & 72.37             & 0                & 19.74\\
+    \hline
+    Gorra   & 38.25      & 37.04       & 54.47             & 0                & 21.95\\
+    \hline
+    Bowl    & 25.61      & 30.58       & 47.27             & 0                & 43.64\\
+    \hline
+    Taza 2  &     0      &     0       & 88.05             & 15.10            & 10.69\\
+    \hline
+    Lata    &     0      &     0       & 89.04             & 32.42            & 65.30\\
+    \hline
+    Caja    &  0.62      &  7.16       &  0.74             & 0                & 79.17\\
+    \hline
+    \end{tabular}
+\caption{Resultados del sistema de seguimiento RGB-D}
+\label{tabla_sistema_rgbd}
+\end{table}
+
+En la Tabla \ref{tabla_sistema_rgbd} se puede ver un análisis similar al realizado anteriormente para cuantificar el comportamiento de los algoritmos de tracking. La principal diferencia es que en esta tabla se incluyen los resultados de las detecciones para el promedio de solapamiento y el porcentaje de seguimiento, ya que en esta ocasión las detecciones son automáticas y por lo tanto nos interesa conocer el comportamiento del sistema de seguimiento en su totalidad. Como podemos ver, para los primeros tres objetos
 
 
 

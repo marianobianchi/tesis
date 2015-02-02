@@ -3,6 +3,7 @@
 
 from __future__ import (unicode_literals, division, print_function)
 
+import os
 import math
 import cv2, numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +11,7 @@ from scipy.spatial import distance as dist
 
 from cpp.common import get_min_max, filter_cloud, show_clouds, save_pcd, points
 
-from detectores import StaticDetectorForRGBFinder
+from detectores import StaticDetectorForRGBFinder, StaticDetector
 from metodos_de_busqueda import BusquedaPorFramesSolapados, \
     BusquedaAlrededorCambiandoFrameSize
 from proveedores_de_imagenes import FrameNamesAndImageProvider
@@ -772,7 +773,70 @@ def probando_mi_metodo_chebysev():
         show_following,
     ).run()
 
+
+def ver_y_guardar_static_detection():
+    scenename = 'table_small'
+    scenenum = '2'
+    objname = 'cereal_box'
+    objnum = '4'
+    frames = 234
+    templates_path = 'videos/rgbd/scenes/{sname}/{sname}_{snum}/templates/'.format(
+        sname=scenename,
+        snum=scenenum,
+    )
+    if not os.path.isdir(templates_path):
+        os.mkdir(templates_path)
+
+    img_provider = FrameNamesAndImageProvider(
+        'videos/rgbd/scenes/', scenename, unicode(scenenum),
+        'videos/rgbd/objs/', objname, unicode(objnum),
+    )
+
+    detector = StaticDetector(
+        'videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'.format(
+            sname=scenename,
+            snum=scenenum,
+        ),
+        objname,
+        objnum
+    )
+    while img_provider.have_images():
+        img = img_provider.rgb_img()
+        nframe = img_provider.nframe()
+        print('Detectando en frame', nframe)
+
+        detector.update({'nframe': nframe})
+        fue_exitoso, desc = detector.detect()
+
+        topleft = desc['topleft']
+        bottomright = desc['bottomright']
+
+        if fue_exitoso:
+            MuestraSeguimientoEnVivo('sistema RGBD').run(
+                img_provider,
+                topleft,
+                bottomright,
+                fue_exitoso,
+                True
+            )
+            print("Desea guardar el template? s = si, q = no")
+            key = cv2.waitKey(1) & 0xFF
+            while key != ord('q'):
+                key = cv2.waitKey(1) & 0xFF
+                if key == ord('s'):
+                    frame = img[topleft[0]:bottomright[0],
+                                topleft[1]:bottomright[1]]
+                    fname = '{sname}_{snum}_{objname}_{objnum}__{nframe:03}.png'.format(
+                        sname=scenename,
+                        snum=scenenum,
+                        objname=objname,
+                        objnum=objnum,
+                        nframe=nframe
+                    )
+                    cv2.imwrite(os.path.join(templates_path, fname), frame)
+
+        img_provider.next()
+
+
 if __name__ == '__main__':
-    prueba_histogramas()
-
-
+    ver_y_guardar_static_detection()

@@ -1241,7 +1241,7 @@ class ImproveObjectFoundWithHistogramFinder(TemplateAndFrameHistogramFinder):
 
         if 'object_template_hist' not in self._descriptors:
             obj = self._descriptors['object_template']
-            mask = self._descriptors['object_mask']
+            mask = self._descriptors.get('object_mask', None)
             hist = self.calculate_rgb_histogram(obj, mask)
             self._descriptors['object_template_hist'] = hist
 

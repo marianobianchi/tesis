@@ -501,19 +501,37 @@ if __name__ == '__main__':
     # prueba_solo_deteccion_automatica(desk_2_img_provider)
 
     # Sistema de seguimiento completamente automatico
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-       'videos/rgbd/scenes/', 'desk', '1',
-       'videos/rgbd/objs/', 'coffee_mug', '5',
+    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #    'videos/rgbd/scenes/', 'desk', '1',
+    #    'videos/rgbd/objs/', 'coffee_mug', '5',
+    # )  # path, objname, number
+    #
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # sistema_de_seguimiento_automatico_completo(desk_1_img_provider)
+    #
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # sistema_de_seguimiento_automatico_completo(desk_1_img_provider)
+    #
+    # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '2',
+    #     'videos/rgbd/objs/', 'bowl', '3',
+    # )  # path, objname, number
+    # sistema_de_seguimiento_automatico_completo(desk_2_img_provider)
+
+    table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'table', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '1',
     )  # path, objname, number
 
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    sistema_de_seguimiento_automatico_completo(desk_1_img_provider)
+    # table_1_img_provider.reinitialize_object('coffee_mug', '1')
+    # sistema_de_seguimiento_automatico_completo(table_1_img_provider)
 
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    sistema_de_seguimiento_automatico_completo(desk_1_img_provider)
+    table_1_img_provider.reinitialize_object('soda_can', '4')
+    sistema_de_seguimiento_automatico_completo(table_1_img_provider)
 
-    desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '2',
-        'videos/rgbd/objs/', 'bowl', '3',
-    )  # path, objname, number
-    sistema_de_seguimiento_automatico_completo(desk_2_img_provider)
+    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table_small', '2',
+    #     'videos/rgbd/objs/', 'cereal_box', '4',
+    # )  # path, objname, number
+    #
+    # sistema_de_seguimiento_automatico_completo(table_small_2_img_provider)

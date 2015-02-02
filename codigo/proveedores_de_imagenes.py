@@ -93,17 +93,19 @@ class FrameNamesAndImageProvider(object):
         if sizes is None:
             sizes = [0.5, 0.75, 1.25, 1.5]
 
+        # Saco si tiene escala 1 porque por defecto más adelante ese lo agrego
+        # siempre
         if 1 in sizes:
             sizes.remove(1)
 
         # Nombres de templates
         templates_fnames = [fname for fname in os.listdir(path)
-                            if 'mask' not in fname]
+                            if 'mask' not in fname and not os.path.isdir(os.path.join(path, fname))]
         templates_fnames.sort()
 
         # Nombres de mascaras
         masks_fnames = [fname for fname in os.listdir(path)
-                        if 'mask' in fname]
+                        if 'mask' in fname and not os.path.isdir(os.path.join(path, fname))]
         masks_fnames.sort()
 
         # Tamaño de la escena
@@ -177,6 +179,9 @@ class FrameNamesAndImageProvider(object):
 
     def have_images(self):
         return self.next_frame_number <= self.last_frame_number
+
+    def nframe(self):
+        return self.next_frame_number
 
     # Images filenames
     def rgb_fname(self):

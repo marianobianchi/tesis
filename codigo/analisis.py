@@ -1510,6 +1510,61 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
+    ##################################################################
+    # definitivo sistema RGBD
+    ##################################################################
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+
     ############################################################################
     #                          FIN DEFINITIVOS                                 #
     ############################################################################
@@ -1559,61 +1614,61 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    # Pruebas deteccion por templates
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='deteccion_template_threshold',
-        path='pruebas_guardadas',
-        param_values=[0.2],
-    )
+    # # Pruebas deteccion por templates
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='deteccion_template_threshold',
+    #     path='pruebas_guardadas',
+    #     param_values=[0.2],
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='deteccion_template_threshold',
+    #     path='pruebas_guardadas',
+    #     param_values=[0.2],
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='deteccion_template_threshold',
+    #     path='pruebas_guardadas',
+    #     param_values=[0.2],
+    # )
 
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='deteccion_template_threshold',
-        path='pruebas_guardadas',
-        param_values=[0.2],
-    )
-
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='deteccion_template_threshold',
-        path='pruebas_guardadas',
-        param_values=[0.2],
-    )
-
-    # Pruebas deteccion RGBD
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='probando_deteccion_automatica_RGBD',
-        path='pruebas_guardadas',
-    )
-
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='cap',
-        objnum='4',
-        param='probando_deteccion_automatica_RGBD',
-        path='pruebas_guardadas',
-    )
-
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenenamenum='desk_2',
-        objname='bowl',
-        objnum='3',
-        param='probando_deteccion_automatica_RGBD',
-        path='pruebas_guardadas',
-    )
+    # # Pruebas deteccion RGBD
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='probando_deteccion_automatica_RGBD',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='probando_deteccion_automatica_RGBD',
+    #     path='pruebas_guardadas',
+    # )
+    #
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='probando_deteccion_automatica_RGBD',
+    #     path='pruebas_guardadas',
+    # )
