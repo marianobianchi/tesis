@@ -73,7 +73,6 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
                 # Junto los valores por linea/frame
                 for line in file_:
-
                     # Valores devueltos por el algoritmo
                     values = [int(v) for v in line.split(';')]
                     nframe = values[0]

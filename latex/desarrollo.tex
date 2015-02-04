@@ -16,7 +16,7 @@ Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detect
 Tomando como base estas etapas, proponemos distintos métodos para cada una de ellas tanto para imágenes sólo RGB, como para \textit{depth} (profundidad) y la combinación RGB-D. La primera etapa del sistema puede ser prescindible si contamos con el modelo RGB-D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos con ground truth descripta en la sección \ref{base_rgbd}.
 
 \section{Método propuesto RGB}\label{metodo_rgb}
-En esta sección explicaremos como se implementó el sistema de seguimiento para secuencias de imágenes RGB basándonos en las etapas explicadas previamente. 
+En esta sección explicaremos como se implementó el sistema de seguimiento para secuencias de imágenes RGB basándonos en las etapas explicadas previamente.
 
 \subsection{Entrenamiento}
 La etapa de entrenamiento en este método consta de tomar de la base de datos cuatro templates del objeto que se desea seguir con sus respectivas máscaras. Cada uno de los templates corresponde a una pose distinta. Primero se elige de manera arbitraria una de las varias escenas por objeto que tiene la base de datos. Una vez elegida la escena se toman cuatro templates de manera que se cubran las distintas caras del objeto. Si se toma la primer imagen de la escena como la imagen con rotación 0 el resto de las imagenes se eligieron de manera tal que cada una difiera de la anterior en 90 grados. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera para un objeto de la base de datos. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
@@ -31,7 +31,7 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/90_crop.png}
 		\caption{Rotacion $90^{\circ}$}
-	\end{subfigure}	
+	\end{subfigure}
 
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/180_crop.png}
@@ -73,7 +73,7 @@ Cada imagen RGB consta de tres imagenes, una por cada canal. Para calcular el hi
 		\includegraphics[width=\textwidth]{img/segundocuadrante.png}
 		\caption{Segundo frame de búsqueda}
 		\label{frames_solapados_2}
-	\end{subfigure}	
+	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/decimonovenocuadrante.png}
@@ -104,8 +104,8 @@ El problema con esta aproximación era que al basarse únicamente en el recuadro
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_solo_frame/solo_frame-desk_1-coffee_mug_5-frame_28.png}
 	\end{subfigure}
-	
-	
+
+
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_solo_frame/solo_frame-desk_1-coffee_mug_5-frame_29.png}
 	\end{subfigure}
@@ -125,7 +125,7 @@ El problema con esta aproximación era que al basarse únicamente en el recuadro
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_solo_frame/solo_frame-desk_1-coffee_mug_5-frame_34.png}
 	\end{subfigure}
-	
+
 	\caption{Seguimiento frame a frame divergiendo. Aquí se estaba usando solo comparación de histogramas entre el frame anterior y el actual}
 	\label{frame_only_tracking}
 \end{figure}
@@ -142,8 +142,8 @@ El problema con esta aproximación era que al basarse únicamente en el recuadro
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_frame_template/frame_template-desk_1-coffee_mug_5-frame_28.png}
 	\end{subfigure}
-	
-	
+
+
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_frame_template/frame_template-desk_1-coffee_mug_5-frame_29.png}
 	\end{subfigure}
@@ -163,7 +163,7 @@ El problema con esta aproximación era que al basarse únicamente en el recuadro
 	\begin{subfigure}[b]{0.3\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimiento_frame_template/frame_template-desk_1-coffee_mug_5-frame_34.png}
 	\end{subfigure}
-	
+
 	\caption{Seguimiento frame a frame sin falsos positivos. Aquí se estaba usando las comparaciones de histogramas entre el frame anterior, el actual y el template del objeto}
 	\label{frame_template_tracking}
 \end{figure}
@@ -174,6 +174,25 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 \section{Método propuesto en D}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
+En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}. El mismo fue utilizado en gran parte de este trabajo.
+
+El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
+
+Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y ocluciones. El objetivo de este trabajo era combinar inputs de ambos dominios de manera eficiente para resolver el problema de la estimación de pose.
+
+En primer instancia, se obtienen puntos de interés utilizando un sistema ECV (\textit{Early Cognitive Vision}) cuya densidad está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogenea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los pixeles en las regiones homogeneas resultan ser ambiguos para buscar correspondencias. Luego le agregan a cada descriptor información de sus vecinos, tanto de texturas como de formas, para aumentar la habilidad del método para distinguir falsas correspondencias. A esto lo llaman \textit{ECV context descriptors}.
+
+Una vez recolectada esta información, utilizan \textit{RANSAC} para estimar una transformación que alinee el objeto con la escena. Formalmente lo que se busca es una transformación que minimice la suma de la diferencia de cuadrados entre los puntos del modelo y sus correspondencias en la escena. Para lograr esto se realizan los siguientes pasos:
+\begin{enumerate}
+	\item Tomar 3 o más puntos del objeto y sus correspondencias en la escena
+	\item Estimar una transformacion usando esas correspondencias
+	\item Aplicar la transformación al objeto
+	\item Buscar \textit{inliers} usando búsqueda de vecinos cercanos entre el objeto transformado y la escena. Si el número de inliers es bajo, volver al paso 1
+	\item Medir la diferencia de cuadrados usando los inliers y si es el menor valor encontrado guardar la transformación como resultado
+\end{enumerate}
+
+Esto puede repetirse durante las iteraciones que se pretendan o cuando la diferencia de cuadrados sea menor que un umbral dado. En este trabajo se agrega un paso novedoso a este esquema RANSAC enumerado previamente. Este paso asume una propiedad geométrica de objetos rígidos para descartar rápidamente malas correspondencias. En particular utilizan el hecho que las distancias se mantienen y hacen un chequeo de las diferencias entre las distancias de los bordes del polígono virtual formado por los puntos random tomados en el paso 1 tanto para el objeto como para la escena. Utilizando una medida de distancia entre estos valores y un umbral descartan rápidamente malas correspondencias. Si se asume que no se descartan potenciales poses que alinean bien los modelos, se obtiene la misma probabilidad de éxito de manera mucho más rápida.
+
 
 \subsection{Iterative Closest Point (ICP)}\label{ICP}
 
@@ -203,7 +222,7 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 
 \begin{enumerate}
 	\item Distancia máxima de correspondencia: Si entre dos puntos existe una distancia mayor a este valor no se van a tener en cuenta para la búsqueda de correspondencias.
-	\item Número de iteraciones máximo: Criterio de corte. 
+	\item Número de iteraciones máximo: Criterio de corte.
 	\item Distancia mínima entre transformaciones: Criterio de corte. Si dos transformaciones consecutivas tienen una distancia menor a este valor, el algoritmo termina.
 	\item Suma euclidea mínima: Criterio de corte. Es la diferencia euclidea mínima permitida entre dos pasos del algoritmo.
 \end{enumerate}
@@ -238,4 +257,3 @@ Por otra parte, la base provee imágenes RGB-D de los objetos presentes en las e
 Los objetos elegidos para esta base se organizaron de una manera jerárquica tomada de las relaciones hiperónimo/hipónimo de WordNet. Cada objeto pertenece a una clase de objetos y hay varias instancias por cada clase. Por ejemplo, en la categoría ``taza'' existen varias instancias diferentes, que se corresponden simplemente a distintas tazas ya sea por forma o por color.
 
 Existen distintas escenas que contienen a los objetos mencionados y en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase. De esta manera la base otorga la posibilidad de verificar algoritmos capaces de identificar instancias de objetos particulares o familias de objetos según la clasificación antes mencionada. En esta tesis usaremos .....
-

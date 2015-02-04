@@ -518,20 +518,20 @@ if __name__ == '__main__':
     # )  # path, objname, number
     # sistema_de_seguimiento_automatico_completo(desk_2_img_provider)
 
-    table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'table', '1',
-        'videos/rgbd/objs/', 'coffee_mug', '1',
-    )  # path, objname, number
+    # table_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table', '1',
+    #     'videos/rgbd/objs/', 'coffee_mug', '1',
+    # )  # path, objname, number
 
     # table_1_img_provider.reinitialize_object('coffee_mug', '1')
     # sistema_de_seguimiento_automatico_completo(table_1_img_provider)
 
-    table_1_img_provider.reinitialize_object('soda_can', '4')
-    sistema_de_seguimiento_automatico_completo(table_1_img_provider)
+    # table_1_img_provider.reinitialize_object('soda_can', '4')
+    # sistema_de_seguimiento_automatico_completo(table_1_img_provider)
 
-    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'table_small', '2',
-    #     'videos/rgbd/objs/', 'cereal_box', '4',
-    # )  # path, objname, number
-    #
-    # sistema_de_seguimiento_automatico_completo(table_small_2_img_provider)
+    table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'table_small', '2',
+        'videos/rgbd/objs/', 'cereal_box', '4',
+    )  # path, objname, number
+
+    sistema_de_seguimiento_automatico_completo(table_small_2_img_provider)

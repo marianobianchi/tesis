@@ -353,3 +353,27 @@ if __name__ == '__main__':
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
     )
+    analizar_precision_recall_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+    analizar_precision_recall_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
+    analizar_precision_recall_por_parametro(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_automatico_RGBD',
+        path='pruebas_guardadas',
+    )
