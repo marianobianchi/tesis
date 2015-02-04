@@ -174,20 +174,20 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 \section{Método propuesto en D}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
-En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}. El mismo fue utilizado en gran parte de este trabajo.
+En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de este trabajo.
 
 El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
 
 Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y ocluciones. El objetivo de este trabajo era combinar inputs de ambos dominios de manera eficiente para resolver el problema de la estimación de pose.
 
-En primer instancia, se obtienen puntos de interés utilizando un sistema ECV (\textit{Early Cognitive Vision}) cuya densidad está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogenea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los pixeles en las regiones homogeneas resultan ser ambiguos para buscar correspondencias. Luego le agregan a cada descriptor información de sus vecinos, tanto de texturas como de formas, para aumentar la habilidad del método para distinguir falsas correspondencias. A esto lo llaman \textit{ECV context descriptors}.
+En este trabajo realizan una serie de pasos bien definida hasta obtener una transformación como resultado final que indique la pose del objeto en la escena. En primer instancia, se obtienen puntos de interés utilizando un sistema ECV (\textit{Early Cognitive Vision}) cuya densidad está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogenea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los pixeles en las regiones homogeneas resultan ser ambiguos para buscar correspondencias. Luego le agregan a cada descriptor información de sus vecinos, tanto de texturas como de formas, para aumentar la habilidad del método para distinguir falsas correspondencias. A esto lo llaman \textit{ECV context descriptors}.
 
 Una vez recolectada esta información, utilizan \textit{RANSAC} para estimar una transformación que alinee el objeto con la escena. Formalmente lo que se busca es una transformación que minimice la suma de la diferencia de cuadrados entre los puntos del modelo y sus correspondencias en la escena. Para lograr esto se realizan los siguientes pasos:
 \begin{enumerate}
-	\item Tomar 3 o más puntos del objeto y sus correspondencias en la escena
+	\item Tomar 3 o más puntos del objeto y sus correspondencias en la escena usando los descriptores de contexto ECV
 	\item Estimar una transformacion usando esas correspondencias
 	\item Aplicar la transformación al objeto
-	\item Buscar \textit{inliers} usando búsqueda de vecinos cercanos entre el objeto transformado y la escena. Si el número de inliers es bajo, volver al paso 1
+	\item Buscar \textit{inliers} usando búsqueda de vecinos cercanos entre el objeto transformado y la escena. Si el número de inliers es bajo, volver al primer paso
 	\item Medir la diferencia de cuadrados usando los inliers y si es el menor valor encontrado guardar la transformación como resultado
 \end{enumerate}
 
