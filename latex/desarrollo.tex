@@ -1,3 +1,28 @@
+\chapter{Sensores RGB-D}
+El área de visión en computación es un área de investigación que está constantemente en desarrollo y la cual tiene cada vez más aplicaciones en problemas del mundo real. Durante los últimos años y con el poder de cómputo de los nuevos procesadores se ha posibilitado el desarrollo de nuevos y mejores algoritmos utilizando más información del entorno, manteniendo tiempos de ejecución razonables para aplicaciones de tiempo real.
+
+Dentro de estos avances logrados en el área, los sensores RGB-D otorgan una novedosa forma de obtener datos visuales del ambiente. Estos sensores están conformados típicamente por una cámara tipo web común RGB que captura el mundo en dos dimensiones (2D), es decir, las texturas o colores del mundo real y por otra parte tienen una cámara de profundidad que provee información de la distancia de los distintos objetos de la escena a la cámara.
+
+La cámara o sensor de profundidad consta de dos elementos: un proyector infrarrojo y una cámara infrarroja. Para poder medir la profundidad de todo lo presente en la escena el proyector imprime con luz infrarroja un patrón conocido. Esta luz es invisible al ojo humano y a las cámaras RGB convencionales. Sin embargo, si se puede ver con una cámara infrarroja. La cámara infrarroja entonces, se utiliza para obtener el patrón dibujado en la escena. Conociendo el patrón original proyectado, el patrón obtenido con la cámara y la distancia entre la cámara y el proyector se pueden aplicar algoritmos de luz estructurada para obtener la profundidad de la escena.
+
+Existen varias implementaciones de cámaras que otorgan esta información y cada una tiene sus propias características en cuanto a calidad de la imagen RGB, frecuencia de cuadros, rango de profundidad, etc. La más conocida de estas cámaras es la llamada ``Kinect'' de Microsoft. Esta cámara posee una resolución default en RGB de unos 640x480 pixeles de 8 bits cada uno, a unos 30 cuadros por segundo. La misma puede otorgar imágenes de hasta 1280x1024 pixeles pero a una frecuencia de cuadros menor. En el caso del video en profundidad, el sensor provee una resolución de imagen de unos 640x480 pixeles y cada uno de ellos tiene una resolución de 11 bits, lo que da una sensibilidad de 2048 niveles. La frecuencia de cuadros que otorga el sensor de profundidad es de unos 30 cuadros por segundo. El rango práctico de distancias que ofrece la cámara está entre 1.2 y 3.5 m, aunque puede dar un rango extendido de unos 0.7 a 6 m.
+
+Una de las características de los sensores de profundidad de este tipo es que al utilizar luz infrarroja no necesitan luz para sensar y obtener información. De manera contraria a una cámara RGB, este sensor se ve perjudicado por la luz solar ya que el sol emite luz infrarroja que interfiere con el patrón dibujado por el proyector, haciendo que los datos sensados no sean correctos. Además el método se ve perjudicado cuando existen en la escena objetos como vidrios, espejos y superficies brillantes ya que los haces de luz son reflejados y por lo tanto se modifica el patrón proyectado por el sensor.
+
+
+\section{Lluvia de ideas}
+Sensores RGB-D (lluvia de ideas)
+- Explicar qué son:
+
+- Ejemplos de imágenes y point clouds
+- mediante los parámetros de calibración de las cámaras se pueden obtener los puntos 3D de la escena capturada junto con su información de color o textura asociada. Explicar un poco cómo.
+- Ventajas de contar con info 3D. 
+- Diferencia entre los mundos 2D y 3D. En una cámara 2D, el mundo es proyectado,  se pierde la información de profundidad de los tamaños, problema de la escala. Mientras que en el mundo 3D es el mundo como lo percibimos los seres humanos.
+- Aplicaciones en entretenimiento y en la industria
+
+
+
+
 \chapter{Sistema de seguimiento en video}
 
 Un sistema de seguimiento en video se puede dividir en tres etapas bien definidas:
@@ -195,6 +220,31 @@ Esto puede repetirse durante las iteraciones que se pretendan o cuando la difere
 
 
 \subsection{Iterative Closest Point (ICP)}\label{ICP}
+En esta sección explicaremos el método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP) surgido en el trabajo \cite{besl1992method}. En este trabajo se intenta encontrar respuesta a uno de los principales problemas en visión en computación: dada cierta información 3D en un sistema de coordenadas de un sensor, que describe una forma que puede corresponder a un modelo y dado un modelo en una representación geométrica distinta, lograr estimar la rotación y traslación óptimas que permitan alinear las dos formas minimizando la distancia entre ambas, permitiendo así determinar la equivalencia de las mismas usando \textit{mean-square} como métrica de distancia.
+
+El algoritmo presentado puede ser utilizado en múltiples tipos de representaciones de datos geométricos como conjunto de puntos, conjuntos de segmentos de líneas, curvas paramétricas, superficies paramétricas, etc. Además se puede utilizar cualquier otra representación siempre que se acompañe a la misma de un método para calcular el punto más cercano de esa forma a un punto digitalizado dado.
+
+Además de necesitar una manera de calcular el punto más cercano, también es necesario un método para obtener la rotación y traslación de mínimos cuadrados. Para los objetivos de este trabajo era preferible usar un algoritmo basado en cuaterniones como el método de Horn, aunque si se necesitara un método para más de tres dimenciones, entonces el algoritmo más apropiado es utilizar SVD.
+
+Finalmente, el algoritmo ICP requiere los siguientes pasos:
+\begin{itemize}
+	\item Se obtienen el conjunto de puntos a alinear y el modelo
+	\item Se comienza la iteración fijando los vectores de alineación relativos al conjunto de puntos a alinear para obtener una representación de la transformación completa. Luego se repiten los siguientes pasos hasta que algún criterio de convergencia se satisfaga
+	\begin{enumerate}
+		\item Computar los puntos más cercanos
+		\item Tomando esos puntos, computar la alineación
+		\item Aplicar la transformación provista por la alineación
+		\item Terminar la iteración cuando la diferencia del error cuadrático medio entre dos resultados sucesivos sea menor a un
+	\end{enumerate}
+ $\delta > 0$ dado
+\end{itemize}
+
+En este trabajo se demostró que este algoritmo converge monótonamente hacia un mínimo local con respecto a la distancia cuadrática media. Sin embargo, nada puede decirse sobre la convergencia hacia el mínimo global deseado.
+
+El algoritmo no es útil si solo un subconjunto de los puntos se corresponde con el modelo o con un subconjunto del modelo. Lamentablemente esto sucede con la mayoría de los algoritmos de ``pareo'' de formas en 3D. Pero sigue resultando útil si todo el conjunto de puntos se corresponde con parte del modelo.
+
+Entre las ventajas más importantes de este método está el hecho de que maneje los seis grados de libertad y que sea independiente de la forma de representación. Además no requiere de extracción de descriptores y puede ser fácilmente utilizado en conjunto con otros algoritmos. Por otro lado, una desventaja importante es que es susceptible a outliers. Esto tiene como extensión que el algoritmo no sirve para resolver el problema de segmentar objetos en una escena.
+
 
 
 \subsection{Entrenamiento}
