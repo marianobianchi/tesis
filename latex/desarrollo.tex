@@ -3,24 +3,38 @@ El área de visión en computación es un área de investigación que está cons
 
 Dentro de estos avances logrados en el área, los sensores RGB-D otorgan una novedosa forma de obtener datos visuales del ambiente. Estos sensores están conformados típicamente por una cámara tipo web común RGB que captura el mundo en dos dimensiones (2D), es decir, las texturas o colores del mundo real y por otra parte tienen una cámara de profundidad que provee información de la distancia de los distintos objetos de la escena a la cámara.
 
-La cámara o sensor de profundidad consta de dos elementos: un proyector infrarrojo y una cámara infrarroja. Para poder medir la profundidad de todo lo presente en la escena el proyector imprime con luz infrarroja un patrón conocido. Esta luz es invisible al ojo humano y a las cámaras RGB convencionales. Sin embargo, si se puede ver con una cámara infrarroja. La cámara infrarroja entonces, se utiliza para obtener el patrón dibujado en la escena. Conociendo el patrón original proyectado, el patrón obtenido con la cámara y la distancia entre la cámara y el proyector se pueden aplicar algoritmos de luz estructurada para obtener la profundidad de la escena.
+La cámara o sensor de profundidad consta de dos elementos: un proyector infrarrojo y una cámara infrarroja. Para poder medir la profundidad de todo lo presente en la escena el proyector imprime con luz infrarroja un patrón conocido. Esta luz es invisible al ojo humano y a las cámaras RGB convencionales. Sin embargo, sí se puede ver con una cámara infrarroja. La cámara infrarroja entonces, se utiliza para obtener el patrón dibujado en la escena. Conociendo el patrón original proyectado, el patrón obtenido con la cámara y la distancia entre la cámara infrarroja y el proyector se pueden aplicar algoritmos de luz estructurada para obtener la profundidad de la escena.
 
 Existen varias implementaciones de cámaras que otorgan esta información y cada una tiene sus propias características en cuanto a calidad de la imagen RGB, frecuencia de cuadros, rango de profundidad, etc. La más conocida de estas cámaras es la llamada ``Kinect'' de Microsoft. Esta cámara posee una resolución default en RGB de unos 640x480 pixeles de 8 bits cada uno, a unos 30 cuadros por segundo. La misma puede otorgar imágenes de hasta 1280x1024 pixeles pero a una frecuencia de cuadros menor. En el caso del video en profundidad, el sensor provee una resolución de imagen de unos 640x480 pixeles y cada uno de ellos tiene una resolución de 11 bits, lo que da una sensibilidad de 2048 niveles. La frecuencia de cuadros que otorga el sensor de profundidad es de unos 30 cuadros por segundo. El rango práctico de distancias que ofrece la cámara está entre 1.2 y 3.5 m, aunque puede dar un rango extendido de unos 0.7 a 6 m.
 
 Una de las características de los sensores de profundidad de este tipo es que al utilizar luz infrarroja no necesitan luz para sensar y obtener información. De manera contraria a una cámara RGB, este sensor se ve perjudicado por la luz solar ya que el sol emite luz infrarroja que interfiere con el patrón dibujado por el proyector, haciendo que los datos sensados no sean correctos. Además el método se ve perjudicado cuando existen en la escena objetos como vidrios, espejos y superficies brillantes ya que los haces de luz son reflejados y por lo tanto se modifica el patrón proyectado por el sensor.
 
+La información de profundidad puede utilizarse en conjunto con la de color para rearmar la escena en 3D. Conociendo los parámetros de calibración de la cámara se puede calcular en donde se ubica cada pixel dentro de una escena en 3D y de esta manera obtener lo que se llama ``nube de puntos''. Una nube de puntos es un conjunto de 3-uplas en donde cada valor corresponde a una distancia para cada uno de los ejes que representan un espacio 3D. En la Figura \ref{nube_de_puntos_sola} podemos ver un ejemplo de este tipo de nube de puntos. Cuando se combina una nube de puntos con la información 3D, se puede obtener una nube de puntos más completa, como las que se muestran en la Figura \ref{nube_de_puntos_color}.
 
-\section{Lluvia de ideas}
-Sensores RGB-D (lluvia de ideas)
-- Explicar qué son:
-
-- Ejemplos de imágenes y point clouds
-- mediante los parámetros de calibración de las cámaras se pueden obtener los puntos 3D de la escena capturada junto con su información de color o textura asociada. Explicar un poco cómo.
-- Ventajas de contar con info 3D. 
-- Diferencia entre los mundos 2D y 3D. En una cámara 2D, el mundo es proyectado,  se pierde la información de profundidad de los tamaños, problema de la escala. Mientras que en el mundo 3D es el mundo como lo percibimos los seres humanos.
-- Aplicaciones en entretenimiento y en la industria
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/nube_de_puntos_sola.png}
+	\caption{Nube de puntos}
+    \label{nube_de_puntos_sola}
+\end{figure}
 
 
+\begin{figure}
+	\centering
+    \begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\textwidth]{img/nube_de_puntos_color_1.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\textwidth]{img/nube_de_puntos_color_2.png}
+	\end{subfigure}
+	\caption{Nube de puntos con información RGB vista desde dos ángulos distintos}
+    \label{nube_de_puntos_color}
+\end{figure}
+
+
+La información provista por este tipo de imágenes no sólo complementa la información a color de una imagen RGB sino que abre la puerta a nuevas maneras de interactuar con el entorno. Con las imágenes RGB solo se puede capturar una parte del mundo como lo percibimos. Al no tener información de profundidad resulta difícil por ejemplo, lidiar con problemas de escala de los objetos o definir los bordes de un objeto con poca textura o cuyo color es similar al color de fondo. Con la información 3D las imágenes se asemejan más al mundo que percibimos los seres humanos.
+
+Esta tecnología lleva un tiempo siendo explorada y existen distintas áreas en donde hacen uso de la misma. Un ejemplo de ello es la cámara nombrada previamente, ``Kinect''. Esta cámara comenzó a utilizarse en la consola de videojuegos ``XBox'' de \textit{Microsoft}. Con ella se implementaron distintas técnicas para poder detectar figuras del cuerpo humano para permitir utilizar el cuerpo como control de los videojuegos. De esta manera fue posible crear infinidad de juegos, como por ejemplo de golf, de baile, de gimnasia, que requieren de distintos movimientos del cuerpo para interactuar con el juego y competir entre los jugadores. En cuanto a su uso en la industria, existen múltiples aplicaciones en distintos rubros que van desde la medicina hasta la industria automotriz.
 
 
 \chapter{Sistema de seguimiento en video}
@@ -76,7 +90,7 @@ Dada la información provista por la base de datos, aprovechada durante el entre
 
 \comentarioM{Insertar formula aqui.}% http://docs.opencv.org/modules/imgproc/doc/object_detection.html?highlight=matchtemplate#matchtemplate
 
-Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtuvieron los templates y máscaras del objeto a buscar no es la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir la escala del objeto en cada escena.
+Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates y máscaras del objeto a buscar puede no ser la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir la escala del objeto en cada escena.
 
 Teniendo en cuenta estos problemas decidimos realizar varias corridas del algoritmo de \textit{template matching}. En primera medida en cada pasada se va modificando el par template-máscara utilizados como parámetros del mismo aprovechando los datos obtenidos en la etapa de entrenamiento. Con esto se ataca de mejor manera el problema de las distintas poses en las que puede estar el objeto en la escena. Además, para que la detección sea más robusta frente a cambios de tamaño del objeto que se desea encontrar se toma a cada uno de los templates con su respectiva máscara y se les aplican varios cambios de escala y se utilizaron estas muestras como entrada para el algoritmo de template matching. Una vez corrido el algoritmo para cada par template-máscara, se obtiene como resultado final la corrida que tenga menor diferencia cuadrática y que esté por debajo de un umbral predefinido. La información que se almacena como resultado son las coordenadas del cuadrante que contiene al objeto encontrado. Una vez almacenada esta información, el sistema pasa a la etapa de seguimiento.
 
@@ -293,17 +307,55 @@ Además, una vez que converge ICP la librería facilita el valor de la suma del 
 
 
 
-
-
-
-
 \chapter{Base de datos RGB-D}\label{base_rgbd}
-Durante el desarrollo de este trabajo se utilizaron secuencias con información de \textit{ground truth} de imágenes RGB-D con el objetivo de aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Las escenas fueron tomados del trabajo de Kevin Lai et al. \cite{lai2011large} en donde se creó una base de objetos y escenas. Esta base cuenta con 20 escenas y cada una de ellas contiene entre 100 y 200 frames RGB-D. El ground truth de esta base provee información frame a frame de qué objetos aparecen y cuál es su ubicación en el plano XY.
+Durante el desarrollo de este trabajo se utilizaron secuencias con información de \textit{ground truth} de imágenes RGB-D con el objetivo de aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Las escenas fueron tomados del trabajo de Kevin Lai et al. \cite{lai2011large} en donde se creó una base de objetos y escenas.
+
+\section{Objetos}
+La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos están organizados en distintas categorías de manera jerárquica tomando como referencia las relaciones de hiperónimo/hipónimo de WordNet. En total hay unas 51 categorías. Cada objeto pertenece a una única categoría o clase de objetos y hay entre 3 y 14 instancias de un mismo objeto por cada categoría. Por ejemplo, en la categoría ``taza'' existen 8 instancias diferentes que se corresponden simplemente a distintas tazas ya sea por forma o por color. En total la base cuenta con secuencias de video RGB-D de 300 objetos de uso diario que junto con los distintos ángulos en los que fueron tomadas las escenas forman un total de 250.000 imágenes RGB-D.
+
+Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad constante en una base giratoria. La cámara RGB-D estaba ubicada a un metro de distancia y los videos se grabaron con la cámara montada a distintas alturas relativas a la base. Se filmó una secuencia por vuelta de cada objeto y para cada una de las alturas predefinidas. Cada uno de los frames de estas escenas viene acompañado de mucha información, como por ejemplo una imagen RGB más pequeña en donde está contenido el objeto, una máscara que permite segmentar al objeto del frame RGB, una nube de puntos del objeto segmentado para esa vista, etc. Esta información puede apreciarse en la Figura \ref{datos_objeto_base}.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/scene.png}
+        \caption{Frame RGB sin procesar}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/crop.png}
+        \caption{Frame RGB recortado al objeto}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/maskcrop.png}
+        \caption{Máscara sobre el frame RGB recortado que segmenta al objeto}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/cloud.png}
+        \caption{Nube de puntos calculada con la información de profundidad}
+    \end{subfigure}
+    \caption{Datos que provee la base para cada frame de las escenas de los objetos. En este ejemplo, para una taza}
+    \label{datos_objeto_base}
+\end{figure}
+
+\section{Escenas}
+Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB-D de escenas normales. Estas escenas cubren entornos cerrados comunes como oficinas, cocinas y sala de reuniones. Las escenas fueron grabadas sosteniendo el sensor RGB-D a la altura de los ojos de una persona mientras la persona que la sostenía caminaba alrededor de la escena. Los objetos que aparecen en la escena son capturados desde distintos ángulos y distancias, pudiendo estar o no ocluídos parcial o totalmente en algunos frames. De todos los objetos que componen la escena solo algunos se corresponden con objetos incluidos en la base de datos.
+
+Estas escenas fueron anotadas de manera automática con información de ground truth sobre la ubicación de cada objeto en cada frame. En particular, la información de ground truth indica la posición de un bounding box que contiene a cada objeto en cada frame RGB.
+
+\section{Hardware}
+- Con que cámara y en que calidad se tomaron las imágenes
+
+
+La base cuenta con unas 20 escenas y cada una de ellas contiene entre 100 y 200 frames RGB-D. El ground truth de esta base provee información frame a frame de qué objetos aparecen y cuál es su ubicación en el plano XY.
 
 {\huge Figura con ejemplos de las escenas, por ejemplo: 2 filas con varias columnas cada una en donde haya frames RGB arriba y sus equivalentes en depth abajo}
 
-Por otra parte, la base provee imágenes RGB-D de los objetos presentes en las escenas capturadas aisladamente con el objetivo de obtener su representación 3D.\comentarioP{Comentar como fueron adquiridas la resolución, longitud y ¿?} Cada una de estas imágenes es acompañada además por una máscara que segmenta al objeto buscado y la información de profundidad (nube de puntos) del objeto. Para tomar estas imágenes los objetos fueron ubicados en una base circular giratoria y, manteniendo la cámara en una posición fija, se tomaron muestras con cierta regularidad cubriendo toda la circunferencia de cada objeto. Esto se hizo además desde distintas alturas permitiendo apreciar la profundidad del objeto y así obtener una mejor descripción del mismo.
 
-Los objetos elegidos para esta base se organizaron de una manera jerárquica tomada de las relaciones hiperónimo/hipónimo de WordNet. Cada objeto pertenece a una clase de objetos y hay varias instancias por cada clase. Por ejemplo, en la categoría ``taza'' existen varias instancias diferentes, que se corresponden simplemente a distintas tazas ya sea por forma o por color.
+
+Por otra parte, la base provee imágenes RGB-D de los objetos presentes en las escenas capturadas aisladamente con el objetivo de obtener su representación 3D. Cada una de estas imágenes es acompañada además por una máscara que segmenta al objeto buscado y la información de profundidad (nube de puntos) del objeto. Para tomar estas imágenes los objetos fueron ubicados en una base circular giratoria y, manteniendo la cámara en una posición fija, se tomaron muestras con cierta regularidad cubriendo toda la circunferencia de cada objeto. Esto se hizo además desde distintas alturas permitiendo apreciar la profundidad del objeto y así obtener una mejor descripción del mismo.
+
 
 Existen distintas escenas que contienen a los objetos mencionados y en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase. De esta manera la base otorga la posibilidad de verificar algoritmos capaces de identificar instancias de objetos particulares o familias de objetos según la clasificación antes mencionada. En esta tesis usaremos .....
