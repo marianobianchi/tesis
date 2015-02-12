@@ -34,7 +34,6 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
     if len(param_values) == 0:
         param_values = ['']
 
-
     # Aqui guardare la informacion recolectada
     index = {}
 
@@ -49,11 +48,15 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             param_value,
         )
         overlapping_areas = []
+        frames = 0
         times_object_appear = 0
         times_object_detected = 0
         times_object_followed = 0
-        false_positives = 0
-        false_negatives = 0
+
+        fp = 0  # False positives
+        fn = 0  # False negatives
+        tp = 0  # True positives
+        tn = 0  # True positives
 
         # Obtengo las direcciones de cada corrida y busco la informacion
         run_nums = os.listdir(param_path)
@@ -73,10 +76,13 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
                 # Junto los valores por linea/frame
                 for line in file_:
+                    # Cuento los frames
+                    frames += 1
+
                     # Valores devueltos por el algoritmo
                     values = [int(v) for v in line.split(';')]
                     nframe = values[0]
-                    # fue_exitoso = values[1]
+                    fue_exitoso = values[1]
                     metodo = values[2]
                     fila_sup = values[3]
                     col_izq = values[4]
@@ -96,35 +102,37 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                         (fila_sup, col_izq),
                         (fila_inf, col_der)
                     )
+                    found_area = rectangle_found.area()
                     ground_truth_rectangle = Rectangle(
                         (gt_fila_sup, gt_col_izq),
                         (gt_fila_inf, gt_col_der)
                     )
+                    ground_truth_area = ground_truth_rectangle.area()
                     intersection = rectangle_found.intersection(
                         ground_truth_rectangle
                     )
+                    intersection_area = intersection.area()
 
-                    # Chequeo de falsos positivos y negativos
-                    if gt_fue_exitoso and (rectangle_found.area() == 0):
-                        false_negatives += 1
+                    # Chequeo de falsos positivos y negativos y
+                    # verdaderos negativos y positivos
+                    if gt_fue_exitoso and found_area == 0:
+                        fn += 1
+                    elif ground_truth_area == 0 and found_area > 0:
+                        fp += 1
+                    elif not (gt_fue_exitoso or fue_exitoso):
+                        tn += 1
 
-                    if (ground_truth_rectangle.area() == 0 and
-                            rectangle_found.area() > 0):
-                        false_positives += 1
-
-                    # Si el ground truth dice que hay algo, comparamos el
-                    # resultado
-                    if ground_truth_rectangle.area() > 0:
+                    # El objeto aparece siempre que el ground truth asi lo
+                    # indique, o si estando en un borde el algoritmo igual lo
+                    # detecto
+                    if gt_fue_exitoso or (found_area > 0 and
+                                          ground_truth_area > 0):
                         times_object_appear += 1
-                        found_area = rectangle_found.area()
 
                         if found_area > 0 and metodo == 0:
                             times_object_detected += 1
                         elif found_area > 0 and metodo == 1:
                             times_object_followed += 1
-
-                        ground_truth_area = ground_truth_rectangle.area()
-                        intersection_area = intersection.area()
 
                         # To be considered a correct detection, the area of
                         # overlap A0 between the predicted bounding box Bp and
@@ -135,6 +143,13 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                             found_area + ground_truth_area - intersection_area
                         )
                         overlap_area = intersection_area / union_area
+
+                        if overlap_area > 0.5:
+                            tp += 1
+                        else:
+                            # Notar que no se solapa con la definicion de
+                            # falso-positivo de mas arriba
+                            fp += 1
 
                         # Incluyo el solapamiento si asi se necesita
                         if include_detections_in_following or metodo == 1:
@@ -150,11 +165,14 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         index[param_value] = {
             'mean': mean,
             'std': std,
+            'total_frames': frames,
             'times_object_appear': times_object_appear,
             'times_object_detected': times_object_detected,
             'times_object_followed': times_object_followed,
-            'false_positives': false_positives,
-            'false_negatives': false_negatives,
+            'false_positives': fp,
+            'false_negatives': fn,
+            'true_positives': tp,
+            'true_negatives': tn,
         }
 
     # Imprimo en pantalla para cada valor del parametro el promedio de
@@ -167,14 +185,18 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         e=scenenamenum,
     ))
     print('###############')
-    just = 20
+    just = 15
     print('Param. value'.rjust(just), end=' ')
-    print('Prom. Overlap'.rjust(just), end=' ')
-    print('Std. Dev. Overlap'.rjust(just), end=' ')
-    print('Cant. appear obj'.rjust(just), end=' ')
+    print('~Overlap'.rjust(just), end=' ')
+    # print('Std. Dev. Overlap'.rjust(just), end=' ')
+    print('# appear obj'.rjust(just), end=' ')
     print('% follow/appear'.rjust(just), end=' ')
-    print('% false positives'.rjust(just), end=' ')
-    print('% false negatives'.rjust(just))
+    print('% FP'.rjust(just), end=' ')
+    print('% FN'.rjust(just), end=' ')
+    print('% TP'.rjust(just), end=' ')
+    print('% TN'.rjust(just), end=' ')
+    print('F-measure'.rjust(just), end=' ')
+    print('Accuracy'.rjust(just))
 
     try:
         ordered_items = sorted(index.items(), key=lambda a: float(a[0]))
@@ -183,19 +205,19 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
     for val, dd in ordered_items:
         avg = dd['mean']
-        std = dd['std']
+        # std = dd['std']
 
         # Param value
         print('{a}'.format(a=val).rjust(just), end=' ')
 
         # Prom. overlap
-        print('{a:{j}.2f}'.format(a=round(np.array(avg) * 100, 2), j=just), end=' ')
+        print('{a}'.format(a=round(np.array(avg) * 100, 2)).rjust(just), end=' ')
 
         # Standard deviation
-        print('{a:{j}.2f}'.format(a=round(np.array(std) * 100, 2), j=just), end=' ')
+        # print('{a:{j}.2f}'.format(a=round(np.array(std) * 100, 2), j=just), end=' ')
 
         # Times obj. appeared
-        print('{a:{j}d}'.format(a=dd['times_object_appear'], j=just), end=' ')
+        print('{a:d}'.format(a=dd['times_object_appear']).rjust(just), end=' ')
 
         # % obj followed
         times_followed = dd['times_object_followed']
@@ -203,29 +225,63 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             times_followed += dd['times_object_detected']
 
         print(
-            '{a:{j}.2f}%'.format(
+            '{a}%'.format(
                 a=round(times_followed/dd['times_object_appear'] * 100, 2),
-                j=just,
-            ),
+            ).rjust(just),
             end=' ',
         )
 
         # % false positives
         print(
-            '{a:{j}.2f}%'.format(
-                a=round(dd['false_positives']/dd['times_object_appear'] * 100, 2),
-                j=just
-            ),
+            '{a}%'.format(
+                a=round(dd['false_positives']/dd['total_frames'] * 100, 2),
+            ).rjust(just),
             end=' ',
         )
 
         # % false negatives
         print(
-            '{a:{j}.2f}%'.format(
-                a=round(dd['false_negatives']/dd['times_object_appear'] * 100, 2),
-                j=just
-            )
+            '{a}%'.format(
+                a=round(dd['false_negatives']/dd['total_frames'] * 100, 2),
+            ).rjust(just),
+            end=' ',
         )
+
+        # % true positives
+        print(
+            '{a}%'.format(
+                a=round(dd['true_positives']/dd['total_frames'] * 100, 2),
+            ).rjust(just),
+            end=' ',
+        )
+
+        # % true negatives
+        print(
+            '{a}%'.format(
+                a=round(dd['true_negatives']/dd['total_frames'] * 100, 2),
+            ).rjust(just),
+            end=' ',
+        )
+
+        # F-measure
+        precision = (
+            dd['true_positives'] / (dd['true_positives'] + dd['false_positives'])
+        )
+        recall = (
+            dd['true_positives'] / (dd['true_positives'] + dd['false_negatives'])
+        )
+        fmeasure = 2 * precision * recall / (precision + recall)
+        print('{a}'.format(a=round(fmeasure, 2)).rjust(just), end=' ')
+
+        # Accuracy
+        tptn = dd['true_positives'] + dd['true_negatives']
+        fpfn = dd['false_positives'] + dd['false_negatives']
+        accuracy = (
+            tptn / (tptn + fpfn)
+        )
+        print('{a}'.format(a=round(accuracy, 2)).rjust(just))
+
+
 
 
 if __name__ == '__main__':
@@ -1277,214 +1333,214 @@ if __name__ == '__main__':
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
     ##########################################
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
 
     ##########################################################
     # STATIC DETECTION y definitivo DEPTH
     ##########################################################
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D
     ##################################################################
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente RGB
     ##################################################################
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
 
     ##################################################################
     # Definitivo sistema RGBD

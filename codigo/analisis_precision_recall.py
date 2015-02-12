@@ -28,6 +28,8 @@ def analizar_precision_recall_por_parametro(matfile, scenenamenum, objname,
         objname,
         objnum,
     )
+
+    # Obtengo la lista de parametros
     objnamenum = '{name}_{num}'.format(name=objname, num=objnum)
     param_values = os.listdir(
         os.path.join(path, scenenamenum, objnamenum, param)
