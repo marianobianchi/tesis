@@ -113,14 +113,47 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                     )
                     intersection_area = intersection.area()
 
+                    # To be considered a correct detection, the area of
+                    # overlap A0 between the predicted bounding box Bp and
+                    # ground truth bounding box Bgt must exceed 50% by the
+                    # formula:
+                    # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
+                    se_solaparon_poco = True
+                    overlap_area = 0
+                    if found_area > 0 and ground_truth_area > 0:
+                        union_area = (
+                            found_area + ground_truth_area - intersection_area
+                        )
+                        overlap_area = intersection_area / union_area
+                        se_solaparon_poco = overlap_area < 0.5
+
                     # Chequeo de falsos positivos y negativos y
                     # verdaderos negativos y positivos
-                    if gt_fue_exitoso and found_area == 0:
+                    estaba_y_no_se_encontro = gt_fue_exitoso and not fue_exitoso
+
+                    no_estaba_y_se_encontro = (
+                        ground_truth_area == 0 and found_area > 0
+                    )
+
+                    no_estaba_y_no_se_encontro = (
+                        not (gt_fue_exitoso or fue_exitoso)
+                    )
+
+                    estaba_y_se_encontro = (
+                        fue_exitoso and ground_truth_area > 0
+                    )
+
+                    if estaba_y_no_se_encontro:
                         fn += 1
-                    elif ground_truth_area == 0 and found_area > 0:
+                    elif (no_estaba_y_se_encontro or
+                            (estaba_y_se_encontro and se_solaparon_poco)):
                         fp += 1
-                    elif not (gt_fue_exitoso or fue_exitoso):
+                    elif no_estaba_y_no_se_encontro:
                         tn += 1
+                    elif estaba_y_se_encontro and not se_solaparon_poco:
+                        tp += 1
+                    else:
+                        raise Exception('Algo anda mal. Revisar condiciones')
 
                     # El objeto aparece siempre que el ground truth asi lo
                     # indique, o si estando en un borde el algoritmo igual lo
@@ -134,26 +167,12 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                         elif found_area > 0 and metodo == 1:
                             times_object_followed += 1
 
-                        # To be considered a correct detection, the area of
-                        # overlap A0 between the predicted bounding box Bp and
-                        # ground truth bounding box Bgt must exceed 50% by the
-                        # formula:
-                        # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
-                        union_area = (
-                            found_area + ground_truth_area - intersection_area
-                        )
-                        overlap_area = intersection_area / union_area
-
-                        if overlap_area > 0.5:
-                            tp += 1
-                        else:
-                            # Notar que no se solapa con la definicion de
-                            # falso-positivo de mas arriba
-                            fp += 1
-
                         # Incluyo el solapamiento si asi se necesita
                         if include_detections_in_following or metodo == 1:
                             overlapping_areas.append(overlap_area)
+
+        if tp + tn + fp + fn != frames:
+            raise Exception('No da bien el analisis de fp,fn,tp,tn')
 
         # Obtengo la media de los solapamientos
         mean = np.mean(overlapping_areas) if overlapping_areas else 0
