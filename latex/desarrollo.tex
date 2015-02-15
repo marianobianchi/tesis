@@ -211,7 +211,7 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 
 
-\section{Método propuesto en D}
+\section{Método propuesto en D}\label{metodo_rgbd}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
 En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de este trabajo.
 
@@ -295,10 +295,14 @@ Además, una vez que converge ICP la librería facilita el valor de la suma del 
 
 
 \section{Método propuesto en RGB-D}\label{metodo_rgbd}
+En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_rgbd}.
 
 \subsection{Entrenamiento}
+El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista junto con máscaras que segmenten al objeto dentro de esos templates. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados.
 
 \subsection{Detección}
+
+
 
 \subsection{Seguimiento}\label{tracking_rgbd}
 

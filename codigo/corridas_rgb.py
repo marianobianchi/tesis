@@ -1707,7 +1707,6 @@ def definitivo_rgb_hsv(objname, objnumber, scenename, scenenumber):
         obj_rgbd_num=objnumber,
     )
 
-
     template_comparator = HistogramComparator(
         method=find_template_comp_method,
         perc=find_template_threshold,

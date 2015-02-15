@@ -14,6 +14,8 @@ from analisis import Rectangle
 def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                                        param, path,
                                        include_detections_in_following=False):
+    # Minimal overlapping area
+    min_overlap_area = 0.25
 
     # Creo el objeto que provee los datos del ground truth
     ground_truth = StaticDetector(
@@ -125,7 +127,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                             found_area + ground_truth_area - intersection_area
                         )
                         overlap_area = intersection_area / union_area
-                        se_solaparon_poco = overlap_area < 0.5
+                        se_solaparon_poco = overlap_area < min_overlap_area
 
                     # Chequeo de falsos positivos y negativos y
                     # verdaderos negativos y positivos
@@ -245,7 +247,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
 
         print(
             '{a}%'.format(
-                a=round(times_followed/dd['times_object_appear'] * 100, 2),
+                a=round(times_followed / dd['times_object_appear'] * 100, 2),
             ).rjust(just),
             end=' ',
         )
@@ -253,7 +255,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         # % false positives
         print(
             '{a}%'.format(
-                a=round(dd['false_positives']/dd['total_frames'] * 100, 2),
+                a=round(dd['false_positives'] / dd['total_frames'] * 100, 2),
             ).rjust(just),
             end=' ',
         )
@@ -261,7 +263,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         # % false negatives
         print(
             '{a}%'.format(
-                a=round(dd['false_negatives']/dd['total_frames'] * 100, 2),
+                a=round(dd['false_negatives'] / dd['total_frames'] * 100, 2),
             ).rjust(just),
             end=' ',
         )
@@ -269,7 +271,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         # % true positives
         print(
             '{a}%'.format(
-                a=round(dd['true_positives']/dd['total_frames'] * 100, 2),
+                a=round(dd['true_positives'] / dd['total_frames'] * 100, 2),
             ).rjust(just),
             end=' ',
         )
@@ -277,17 +279,19 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         # % true negatives
         print(
             '{a}%'.format(
-                a=round(dd['true_negatives']/dd['total_frames'] * 100, 2),
+                a=round(dd['true_negatives'] / dd['total_frames'] * 100, 2),
             ).rjust(just),
             end=' ',
         )
 
         # F-measure
         precision = (
-            dd['true_positives'] / (dd['true_positives'] + dd['false_positives'])
+            dd['true_positives'] /
+            (dd['true_positives'] + dd['false_positives'])
         )
         recall = (
-            dd['true_positives'] / (dd['true_positives'] + dd['false_negatives'])
+            dd['true_positives'] /
+            (dd['true_positives'] + dd['false_negatives'])
         )
         fmeasure = 2 * precision * recall / (precision + recall)
         print('{a}'.format(a=round(fmeasure, 2)).rjust(just), end=' ')
@@ -1562,7 +1566,7 @@ if __name__ == '__main__':
     )
 
     ##################################################################
-    # Definitivo sistema RGBD
+    # Definitivo sistema RGBD priorizando D en seguimiento
     ##################################################################
     analizar_overlapping_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -1620,6 +1624,66 @@ if __name__ == '__main__':
         path='pruebas_guardadas',
         include_detections_in_following=True,
     )
+
+    ##################################################################
+    # Definitivo sistema RGBD priorizando RGB en seguimiento
+    ##################################################################
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
+    #
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
+    #
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenenamenum='desk_2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenenamenum='table_1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
+    # analizar_overlapping_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenenamenum='table_small_2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGB_RGBD',
+    #     path='pruebas_guardadas',
+    #     include_detections_in_following=True,
+    # )
 
     ############################################################################
     #                          FIN DEFINITIVOS                                 #

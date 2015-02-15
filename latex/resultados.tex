@@ -1,16 +1,16 @@
 \chapter{Resultados}
 \comentarioM{Escribir todo en presente!!!!}
 \section{Experimentación}
-Con el objetivo de elegir los métodos definitivos que usamos en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para Depth. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+Con el objetivo de elegir los métodos definitivos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para Depth. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
 
-Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para Depth, se utilizó como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en Depth estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
+Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para Depth, utilizamos como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en Depth estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
 
 \subsection{Elección del método de seguimiento RGB}
 Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
 
-En un comienzo se tuvieron en cuenta dos métodos distintos para el seguimiento RGB. El primero utilizaba SURF \ref{Referencia a SURF} para obtener puntos de interés y descriptores y luego se utilizaba un comparador para hacer comparaciones cuadro a cuadro. El segundo método consistía en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento. 
+Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \ref{Referencia a SURF} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento.
 
-Luego de correr varias pruebas se concluyó que el método que mejor se desempeñaba era el basado en histogramas por lo que se pasó a explorar distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tiene distintas variables a explorar:
+El método que mejor se desempeñó en las pruebas preeliminares es el basado en histogramas por lo que se exploraron distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tiene distintas variables a explorar:
 \begin{itemize}
 	\item Modelo de color: RGB o HSV y canales a utilizar de cada uno
 	\item Cantidad de categorías/celdas del histograma
@@ -28,7 +28,7 @@ Luego de correr varias pruebas se concluyó que el método que mejor se desempe�
 
 Para decidir qué esquema de colores, qué canales y cuántas categorías por canal se iban a utilizar se eligieron dos objetos representativos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió una como template/modelo del objeto y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de menor a mayor distancia. Esto se hizo fijando un método de comparación de histogramas. Un ejemplo de esto se puede ver en la Figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
 
-De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal \comentarioM{Probé con 60 bines por canal y mejoró el de la taza considerablemente. Hacer bien las pruebas con 60 bines por canal.} y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados. 
+De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal \comentarioM{Probé con 60 bines por canal y mejoró el de la taza considerablemente. Hacer bien las pruebas con 60 bines por canal.} y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
 
 Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
@@ -36,10 +36,10 @@ Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegid
 	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen
 	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
 	\item Desviación estándar del área solapada
-	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso	
+	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso
 \end{itemize}
 
-Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}. 
+Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}.
 
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
@@ -112,7 +112,7 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgb_gorra}
-	\end{subfigure}	
+	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-bowl.png}
@@ -123,7 +123,7 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 	\label{frame_frame_rgb}
 \end{figure}
 
-En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}. \comentarioM{Explicar los colores primero} Los puntos que están en 0 (color verde) indican que el objeto no fue encontrado y coincide con el ground truth, como es el caso de las subfiguras \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En la subfigura \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para las tres subfiguras, todos los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento. 
+En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}. \comentarioM{Explicar los colores primero} Los puntos que están en 0 (color verde) indican que el objeto no fue encontrado y coincide con el ground truth, como es el caso de las subfiguras \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En la subfigura \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para las tres subfiguras, todos los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento.
 
 Se puede ver en el gráfico \ref{frame_frame_rgb_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible esxplicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
 
@@ -161,16 +161,16 @@ En la Tabla \ref{tabla_d} se puede ver que el tracking se comporta de mejor mane
 		\includegraphics[width=\textwidth]{img/frame_98_taza_pcd.png}
 		\caption{Visualización de la nube de puntos reportada por el tracking en Depth}
 		\label{taza_ocluida_pcd}
-	\end{subfigure}	
+	\end{subfigure}
 	\caption{Muestra de un resultado del seguimiento en Depth. Las áreas se solapan en un 47\%.}
 	\label{taza_ocluida}
 \end{figure}
 
 Un problema que encontramos en nuestra solución es que no hacemos un ajuste del tamaño del área reportada si el objeto está ocluído. En la Figura \ref{taza_ocluida} podemos ver como el algoritmo detecta de manera exitosa a la taza pero que solo reporta el área de la taza que está visible y no ajusta el tamaño al del modelo del objeto que se obtuvo en la etapa de entrenamiento. La subfigura \ref{taza_ocluida_rgb} muestra en color azul el recuadro reportado por nuestro algoritmo de seguimiento en donde se encuentra la taza. El recuadro verde corresponde al área que indica el ground truth como correcta. Se puede observar que el recuadro verde incluye además de la parte visible de la taza una porción importante de la lata que está delante de ella y que si se tiene en cuenta el tamaño de la taza esta área está incluyendo a la parte de la taza que se encuentra ocluida. A pesar de no ser algo que suceda reiteradas veces en las escenas y objetos elegidos para estas pruebas, puede ser un punto de mejora para nuestro algoritmo. \comentarioM{¿Digo algo de Kalman acá?}
 
-Otra decisión que se tomó al implementar nuestro algoritmo fue no utilizar el modelo del objeto para refinar el seguimiento, por ejemplo, para realizar el filtrado de puntos de la escena que corresponden al objeto que se busca. Esto se debe a que dependiendo de la forma del objeto, de su pose en el frame actual y de su pose en el modelo no resulta sencillo decidir si es conveniente utilizar el modelo para hacer este filtrado. En cambio, decidimos utilizar la nube de puntos hallada en el frame anterior como base para filtrar los puntos en el frame actual una vez que se quiera refinar el resultado. Por este motivo es que en ocaciones el algoritmo devuelve como parte del resultado puntos que no corresponden al objeto que se busca. 
+Otra decisión que se tomó al implementar nuestro algoritmo fue no utilizar el modelo del objeto para refinar el seguimiento, por ejemplo, para realizar el filtrado de puntos de la escena que corresponden al objeto que se busca. Esto se debe a que dependiendo de la forma del objeto, de su pose en el frame actual y de su pose en el modelo no resulta sencillo decidir si es conveniente utilizar el modelo para hacer este filtrado. En cambio, decidimos utilizar la nube de puntos hallada en el frame anterior como base para filtrar los puntos en el frame actual una vez que se quiera refinar el resultado. Por este motivo es que en ocaciones el algoritmo devuelve como parte del resultado puntos que no corresponden al objeto que se busca.
 
-En la imagen \ref{taza_ocluida_pcd} se pueden ver tres regiones de puntos de color rojo. Esas regiones son las reportadas por el algoritmo como puntos de la taza. Si las enumeramos de arriba hacia abajo, la primera región no forma parte de la taza sino que es parte de la caja de pañuelos que está detrás de la misma. Esto podría evitarse si se filtraran los puntos de la escena usando el modelo de la taza pero sólo porque la forma de la misma es simétrica (si no se tiene en cuenta su asa). En el caso de la gorra en cambio ya no queda tan claro que sirva filtrar usando el modelo porque la visera la hace asimétrica y el tamaño de la misma no permite despreciar esos puntos. 
+En la imagen \ref{taza_ocluida_pcd} se pueden ver tres regiones de puntos de color rojo. Esas regiones son las reportadas por el algoritmo como puntos de la taza. Si las enumeramos de arriba hacia abajo, la primera región no forma parte de la taza sino que es parte de la caja de pañuelos que está detrás de la misma. Esto podría evitarse si se filtraran los puntos de la escena usando el modelo de la taza pero sólo porque la forma de la misma es simétrica (si no se tiene en cuenta su asa). En el caso de la gorra en cambio ya no queda tan claro que sirva filtrar usando el modelo porque la visera la hace asimétrica y el tamaño de la misma no permite despreciar esos puntos.
 
 Haciendo un análisis de los frames anteriores al de la Figura \ref{taza_ocluida} y de cómo se fue desarrollando el seguimiento notamos que el motivo por el cual se incluye parte de la caja de pañuelos como puntos de la taza es porque en la etapa de detección falló el refinamiento por AP, ICP y el filtrado de puntos. En la Figura \ref{filtro_en_deteccion} mostramos como se ve una detección sacada directa desde la base de datos (subfigura \ref{filtro_en_deteccion_mal}) y un refinado de la detección (subfigura \ref{filtro_en_deteccion_bien} utilizando el modelo del objeto y alineándolo usando AP e ICP y filtrando los puntos de la escena.
 
@@ -186,7 +186,7 @@ Haciendo un análisis de los frames anteriores al de la Figura \ref{taza_ocluida
 		\includegraphics[width=\textwidth]{img/taza_filtrado_fallido_depth_simil_thresh_01_frame66.png}
 		\caption{Filtrado fallido}
 		\label{filtro_en_deteccion_mal}
-	\end{subfigure}		
+	\end{subfigure}
 	\caption{Nube de puntos de la taza filtrados de la escena}
 	\label{filtro_en_deteccion}
 \end{figure}
@@ -205,7 +205,7 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_d_gorra}
-	\end{subfigure}	
+	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
@@ -252,7 +252,7 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgbd_d_gorra}
-	\end{subfigure}	
+	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
 		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
@@ -362,7 +362,7 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 \label{tabla_d_nuevos}
 \end{table}
 
-En la Tabla \ref{tabla_d_nuevos} están los resultados del análisis del tracking en Depth para estos nuevos objetos. Para el ejemplo de la taza nueva el algoritmo se comporta de manera similar a la que lo hizo con la taza de las pruebas de selección de parámetros. En el caso de la lata los resultados fueron muy malos. El problema se debe a que en la primera detección indicada por el ground truth la taza apenas se aparecía en la nube de puntos de la escena. Esto hizo que la alineación del modelo fallara y que la nube de puntos resultante de esa detección sea casi por completo el plano de la mesa. Por este motivo el algoritmo alinea siempre ya que la mesa nunca sale del cuadro de la cámara. 
+En la Tabla \ref{tabla_d_nuevos} están los resultados del análisis del tracking en Depth para estos nuevos objetos. Para el ejemplo de la taza nueva el algoritmo se comporta de manera similar a la que lo hizo con la taza de las pruebas de selección de parámetros. En el caso de la lata los resultados fueron muy malos. El problema se debe a que en la primera detección indicada por el ground truth la taza apenas se aparecía en la nube de puntos de la escena. Esto hizo que la alineación del modelo fallara y que la nube de puntos resultante de esa detección sea casi por completo el plano de la mesa. Por este motivo el algoritmo alinea siempre ya que la mesa nunca sale del cuadro de la cámara.
 Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un bajo porcentaje de veces que siguió al objeto. Si se observa la Figura \ref{frame_frame_d_nuevo}, debemos separar el análisis en tres partes. Por un lado, desde el inicio de la escena hasta el frame 136 el algoritmo funciona correctamente con un porcentaje de solapamiento promedio cercano al 45\% y una alta tasa de seguimiento. Luego, entre el frame 136 y el frame 185 sucede lo mismo que con el tracking RGB: el cambio de pose de la caja hace que el seguimiento falle y siempre se utilice la detección. Por último, entre el frame 185 y el fin de la escena el algoritmo vuelve a tener un buen porcentaje de solapamiento promedio y una tasa de seguimiento aceptable.
 
 \begin{figure}
@@ -412,7 +412,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 
 
 \subsection{Evaluación del sistema en RGB-D}
-Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}. 
+Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}.
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
