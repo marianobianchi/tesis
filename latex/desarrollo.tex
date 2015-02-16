@@ -1,4 +1,4 @@
-\chapter{Sensores RGB-D}
+\chapter{Sensores RGB-D}\label{sensores_rgbd}
 El área de visión en computación es un área de investigación que está constantemente en desarrollo y la cual tiene cada vez más aplicaciones en problemas del mundo real. Durante los últimos años y con el poder de cómputo de los nuevos procesadores se ha posibilitado el desarrollo de nuevos y mejores algoritmos utilizando más información del entorno, manteniendo tiempos de ejecución razonables para aplicaciones de tiempo real.
 
 Dentro de estos avances logrados en el área, los sensores RGB-D otorgan una novedosa forma de obtener datos visuales del ambiente. Estos sensores están conformados típicamente por una cámara tipo web común RGB que captura el mundo en dos dimensiones (2D), es decir, las texturas o colores del mundo real y por otra parte tienen una cámara de profundidad que provee información de la distancia de los distintos objetos de la escena a la cámara.
@@ -85,7 +85,7 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 	\label{templates_objeto}
 \end{figure}
 
-\subsection{Detección}
+\subsection{Detección}\label{deteccion_rgb}
 Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{Hay que explicarlo, ¿no?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. En este caso como tenemos la máscara disponible este parámetro lo usamos. El último parámetro le indica al algoritmo de template matching que comparación usar para matchear el template a la imagen. Nosotros decidimos utilizar la diferencia cuadrática pixel por pixel normalizada, descripta por la siguiente fórmula:
 
 \comentarioM{Insertar formula aqui.}% http://docs.opencv.org/modules/imgproc/doc/object_detection.html?highlight=matchtemplate#matchtemplate
@@ -211,6 +211,10 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 
 
+
+
+
+
 \section{Método propuesto en D}\label{metodo_rgbd}
 \subsection{Alignment prerejective}\label{alignment_prerejective}
 En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de este trabajo.
@@ -268,7 +272,7 @@ En el caso de estudio de esta tesis, la nube de puntos del objeto a seguir se ob
 
 \comentarioP{Relacionar con template matching}
 
-\subsection{Detección}
+\subsection{Detección}\label{deteccion_d}
 Para esta segunda etapa se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas también se observó que si la región donde se buscaba el objeto era lo suficientemente pequeña la búsqueda era más robusta.\comentarioP{Mejor más chica?} Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos. Considerando cada una de estas escalas, dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en la figura \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje ``z'' ya que las pruebas preeliminares dieron buenos resultados de esta manera. La detección se corre en cada uno de estos cuadrantes y puede suceder que:
 \begin{itemize}
 	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
@@ -279,7 +283,7 @@ Para esta segunda etapa se utilizó el método descripto en la sección \ref{ali
 Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el método ``alignment prerejective'' y el cuadrante de la escena donde fue encontrado el mismo. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una de las formas para obtener los puntos del modelo del objeto en la escena es utilizando un \kdt\footnote{AGREGAR REFERENCIA A KDTREE}. \comentarioP{Explicar un poco que es un kdtree} Se arma un \kdt con los puntos provenientes del modelo alineado y se filtran uno a uno los puntos de la escena que se encuentren cerca de al menos un punto del modelo en un cierto radio de distancia. \comentarioM{Explicar el ajuste automatico del LEAF} Los puntos que surjan de esta búsqueda son los considerados como encontrados en la escena. Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la siguiente etapa de seguimiento. Si cualquiera de estos pasos fallara, se comienza nuevamente con la etapa de detección en el siguiente frame.
 
 
-\subsection{Seguimiento (ex Método de seguimiento en profundidad)}
+\subsection{Seguimiento}\label{tracking_d}
 El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
 
 La implementación de ICP utilizada es la incluida en la librería ``Point Cloud Library'' \cite{Rusu_ICRA2011_PCL}. Esta implementación admite distintos parámetros para modificar el comportamiento del método. Los parámetros explorados son los siguientes:
@@ -298,15 +302,31 @@ Además, una vez que converge ICP la librería facilita el valor de la suma del 
 En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_rgbd}.
 
 \subsection{Entrenamiento}
-El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista junto con máscaras que segmenten al objeto dentro de esos templates. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados.
+El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista junto con máscaras que segmenten al objeto dentro de esos templates. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados. Una vez ejecutado el entrenamiento se pasa a la etapa de detección.
 
 \subsection{Detección}
+Teniendo en cuenta los métodos de detección usados en RGB y profundidad se busca una manera de unirlos para obtener un detector más confiable y que aproveche toda la información disponible. Por eso este método podemos dividirlo en dos etapas: detección RGB y detección en profundidad.
 
+Dado que el algoritmo de detección en profundidad es inestable cuando la nube de puntos en donde se busca el objeto tiene una gran superficie, se utiliza como método de detección de la primer sub-etapa al algoritmo de ``template matching'', es decir, el método RGB explicado en la sección \ref{deteccion_rgb}. Si este algoritmo detecta al objeto, se procede con la segunda sub-etapa. Si no hay detección, se reporta que el objeto no fue encontrado en el frame y se continúa con la detección en el próximo frame de la secuencia de video.
+
+Cuando se encuentra el objeto usando ``template matching'' se pasa a la segunda sub-etapa. En esta sub-etapa se toma el recuadro reportado por el algoritmo de ``template matching'' junto con sus respectivos valores según el sensor de profundidad y se los transforma a puntos en el espacio 3D como se explicó en la sección \ref{sensores_rgbd}. Luego se toma un área cuatro veces mayor al área descripta por esos puntos manteniendo el centro de la misma y se filtra la nube de puntos de la escena obteniendo solo los puntos contenidos en el área marcada. Una vez filtrados los puntos de interés, se corre el método de detección en profundidad explicado en la Sección \ref{deteccion_d}. Si el método reporta haber encontrado al objeto, se da por hallado al objeto y se procede a almacenar la información necesaria para la etapa de seguimiento:
+\begin{itemize}
+	\item Nube de puntos segmentada de la escena en donde se encontró al objeto
+	\item Modelo del objeto tomado en el entrenamiento alineado a la nube de puntos del ítem anterior
+	\item Template del objeto tomado de la escena a través de la ubicación reportada por el método de detección en profundidad, previamente transformada de puntos 3D a pixeles en la imagen RGB.
+\end{itemize}
+
+En caso de que la detección en profundidad no sea exitosa, se reporta al objeto como no encontrado y se vuelve a correr la detección en el siguiente frame.
 
 
 \subsection{Seguimiento}\label{tracking_rgbd}
+De manera similar a la unión de los métodos RGB y de profundidad para la detección, los métodos de seguimiento fueron unidos para lograr un método más robusto de seguimiento utilizando la toda la información disponible. Al igual que la etapa anterior esta etapa puede subdividirse en dos etapas, una para profundidad y otra para RGB.
 
+El método de seguimiento en la primer sub-etapa es el de profundidad ICP explicado en la Sección \ref{tracking_d}. El método utiliza como entrada la información obtenida en la etapa de detección. Si el seguimiento falla, se vuelve a la etapa de detección para intentar encontrar el objeto en el nuevo frame. En caso de ser exitoso se pasa a la siguiente sub-etapa que es la de seguimiento en RGB.
 
+Para esta segunda sub-etapa se utiliza la información obtenida con el resultado parcial del seguimiento en profundidad. Dada la nube de puntos segmentada por este algoritmo, se transforman esos puntos en pixeles en la imagen RGB y se obtiene el rectángulo en el dominio 2D más pequeño que contiene a esos pixeles. El algoritmo de seguimiento en RGB utilizado en esta sub-etapa es el mismo que se explicó en la Sección \ref{tracking_rgb}, aunque difiere en la forma de buscar posibles resultados en el frame actual. En este caso, tomando como centro el del rectángulo en RGB reportado por el seguimiento en profundidad, se toman rectángulos de distinto tamaño respetando dicho centro y estos son los rectángulos que sirven de entrada para el seguimiento RGB. 
+
+A diferencia de la unión de métodos RGB y de profundidad para la detección, en este caso no hace falta que el seguimiento sea exitoso en las dos sub-etapas. Si el seguimiento en profundidad reporta haber encontrado al objeto se intenta mejorar el resultado usando el seguimiento en RGB. Si este segundo método no es exitoso, se reporta el resultado obtenido en profundidad. Por el contrario, si el seguimiento en RGB es exitoso, se reporta dicho resultado como seguimiento en el mundo 2D.
 
 
 
