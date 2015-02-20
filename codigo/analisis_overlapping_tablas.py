@@ -15,7 +15,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                                        param, path,
                                        include_detections_in_following=False):
     # Minimal overlapping area
-    min_overlap_area = 0.25
+    min_overlap_area = 0.3
 
     # Creo el objeto que provee los datos del ground truth
     ground_truth = StaticDetector(
@@ -145,15 +145,19 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                         fue_exitoso and ground_truth_area > 0
                     )
 
-                    if estaba_y_no_se_encontro:
-                        fn += 1
-                    elif (no_estaba_y_se_encontro or
+                    if (estaba_y_no_se_encontro or
                             (estaba_y_se_encontro and se_solaparon_poco)):
+                        fn += 1
+                    elif no_estaba_y_se_encontro:
                         fp += 1
                     elif no_estaba_y_no_se_encontro:
                         tn += 1
                     elif estaba_y_se_encontro and not se_solaparon_poco:
                         tp += 1
+                        if metodo == 0:
+                            times_object_detected += 1
+                        else:
+                            times_object_followed += 1
                     else:
                         raise Exception('Algo anda mal. Revisar condiciones')
 
@@ -163,11 +167,6 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
                     if gt_fue_exitoso or (found_area > 0 and
                                           ground_truth_area > 0):
                         times_object_appear += 1
-
-                        if found_area > 0 and metodo == 0:
-                            times_object_detected += 1
-                        elif found_area > 0 and metodo == 1:
-                            times_object_followed += 1
 
                         # Incluyo el solapamiento si asi se necesita
                         if include_detections_in_following or metodo == 1:
@@ -232,10 +231,16 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         print('{a}'.format(a=val).rjust(just), end=' ')
 
         # Prom. overlap
-        print('{a}'.format(a=round(np.array(avg) * 100, 2)).rjust(just), end=' ')
+        print(
+            '{a}'.format(a=round(np.array(avg) * 100, 2)).rjust(just),
+            end=' '
+        )
 
         # Standard deviation
-        # print('{a:{j}.2f}'.format(a=round(np.array(std) * 100, 2), j=just), end=' ')
+        # print(
+            # '{a:{j}.2f}'.format(a=round(np.array(std) * 100, 2), j=just),
+            # end=' '
+        # )
 
         # Times obj. appeared
         print('{a:d}'.format(a=dd['times_object_appear']).rjust(just), end=' ')
@@ -303,8 +308,6 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
             tptn / (tptn + fpfn)
         )
         print('{a}'.format(a=round(accuracy, 2)).rjust(just))
-
-
 
 
 if __name__ == '__main__':
@@ -975,57 +978,57 @@ if __name__ == '__main__':
     ##################
     # DEFINITIVOS RGB
     ##################
-    # # Bhatta verde
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_batta_green_channel',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_batta_green_channel',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_batta_green_channel',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # # Correlation verde
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_correl_green_channel',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_correl_green_channel',
-    #     path='pruebas_guardadas',
-    # )
-    # analizar_overlapping_por_parametro(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_correl_green_channel',
-    #     path='pruebas_guardadas',
-    # )
+    # Bhatta verde
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_batta_green_channel',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_batta_green_channel',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_batta_green_channel',
+        path='pruebas_guardadas',
+    )
+
+    # Correlation verde
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_correl_green_channel',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_correl_green_channel',
+        path='pruebas_guardadas',
+    )
+    analizar_overlapping_por_parametro(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_correl_green_channel',
+        path='pruebas_guardadas',
+    )
     #
     # # Mi metodo tripe bhatachayyra
     # analizar_overlapping_por_parametro(
@@ -1349,10 +1352,9 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    ############################################################################
-    #                           INICIO DEFINITIVOS                             #
-    ############################################################################
-
+    ###########################################################################
+    #                           INICIO DEFINITIVOS                            #
+    ###########################################################################
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
     ##########################################

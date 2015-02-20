@@ -188,10 +188,10 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
                 data['ground_truth_area'] > 0 and data['fue_exitoso']
             )
 
-            if estaba_y_no_se_encontro:
-                fn += 1
-            elif (no_estaba_y_se_encontro or
+            if (estaba_y_no_se_encontro or
                     (estaba_y_se_encontro and se_solaparon_poco)):
+                fn += 1
+            elif no_estaba_y_se_encontro:
                 fp += 1
             elif no_estaba_y_no_se_encontro:
                 tn += 1
@@ -214,11 +214,11 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
     precs = np.array([prec for prec, rec, thresh in tupled_data]) * 100
     recs = np.array([rec for prec, rec, thresh in tupled_data]) * 100
 
-    print(
-        'La cantidad de objetos repetidos es: {n}'.format(
-            n=len(zip(precs, recs)) - len(set(zip(precs, recs)))
-        )
-    )
+    # print(
+    #     'La cantidad de objetos repetidos es: {n}'.format(
+    #         n=len(zip(precs, recs)) - len(set(zip(precs, recs)))
+    #     )
+    # )
 
     ax.plot(precs, recs, '-o')
 
@@ -238,8 +238,8 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
             prm=param,
         )
     )
-
-    for i, (prec, rec, thresh) in enumerate(tupled_data[::100]):
+    i = 0
+    for prec, rec, thresh in tupled_data[-1:]:
         plt.text(
             prec * 100,
             rec * 100 + 5 * (-1 * (i % 2)),
@@ -247,6 +247,27 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
             ha='center',
             va='bottom',
         )
+        i += 1
+
+    for prec, rec, thresh in tupled_data:
+        if thresh in [0.3, 0.25, 0.2]:
+            plt.text(
+                prec * 100,
+                rec * 100 + 5 * (-1 * (i % 2)),
+                '{h}'.format(h=thresh),
+                ha='center',
+                va='bottom',
+            )
+            i += 1
+
+    print(
+        'Precision vs recall para {scn}, {obj} y el parametro {prm}'.format(
+            scn=scenename + '_' + scenenum,
+            obj=objname + '_' + objnum,
+            prm=param,
+        )
+    )
+    print(', '.join(reversed([unicode(t) for p, r, t in tupled_data[-10:]])))
 
     plt.show()
 

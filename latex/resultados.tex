@@ -8,7 +8,7 @@ Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro
 \subsection{Elección del método de seguimiento RGB}
 Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
 
-Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \ref{Referencia a SURF} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento.
+Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \cite{surf} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento.
 
 El método que mejor se desempeñó en las pruebas preeliminares es el basado en histogramas por lo que se exploraron distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tiene distintas variables a explorar:
 \begin{itemize}
@@ -28,30 +28,31 @@ El método que mejor se desempeñó en las pruebas preeliminares es el basado en
 
 Para decidir qué esquema de colores, qué canales y cuántas categorías por canal se iban a utilizar se eligieron dos objetos representativos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió una como template/modelo del objeto y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de menor a mayor distancia. Esto se hizo fijando un método de comparación de histogramas. Un ejemplo de esto se puede ver en la Figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
 
-De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal \comentarioM{Probé con 60 bines por canal y mejoró el de la taza considerablemente. Hacer bien las pruebas con 60 bines por canal.} y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
+De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
 
 Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
 	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
 	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen
 	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
-	\item Desviación estándar del área solapada
-	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso
+	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%
 \end{itemize}
+
+Para el cálculo de falsos positivos se tuvo en cuenta también las veces que el área reportada por nuestro algoritmo se solapa en menos de un 30\% con el área reportada por el ground truth. De esta manera se descartan las malas correspondencias reportadas por nuestro algoritmo.
 
 Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}.
 
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
-		Objeto & & overlap STD & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
+		Objeto & & &\\
 	    \hline
-	    Taza   & 29.69      & 35.24       & 86.84             & 0                & 0\\
+	    Taza   & 19.30      & 26.32             & 46.94 \\
 	    \hline
-	    Gorra  & 55.23      & 18.08       & 87.80             & 0                & 0\\
+	    Gorra  & 49.10      & 87.80             & 0     \\
 	    \hline
-	    Bowl   & 66.60      & 42.51       & 39.09             & 0                & 0\\
+	    Bowl   & 14.14      &  4.55             & 20    \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados usando comparación de histogramas por Bhattachayyra para el canal verde con 60 bines}
@@ -61,14 +62,14 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
-		Objeto & & overlap STD & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
+		Objeto & & &\\
 	    \hline
-	    Taza   & 24.69      & 33.94       & 88.16             & 0                & 0\\
+	    Taza   & 14.83      & 13.16             & 58.16 \\
 	    \hline
-	    Gorra  & 50.44      & 10.83       & 97.56             & 0                & 0\\
+	    Gorra  & 49.14      & 95.12             & 1.02  \\
 	    \hline
-	    Bowl   & 50.68      & 42.37       & 60.00             & 10               & 0\\
+	    Bowl   & 17.47      & 13.64             & 32.11 \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados usando comparación de histogramas por Correlation para el canal verde con 60 bines}
@@ -78,14 +79,14 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
-		Objeto & & overlap STD & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
+		Objeto & & &\\
 	    \hline
-	    Taza   & 34.48      & 19.28       & 85.53             & 0                & 0\\
+	    Taza   & 34.48      & 47.89             & 31.63  \\
 	    \hline
-	    Gorra  & 55.68      &  7.25       & 78.05             & 0                & 0\\
+	    Gorra  & 55.68      & 96.97             & 0      \\
 	    \hline
-	    Bowl   & 12.58      & 15.75       & 29.09             & 0                & 0\\
+	    Bowl   & 12.58      &  6.19             & 13.68  \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados combinando comparación de histogramas por Bhattachayyra para RGB y para SV (del esquema HSV)}
@@ -133,14 +134,14 @@ En esta sección se muestran los resultados de ICP para las imágenes de profund
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza   & 66.29      & 12.79       & 85.09             & 0                & 0\\
+    Taza   & 66.29      & 92.16             & 0     \\
     \hline
-    Gorra  & 56.85      & 15.95       & 71.95             & 0                & 0\\
+    Gorra  & 56.85      & 92.67             & 0     \\
     \hline
-    Bowl   & 40.60      & 17.46       & 82.88             & 8.18             & 0\\
+    Bowl   & 40.60      & 63.83             & 19.12 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking Depth utilizando como detección los valores sacados de la base de datos más una etapa de refinamiento de estos datos usando AP e ICP.}
@@ -220,18 +221,18 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 \subsection{Evaluación del tracking en RGB-D}
 Una vez analizados el tracking RGB y Depth por separado decidimos unir ambos métodos y corroborar como se comporta el tracking combinado. Como se explicó en la sección \ref{metodo_rgbd} la combinación se hizo de dos maneras distintas por lo que en el análisis también distinguiremos cada una de las combinaciones por separado.
 
-\subsubsection*{Tracking RGB-D con preferencia en Depth}
+\customsubsubsection{Tracking RGB-D con preferencia en Depth}
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza   & 65.07      & 15.22       & 85.53             & 0                & 0\\
+    Taza   & 65.07      & 90.05             &   1.7 \\
     \hline
-    Gorra  & 42.83      &  7.82       & 74.80             & 0                & 0\\
+    Gorra  & 42.83      & 90.82             &  1.02 \\
     \hline
-    Bowl   & 42.88      & 16.21       & 82.42             & 3.03             & 0\\
+    Bowl   & 42.88      & 68.54             & 13.16 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking en Depth.}
@@ -264,7 +265,7 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 \end{figure}
 
 
-Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y Depth es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera}. Para esta comparación, como se explicó en la sección \ref{tracking_rgb}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en Depth no solo aparece parte del objeto o, en el mejor de los casos, la totalidad del objeto sino que además se incluye parte del backround de la imagen. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioM{Ver si estoy permitiendo que el seguimiento RGB elija como mejor opción la indicada por Depth. Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
+Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y Depth es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera}. Para esta comparación, como se explicó en la sección \ref{tracking_rgb}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en Depth no solo aparece parte del objeto o, en el mejor de los casos, la totalidad del objeto sino que además se incluye parte del backround de la imagen. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioP{Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
 
 \begin{figure}
 	%\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
@@ -274,20 +275,20 @@ Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre 
 
 Una mejora para este algoritmo sería utilizar las máscaras tomadas durante el entrenamiento para calcular los histogramas de los recuadros del frame anterior y del actual. De esta manera, si la pose del objeto en estos recuadros coincide con alguna de las poses de los templates la comparación va a ser más robusta y permitiría evitar este tipo de inconvenientes en la mejora RGB.
 
-\subsubsection*{Tracking RGB-D con preferencia en RGB}
+\customsubsubsection{Tracking RGB-D con preferencia en RGB}
 La segunda combinación para el tracking RGB-D es la que le da prioridad al tracking RGB e intenta mejorar el resultado utilizando el tracking Depth. Esta combinación se explica en detalle en la sección \ref{tracking_rgbd}.
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza   & 50.48      & 15.40       & 88.16             & 0                & 0\\
+    Taza   & 50.48      & 83.10             & 8.16  \\
     \hline
-    Gorra  & 63.91      & 14.20       & 77.24             & 0                & 0\\
+    Gorra  & 63.91      & 96.94             & 0     \\
     \hline
-    Bowl   & 13.39      & 16.00       & 29.09             & 0                & 0\\
+    Bowl   & 13.39      &  6.87             & 13.33 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking RGB.}
@@ -319,14 +320,14 @@ Los objetos elegidos tienen distintas características y fueron elegidos bajo la
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza 2  & 29.54      & 11.83       & 64.15             & 0                & 0\\
+    Taza 2  & 29.54      &  35.9             &    16 \\
     \hline
-    Lata    &  0.01      &  0.09       & 89.04             & 21.92            & 0\\
+    Lata    &  0.01      &     0             &  64.8 \\
     \hline
-    Caja    & 52.11      &  9.33       & 63.39             & 0                & 0\\
+    Caja    & 52.11      & 67.62             &     0 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB utilizando la detección ideal para objetos nuevos.}
@@ -348,14 +349,14 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza 2  & 55.79      & 19.43       & 62.58             & 0.63             & 0\\
+    Taza 2  & 55.79      & 80.51             &  1.47 \\
     \hline
-    Lata    & 12.34      & 14.33       & 88.81             & 49.32            & 0\\
+    Lata    & 12.34      & 10.63             &  74.8 \\
     \hline
-    Caja    & 44.94      & 24.36       & 38.84             & 0                & 0\\
+    Caja    & 44.94      & 30.62             & 11.97 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking Depth utilizando la detección ideal para objetos nuevos.}
@@ -378,14 +379,14 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza 2  & 35.98      & 18.09       & 62.26             & 1.89             & 0\\
+    Taza 2  & 35.98      & 48.33             & 11.73 \\
     \hline
-    Lata    & 18.81      & 19.89       & 85.84             & 50.23            & 0\\
+    Lata    & 18.81      & 23.67             &  66.4 \\
     \hline
-    Caja    & 35.03      & 21.55       & 37.20             & 0                & 0\\
+    Caja    & 35.03      & 23.29             & 16.67 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D con preferencia en Depth para objetos nuevos.}
@@ -395,49 +396,89 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
+	Objeto & & &\\
     \hline
-    Taza 2  & 33.62      & 17.04       & 64.15             & 0                & 0\\
+    Taza 2  & 33.62      & 39.32             & 14.93\\
     \hline
-    Lata    &  0.01      &  0.09       & 89.04             & 21.92            & 0\\
+    Lata    &  0.01      &     0             &  64.8\\
     \hline
-    Caja    & 52.11      &  9.33       & 63.39             & 0                & 0\\
+    Caja    & 52.11      & 67.62             &     0\\
     \hline
     \end{tabular}
-\caption{Resultados del tracking RGB-D con preferencia en RGB para objetos nuevos.}
+\caption{Resultados del tracking RGB-D con preferencia en RGB y detección ideal para objetos nuevos.}
 \label{tabla_rgbd_rgb_nuevos}
 \end{table}
 
 
 
-\subsection{Evaluación del sistema en RGB-D}
+\subsection{Evaluación del sistema RGB-D}
 Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}.
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
-	Objeto & & overlap STD & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+	Objeto & & & & & Accuracy\\
 	\hline
-    Taza    & 46.46      & 30.29       & 72.37             & 0                & 19.74\\
+    Taza    & 50.44      & 76.67     & 1.36           & 15.31    & 0.83 \\
     \hline
-    Gorra   & 38.25      & 37.04       & 54.47             & 0                & 21.95\\
+    Gorra   & 50.05      & 68.09     & 1.02           &  9.18    & 0.9 \\
     \hline
-    Bowl    & 25.61      & 30.58       & 47.27             & 0                & 43.64\\
+    Bowl    & 28.18      & 45.67     & 3.33           & 25.26    & 0.71 \\
     \hline
-    Taza 2  &     0      &     0       & 88.05             & 15.10            & 10.69\\
+    Taza 2  & 45.54      & 77.78     &    0           &  6.93    & 0.93 \\
     \hline
-    Lata    &     0      &     0       & 89.04             & 32.42            & 65.30\\
+    Lata    & 12.72      & 25.85     & 38.93          & 21.06    & 0.39 \\
     \hline
-    Caja    &  0.62      &  7.16       &  0.74             & 0                & 79.17\\
+    Caja    &  6.17      &    10     &  4.02          & 68.66    & 0.27 \\
     \hline
     \end{tabular}
 \caption{Resultados del sistema de seguimiento RGB-D}
 \label{tabla_sistema_rgbd}
 \end{table}
 
-En la Tabla \ref{tabla_sistema_rgbd} se puede ver un análisis similar al realizado anteriormente para cuantificar el comportamiento de los algoritmos de tracking. La principal diferencia es que en esta tabla se incluyen los resultados de las detecciones para el promedio de solapamiento y el porcentaje de seguimiento, ya que en esta ocasión las detecciones son automáticas y por lo tanto nos interesa conocer el comportamiento del sistema de seguimiento en su totalidad. Como podemos ver, para los primeros tres objetos
+En la Tabla \ref{tabla_sistema_rgbd} se puede ver un análisis similar al realizado anteriormente para cuantificar el comportamiento de los algoritmos de tracking. La principal diferencia es que en esta tabla se incluyen los resultados de las detecciones para el promedio de solapamiento y para el porcentaje de veces seguido, ya que en esta ocasión las detecciones son automáticas y por lo tanto nos interesa conocer el comportamiento del sistema de seguimiento en su totalidad. Además, se incluye el \textit{accuracy} como medida de cuantificación. El \textit{accuracy} es la proporción de resultados correctos sobre el total de los casos examinados. Su fórmula es la siguiente:
+\begin{equation}
+\frac{\#true\_positives + \#true\_negatives}{\#true\_positives + \#true\_negatives + \#false\_positives + \#false\_negatives}
+\end{equation}
+
+Como podemos ver, en las corridas de las dos tazas y la gorra el accuracy es alto, entre 0.83 y 0.93. Esto significa que en el 83\% o 93\% de los frames el algoritmo reportó correctamente la ubicación del objeto. Además, en estos tres ejemplos el promedio de porcentaje de solapamiento está por encima del 45\% y el porcentaje de seguimiento por encima del 71\%.
+
+Si comparamos los resultados del sistema con los resultados de cada método de seguimiento por separado usando la detección ideal vemos como nuestro sistema responde muy bien y en muchos casos superando a los otros métodos.
+
+El seguimiento en RGB con detección ideal supera al sistema en el caso de la gorra, en la cual el porcentaje promedio de solapamiento es un 5\% mejor que el sistema y cerca de 30\% más de porcentaje de seguimiento. Creemos que esto se debe a la combinación de un modelo de nube de puntos de la gorra malo y el método de detección que resulta poco robusto. También es mejor en el caso de la caja de cereales, superando en un 50\% tanto al porcentaje de solapamiento como al de veces que se siguió al objeto. En parte esto sucede por motivos similares al de la gorra, sumando que sobre la mitad de la escena y casi hasta el final, la caja queda de perfil a la cámara haciendo que el modelo 3D de la misma no sirva para alinearlo con la escena y por lo tanto empeorando mucho el rendimiento. Sin embargo en el resto de las escenas, específicamente para ambas tazas, el bowl y la lata, el sistema supera ampliamente no solo al porcentaje de solapamiento promedio sino también al porcentaje de veces que se sigue al objeto y el porcentaje de falsos positivos.
+
+En el caso del seguimiento en profundidad se nota cómo un buen método de detección, en este caso el método ideal, beneficia al algoritmo de seguimiento. Si comparamos los resultados de las tablas \ref{tabla_d} y \ref{tabla_d_nuevos} del tracking en profundidad con los de la Tabla \ref{tabla_sistema_rgbd} del sistema RGB-D vemos que en la mayoría de los casos el seguimiento en profundidad con detección ideal supera ampliamente al sistema RGB-D en porcentaje de seguimiento y por bastante también en porcentaje promedio de solapamiento. Sólo en el ejemplo de la lata el sistema se comporta mejor. Sin embargo, el sistema demuestra ser mucho más robusto que el tracking en profundidad ya que mejora en todos los casos el porcentaje de falsos positivos.
+
+A continuación presentamos los gráficos de seguimiento frame a frame para el sistema RGB-D de las escenas de la taza, la gorra y el bowl.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-taza.png}
+		\caption{Seguimiento frame a frame para la taza}
+		\label{frame_frame_sistema-rgb-d_taza}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-gorra.png}
+		\caption{Seguimiento frame a frame para la gorra}
+		\label{frame_frame_sistema-rgb-d_gorra}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{\textwidth}
+		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-bowl.png}
+		\caption{Seguimiento frame a frame para el bowl}
+		\label{frame_frame_sistema-rgb-d_bowl}
+	\end{subfigure}
+	\caption{Seguimiento frame a frame del sistema RGB-D}
+	\label{frame_frame_d}
+\end{figure}
+
+
+
+
 
 
 \comentarioP{Falta decir que es mejor y cuando}

@@ -94,11 +94,13 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
                            param_values=None):
 
     RESULT_OVERAP = {
-        'FP': 'Lo encontro pero no estaba',
-        'FN': 'No lo encontro pero estaba',
+        'FP': 'No estaba pero lo encontro',
+        'FN': 'Estaba pero no lo encontro',
         'BF': 'Lo encontro pero no se solapan',
         'VN': 'Ninguno lo encontro',
     }
+
+    min_overlap_area = 0.3
 
     # Inicializo el objeto del ground truth
     ground_truth = StaticDetector(
@@ -171,7 +173,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
                     # Obtengo los resultados
                     values = [int(v) for v in line.split(';')]
                     nframe = values[0]
-                    fue_exitoso = values[1]
+                    fue_exitoso = True if values[1] == 1 else False
                     metodo = values[2]
                     fila_sup = values[3]
                     col_izq = values[4]
@@ -204,30 +206,48 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
                     intersection_area = intersection.area()
 
                     overlap_area = 0
+                    se_solaparon_poco = True
 
-                    # Guardo informacion sobre el solapamiento
-                    # Si se intersecaron (no miro si el ground truth
-                    # fue exitoso porque puede ser que el objeto este
-                    # sobre un borde y no lo reporte como tal)
-                    if fue_exitoso and intersection_area > 0:
-                        # To be considered a correct detection, the area of overlap A0
-                        # between the predicted bounding box Bp and ground truth
-                        # bounding box Bgt must exceed 50% by the formula:
-                        # A0 = area(Bp intersection Bgt) / area(Bp union Bgt)
-                        union_area = found_area + ground_truth_area - intersection_area
+                    if found_area > 0 and ground_truth_area > 0:
+                        union_area = (
+                            found_area + ground_truth_area - intersection_area
+                        )
                         overlap_area = intersection_area / union_area
+                        se_solaparon_poco = overlap_area < min_overlap_area
+
+                    # Chequeo de falsos positivos y negativos y
+                    # verdaderos negativos y positivos
+                    estaba_y_no_se_encontro = gt_fue_exitoso and not fue_exitoso
+
+                    no_estaba_y_se_encontro = (
+                        ground_truth_area == 0 and found_area > 0
+                    )
+
+                    no_estaba_y_no_se_encontro = (
+                        not (gt_fue_exitoso or fue_exitoso)
+                    )
+
+                    estaba_y_se_encontro = (
+                        fue_exitoso and ground_truth_area > 0
+                    )
+
+                    if estaba_y_se_encontro and not se_solaparon_poco:
                         frames_explanations_per_run.append('LL')
                     # Si ambos reportan el objeto pero no hay interseccion
-                    elif gt_fue_exitoso and fue_exitoso and intersection_area == 0:
+                    # (es un falso negativo)
+                    elif estaba_y_se_encontro and se_solaparon_poco:
                         frames_explanations_per_run.append('BF')
                     # Si es un falso positivo
-                    elif not gt_fue_exitoso and fue_exitoso:
+                    elif no_estaba_y_se_encontro:
                         frames_explanations_per_run.append('FP')
                     # Si es un falso negativo
-                    elif gt_fue_exitoso and not fue_exitoso:
+                    elif estaba_y_no_se_encontro:
                         frames_explanations_per_run.append('FN')
-                    else:  # ambos no exitosos
+                    # ambos no exitosos
+                    elif no_estaba_y_no_se_encontro:
                         frames_explanations_per_run.append('VN')
+                    else:
+                        raise Exception('Revisar condiciones')
 
                     frames_overlappedareas_per_run.append(overlap_area)
 
@@ -282,19 +302,19 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
         if fps_x:
             fpsl, = ax.plot(fps_x, np.zeros(len(fps_x)), 'o', color='red')
-            fpsl.set_label('Lo encontro pero no estaba')
+            fpsl.set_label(RESULT_OVERAP['FP'])
 
         if fns_x:
             fnsl, = ax.plot(fns_x, np.zeros(len(fns_x)), 'o', color='orange')
-            fnsl.set_label('No lo encontro pero estaba')
+            fnsl.set_label(RESULT_OVERAP['FN'])
 
         if bfs_x:
             bfsl, = ax.plot(bfs_x, np.zeros(len(bfs_x)), 'o', color='yellow')
-            bfsl.set_label('No se solaparon')
+            bfsl.set_label(RESULT_OVERAP['BF'])
 
         if vns_x:
             vnsl, = ax.plot(vns_x, np.zeros(len(vns_x)), 'o', color='green')
-            vnsl.set_label('Ninguno lo encontro')
+            vnsl.set_label(RESULT_OVERAP['VN'])
 
         if nns_x:
             nnsl, = ax.plot(nns_x, nns_y, 'o', color='black')
