@@ -32,27 +32,25 @@ De este análisis surgió que las mejores combinaciones de esquema, canales y bi
 
 Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
-	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
-	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen
 	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
 	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%
+	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
+	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\% con el área reportada por el ground truth
 \end{itemize}
-
-Para el cálculo de falsos positivos se tuvo en cuenta también las veces que el área reportada por nuestro algoritmo se solapa en menos de un 30\% con el área reportada por el ground truth. De esta manera se descartan las malas correspondencias reportadas por nuestro algoritmo.
 
 Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}.
 
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
-		Objeto & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+		Objeto & & & &\\
 	    \hline
-	    Taza   & 19.30      & 26.32             & 46.94 \\
+	    Taza   & 19.30      & 26.32   & 0       & 46.94 \\
 	    \hline
-	    Gorra  & 49.10      & 87.80             & 0     \\
+	    Gorra  & 49.10      & 87.80   & 0       & 0     \\
 	    \hline
-	    Bowl   & 14.14      &  4.55             & 20    \\
+	    Bowl   & 14.14      &  4.55   & 0       & 20    \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados usando comparación de histogramas por Bhattachayyra para el canal verde con 60 bines}
@@ -62,14 +60,14 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
-		Objeto & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+		Objeto & & & &\\
 	    \hline
-	    Taza   & 14.83      & 13.16             & 58.16 \\
+	    Taza   & 14.83      & 13.16     & 0      & 58.16 \\
 	    \hline
-	    Gorra  & 49.14      & 95.12             & 1.02  \\
+	    Gorra  & 49.14      & 95.12     & 0      & 1.02  \\
 	    \hline
-	    Bowl   & 17.47      & 13.64             & 32.11 \\
+	    Bowl   & 17.47      & 13.64     & 5.26   & 26.84 \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados usando comparación de histogramas por Correlation para el canal verde con 60 bines}
@@ -79,14 +77,14 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \begin{table}[h]
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
-	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
-		Objeto & & &\\
+	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+		Objeto & & & &\\
 	    \hline
-	    Taza   & 34.48      & 47.89             & 31.63  \\
+	    Taza   & 34.48      & 47.89     & 0        & 31.63  \\
 	    \hline
-	    Gorra  & 55.68      & 96.97             & 0      \\
+	    Gorra  & 55.68      & 96.97     & 0        & 0      \\
 	    \hline
-	    Bowl   & 12.58      &  6.19             & 13.68  \\
+	    Bowl   & 12.58      &  6.19     & 0        & 13.68  \\
 	    \hline
     \end{tabular}
 	\caption{Mejores resultados combinando comparación de histogramas por Bhattachayyra para RGB y para SV (del esquema HSV)}
@@ -104,23 +102,23 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-taza.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_rgb_taza}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-gorra.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgb_gorra}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-bowl.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_rgb_bowl}
 	\end{subfigure}
-	\caption{\comentarioM{Descripcion}}
+	\caption{Seguimiento frame a frame del tracking RGB con detección ideal.}
 	\label{frame_frame_rgb}
 \end{figure}
 
@@ -134,14 +132,14 @@ En esta sección se muestran los resultados de ICP para las imágenes de profund
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza   & 66.29      & 92.16             & 0     \\
+    Taza   & 66.29      & 92.16      & 0      & 0     \\
     \hline
-    Gorra  & 56.85      & 92.67             & 0     \\
+    Gorra  & 56.85      & 92.67      & 0      & 0     \\
     \hline
-    Bowl   & 40.60      & 63.83             & 19.12 \\
+    Bowl   & 40.60      & 63.83      & 4.74   & 14.39 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking Depth utilizando como detección los valores sacados de la base de datos más una etapa de refinamiento de estos datos usando AP e ICP.}
@@ -197,23 +195,23 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-taza.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_d_taza}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-gorra.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_d_gorra}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_d_bowl}
 	\end{subfigure}
-	\caption{\comentarioM{Descripcion}}
+	\caption{Seguimiento frame a frame del tracking en profundidad con detección ideal.}
 	\label{frame_frame_d}
 \end{figure}
 
@@ -225,14 +223,14 @@ Una vez analizados el tracking RGB y Depth por separado decidimos unir ambos mé
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza   & 65.07      & 90.05             &   1.7 \\
+    Taza   & 65.07      & 90.05     & 0        &   1.7 \\
     \hline
-    Gorra  & 42.83      & 90.82             &  1.02 \\
+    Gorra  & 42.83      & 90.82     & 0        &  1.02 \\
     \hline
-    Bowl   & 42.88      & 68.54             & 13.16 \\
+    Bowl   & 42.88      & 68.54     & 1.75     &  11.4 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking en Depth.}
@@ -244,23 +242,23 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-taza.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_rgbd_d_taza}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-gorra.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgbd_d_gorra}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_rgbd_d_bowl}
 	\end{subfigure}
-	\caption{\comentarioM{Descripcion}}
+	\caption{Seguimiento frame a frame para el tracking RGB-D con preferencia en profundidad usando la detección ideal.}
 	\label{frame_frame_rgbd_d}
 \end{figure}
 
@@ -268,7 +266,7 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y Depth es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera}. Para esta comparación, como se explicó en la sección \ref{tracking_rgb}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en Depth no solo aparece parte del objeto o, en el mejor de los casos, la totalidad del objeto sino que además se incluye parte del backround de la imagen. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioP{Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
 
 \begin{figure}
-	%\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-bowl.png}
+	%\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
 	\caption{Mejora obtenida según RGB para el tracking RGB-D}
 	\label{mejora_rgb_en_tracking_rgbd}
 \end{figure}
@@ -281,14 +279,14 @@ La segunda combinación para el tracking RGB-D es la que le da prioridad al trac
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza   & 50.48      & 83.10             & 8.16  \\
+    Taza   & 50.48      & 83.10     & 0      & 8.16  \\
     \hline
-    Gorra  & 63.91      & 96.94             & 0     \\
+    Gorra  & 63.91      & 96.94     & 0      & 0     \\
     \hline
-    Bowl   & 13.39      &  6.87             & 13.33 \\
+    Bowl   & 13.39      &  6.87     & 0      & 13.33 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking RGB.}
@@ -320,14 +318,14 @@ Los objetos elegidos tienen distintas características y fueron elegidos bajo la
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza 2  & 29.54      &  35.9             &    16 \\
+    Taza 2  & 29.54      &  35.9     & 0        &  16 \\
     \hline
-    Lata    &  0.01      &     0             &  64.8 \\
+    Lata    &  0.01      &     0     & 12.8     &  52 \\
     \hline
-    Caja    & 52.11      & 67.62             &     0 \\
+    Caja    & 52.11      & 67.62     & 0        &   0 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB utilizando la detección ideal para objetos nuevos.}
@@ -339,7 +337,7 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/seguimientoframeaframe-rgb-nuevo-caja.png}
+	\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-nuevo-caja.png}
 	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en RGB}
 	\label{frame_frame_rgb_nuevo}
 \end{figure}
@@ -349,14 +347,14 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza 2  & 55.79      & 80.51             &  1.47 \\
+    Taza 2  & 55.79      & 80.51     & 0.27     &   1.2 \\
     \hline
-    Lata    & 12.34      & 10.63             &  74.8 \\
+    Lata    & 12.34      & 10.63     & 28.8     &    46 \\
     \hline
-    Caja    & 44.94      & 30.62             & 11.97 \\
+    Caja    & 44.94      & 30.62     & 0        & 11.97 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking Depth utilizando la detección ideal para objetos nuevos.}
@@ -368,7 +366,7 @@ Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un baj
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/seguimientoframeaframe-depth-nuevo-caja.png}
+	\includegraphics[width=\textwidth]{img/frame_a_frame/depth-nuevo-caja.png}
 	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en Depth}
 	\label{frame_frame_d_nuevo}
 \end{figure}
@@ -379,14 +377,14 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza 2  & 35.98      & 48.33             & 11.73 \\
+    Taza 2  & 35.98      & 48.33      & 0.8     & 10.93 \\
     \hline
-    Lata    & 18.81      & 23.67             &  66.4 \\
+    Lata    & 18.81      & 23.67      & 29.33   & 37.07 \\
     \hline
-    Caja    & 35.03      & 23.29             & 16.67 \\
+    Caja    & 35.03      & 23.29      & 0       & 16.67 \\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D con preferencia en Depth para objetos nuevos.}
@@ -396,14 +394,14 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos}\\
-	Objeto & & &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+	Objeto & & & &\\
     \hline
-    Taza 2  & 33.62      & 39.32             & 14.93\\
+    Taza 2  & 33.62      & 39.32      & 0       & 14.93\\
     \hline
-    Lata    &  0.01      &     0             &  64.8\\
+    Lata    &  0.01      &     0      & 12.8    &  52.0\\
     \hline
-    Caja    & 52.11      & 67.62             &     0\\
+    Caja    & 52.11      & 67.62      & 0       &     0\\
     \hline
     \end{tabular}
 \caption{Resultados del tracking RGB-D con preferencia en RGB y detección ideal para objetos nuevos.}
@@ -421,17 +419,17 @@ Para finalizar con la evaluación de los métodos, presentamos en esta sección 
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
 	Objeto & & & & & Accuracy\\
 	\hline
-    Taza    & 50.44      & 76.67     & 1.36           & 15.31    & 0.83 \\
+    Taza    & 50.44      & 76.67     &    0           & 16.67    & 0.83 \\
     \hline
-    Gorra   & 50.05      & 68.09     & 1.02           &  9.18    & 0.9 \\
+    Gorra   & 50.05      & 68.09     &    0           &  10.2    & 0.9 \\
     \hline
-    Bowl    & 28.18      & 45.67     & 3.33           & 25.26    & 0.71 \\
+    Bowl    & 28.18      & 45.67     &    0           &  28.6    & 0.71 \\
     \hline
     Taza 2  & 45.54      & 77.78     &    0           &  6.93    & 0.93 \\
     \hline
-    Lata    & 12.72      & 25.85     & 38.93          & 21.06    & 0.39 \\
+    Lata    & 12.72      & 25.85     &   20           & 40.53    & 0.39 \\
     \hline
-    Caja    &  6.17      &    10     &  4.02          & 68.66    & 0.27 \\
+    Caja    &  6.17      &    10     &    0           & 73.08    & 0.27 \\
     \hline
     \end{tabular}
 \caption{Resultados del sistema de seguimiento RGB-D}
@@ -456,19 +454,19 @@ A continuación presentamos los gráficos de seguimiento frame a frame para el s
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-taza.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_sistema-rgb-d_taza}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-gorra.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_sistema-rgb-d_gorra}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{\textwidth}
-		\includegraphics[width=\textwidth]{img/seguimientoframeaframe-sistema-rgbd-bowl.png}
+		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_sistema-rgb-d_bowl}
 	\end{subfigure}

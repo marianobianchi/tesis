@@ -63,22 +63,22 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/0_crop.png}
+		\includegraphics[width=\textwidth]{img/templates/0_crop.png}
 		\caption{Rotacion $0^{\circ}$}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/90_crop.png}
+		\includegraphics[width=\textwidth]{img/templates/90_crop.png}
 		\caption{Rotacion $90^{\circ}$}
 	\end{subfigure}
 
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/180_crop.png}
+		\includegraphics[width=\textwidth]{img/templates/180_crop.png}
 		\caption{Rotacion $180^{\circ}$}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/270_crop.png}
+		\includegraphics[width=\textwidth]{img/templates/270_crop.png}
 		\caption{Rotacion $270^{\circ}$}
 	\end{subfigure}
 	\caption{Templates de una gorra tomados de la base de datos}
@@ -86,9 +86,33 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 \end{figure}
 
 \subsection{Detección}\label{deteccion_rgb}
-Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{Hay que explicarlo, ¿no?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. En este caso como tenemos la máscara disponible este parámetro lo usamos. El último parámetro le indica al algoritmo de template matching que comparación usar para matchear el template a la imagen. Nosotros decidimos utilizar la diferencia cuadrática pixel por pixel normalizada, descripta por la siguiente fórmula:
+En esta sección explicaremos el método utilizado para la detección en RGB y la manera de utilizarlo en el esquema de seguimiento propuesto.
 
-\comentarioM{Insertar formula aqui.}% http://docs.opencv.org/modules/imgproc/doc/object_detection.html?highlight=matchtemplate#matchtemplate
+\customsubsubsection{Template Matching}
+\textit{Template matching} es una técnica del área de procesamiento de imágenes utilizada para encontrar pequeñas partes de una imagen que sean similares a una imagen de referencia (o template). Esta técnica tiene varias aplicaciones que van desde la robótica hasta el control de calidad de piezas manufacturadas.
+
+Para aplicar esta técnica se necesitan tres cosas:
+\begin{itemize}
+	\item Una imagen de búsqueda: la imagen donde intentaremos encontrar la aparición del template
+	\item Una imagen como template: porción de imagen buscada
+	\item Método de comparación de imágenes
+\end{itemize}
+
+La técnica consiste en ir moviendo el template sobre la imagen de búsqueda pixel por pixel, de izquierda a derecha y de arriba hacia abajo. En cada pixel, se va comparando el template con el área de la imagen de búsqueda que comienza en el pixel explorado y cuyo tamaño es igual al del template. Esta comparación nos indica la similitud que hay entre el área de la imagen de búsqueda y el template. A medida que se recorre la imagen se va acumulando este valor de comparación junto con la posición del pixel en la imagen, hasta haber recorrido toda la imagen.
+
+Una vez recorrida la imagen se busca cual de todas las comparaciones es mejor y se obtiene el pixel donde comienza la región, que junto con el tamaño del template permiten obtener el recuadro de la imagen de búsqueda que más se parece al template. 
+
+Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación pixel por pixel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente fórmula: Sea I la imágen de búsqueda y T el template, la diferencia cuadrática se calcula así:
+\begin{equation}
+R(x, y) = \displaystyle\sum\limits_{x', y'} (T(x', y') - I(x + x', y + y'))^2
+\end{equation}
+
+Teniendo en cuenta el método de comparación elegido, una manera de utilizar esta técnica para la detección es definir un umbral para la comparación y aplicar \textit{template matching} entre una imagen y un template. Si el mejor valor de comparación obtenido está por debajo del umbral elegido, se sabe con cierta probabilidad que la detección fue exitosa. Por el contrario, si la comparación está por debajo de ese umbral se asume que se está frente a una detección fallida y se reporta que el template no se encuentra en la imagen.
+
+
+\customsubsubsection{Esquema de detección}
+
+Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. \comentarioM{Hay que explicarlo, ¿no?} La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. En este caso como tenemos la máscara disponible este parámetro lo usamos. El último parámetro le indica al algoritmo de template matching que comparación usar para matchear el template a la imagen. Nosotros decidimos utilizar la diferencia cuadrática pixel por pixel normalizada, descripta por la siguiente fórmula: 
 
 Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates y máscaras del objeto a buscar puede no ser la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir la escala del objeto en cada escena.
 
@@ -103,19 +127,19 @@ Cada imagen RGB consta de tres imagenes, una por cada canal. Para calcular el hi
 \begin{figure}
 	\centering
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/primercuadrante.png}
+		\includegraphics[width=\textwidth]{img/grilla/primercuadrante.png}
 		\caption{Primer frame de búsqueda}
 		\label{frames_solapados_1}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/segundocuadrante.png}
+		\includegraphics[width=\textwidth]{img/grilla/segundocuadrante.png}
 		\caption{Segundo frame de búsqueda}
 		\label{frames_solapados_2}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
-		\includegraphics[width=\textwidth]{img/decimonovenocuadrante.png}
+		\includegraphics[width=\textwidth]{img/grilla/decimonovenocuadrante.png}
 		\caption{$19^{\circ}$ frame de búsqueda}
 		\label{frames_solapados_3}
 	\end{subfigure}
@@ -215,10 +239,10 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 
 
-\section{Método propuesto en D}\label{metodo_rgbd}
-\subsection{Alignment prerejective}\label{alignment_prerejective}
-En esta sección explicaremos el método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de este trabajo.
+\section{Método propuesto para profundidad}\label{metodo_rgbd}
+En esta sección explicaremos los métodos utilizados durante las distintas etapas del esquema propuesto para el seguimiento en profundidad, entre los que se encuentra un método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de este trabajo, así como también un método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP). Además, al igual que se hizo en la Sección \ref{metodo_rgb} se detalla para cada etapa del algoritmo como se utiliza cada método y de que manera se los une para formar el sistema de seguimiento.
 
+\subsection{Alignment prerejective}\label{alignment_prerejective}
 El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
 
 Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y ocluciones. El objetivo de este trabajo era combinar inputs de ambos dominios de manera eficiente para resolver el problema de la estimación de pose.
@@ -309,7 +333,7 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 	\item Suma euclidea mínima: Criterio de corte. Es la diferencia euclidea mínima permitida entre dos pasos del algoritmo.
 \end{enumerate}
 
-Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se explora como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procede a tomar los puntos de la escena que suponen ser los del objeto que se estaba buscando. La explicación de cómo se realiza este filtrado se puede ver en \comentarioM{EXPLICACION USO DE KDTREE. EXPLICAR EL AUTOAJUSTE DEL LEAF PARA KDTREE}. Una vez filtrados los puntos de la escena se compara esta cantidad de puntos con la cantidad de puntos que tiene el modelo del objeto. Si los puntos de la escena superan un porcentaje de puntos del modelo se considera que el objeto fue encontrado. Este porcentaje también es uno de los parámetros explorados.
+Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se explora como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procede a tomar los puntos de la escena que suponen ser los del objeto que se estaba buscando. La explicación de cómo se realiza este filtrado se puede ver en la sección \ref{deteccion_d}. Una vez filtrados los puntos de la escena se compara esta cantidad de puntos con la cantidad de puntos que tiene el modelo del objeto. Si los puntos de la escena superan un porcentaje de puntos del modelo se considera que el objeto fue encontrado. Este porcentaje también es uno de los parámetros explorados.
 
 
 \section{Método propuesto en RGB-D}\label{metodo_rgbd}
@@ -383,7 +407,37 @@ Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB
 
 Estas escenas fueron anotadas de manera automática con información de ground truth sobre la ubicación de cada objeto en cada frame. En particular, la información de ground truth indica la posición de un bounding box que contiene a cada objeto en cada frame RGB.
 
-{\huge Figura con ejemplos de las escenas, por ejemplo: 2 filas con varias columnas cada una en donde haya frames RGB arriba y sus equivalentes en depth abajo}
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_27.png}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_34.png}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_48.png}
+    \end{subfigure}
+    
+        
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_27_pcd.png}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_34_pcd.png}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.3\textwidth}
+        \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_48_pcd.png}
+    \end{subfigure}
+
+    \caption{Frames de ejemplo tomados de una escena de la base RGB-D. Cada columna tiene una imagen RGB en la primer fila y su correspondiente nube de puntos en la segunda fila.}
+    \label{escena_rgbd_base}
+\end{figure}
+
 
 \section{Hardware}
 Todas las secuencias de video de esta base de datos fueron capturadas utilizando un prototipo de cámara RGB-D fabricada por PrimeSense. Esta cámara graba simultáneamente imágenes RGB y de profundidad, cada una con una resolución de 640x480 pixeles y una frecuencia de 20 frames por segundo. Cada par de imágenes RGB y de profundidad provistos por la cámara están alineados y sincronizados, propiedades provistas por el driver de la cámara. Los puntos 3D en el espacio físico para cada pixel pueden obtenerse usando parámetros del sensor conocidos previamente.
