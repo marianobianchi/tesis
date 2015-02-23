@@ -122,7 +122,47 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 	\label{frame_frame_rgb}
 \end{figure}
 
-En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}. \comentarioM{Explicar los colores primero} Los puntos que están en 0 (color verde) indican que el objeto no fue encontrado y coincide con el ground truth, como es el caso de las subfiguras \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En la subfigura \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para las tres subfiguras, todos los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento.
+En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}. 
+
+\customsubsubsection{Colores en los gráficos de seguimiento frame a frame}
+Los colores en los puntos del gráfico representan los distintos resultados registrados por cada frame. Si el punto es de color verde, significa que el resultado reportado por nuestro algoritmo coincide con el ground truth en que el objeto no se encuentra en ese frame, es decir, es un verdadero negativo. Si el color es amarillo, significa que el algoritmo reportó haber encontrado al objeto y así también lo hace el ground truth, pero que las áreas reportadas no se solapan entre sí o el porcentaje de solapamiento es menor al 30\%. En este caso es un falso negativo. Pero también diferenciamos otro tipo de falso negativo, y se hace con el color naranja, y se usa cuando nuestro algoritmo no reporta haber encontrado al objeto pero el ground truth indica que el obtejo está en el frame.
+
+Otro color que puede aparecer en este tipo de gráficos es el color rojo. El rojo indica un falso positivo, es decir, cuando el ground truth indica que el objeto no está en el frame y nuestro algoritmo reporta lo contrario. Además, también está el color azul. Este color indica que el resultado reportado por nuestro algoritmo se solapa en un 30\% o más con el área indicada por el ground truth. A diferencia del resto de los colores antes mencionados que aparecen todos sobre el 0 del eje de porcentaje de solapamiento, los puntos azules pueden aparecer a cualquier nivel de este eje. La altura en donde esté el punto azul indica el porcentaje de solapamiento para ese frame.
+
+
+
+
+
+
+
+
+Finalmente, existe un color más que puede aparecer: el negro. Como se explicó en la Sección \ref{metodo_rgbd}, algunos de los algoritmos usados tienen un cierto grado de aleatoriedad. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Los puntos que están en 0 (color verde) indican que el objeto no fue encontrado y coincide con el ground truth, como es el caso de las subfiguras \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En la subfigura \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para las tres subfiguras, todos los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento.
 
 Se puede ver en el gráfico \ref{frame_frame_rgb_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible esxplicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
 
@@ -302,17 +342,50 @@ Este resultado parece reafirmar la hipótesis hecha en la primer combinación RG
 
 
 \subsection{Evaluación de los métodos de tracking en objetos desconocidos}
-\comentarioM{Estas explicaciones están un poco escuetas. Después las puedo explicar mejor si Pachi me dice que vale la pena.}
-
 Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos objetos y son estos los que se utilizaron durante la selección de métodos y luego la de parámetros. En esta sección se analizarán pruebas corridas con los métodos de las secciones anteriores pero utilizando objetos y escenas nuevas. Estas pruebas se realizaron con el objetivo de verificar el funcionamiento de los algoritmos en condiciones más realistas.
 
-Los objetos elegidos tienen distintas características y fueron elegidos bajo las siguientes hipótesis:
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/coffee_mug.png}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/soda_can.png}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/cereal_box.png}
+	\end{subfigure}
+
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/coffee_mug_pcd.png}
+		\caption{Taza 2}
+		\label{frame_frame_sistema-rgb-d_taza}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/soda_can_pcd.png}
+		\caption{Lata de gaseosa}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/obj_nuevos/cereal_box_pcd.png}
+		\caption{Caja de cereales}
+	\end{subfigure}
+	
+	\caption{Objetos no utilizados durante las pruebas y selección de parámetros}
+	\label{new_objects}
+\end{figure}
+
+Los objetos elegidos, que pueden verse en la Figura \ref{new_objects}, tienen distintas características y fueron elegidos bajo las siguientes hipótesis:
 \begin{enumerate}
 	\item Caja de cereales: al ser mayoritariamente plana debería perjudicar al tracking en Depth y por su textura bien definida beneficiar al tracking RGB
 	\item Lata de gaseosa: posee una textura bien definida pero el fondo de la imagen es oscuro al igual que la lata por lo que debería perjudicar al tracking RGB
 	\item Taza 2: es una taza diferente a la analizada antes. La forma debería beneficiar al tracking en Depth y sus colores a RGB.
 \end{enumerate}
-\comentarioP{Mostrar imagenes de los objetos y decir qué escenas se usaron}
+
+Las escenas anotadas en donde se utilizaron estos objetos para correr los algoritmos y evaluar su comportamiento son distintas a las usadas con los objetos anteriores. En este caso se usaron dos: una en donde predomina una mesa grande rectangular sobre una esquina de una habitación donde un lado está sobre una pared y el otro debajo de una ventana. En esta se encuentran entre otros objetos la lata y la taza 2. Se puede ver en la Figura \ref{escena_rgbd_base}. La otra también es sobre una mesa, pero esta vez es una mesa circular y pequeña en el centro de una habitación pegada sobre una columna. En esta escena es donde aparece la caja de cereales.
 
 
 \begin{table}[h]
