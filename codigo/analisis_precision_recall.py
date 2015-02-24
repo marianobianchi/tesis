@@ -81,7 +81,7 @@ class ResultsParser(object):
 
 def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
                                             objname, objnum,
-                                            param, path,
+                                            param, param_value, path,
                                             thresholds=None):
     """
     sacado de https://en.wikipedia.org/wiki/Precision_and_recall
@@ -93,7 +93,9 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
     más de un cierto porcentaje
     """
     if thresholds is None:
-        thresholds = [round(x, 3) for x in np.linspace(0.1, 0.5, 401)]
+        thresholds = [round(x, 3) for x in np.linspace(10, 50, 401)]
+
+    interest_thresholds = [15.0, 20.0, 25.0, 30.0, 40.0, 50.0]
 
     ground_truth = StaticDetector(
         matfile,
@@ -108,7 +110,7 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
     # truth dice haber sido exitoso
     data_per_frame = []
 
-    for run_num, dict_values in parser.iterar_por_parametro('UNICO'):
+    for run_num, dict_values in parser.iterar_por_parametro(param_value):
         # Resultados de mi algoritmo
         nframe = dict_values['nframe']
         fue_exitoso = True if dict_values['fue_exitoso'] == 1 else False
@@ -167,7 +169,7 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
                     data['ground_truth_area'] -
                     data['intersection_area']
                 )
-                overlap_area = data['intersection_area'] / union_area
+                overlap_area = data['intersection_area'] / union_area * 100
                 se_solaparon_poco = overlap_area < min_overlapped_area
 
             # Chequeo de falsos positivos y negativos y
@@ -227,21 +229,25 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
     ax = fig.add_subplot(111)
 
     # Paso a array de np
-    # precs = np.array(precs) * 100
-    # recs = np.array(recs) * 100
-    # thresholds = np.array(thresholds)
+    precs = np.array(precs) * 100
+    recs = np.array(recs) * 100
+    thresholds = np.array(thresholds)
+
+    # funcion para ordenar tuplas
+    def tuple_cmp(t1, t2):
+        c1 = cmp(t1[0], t2[0])
+        if not c1:
+            return cmp(t1[1], t2[1])
+        return c1
 
     # the data
     tupled_data = zip(precs, recs, thresholds)
-    if all([p == precs[0] for p in precs]):
-        tupled_data.sort(key=lambda (x, y, z): y)
-    else:
-        tupled_data.sort()
+    tupled_data.sort(cmp=tuple_cmp, reverse=True)
 
-    precs = np.array([prec for prec, rec, thresh in tupled_data]) * 100
-    recs = np.array([rec for prec, rec, thresh in tupled_data]) * 100
+    ordered_precs = [p for p, r, t in tupled_data]
+    ordered_recs = [r for p, r, t in tupled_data]
 
-    ax.plot(precs, recs, 'bo-')
+    ax.plot(ordered_precs, ordered_recs, 'bo-')
 
     # # axes and labels
     ax.set_xlim(0, 100)
@@ -260,10 +266,10 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
         )
     )
     i = 0
-    for prec, rec, thresh in tupled_data[-1:]:
+    for prec, rec, thresh in tupled_data[:1]:
         plt.text(
-            prec * 100,
-            rec * 100 + 5 * (-1 * (i % 2)),
+            prec,
+            rec + 5 * (-1 * (i % 2)),
             '{h}'.format(h=thresh),
             ha='center',
             va='bottom',
@@ -273,15 +279,15 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
     colors = iter('grcmyk')
     interest = []
     for prec, rec, thresh in tupled_data[:-1]:
-        if thresh in [0.5, 0.4, 0.3, 0.25, 0.2, 0.15]:
-            p, = ax.plot([prec * 100], [rec * 100], colors.next() + 'o')
+        if thresh in interest_thresholds:
+            p, = ax.plot([prec], [rec], colors.next() + 'o')
             p.set_label('Threshold = {t}'.format(t=thresh))
 
             interest.append((prec, rec, thresh))
 
     # Ordeno por recall
-    interest.sort(key=lambda (x, y, z): y)
-    interest = [unicode(i) for i in interest]
+    interest.sort(key=lambda (x, y, z): y, reverse=True)
+    interest = [unicode(tuple([round(v, 2) for v in i])) for i in interest]
 
     ax.legend()
 
@@ -292,7 +298,9 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
             prm=param,
         )
     )
-    print('Mejor (precision, recall, threshold): {x}'.format(x=tupled_data[-1]))
+    print('Mejor (precision, recall, threshold): {x}'.format(
+        x=unicode(tuple([round(v, 2) for v in tupled_data[0]])))
+    )
 
     print(('Los de interes ordenados de mejor a peor recall (precision, '
            'recall, threshold): {xs}').format(xs=', '.join(interest)))
@@ -461,14 +469,151 @@ if __name__ == '__main__':
     ###########################################################################
     # SISTEMA DE SEGUIMIENTO RGB-D
     ###########################################################################
-    thresholds = np.linspace(0.05, 0.8, 151)
+    thresholds = [round(x, 3) for x in np.linspace(5, 80, 151)]
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+
+    # RGB
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_precision_recall_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+
+    # DEPTH
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenename='desk',
         scenenum='1',
         objname='coffee_mug',
         objnum='5',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
@@ -478,7 +623,8 @@ if __name__ == '__main__':
         scenenum='1',
         objname='cap',
         objnum='4',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
@@ -488,7 +634,8 @@ if __name__ == '__main__':
         scenenum='2',
         objname='bowl',
         objnum='3',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
@@ -498,7 +645,8 @@ if __name__ == '__main__':
         scenenum='1',
         objname='coffee_mug',
         objnum='1',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
@@ -508,7 +656,8 @@ if __name__ == '__main__':
         scenenum='1',
         objname='soda_can',
         objnum='4',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
@@ -518,7 +667,8 @@ if __name__ == '__main__':
         scenenum='2',
         objname='cereal_box',
         objnum='4',
-        param='definitivo_automatico_RGBD',
+        param='definitivo_DEPTH',
+        param_value='DEFINITIVO',
         path='pruebas_guardadas',
         thresholds=thresholds,
     )
