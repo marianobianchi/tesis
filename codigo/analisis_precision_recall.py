@@ -200,27 +200,48 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
             else:
                 raise Exception('Algo anda mal. Revisar condiciones')
 
-        precs.append(tp / (tp + fp))
-        recs.append(tp / (tp + fn))
+        try:
+            precs.append(tp / (tp + fp))
+        except ZeroDivisionError:
+            precs.append(0)
+        try:
+            recs.append(tp / (tp + fn))
+        except ZeroDivisionError:
+            recs.append(0)
 
     # the figure
+    # ==========  ========
+    # character   color
+    # ==========  ========
+    # 'b'         blue
+    # 'g'         green
+    # 'r'         red
+    # 'c'         cyan
+    # 'm'         magenta
+    # 'y'         yellow
+    # 'k'         black
+    # 'w'         white
+    # ==========  ========
+
     fig = plt.figure()
     ax = fig.add_subplot(111)
 
+    # Paso a array de np
+    # precs = np.array(precs) * 100
+    # recs = np.array(recs) * 100
+    # thresholds = np.array(thresholds)
+
     # the data
     tupled_data = zip(precs, recs, thresholds)
-    tupled_data.sort()
+    if all([p == precs[0] for p in precs]):
+        tupled_data.sort(key=lambda (x, y, z): y)
+    else:
+        tupled_data.sort()
 
     precs = np.array([prec for prec, rec, thresh in tupled_data]) * 100
     recs = np.array([rec for prec, rec, thresh in tupled_data]) * 100
 
-    # print(
-    #     'La cantidad de objetos repetidos es: {n}'.format(
-    #         n=len(zip(precs, recs)) - len(set(zip(precs, recs)))
-    #     )
-    # )
-
-    ax.plot(precs, recs, '-o')
+    ax.plot(precs, recs, 'bo-')
 
     # # axes and labels
     ax.set_xlim(0, 100)
@@ -249,16 +270,20 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
         )
         i += 1
 
-    for prec, rec, thresh in tupled_data:
-        if thresh in [0.3, 0.25, 0.2]:
-            plt.text(
-                prec * 100,
-                rec * 100 + 5 * (-1 * (i % 2)),
-                '{h}'.format(h=thresh),
-                ha='center',
-                va='bottom',
-            )
-            i += 1
+    colors = iter('grcmyk')
+    interest = []
+    for prec, rec, thresh in tupled_data[:-1]:
+        if thresh in [0.5, 0.4, 0.3, 0.25, 0.2, 0.15]:
+            p, = ax.plot([prec * 100], [rec * 100], colors.next() + 'o')
+            p.set_label('Threshold = {t}'.format(t=thresh))
+
+            interest.append((prec, rec, thresh))
+
+    # Ordeno por recall
+    interest.sort(key=lambda (x, y, z): y)
+    interest = [unicode(i) for i in interest]
+
+    ax.legend()
 
     print(
         'Precision vs recall para {scn}, {obj} y el parametro {prm}'.format(
@@ -267,8 +292,10 @@ def analizar_precision_recall_por_parametro(matfile, scenename, scenenum,
             prm=param,
         )
     )
-    print(', '.join(reversed([unicode(t) for p, r, t in tupled_data[-10:]])))
+    print('Mejor (precision, recall, threshold): {x}'.format(x=tupled_data[-1]))
 
+    print(('Los de interes ordenados de mejor a peor recall (precision, '
+           'recall, threshold): {xs}').format(xs=', '.join(interest)))
     plt.show()
 
 
@@ -434,6 +461,7 @@ if __name__ == '__main__':
     ###########################################################################
     # SISTEMA DE SEGUIMIENTO RGB-D
     ###########################################################################
+    thresholds = np.linspace(0.05, 0.8, 151)
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
         scenename='desk',
@@ -442,6 +470,7 @@ if __name__ == '__main__':
         objnum='5',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -451,6 +480,7 @@ if __name__ == '__main__':
         objnum='4',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/desk/desk_2.mat',
@@ -460,6 +490,7 @@ if __name__ == '__main__':
         objnum='3',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/table/table_1.mat',
@@ -469,6 +500,7 @@ if __name__ == '__main__':
         objnum='1',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/table/table_1.mat',
@@ -478,6 +510,7 @@ if __name__ == '__main__':
         objnum='4',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
     analizar_precision_recall_por_parametro(
         matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
@@ -487,4 +520,5 @@ if __name__ == '__main__':
         objnum='4',
         param='definitivo_automatico_RGBD',
         path='pruebas_guardadas',
+        thresholds=thresholds,
     )
