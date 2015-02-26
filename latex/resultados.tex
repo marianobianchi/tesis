@@ -35,7 +35,7 @@ Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegid
 	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
 	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%
 	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
-	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\% con el área reportada por el ground truth
+	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\%\footnote{En la Sección \ref{sec:evaluacion_rgbd} se explica a través de la Figura \ref{fig:accuracy_sistema} por qué se elige este valor.} con el área reportada por el ground truth
 \end{itemize}
 
 Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}.
@@ -122,49 +122,20 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 	\label{frame_frame_rgb}
 \end{figure}
 
-En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}. 
+En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}.
 
 \customsubsubsection{Colores en los gráficos de seguimiento frame a frame}
 Los colores en los puntos del gráfico representan los distintos resultados registrados por cada frame. Si el punto es de color verde, significa que el resultado reportado por nuestro algoritmo coincide con el ground truth en que el objeto no se encuentra en ese frame, es decir, es un verdadero negativo. Si el color es amarillo, significa que el algoritmo reportó haber encontrado al objeto y así también lo hace el ground truth, pero que las áreas reportadas no se solapan entre sí o el porcentaje de solapamiento es menor al 30\%. En este caso es un falso negativo. Pero también diferenciamos otro tipo de falso negativo, y se hace con el color naranja, y se usa cuando nuestro algoritmo no reporta haber encontrado al objeto pero el ground truth indica que el obtejo está en el frame.
 
 Otro color que puede aparecer en este tipo de gráficos es el color rojo. El rojo indica un falso positivo, es decir, cuando el ground truth indica que el objeto no está en el frame y nuestro algoritmo reporta lo contrario. Además, también está el color azul. Este color indica que el resultado reportado por nuestro algoritmo se solapa en un 30\% o más con el área indicada por el ground truth. A diferencia del resto de los colores antes mencionados que aparecen todos sobre el 0 del eje de porcentaje de solapamiento, los puntos azules pueden aparecer a cualquier nivel de este eje. La altura en donde esté el punto azul indica el porcentaje de solapamiento para ese frame.
 
+Finalmente, existe un color más que puede aparecer: el negro. El método descripto en la Sección \ref{alignment_prerejective} utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan tener distintos valores de salida. Para corroborar la robustes de nuestro algoritmo se ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, ese frame tiene un punto de alguno de los colores antes mencionados a la altura que corresponda. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas para ese frame.
 
 
 
-
-
-
-
-Finalmente, existe un color más que puede aparecer: el negro. Como se explicó en la Sección \ref{metodo_rgbd}, algunos de los algoritmos usados tienen un cierto grado de aleatoriedad. 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Los puntos que están en 0 (color verde) indican que el objeto no fue encontrado y coincide con el ground truth, como es el caso de las subfiguras \ref{frame_frame_rgb_taza} y \ref{frame_frame_rgb_gorra}. En la subfigura \ref{frame_frame_rgb_bowl} se ven dos puntos en 0 de color amarillo. Esto indica que el algoritmo reporta haber seguido al objeto pero que el área no se solapa con el área del ground truth. Para las tres subfiguras, todos los frames cuyo área es igual a 100\% se corresponde con las veces que el algoritmo de detección fue corrido, es decir, cuando falló el seguimiento.
-
-Se puede ver en el gráfico \ref{frame_frame_rgb_taza} que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible esxplicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
+\customsubsubsection{Análisis del seguimiento frame a frame para RGB}
+En el Gráfico \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible esxplicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
+Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo área de solapamiento es igual a 100\% corresponden a aquellos frames en donde el tracking pierde el objeto y se utiliza al algoritmo de detección ideal para localizar al objeto nuevamente.
 
 \subsection{Evaluación del tracking en profundidad}
 En esta sección se muestran los resultados de ICP para las imágenes de profundidad (Depth) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
@@ -373,7 +344,7 @@ Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos o
 		\includegraphics[width=\textwidth]{img/obj_nuevos/cereal_box_pcd.png}
 		\caption{Caja de cereales}
 	\end{subfigure}
-	
+
 	\caption{Objetos no utilizados durante las pruebas y selección de parámetros}
 	\label{new_objects}
 \end{figure}
@@ -483,7 +454,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 
 
 
-\subsection{Evaluación del sistema RGB-D}
+\subsection{Evaluación del sistema RGB-D}\label{sec:evaluacion_rgbd}
 Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}.
 
 \begin{table}[h]
@@ -548,6 +519,12 @@ A continuación presentamos los gráficos de seguimiento frame a frame para el s
 \end{figure}
 
 
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/accuracy_sistemaRGBD.png}
+	\caption{Análisis de accuracy según el umbral mínimo de solapamiento}
+	\label{fig:accuracy_sistema}
+\end{figure}
 
 
 

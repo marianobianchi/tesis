@@ -326,19 +326,25 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         ax.set_xticks(np.arange(0, n+4, 5))
         ax.set_ylabel('average % of overlapping')
         ax.set_yticks(np.arange(0, 101, 5))
-        ax.set_title(
-            ('Overlapping entre ground truth y el algoritmo para {scn}, {obj}, '
-             'con {prm} = {v}').format(
-                scn=scenenamenum,
-                obj=objnamenum,
-                prm=param,
-                v=param_val,
-            )
-        )
+        # ax.set_title(
+        #     ('Overlapping entre ground truth y el algoritmo para {scn}, {obj}, '
+        #      'con {prm} = {v}').format(
+        #         scn=scenenamenum,
+        #         obj=objnamenum,
+        #         prm=param,
+        #         v=param_val,
+        #     )
+        # )
 
         ax.legend()
 
-        plt.show()
+        # plt.show()
+        path = '/home/mbianchi/Escritorio/graficos/'
+        name = 'frame_a_frame_{obj}_{param}'.format(
+            obj=objnamenum,
+            param=param,
+        )
+        plt.savefig('{p}{n}'.format(p=path, n=name))
 
 
 def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
@@ -1307,54 +1313,54 @@ if __name__ == '__main__':
     ##########################################################
     # STATIC DETECTION y definitivo DEPTH
     ##########################################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
 
     # dibujar_cuadros_encontrados_y_del_ground_truth(
     #     'table', '1',
@@ -1366,54 +1372,54 @@ if __name__ == '__main__':
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
     ##########################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGB_staticdet',
-    #     path='pruebas_guardadas',
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGB_staticdet',
+        path='pruebas_guardadas',
+    )
 
     # dibujar_cuadros_encontrados_y_del_ground_truth(
     #     'table_small', '2',
@@ -1425,111 +1431,110 @@ if __name__ == '__main__':
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D
     ##################################################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferD',
-    #     path='pruebas_guardadas',
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGBD_preferD',
+        path='pruebas_guardadas',
+    )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente RGB
     ##################################################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='cap',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    #
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
-    #     scenenamenum='desk_2',
-    #     objname='bowl',
-    #     objnum='3',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='coffee_mug',
-    #     objnum='1',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table/table_1.mat',
-    #     scenenamenum='table_1',
-    #     objname='soda_can',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-    #     scenenamenum='table_small_2',
-    #     objname='cereal_box',
-    #     objnum='4',
-    #     param='definitivo_RGBD_preferRGB',
-    #     path='pruebas_guardadas',
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
 
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='cap',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_2.mat',
+        scenenamenum='desk_2',
+        objname='bowl',
+        objnum='3',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='coffee_mug',
+        objnum='1',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table/table_1.mat',
+        scenenamenum='table_1',
+        objname='soda_can',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+        scenenamenum='table_small_2',
+        objname='cereal_box',
+        objnum='4',
+        param='definitivo_RGBD_preferRGB',
+        path='pruebas_guardadas',
+    )
     ##################################################################
     # definitivo sistema RGBD
     ##################################################################

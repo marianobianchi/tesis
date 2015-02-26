@@ -482,6 +482,195 @@ def analizar_accuracy_por_parametro(matfile, scenename, scenenum, objname,
     plt.show()
 
 
+def analizar_accuracy_por_sistema(sistema_data, param, param_value, path,
+                                  thresholds=None):
+    """
+    sistema_data es una lista de diccionarios y cada diccionario tiene
+    definidas las claves matfile, scenename, scenenum, objname, objnum
+    """
+    if thresholds is None:
+        thresholds = [round(x, 3) for x in np.linspace(0, 100, 1001)]
+
+    for d in sistema_data:
+        # Obtengo los valores que necesito. Luego en d voy a guardar los datos
+        # del seguimiento y el analisis de accuracy
+        matfile = d['matfile']
+        scenename = d['scenename']
+        scenenum = d['scenenum']
+        objname = d['objname']
+        objnum = d['objnum']
+
+        ground_truth = StaticDetector(
+            matfile,
+            objname,
+            objnum,
+        )
+
+        parser = ResultsParser(
+            scenename,
+            scenenum,
+            objname,
+            objnum,
+            param,
+            path
+        )
+
+        # Guardo por cada frame el area encontrada, el area del ground truth,
+        # el area de la interseccion, si el algoritmo fue exitoso y si el
+        # ground truth dice haber sido exitoso
+        data_per_frame = []
+
+        for run_num, dict_values in parser.iterar_por_parametro(param_value):
+            # Resultados de mi algoritmo
+            nframe = dict_values['nframe']
+            fue_exitoso = True if dict_values['fue_exitoso'] == 1 else False
+            fila_sup = dict_values['fila_sup']
+            col_izq = dict_values['col_izq']
+            fila_inf = dict_values['fila_inf']
+            col_der = dict_values['col_der']
+
+            # Resultados del ground truth
+            ground_truth.update({'nframe': nframe})
+            gt_fue_exitoso, gt_desc = ground_truth.detect()
+            gt_col_izq = gt_desc['topleft'][1]
+            gt_fila_sup = gt_desc['topleft'][0]
+            gt_col_der = gt_desc['bottomright'][1]
+            gt_fila_inf = gt_desc['bottomright'][0]
+
+            rectangle_found = Rectangle(
+                (fila_sup, col_izq),
+                (fila_inf, col_der)
+            )
+            found_area = rectangle_found.area()
+            ground_truth_rectangle = Rectangle(
+                (gt_fila_sup, gt_col_izq),
+                (gt_fila_inf, gt_col_der)
+            )
+            ground_truth_area = ground_truth_rectangle.area()
+            intersection = rectangle_found.intersection(
+                ground_truth_rectangle
+            )
+            intersection_area = intersection.area()
+
+            data_per_frame.append({
+                'found_area': found_area,
+                'ground_truth_area': ground_truth_area,
+                'intersection_area': intersection_area,
+                'fue_exitoso': fue_exitoso,
+                'gt_fue_exitoso': gt_fue_exitoso,
+            })
+
+        d.update({'data_per_frame': data_per_frame})
+
+        accuracies = []
+
+        for min_overlapped_area in thresholds:
+
+            tp = 0
+            fp = 0
+            fn = 0
+            tn = 0
+
+            for data in data_per_frame:
+
+                se_solaparon_poco = True
+                if data['found_area'] > 0 and data['ground_truth_area'] > 0:
+                    union_area = (
+                        data['found_area'] +
+                        data['ground_truth_area'] -
+                        data['intersection_area']
+                    )
+                    overlap_area = data['intersection_area'] / union_area * 100
+                    se_solaparon_poco = overlap_area < min_overlapped_area
+
+                # Chequeo de falsos positivos y negativos y
+                # verdaderos negativos y positivos
+                estaba_y_no_se_encontro = (
+                    data['gt_fue_exitoso'] and not data['fue_exitoso']
+                )
+
+                no_estaba_y_se_encontro = (
+                    data['ground_truth_area'] == 0 and data['fue_exitoso']
+                )
+
+                no_estaba_y_no_se_encontro = (
+                    not (data['gt_fue_exitoso'] or data['fue_exitoso'])
+                )
+
+                estaba_y_se_encontro = (
+                    data['ground_truth_area'] > 0 and data['fue_exitoso']
+                )
+
+                if (estaba_y_no_se_encontro or
+                        (estaba_y_se_encontro and se_solaparon_poco)):
+                    fn += 1
+                elif no_estaba_y_se_encontro:
+                    fp += 1
+                elif no_estaba_y_no_se_encontro:
+                    tn += 1
+                elif estaba_y_se_encontro and not se_solaparon_poco:
+                    tp += 1
+                else:
+                    raise Exception('Algo anda mal. Revisar condiciones')
+
+            try:
+                tptn = tp + tn
+                fpfn = fp + fn
+                accuracy = tptn / (tptn + fpfn)
+                accuracies.append(accuracy)
+            except ZeroDivisionError:
+                accuracies.append(0)
+
+        d.update({'accuracies': accuracies})
+
+    # the figure
+    # ==========  ========
+    # character   color
+    # ==========  ========
+    # 'b'         blue
+    # 'g'         green
+    # 'r'         red
+    # 'c'         cyan
+    # 'm'         magenta
+    # 'y'         yellow
+    # 'k'         black
+    # 'w'         white
+    # ==========  ========
+
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+
+    thresholds = np.array(thresholds)
+
+    colors = iter('grcmyk' * 4)
+
+    for d in sistema_data:
+        accuracies = np.array(d['accuracies']) * 100
+
+        # plotting
+        p, = ax.plot(thresholds, accuracies, colors.next() + '-')
+        p.set_label('{objname}_{objnum}'.format(
+            objname=d['objname'],
+            objnum=d['objnum'],
+        ))
+
+    # # axes and labels
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 100)
+    ax.set_xlabel('Umbral de solapamiento')
+    ax.set_ylabel('Accuracy')
+    xticks = range(0, 101, 10)
+    yticks = range(0, 101, 10)
+    plt.xticks(xticks)
+    plt.yticks(yticks)
+    ax.set_title('Accuracy por umbral de solapamiento para el sistema RGBD')
+
+    plt.axvline(x=30, ymin=0, ymax=100, ls='--')
+
+    ax.legend()
+    plt.show()
+
+
 if __name__ == '__main__':
     # analizar_precision_recall_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
@@ -644,7 +833,7 @@ if __name__ == '__main__':
     ###########################################################################
     # SISTEMA DE SEGUIMIENTO RGB-D
     ###########################################################################
-    thresholds = [round(x, 3) for x in np.linspace(5, 80, 151)]
+    # thresholds = [round(x, 3) for x in np.linspace(5, 80, 151)]
     # analizar_precision_recall_por_parametro(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenename='desk',
@@ -850,275 +1039,326 @@ if __name__ == '__main__':
     ##############################
     # ANALISIS DE ACCURACY
     ##############################
-    thresholds = None
+    # thresholds = None
+    #
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_automatico_RGBD',
+    #     param_value='UNICO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    #
+    # # RGB
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_RGB_staticdet',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    #
+    # # DEPTH
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_DEPTH',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    #
+    # # STATIC DETECTION, RGBD prefer D
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenename='desk',
+    #     scenenum='1',
+    #     objname='cap',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/desk/desk_2.mat',
+    #     scenename='desk',
+    #     scenenum='2',
+    #     objname='bowl',
+    #     objnum='3',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='coffee_mug',
+    #     objnum='1',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table/table_1.mat',
+    #     scenename='table',
+    #     scenenum='1',
+    #     objname='soda_can',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
+    # analizar_accuracy_por_parametro(
+    #     matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
+    #     scenename='table_small',
+    #     scenenum='2',
+    #     objname='cereal_box',
+    #     objnum='4',
+    #     param='definitivo_RGBD_preferD',
+    #     param_value='DEFINITIVO',
+    #     path='pruebas_guardadas',
+    #     thresholds=thresholds,
+    # )
 
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenename='desk',
-        scenenum='2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenename='table_small',
-        scenenum='2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_automatico_RGBD',
-        param_value='UNICO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-
-    # RGB
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenename='desk',
-        scenenum='2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenename='table_small',
-        scenenum='2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_RGB_staticdet',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-
-    # DEPTH
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenename='desk',
-        scenenum='2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenename='table_small',
-        scenenum='2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_DEPTH',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-
-    # STATIC DETECTION, RGBD prefer D
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenename='desk',
-        scenenum='1',
-        objname='cap',
-        objnum='4',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/desk/desk_2.mat',
-        scenename='desk',
-        scenenum='2',
-        objname='bowl',
-        objnum='3',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='coffee_mug',
-        objnum='1',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table/table_1.mat',
-        scenename='table',
-        scenenum='1',
-        objname='soda_can',
-        objnum='4',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
-    )
-    analizar_accuracy_por_parametro(
-        matfile='videos/rgbd/scenes/table_small/table_small_2.mat',
-        scenename='table_small',
-        scenenum='2',
-        objname='cereal_box',
-        objnum='4',
-        param='definitivo_RGBD_preferD',
-        param_value='DEFINITIVO',
-        path='pruebas_guardadas',
-        thresholds=thresholds,
+    sistema_data = [
+        {
+            'matfile': 'videos/rgbd/scenes/desk/desk_1.mat',
+            'scenename': 'desk',
+            'scenenum': '1',
+            'objname': 'coffee_mug',
+            'objnum': '5',
+        },
+        {
+            'matfile': 'videos/rgbd/scenes/desk/desk_1.mat',
+            'scenename': 'desk',
+            'scenenum': '1',
+            'objname': 'cap',
+            'objnum': '4',
+        },
+        {
+            'matfile': 'videos/rgbd/scenes/desk/desk_2.mat',
+            'scenename': 'desk',
+            'scenenum': '2',
+            'objname': 'bowl',
+            'objnum': '3',
+        },
+        {
+            'matfile': 'videos/rgbd/scenes/table/table_1.mat',
+            'scenename': 'table',
+            'scenenum': '1',
+            'objname': 'coffee_mug',
+            'objnum': '1',
+        },
+        {
+            'matfile': 'videos/rgbd/scenes/table/table_1.mat',
+            'scenename': 'table',
+            'scenenum': '1',
+            'objname': 'soda_can',
+            'objnum': '4',
+        },
+        {
+            'matfile': 'videos/rgbd/scenes/table_small/table_small_2.mat',
+            'scenename': 'table_small',
+            'scenenum': '2',
+            'objname': 'cereal_box',
+            'objnum': '4',
+        },
+    ]
+    analizar_accuracy_por_sistema(
+        sistema_data,
+        'definitivo_automatico_RGBD',
+        'UNICO',
+        'pruebas_guardadas',
     )
