@@ -307,7 +307,7 @@ def analizar_overlapping_por_parametro(matfile, scenenamenum, objname, objnum,
         accuracy = (
             tptn / (tptn + fpfn)
         )
-        print('{a}'.format(a=round(accuracy, 2)).rjust(just))
+        print('{a}'.format(a=round(accuracy * 100, 2)).rjust(just))
 
 
 if __name__ == '__main__':

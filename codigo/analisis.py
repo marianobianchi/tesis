@@ -96,8 +96,9 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
     RESULT_OVERAP = {
         'FP': 'No estaba pero lo encontro',
         'FN': 'Estaba pero no lo encontro',
-        'BF': 'Lo encontro pero no se solapan',
+        'FN2': 'Se solapan poco',
         'VN': 'Ninguno lo encontro',
+        'VP': 'Se solapan mucho',
     }
 
     min_overlap_area = 0.3
@@ -232,11 +233,11 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
                     )
 
                     if estaba_y_se_encontro and not se_solaparon_poco:
-                        frames_explanations_per_run.append('LL')
+                        frames_explanations_per_run.append('VP')
                     # Si ambos reportan el objeto pero no hay interseccion
                     # (es un falso negativo)
                     elif estaba_y_se_encontro and se_solaparon_poco:
-                        frames_explanations_per_run.append('BF')
+                        frames_explanations_per_run.append('FN2')
                     # Si es un falso positivo
                     elif no_estaba_y_se_encontro:
                         frames_explanations_per_run.append('FP')
@@ -260,7 +261,17 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         # Obtengo el promedio de solapamiento por frame
         avg_overlappedareas_per_frame = [np.mean([v for v in l if v > 0] or [0])
                                          for l in overlappedareas_per_frame]
-        explanations_per_frame = [exps[0] if len(set(exps)) == 1 else 'NN'
+
+        def mismos_resultados(explanations):
+            nunca_encontro = all(
+                [exp in ['VN', 'FN', 'FN2'] for exp in explanations]
+            )
+            siempre_encontro = all(
+                [exp in ['FP', 'VP'] for exp in explanations]
+            )
+            return nunca_encontro or siempre_encontro
+
+        explanations_per_frame = [exps[0] if mismos_resultados(exps) else 'NN'
                                   for exps in explanations_per_frame]
 
         paramval_avgsareaperframe.append((param_value, avg_overlappedareas_per_frame))
@@ -277,23 +288,35 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         explanation_per_frame = paramval_explanationperframe[param_val]
 
         fps_x = []
+        fps_y = []
+
         fns_x = []
+        fns_y = []
+
         bfs_x = []
+        bfs_y = []
+
         vns_x = []
+        vns_y = []
+
         nns_x = []
         nns_y = []
 
         for i, exp in enumerate(explanation_per_frame):
             if exp == 'FP':
-                fps_x.append(i+1)
+                fps_x.append(i + 1)
+                fps_y.append(avg_per_frame[i])
             elif exp == 'FN':
-                fns_x.append(i+1)
-            elif exp == 'BF':
-                bfs_x.append(i+1)
+                fns_x.append(i + 1)
+                fns_y.append(avg_per_frame[i])
+            elif exp == 'FN2':
+                bfs_x.append(i + 1)
+                bfs_y.append(avg_per_frame[i])
             elif exp == 'VN':
-                vns_x.append(i+1)
+                vns_x.append(i + 1)
+                vns_y.append(avg_per_frame[i])
             elif exp == 'NN':
-                nns_x.append(i+1)
+                nns_x.append(i + 1)
                 nns_y.append(avg_per_frame[i])
 
         # # plot
@@ -301,19 +324,19 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         line.set_label('overlap per frame')
 
         if fps_x:
-            fpsl, = ax.plot(fps_x, np.zeros(len(fps_x)), 'o', color='red')
+            fpsl, = ax.plot(fps_x, fps_y, 'o', color='red')
             fpsl.set_label(RESULT_OVERAP['FP'])
 
         if fns_x:
-            fnsl, = ax.plot(fns_x, np.zeros(len(fns_x)), 'o', color='orange')
+            fnsl, = ax.plot(fns_x, fns_y, 'o', color='orange')
             fnsl.set_label(RESULT_OVERAP['FN'])
 
         if bfs_x:
-            bfsl, = ax.plot(bfs_x, np.zeros(len(bfs_x)), 'o', color='yellow')
-            bfsl.set_label(RESULT_OVERAP['BF'])
+            bfsl, = ax.plot(bfs_x, bfs_y, 'o', color='yellow')
+            bfsl.set_label(RESULT_OVERAP['FN2'])
 
         if vns_x:
-            vnsl, = ax.plot(vns_x, np.zeros(len(vns_x)), 'o', color='green')
+            vnsl, = ax.plot(vns_x, vns_y, 'o', color='green')
             vnsl.set_label(RESULT_OVERAP['VN'])
 
         if nns_x:
@@ -323,7 +346,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         # # axes and labels
         ax.set_ylim(-1, 100)
         ax.set_xlabel('Frame number')
-        ax.set_xticks(np.arange(0, n+4, 5))
+        ax.set_xticks(np.arange(0, n + 4, 5))
         ax.set_ylabel('average % of overlapping')
         ax.set_yticks(np.arange(0, 101, 5))
         # ax.set_title(
@@ -338,13 +361,13 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
         ax.legend()
 
-        # plt.show()
-        path = '/home/mbianchi/Escritorio/graficos/'
-        name = 'frame_a_frame_{obj}_{param}'.format(
+        name = '{obj}_{param}'.format(
             obj=objnamenum,
             param=param,
         )
-        plt.savefig('{p}{n}'.format(p=path, n=name))
+        print('{p}{n}'.format(p=path, n=name))
+        plt.show()
+        plt.close()
 
 
 def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
@@ -1362,13 +1385,6 @@ if __name__ == '__main__':
         path='pruebas_guardadas',
     )
 
-    # dibujar_cuadros_encontrados_y_del_ground_truth(
-    #     'table', '1',
-    #     'soda_can', '4',
-    #     'definitivo_DEPTH', 'DEFINITIVO',
-    #     show_clouds=True,
-    # )
-
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
     ##########################################
@@ -1420,13 +1436,6 @@ if __name__ == '__main__':
         param='definitivo_RGB_staticdet',
         path='pruebas_guardadas',
     )
-
-    # dibujar_cuadros_encontrados_y_del_ground_truth(
-    #     'table_small', '2',
-    #     'cereal_box', '4',
-    #     'definitivo_DEPTH', 'DEFINITIVO',
-    #     show_clouds=True,
-    # )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D

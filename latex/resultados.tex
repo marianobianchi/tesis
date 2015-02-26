@@ -1,9 +1,9 @@
 \chapter{Resultados}
 \comentarioM{Escribir todo en presente!!!!}
 \section{Experimentación}
-Con el objetivo de elegir los métodos definitivos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para Depth. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+Con el objetivo de elegir los métodos definitivos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para profundidad. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
 
-Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para Depth, utilizamos como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en Depth estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
+Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para profundidad, utilizamos como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en profundidad estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
 
 \subsection{Elección del método de seguimiento RGB}
 Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
@@ -33,9 +33,9 @@ De este análisis surgió que las mejores combinaciones de esquema, canales y bi
 Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
 	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
-	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%
+	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%\footnote{En la Sección \ref{sec:evaluacion_rgbd} se explica a través de la Figura \ref{fig:accuracy_sistema} por qué se elige este valor.}
 	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
-	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\%\footnote{En la Sección \ref{sec:evaluacion_rgbd} se explica a través de la Figura \ref{fig:accuracy_sistema} por qué se elige este valor.} con el área reportada por el ground truth
+	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\% con el área reportada por el ground truth
 \end{itemize}
 
 Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{pruebas_definitivas_rgb_sv}.
@@ -101,19 +101,19 @@ Como podemos ver en la Tabla \ref{pruebas_definitivas_rgb_sv} el tracking se com
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_rgb_taza}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgb_gorra}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_rgb_bowl}
@@ -129,7 +129,7 @@ Los colores en los puntos del gráfico representan los distintos resultados regi
 
 Otro color que puede aparecer en este tipo de gráficos es el color rojo. El rojo indica un falso positivo, es decir, cuando el ground truth indica que el objeto no está en el frame y nuestro algoritmo reporta lo contrario. Además, también está el color azul. Este color indica que el resultado reportado por nuestro algoritmo se solapa en un 30\% o más con el área indicada por el ground truth. A diferencia del resto de los colores antes mencionados que aparecen todos sobre el 0 del eje de porcentaje de solapamiento, los puntos azules pueden aparecer a cualquier nivel de este eje. La altura en donde esté el punto azul indica el porcentaje de solapamiento para ese frame.
 
-Finalmente, existe un color más que puede aparecer: el negro. El método descripto en la Sección \ref{alignment_prerejective} utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan tener distintos valores de salida. Para corroborar la robustes de nuestro algoritmo se ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, ese frame tiene un punto de alguno de los colores antes mencionados a la altura que corresponda. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas para ese frame.
+Finalmente, existe un color más que puede aparecer: el negro. El método descripto en la Sección \ref{alignment_prerejective} utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan diferir en el resultado, una indicando que se encontró una alineación y la otra que no. Para corroborar la robustes de nuestro algoritmo se lo ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, es decir si se encontró o no se encontró el objeto, ese frame tiene un punto de alguno de los colores antes mencionados a la altura que corresponda. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas que tuvieron un resultado positivo para ese frame.
 
 
 
@@ -138,7 +138,7 @@ En el Gráfico \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguim
 Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo área de solapamiento es igual a 100\% corresponden a aquellos frames en donde el tracking pierde el objeto y se utiliza al algoritmo de detección ideal para localizar al objeto nuevamente.
 
 \subsection{Evaluación del tracking en profundidad}
-En esta sección se muestran los resultados de ICP para las imágenes de profundidad (Depth) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
+En esta sección se muestran los resultados de ICP para las imágenes de profundidad (profundidad) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
@@ -153,7 +153,7 @@ En esta sección se muestran los resultados de ICP para las imágenes de profund
     Bowl   & 40.60      & 63.83      & 4.74   & 14.39 \\
     \hline
     \end{tabular}
-\caption{Resultados del tracking Depth utilizando como detección los valores sacados de la base de datos más una etapa de refinamiento de estos datos usando AP e ICP.}
+\caption{Resultados del tracking en profundidad utilizando como detección los valores sacados de la base de datos más una etapa de refinamiento de estos datos usando AP e ICP.}
 \label{tabla_d}
 \end{table}
 
@@ -161,22 +161,22 @@ En la Tabla \ref{tabla_d} se puede ver que el tracking se comporta de mejor mane
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_98_taza_rgb.png}
-		\caption{Seguimiento reportado por el tracking en Depth y proyectado en RGB.}
+		\caption{Seguimiento reportado por el tracking en profundidad y proyectado en RGB.}
 		\label{taza_ocluida_rgb}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_98_taza_pcd.png}
-		\caption{Visualización de la nube de puntos reportada por el tracking en Depth}
+		\caption{Visualización de la nube de puntos reportada por el tracking en profundidad}
 		\label{taza_ocluida_pcd}
 	\end{subfigure}
-	\caption{Muestra de un resultado del seguimiento en Depth. Las áreas se solapan en un 47\%.}
+	\caption{Muestra de un resultado del seguimiento en profundidad. Las áreas se solapan en un 47\%.}
 	\label{taza_ocluida}
 \end{figure}
 
-Un problema que encontramos en nuestra solución es que no hacemos un ajuste del tamaño del área reportada si el objeto está ocluído. En la Figura \ref{taza_ocluida} podemos ver como el algoritmo detecta de manera exitosa a la taza pero que solo reporta el área de la taza que está visible y no ajusta el tamaño al del modelo del objeto que se obtuvo en la etapa de entrenamiento. La subfigura \ref{taza_ocluida_rgb} muestra en color azul el recuadro reportado por nuestro algoritmo de seguimiento en donde se encuentra la taza. El recuadro verde corresponde al área que indica el ground truth como correcta. Se puede observar que el recuadro verde incluye además de la parte visible de la taza una porción importante de la lata que está delante de ella y que si se tiene en cuenta el tamaño de la taza esta área está incluyendo a la parte de la taza que se encuentra ocluida. A pesar de no ser algo que suceda reiteradas veces en las escenas y objetos elegidos para estas pruebas, puede ser un punto de mejora para nuestro algoritmo. \comentarioM{¿Digo algo de Kalman acá?}
+Un problema que encontramos en nuestra solución es que no hacemos un ajuste del tamaño del área reportada si el objeto está ocluído. En la Figura \ref{taza_ocluida} podemos ver como el algoritmo detecta de manera exitosa a la taza pero que solo reporta el área de la taza que está visible y no ajusta el tamaño al del modelo del objeto que se obtuvo en la etapa de entrenamiento. La subfigura \ref{taza_ocluida_rgb} muestra en color azul el recuadro reportado por nuestro algoritmo de seguimiento en donde se encuentra la taza. El recuadro verde corresponde al área que indica el ground truth como correcta. Se puede observar que el recuadro verde incluye además de la parte visible de la taza una porción importante de la lata que está delante de ella y que si se tiene en cuenta el tamaño de la taza esta área está incluyendo a la parte de la taza que se encuentra ocluida. A pesar de no ser algo que suceda reiteradas veces en las escenas y objetos elegidos para estas pruebas, puede ser un punto de mejora para nuestro algoritmo.
 
 Otra decisión que se tomó al implementar nuestro algoritmo fue no utilizar el modelo del objeto para refinar el seguimiento, por ejemplo, para realizar el filtrado de puntos de la escena que corresponden al objeto que se busca. Esto se debe a que dependiendo de la forma del objeto, de su pose en el frame actual y de su pose en el modelo no resulta sencillo decidir si es conveniente utilizar el modelo para hacer este filtrado. En cambio, decidimos utilizar la nube de puntos hallada en el frame anterior como base para filtrar los puntos en el frame actual una vez que se quiera refinar el resultado. Por este motivo es que en ocaciones el algoritmo devuelve como parte del resultado puntos que no corresponden al objeto que se busca.
 
@@ -186,13 +186,13 @@ Haciendo un análisis de los frames anteriores al de la Figura \ref{taza_ocluida
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/taza_filtrado_exitoso_definitivo_depth_frame12.png}
 		\caption{Filtrado exitoso}
 		\label{filtro_en_deteccion_bien}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/taza_filtrado_fallido_depth_simil_thresh_01_frame66.png}
 		\caption{Filtrado fallido}
 		\label{filtro_en_deteccion_mal}
@@ -205,19 +205,17 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_d_taza}
 	\end{subfigure}
-	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_d_gorra}
 	\end{subfigure}
-	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_d_bowl}
@@ -228,9 +226,9 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 
 
 \subsection{Evaluación del tracking en RGB-D}
-Una vez analizados el tracking RGB y Depth por separado decidimos unir ambos métodos y corroborar como se comporta el tracking combinado. Como se explicó en la sección \ref{metodo_rgbd} la combinación se hizo de dos maneras distintas por lo que en el análisis también distinguiremos cada una de las combinaciones por separado.
+Una vez analizados el tracking RGB y profundidad por separado decidimos unir ambos métodos y corroborar como se comporta el tracking combinado. Como se explicó en la sección \ref{metodo_rgbd} la combinación se hizo de dos maneras distintas por lo que en el análisis también distinguiremos cada una de las combinaciones por separado.
 
-\customsubsubsection{Tracking RGB-D con preferencia en Depth}
+\customsubsubsection{Tracking RGB-D con preferencia en profundidad}
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
@@ -244,27 +242,27 @@ Una vez analizados el tracking RGB y Depth por separado decidimos unir ambos mé
     Bowl   & 42.88      & 68.54     & 1.75     &  11.4 \\
     \hline
     \end{tabular}
-\caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking en Depth.}
+\caption{Resultados del tracking RGB-D utilizando la detección ideal, priorizando el tracking en profundidad.}
 \label{tabla_rgbd_d}
 \end{table}
 
-La primer combinación que analizaremos es la que le da prioridad al tracking en Depth y que utiliza el tracking RGB solo para intentar mejorar el resultado obtenido con Depth. En la Tabla \ref{tabla_rgbd_d} vemos como se modificaron los promedios de solapamiento con respecto a la Tabla \ref{tabla_d}. En el único caso que mejoró el promedio de solapamiento es el de la taza en donde mejoró poco menos de un 1\%. En los casos de la gorra y el bowl empeoraron cerca de un 8\% y un 4\% respectivamente. Sin embargo en los tres casos se mejoró el porcentaje de seguimiento, haciendo más eficiente a este método combinado. Además, en esta tabla también puede verse que en el caso del bowl disminuyó la cantidad de falsos positivos y falsos negativos en comparación con el tracking exclusivamente para Depth. En la Figura \ref{frame_frame_rgbd_d} se puede refinar el análisis de falsos positivos y falsos negativos hecho en la Tabla \ref{tabla_rgbd_d}.
+La primer combinación que analizaremos es la que le da prioridad al tracking en profundidad y que utiliza el tracking RGB solo para intentar mejorar el resultado obtenido con profundidad. En la Tabla \ref{tabla_rgbd_d} vemos como se modificaron los promedios de solapamiento con respecto a la Tabla \ref{tabla_d}. En el único caso que mejoró el promedio de solapamiento es el de la taza en donde mejoró poco menos de un 1\%. En los casos de la gorra y el bowl empeoraron cerca de un 8\% y un 4\% respectivamente. Sin embargo en los tres casos se mejoró el porcentaje de seguimiento, haciendo más eficiente a este método combinado. Además, en esta tabla también puede verse que en el caso del bowl disminuyó la cantidad de falsos positivos y falsos negativos en comparación con el tracking exclusivamente para profundidad. En la Figura \ref{frame_frame_rgbd_d} se puede refinar el análisis de falsos positivos y falsos negativos hecho en la Tabla \ref{tabla_rgbd_d}.
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_rgbd_d_taza}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_rgbd_d_gorra}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/rgbd-d-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_rgbd_d_bowl}
@@ -274,7 +272,7 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 \end{figure}
 
 
-Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y Depth es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera}. Para esta comparación, como se explicó en la sección \ref{tracking_rgb}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en Depth no solo aparece parte del objeto o, en el mejor de los casos, la totalidad del objeto sino que además se incluye parte del backround de la imagen. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioP{Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
+Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y en profundidad únicamente es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera} Para esta comparación, como se explicó en la sección \ref{tracking_rgb} \comentarioM{Ver si lo expliqué}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en profundidad no solo aparece parte o la totalidad del objeto sino que además se incluye parte del fondo del recuadro en donde se encuentra el objeto. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioP{Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
 
 \begin{figure}
 	%\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
@@ -282,10 +280,10 @@ Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre 
 	\label{mejora_rgb_en_tracking_rgbd}
 \end{figure}
 
-Una mejora para este algoritmo sería utilizar las máscaras tomadas durante el entrenamiento para calcular los histogramas de los recuadros del frame anterior y del actual. De esta manera, si la pose del objeto en estos recuadros coincide con alguna de las poses de los templates la comparación va a ser más robusta y permitiría evitar este tipo de inconvenientes en la mejora RGB.
+Una variante para este algoritmo consiste en utilizar las máscaras tomadas durante el entrenamiento para calcular los histogramas de los recuadros del frame anterior y del actual. De esta manera, si la pose del objeto en estos recuadros coincide con alguna de las poses de los templates la comparación va a ser más robusta y permitiría evitar este tipo de inconvenientes en la mejora RGB.
 
 \customsubsubsection{Tracking RGB-D con preferencia en RGB}
-La segunda combinación para el tracking RGB-D es la que le da prioridad al tracking RGB e intenta mejorar el resultado utilizando el tracking Depth. Esta combinación se explica en detalle en la sección \ref{tracking_rgbd}.
+La segunda combinación para el tracking RGB-D es la que le da prioridad al tracking RGB e intenta mejorar el resultado utilizando el tracking en profundidad. Esta combinación se explica en detalle en la sección \ref{tracking_rgbd}.
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
@@ -305,9 +303,11 @@ La segunda combinación para el tracking RGB-D es la que le da prioridad al trac
 \end{table}
 
 
-Como se puede observar en la Tabla \ref{tabla_rgbd_rgb} y si se comparan los resultados con los de la Tabla \ref{tabla_rgb} podemos observar una notoria mejoría en la escena de la gorra. Para este objeto se mejoró casi un 13\% el promedio de solapamiento de áreas con un 2\% menos de desvío estándar casi sin variar el porcentaje de veces que se utilizó el tracking en toda la escena. Sin embargo el análisis para los otros dos objetos no varió mucho con respecto al seguimiento RGB.
+Como se puede observar en la Tabla \ref{tabla_rgbd_rgb} y si se comparan los resultados con los de la Tabla \ref{tabla_rgb} podemos observar una notoria mejoría en la escena de la gorra. Para este objeto se mejoró casi un 13\% el promedio de solapamiento de áreas casi sin variar el porcentaje de veces que se utilizó el tracking en toda la escena. Sin embargo el análisis para los otros dos objetos no varió mucho con respecto al seguimiento RGB.
 
-Este resultado parece reafirmar la hipótesis hecha en la primer combinación RGB-D. En ese caso lo que vimos fue una baja importante en el porcentaje de solapamiento en comparación con el tracking en Depth para el caso de la gorra. Aquí parece suceder al revés: El algoritmo de seguimiento en RGB reporta un área pequeña dentro de la superficie de la gorra que se ve en la imagen RGB y a la hora de correr la mejora en Depth, esta trata de alinear la nube de puntos del frame anterior en la nube que proviene de tomar el resultado de RGB y proyectarlo en la escena en Depth. Como esta alineación es exitosa, el área reportada por el tracking en Depth proyectada en RGB es más grande que la reportada por el tracking RGB y por lo tanto se asemeja más a la indicada por el ground truth que contiene en el recuadro a la superficie de la gorra.
+\comentarioM{Acá poner unas imágenes del seguimiento. Poner imagen de la zona de busqueda, imagen de lo encontrado segun profundidad e imagen de lo que reportó RGB como mejor.}
+
+Este resultado parece reafirmar la hipótesis hecha en la primer combinación RGB-D. En ese caso lo que vimos fue una baja importante en el porcentaje de solapamiento en comparación con el tracking en profundidad para el caso de la gorra. Aquí parece suceder al revés: El algoritmo de seguimiento en RGB reporta un área pequeña dentro de la superficie de la gorra que se ve en la imagen RGB y a la hora de correr la mejora en profundidad, esta trata de alinear la nube de puntos del frame anterior en la nube que proviene de tomar el resultado de RGB y proyectarlo en la escena en profundidad. Como esta alineación es exitosa, el área reportada por el tracking en profundidad proyectada en RGB es más grande que la reportada por el tracking RGB y por lo tanto se asemeja más a la indicada por el ground truth que contiene en el recuadro a la superficie de la gorra.
 
 
 
@@ -351,9 +351,9 @@ Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos o
 
 Los objetos elegidos, que pueden verse en la Figura \ref{new_objects}, tienen distintas características y fueron elegidos bajo las siguientes hipótesis:
 \begin{enumerate}
-	\item Caja de cereales: al ser mayoritariamente plana debería perjudicar al tracking en Depth y por su textura bien definida beneficiar al tracking RGB
+	\item Caja de cereales: al ser mayoritariamente plana debería perjudicar al tracking en profundidad y por su textura bien definida beneficiar al tracking RGB
 	\item Lata de gaseosa: posee una textura bien definida pero el fondo de la imagen es oscuro al igual que la lata por lo que debería perjudicar al tracking RGB
-	\item Taza 2: es una taza diferente a la analizada antes. La forma debería beneficiar al tracking en Depth y sus colores a RGB.
+	\item Taza 2: es una taza diferente a la analizada antes. La forma debería beneficiar al tracking en profundidad y sus colores a RGB.
 \end{enumerate}
 
 Las escenas anotadas en donde se utilizaron estos objetos para correr los algoritmos y evaluar su comportamiento son distintas a las usadas con los objetos anteriores. En este caso se usaron dos: una en donde predomina una mesa grande rectangular sobre una esquina de una habitación donde un lado está sobre una pared y el otro debajo de una ventana. En esta se encuentran entre otros objetos la lata y la taza 2. Se puede ver en la Figura \ref{escena_rgbd_base}. La otra también es sobre una mesa, pero esta vez es una mesa circular y pequeña en el centro de una habitación pegada sobre una columna. En esta escena es donde aparece la caja de cereales.
@@ -381,7 +381,7 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-nuevo-caja.png}
+	\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-caja.png}
 	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en RGB}
 	\label{frame_frame_rgb_nuevo}
 \end{figure}
@@ -401,22 +401,22 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
     Caja    & 44.94      & 30.62     & 0        & 11.97 \\
     \hline
     \end{tabular}
-\caption{Resultados del tracking Depth utilizando la detección ideal para objetos nuevos.}
+\caption{Resultados del tracking en profundidad utilizando la detección ideal para objetos nuevos.}
 \label{tabla_d_nuevos}
 \end{table}
 
-En la Tabla \ref{tabla_d_nuevos} están los resultados del análisis del tracking en Depth para estos nuevos objetos. Para el ejemplo de la taza nueva el algoritmo se comporta de manera similar a la que lo hizo con la taza de las pruebas de selección de parámetros. En el caso de la lata los resultados fueron muy malos. El problema se debe a que en la primera detección indicada por el ground truth la taza apenas se aparecía en la nube de puntos de la escena. Esto hizo que la alineación del modelo fallara y que la nube de puntos resultante de esa detección sea casi por completo el plano de la mesa. Por este motivo el algoritmo alinea siempre ya que la mesa nunca sale del cuadro de la cámara.
+En la Tabla \ref{tabla_d_nuevos} están los resultados del análisis del tracking en profundidad para estos nuevos objetos. Para el ejemplo de la taza nueva el algoritmo se comporta de manera similar a la que lo hizo con la taza de las pruebas de selección de parámetros. En el caso de la lata los resultados fueron muy malos. El problema se debe a que en la primera detección indicada por el ground truth la taza apenas se aparecía en la nube de puntos de la escena. Esto hizo que la alineación del modelo fallara y que la nube de puntos resultante de esa detección sea casi por completo el plano de la mesa. Por este motivo el algoritmo alinea siempre ya que la mesa nunca sale del cuadro de la cámara.
 Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un bajo porcentaje de veces que siguió al objeto. Si se observa la Figura \ref{frame_frame_d_nuevo}, debemos separar el análisis en tres partes. Por un lado, desde el inicio de la escena hasta el frame 136 el algoritmo funciona correctamente con un porcentaje de solapamiento promedio cercano al 45\% y una alta tasa de seguimiento. Luego, entre el frame 136 y el frame 185 sucede lo mismo que con el tracking RGB: el cambio de pose de la caja hace que el seguimiento falle y siempre se utilice la detección. Por último, entre el frame 185 y el fin de la escena el algoritmo vuelve a tener un buen porcentaje de solapamiento promedio y una tasa de seguimiento aceptable.
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/frame_a_frame/depth-nuevo-caja.png}
-	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en Depth}
+	\includegraphics[width=\textwidth]{img/frame_a_frame/depth-caja.png}
+	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en profundidad}
 	\label{frame_frame_d_nuevo}
 \end{figure}
 
 
-Finalmente analizamos los resultados de los algoritmos de tracking que combinan RGB con Depth. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza. \comentarioM{Después comento mas cosas.}\comentarioP{Falta decir que es mejor y cuando.}
+Finalmente analizamos los resultados de los algoritmos de tracking que combinan RGB con profundidad. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza. \comentarioM{Después comento mas cosas.}\comentarioP{Falta decir que es mejor y cuando.}
 
 \begin{table}[h]
     \begin{tabular}{|c|c|c|c|c|c|}
@@ -431,7 +431,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
     Caja    & 35.03      & 23.29      & 0       & 16.67 \\
     \hline
     \end{tabular}
-\caption{Resultados del tracking RGB-D con preferencia en Depth para objetos nuevos.}
+\caption{Resultados del tracking RGB-D con preferencia en profundidad para objetos nuevos.}
 \label{tabla_rgbd_d_nuevos}
 \end{table}
 
@@ -463,17 +463,17 @@ Para finalizar con la evaluación de los métodos, presentamos en esta sección 
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
 	Objeto & & & & & Accuracy\\
 	\hline
-    Taza    & 50.44      & 76.67     &    0           & 16.67    & 0.83 \\
+    Taza    & 50.44      & 76.67     &    0           & 16.67    & 83.33 \\
     \hline
-    Gorra   & 50.05      & 68.09     &    0           &  10.2    & 0.9 \\
+    Gorra   & 50.05      & 68.09     &    0           &  10.2    & 89.8 \\
     \hline
-    Bowl    & 28.18      & 45.67     &    0           &  28.6    & 0.71 \\
+    Bowl    & 28.18      & 45.67     &    0           &  28.6    & 71.4 \\
     \hline
-    Taza 2  & 45.54      & 77.78     &    0           &  6.93    & 0.93 \\
+    Taza 2  & 45.54      & 77.78     &    0           &  6.93    & 93.07 \\
     \hline
-    Lata    & 12.72      & 25.85     &   20           & 40.53    & 0.39 \\
+    Lata    & 12.72      & 25.85     &   20           & 40.53    & 39.47 \\
     \hline
-    Caja    &  6.17      &    10     &    0           & 73.08    & 0.27 \\
+    Caja    &  6.17      &    10     &    0           & 73.08    & 26.92 \\
     \hline
     \end{tabular}
 \caption{Resultados del sistema de seguimiento RGB-D}
@@ -485,7 +485,7 @@ En la Tabla \ref{tabla_sistema_rgbd} se puede ver un análisis similar al realiz
 \frac{\#true\_positives + \#true\_negatives}{\#true\_positives + \#true\_negatives + \#false\_positives + \#false\_negatives}
 \end{equation}
 
-Como podemos ver, en las corridas de las dos tazas y la gorra el accuracy es alto, entre 0.83 y 0.93. Esto significa que en el 83\% o 93\% de los frames el algoritmo reportó correctamente la ubicación del objeto. Además, en estos tres ejemplos el promedio de porcentaje de solapamiento está por encima del 45\% y el porcentaje de seguimiento por encima del 71\%.
+Como podemos ver, en las corridas de las dos tazas y la gorra el accuracy es alto, entre 83\% y 93\%. Esto significa que en el 83\% o 93\% de los frames el algoritmo reportó correctamente la presencia y ubicación del objeto. Además, en estos tres ejemplos el promedio de porcentaje de solapamiento está por encima del 45\% y el porcentaje de seguimiento por encima del 71\%.
 
 Si comparamos los resultados del sistema con los resultados de cada método de seguimiento por separado usando la detección ideal vemos como nuestro sistema responde muy bien y en muchos casos superando a los otros métodos.
 
@@ -497,19 +497,19 @@ A continuación presentamos los gráficos de seguimiento frame a frame para el s
 
 \begin{figure}
 	\centering
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-taza.png}
 		\caption{Seguimiento frame a frame para la taza}
 		\label{frame_frame_sistema-rgb-d_taza}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-gorra.png}
 		\caption{Seguimiento frame a frame para la gorra}
 		\label{frame_frame_sistema-rgb-d_gorra}
 	\end{subfigure}
 	\quad
-	\begin{subfigure}[b]{\textwidth}
+	\begin{subfigure}[b]{0.9\textwidth}
 		\includegraphics[width=\textwidth]{img/frame_a_frame/sistema-rgbd-bowl.png}
 		\caption{Seguimiento frame a frame para el bowl}
 		\label{frame_frame_sistema-rgb-d_bowl}
@@ -517,6 +517,12 @@ A continuación presentamos los gráficos de seguimiento frame a frame para el s
 	\caption{Seguimiento frame a frame del sistema RGB-D}
 	\label{frame_frame_d}
 \end{figure}
+
+Correspondiendose estos gráficos con los resultados presentados en la Tabla \ref{tabla_sistema_rgbd}, vemos como el sistema se comporta bien para las corridas de la taza y la gorra en los subgráficos \ref{frame_frame_sistema-rgb-d_taza} y \ref{frame_frame_sistema-rgb-d_gorra}. En ambos subgráficos se observan pocos puntos de color negro lo que significa que el algoritmo es robusto.
+
+En el Subgráfico \ref{frame_frame_sistema-rgb-d_bowl} se distinguen tres etapas bien diferenciadas. Desde el inicio de la escena hasta el frame 110 el algoritmo se presenta muy robusto, comenzando con un buen porcentaje de solapamiento y decayendo a medida que se suceden los frames. Luego, entre los frames 110 y 157 
+
+final de la escena este comportamiento se revierte,
 
 
 \begin{figure}
