@@ -41,6 +41,7 @@ Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegid
 Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{tab:tabla_rgb}.
 
 \begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
 	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -58,6 +59,7 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \end{table}
 
 \begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
 	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -75,6 +77,7 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 \end{table}
 
 \begin{table}[h]
+	\centering
 	\begin{tabular}{|c|c|c|c|c|c|}
 	    \hline
 	    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -132,7 +135,6 @@ Otro color que puede aparecer en este tipo de gráficos es el color rojo. El roj
 Finalmente, existe un color más que puede aparecer: el negro. El método descripto en la Sección \ref{alignment_prerejective} utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan diferir en el resultado, una indicando que se encontró una alineación y la otra que no. Para corroborar la robustes de nuestro algoritmo se lo ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, es decir si se encontró o no se encontró el objeto, ese frame tiene un punto de alguno de los colores antes mencionados a la altura que corresponda. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas que tuvieron un resultado positivo para ese frame.
 
 
-
 \customsubsubsection{Análisis del seguimiento frame a frame para RGB}
 En el Gráfico \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible explicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
 Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo área de solapamiento es igual a 100\% corresponden a aquellos frames en donde el tracking pierde el objeto y se utiliza al algoritmo de detección ideal para localizar al objeto nuevamente.
@@ -141,6 +143,7 @@ Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo 
 En esta sección se muestran los resultados de ICP para las imágenes de profundidad (profundidad) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -230,6 +233,7 @@ Una vez analizados el tracking RGB y profundidad por separado decidimos unir amb
 
 \customsubsubsection{Tracking RGB-D con preferencia en profundidad}
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -271,8 +275,9 @@ La primer combinación que analizaremos es la que le da prioridad al tracking en
 	\label{frame_frame_rgbd_d}
 \end{figure}
 
-
+\comentarioM{Explicar a Pachi la idea de lo que viene (hasta el comentario que dice: HASTA ACA) y ver si vale la pena hacer lo de mostrar el seguimiento y la busqueda paso a paso.... Sino ora posible explicación es que la comparación por histogramas no tiene en cuenta el tamaño de la imagen ya que está normalizada y se ve que el fondo de la gorra en muchos casos tiene un color que empeora la comparación de histogramas, haciendo que la mejor comparación sea un recuadro pequeño por dentro de los márgenes de la gorra}
 Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y en profundidad únicamente es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. \comentarioM{Ver frames 42, 57 de la primer corrida y frames 57, 58, 60 de la tercera} Para esta comparación, como se explicó en la sección \ref{tracking_rgb} \comentarioM{Ver si lo expliqué}, se toma solo uno de los templates del objeto tomados en la etapa de entrenamiento junto a su correspondiente máscara. Para este template se calcula el histograma utilizando su máscara. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en profundidad no solo aparece parte o la totalidad del objeto sino que además se incluye parte del fondo del recuadro en donde se encuentra el objeto. En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB. \comentarioP{Tratar de explicar mejor ya que Pachi me comentó "¿Cómo?" en este párrafo}
+\comentarioM{HASTA ACA}
 
 \begin{figure}
 	%\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
@@ -286,6 +291,7 @@ Una variante para este algoritmo consiste en utilizar las máscaras tomadas dura
 La segunda combinación para el tracking RGB-D es la que le da prioridad al tracking RGB e intenta mejorar el resultado utilizando el tracking en profundidad. Esta combinación se explica en detalle en la sección \ref{tracking_rgbd}.
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -303,9 +309,9 @@ La segunda combinación para el tracking RGB-D es la que le da prioridad al trac
 \end{table}
 
 
-Como se puede observar en la Tabla \ref{tabla_rgbd_rgb} y si se comparan los resultados con los de la Tabla \ref{tabla_rgb} podemos observar una notoria mejoría en la escena de la gorra. Para este objeto se mejoró casi un 13\% el promedio de solapamiento de áreas casi sin variar el porcentaje de veces que se utilizó el tracking en toda la escena. Sin embargo el análisis para los otros dos objetos no varió mucho con respecto al seguimiento RGB.
+Como se puede observar en la Tabla \ref{tabla_rgbd_rgb} y si se comparan los resultados con los de la Tabla \ref{tab:tabla_rgb} podemos observar una notoria mejoría en la escena de la gorra. Para este objeto se mejoró casi un 13\% el promedio de solapamiento de áreas casi sin variar el porcentaje de veces que se utilizó el tracking en toda la escena. Sin embargo el análisis para los otros dos objetos no varió mucho con respecto al seguimiento RGB.
 
-\comentarioM{Acá poner unas imágenes del seguimiento. Poner imagen de la zona de busqueda, imagen de lo encontrado segun profundidad e imagen de lo que reportó RGB como mejor.}
+\comentarioM{Explicar mejor el párrafo que viene. Es similar a la explicación para RGB-D D}
 
 Este resultado parece reafirmar la hipótesis hecha en la primer combinación RGB-D. En ese caso lo que vimos fue una baja importante en el porcentaje de solapamiento en comparación con el tracking en profundidad para el caso de la gorra. Aquí parece suceder al revés: El algoritmo de seguimiento en RGB reporta un área pequeña dentro de la superficie de la gorra que se ve en la imagen RGB y a la hora de correr la mejora en profundidad, esta trata de alinear la nube de puntos del frame anterior en la nube que proviene de tomar el resultado de RGB y proyectarlo en la escena en profundidad. Como esta alineación es exitosa, el área reportada por el tracking en profundidad proyectada en RGB es más grande que la reportada por el tracking RGB y por lo tanto se asemeja más a la indicada por el ground truth que contiene en el recuadro a la superficie de la gorra.
 
@@ -352,7 +358,7 @@ Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos o
 Los objetos elegidos, que pueden verse en la Figura \ref{new_objects}, tienen distintas características y fueron elegidos bajo las siguientes hipótesis:
 \begin{enumerate}
 	\item Caja de cereales: al ser mayoritariamente plana debería perjudicar al tracking en profundidad y por su textura bien definida beneficiar al tracking RGB
-	\item Lata de gaseosa: posee una textura bien definida pero el fondo de la imagen es oscuro al igual que la lata por lo que debería perjudicar al tracking RGB
+	\item Lata de gaseosa: posee una textura bien definida pero el fondo de la imagen es oscuro al igual que la lata por lo que debería perjudicar al tracking RGB. Tiene una nube de puntos bastante plana. Al parecer no tiene una superficie que beneficie al sensor RGB-D. Esto debería perjudicar al seguimiendo en profundidad.
 	\item Taza 2: es una taza diferente a la analizada antes. La forma debería beneficiar al tracking en profundidad y sus colores a RGB.
 \end{enumerate}
 
@@ -360,6 +366,7 @@ Las escenas anotadas en donde se utilizaron estos objetos para correr los algori
 
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -389,6 +396,7 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -419,6 +427,7 @@ Finalmente en el caso de la caja de cereales vemos que el algoritmo tiene un baj
 Finalmente analizamos los resultados de los algoritmos de tracking que combinan RGB con profundidad. Estos pueden verse en las tablas \ref{tabla_rgbd_d_nuevos} y \ref{tabla_rgbd_rgb_nuevos}. En ambos casos los resultados son casi identicos a cada uno de los algoritmos por separado. Sólo se observan muy leves mejoras en la escena de la taza.
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -436,6 +445,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \end{table}
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
     & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
@@ -453,21 +463,6 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 \end{table}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 \customsubsubsection{Análisis general de los métodos}
 % RGB vs profundidad: gana profundidad salvo en la gorra que gana rgb. decir porque es mejor profundidad analizando problemas con los colores y la iluminacion
 %
@@ -481,37 +476,23 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 
 De todos los análisis realizados hasta este momento podemos decir que cada uno de los algoritmos tiene sus ventajas y desventajas. Si comparamos los métodos de seguimiento de profundidad y de RGB por separado vemos una notoria diferencia en favor del seguimiento en profundidad. De manera similar, la combinación de los métodos de seguimiento teniendo como método principal a RGB se comporta mejor que el método RGB solo. Esto se ve notoriamente en el caso de la taza en donde casi se duplican los porcentajes de seguimiento y de solapamiento a la vez que disminuye del 30\% al 8\% los falsos negativos. Estas comparaciones muestran que en los casos analizados el seguimiento en profundidad es mucho más robusto y preciso que en RGB para los algoritmos implementados.
 
-Realizando esta comparación entre el seguimiento en profundidad solo y el seguimiento combinado entre RGB y profundidad con este último como principal, no se notan diferencias sustanciales en los resultados. Por un lado en el caso de la gorra hay una disminución notoria en el porcentaje de solapamiento para la combinación de los métodos. Sin embargo el seguimiento combinado tiene en general un porcentaje de falsos positivos más bajo
+Realizando esta comparación entre el seguimiento en profundidad solo y el seguimiento combinado entre RGB y profundidad con este último como principal, no se notan diferencias sustanciales en los resultados. Por un lado en el caso de la gorra hay una disminución notoria en el porcentaje de solapamiento en el caso de los métodos combinados. Sin embargo el seguimiento combinado tiene en general un porcentaje de falsos positivos más bajo.
 
+Finalmente, si comparamos los dos métodos de seguimiento combinados, el método que tiene como principal seguimiento al seguimiento en profundidad supera al que tiene a RGB como principal. Esto se nota por un lado con la escena de la taza, en donde el porcentaje de solapamiento es de un 65\% contra el 50\% del que tiene RGB como principal incluso superándolo en porcentaje de veces seguido. Algo más notorio es en el caso del bowl en donde supera ampliamente en porcentaje de seguimiento y de solapamiento. El análisis de falsos positivos y falsos negativos también es muy favorable para el seguimiento combinado priorizando el método de profundidad.
 
+Todas estas comparaciones se mantienen cuando hacemos el análisis de los resultados para los objetos que no se utilizaron durante la selección de parámetros, salvo en el caso de la comparación entre seguimiento en profundidad solo y el seguimiento combinado con el de profundidad como principal. Este último parece verse afectado por las correcciones hechas con el seguimiento RGB ya que, salvo en la escena de la lata, es superado por el seguimiento en profundidad notoriamente.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Con estos resultados podemos decir que el método de seguimiento en profundidad es en general mejor que el seguimiento en RGB, considerando los métodos elegidos en cada caso y para los objetos que se utilizaron durante los experimentos. En cuanto a la combinación de métodos creemos que es mejor utilizar aquella que prioriza el seguimiento en profundidad y que esta supera al seguimiento en profundidad por sí solo. Sin embargo resulta clave poder combinar los métodos de manera de minimizar las ocasiones en que el intento de corrección del resultado con el método secundario, en este caso RGB, empeoren el resultado final. Si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado unicamente en profundidad.
 
 
 \subsection{Evaluación del sistema RGB-D}\label{sec:evaluacion_rgbd}
 Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}.
 
 \begin{table}[h]
+	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos} &\\
 	Objeto & & & & & Accuracy\\
 	\hline
     Taza    & 50.44      & 76.67     &    0           & 16.67    & 83.33 \\
@@ -583,11 +564,3 @@ A modo de saber que tan bueno es la elección de umbral de solapamiento mínimo 
 \end{figure}
 
 Para las escenas de las tazas y la gorra vemos que el accuracy se mantiene por encima del 85\% con un umbral de hasta 45\%. Para las escenas del bowl y la lata, un umbral del 30\% los mantiene por encima del 70\% y 40\% del accuracy respectivamente. El accuracy en la escena de la caja de cereales varía entre un 30\% y un 20\%. El máximo umbral que permite mantener un accuracy del 30\% es del 20\%. Con esto podemos determinar que el umbral elegido es bueno ya que sin permitir muy malas detecciones por poco solapamiento mantiene a la mayoría de los ejemplos con un accuracy por encima del 70\% y 80\%.
-
-
-
-
-
-\comentarioP{Falta decir que es mejor y cuando}
-
-\section{Discusión}
