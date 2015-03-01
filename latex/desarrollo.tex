@@ -54,11 +54,14 @@ Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detect
 
 Tomando como base estas etapas, proponemos distintos métodos para cada una de ellas tanto para imágenes sólo RGB, como para \textit{depth} (profundidad) y la combinación RGB-D. La primera etapa del sistema puede ser prescindible si contamos con el modelo RGB-D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos con ground truth descripta en la sección \ref{base_rgbd}.
 
+
+
+
 \section{Método propuesto RGB}\label{metodo_rgb}
 En esta sección explicaremos como se implementó el sistema de seguimiento para secuencias de imágenes RGB basándonos en las etapas explicadas previamente.
 
 \subsection{Entrenamiento}
-La etapa de entrenamiento en este método consta de tomar de la base de datos cuatro templates del objeto que se desea seguir con sus respectivas máscaras. Cada uno de los templates corresponde a una pose distinta. Primero se elige de manera arbitraria una de las varias escenas por objeto que tiene la base de datos. Una vez elegida la escena se toman cuatro templates de manera que se cubran las distintas caras del objeto. Si se toma la primer imagen de la escena como la imagen con rotación 0 el resto de las imagenes se eligieron de manera tal que cada una difiera de la anterior en 90 grados. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera para un objeto de la base de datos. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
+La etapa de entrenamiento en este método consta de tomar varios templates del objeto que se desea seguir, donde cada uno de los templates corresponde a una pose distinta. Estos templates pueden tomarse de la misma secuencia de imágenes en donde se va a realizar el seguimiento o de otra escena. Para que las siguientes etapas funcionen de la mejor manera posible es deseable que haya varios templates cubriendo la mayor cantidad de vistas del objeto posible. Por ejemplo, es deseable cubrir las distintas caras de un objeto y desde distintas alturas. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera de una gorra. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
 
 \begin{figure}
 	\centering
@@ -81,7 +84,7 @@ La etapa de entrenamiento en este método consta de tomar de la base de datos cu
 		\includegraphics[width=\textwidth]{img/templates/270_crop.png}
 		\caption{Rotacion $270^{\circ}$}
 	\end{subfigure}
-	\caption{Templates de una gorra tomados de la base de datos}
+	\caption{Templates de una gorra}
 	\label{templates_objeto}
 \end{figure}
 
@@ -103,7 +106,7 @@ La técnica consiste en ir moviendo el template sobre la imagen de búsqueda pix
 Una vez recorrida la imagen se busca cual de todas las comparaciones es mejor y se obtiene el pixel donde comienza la región, que junto con el tamaño del template permiten obtener el recuadro de la imagen de búsqueda que más se parece al template.
 
 Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación pixel por pixel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente fórmula: Sea I la imágen de búsqueda y T el template, la diferencia cuadrática se calcula así:
-\begin{equation}
+\begin{equation}\label{eq:diferencia_cuadratica}
 R(x, y) = \displaystyle\sum\limits_{x', y'} (T(x', y') - I(x + x', y + y'))^2
 \end{equation}
 
@@ -112,11 +115,11 @@ Teniendo en cuenta el método de comparación elegido, una manera de utilizar es
 
 \customsubsubsection{Esquema de detección}
 
-Dada la información provista por la base de datos, aprovechada durante el entrenamiento, resulta natural utilizar como método de detección el algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. En este caso como tenemos la máscara disponible este parámetro lo usamos. El último parámetro le indica al algoritmo de template matching que comparación usar para matchear el template a la imagen. Nosotros decidimos utilizar la diferencia cuadrática pixel por pixel normalizada, descripta por la siguiente fórmula:
+La información recolectada durante el entrenamiento se toma con la intención de poder aplicar como método de detección al algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. El último parámetro le indica al algoritmo de template matching que comparación usar para emparejar el template a la imagen. En este trabajo se decide utilizar diferencia cuadrática pixel por pixel normalizada, presente en la fórmula \ref{eq:diferencia_cuadratica}
 
-Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates y máscaras del objeto a buscar puede no ser la misma escena que la que se utiliza para verificar el comportamiento del sistema. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena en donde se aplica el sistema de seguimiento. Además, la distancia de la cámara al objeto en la escena de búsqueda varía constantemente y difiere de la distancia entre ambos en la escena de donde se capturó el modelo del objeto. Por este motivo también va diferir la escala del objeto en cada escena.
+Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates del objeto a buscar puede no ser la misma escena en la que se realiza el seguimiento. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena. Además, la distancia de la cámara al objeto en la escena de búsqueda puede variar y diferir ampliamente de la distancia entre ambos en la escena en donde se capturan los templates del objeto. Por este motivo también puede diferir la escala del objeto en cada escena.
 
-Teniendo en cuenta estos problemas decidimos realizar varias corridas del algoritmo de \textit{template matching}. En primera medida en cada pasada se va modificando el par template-máscara utilizados como parámetros del mismo aprovechando los datos obtenidos en la etapa de entrenamiento. Con esto se ataca de mejor manera el problema de las distintas poses en las que puede estar el objeto en la escena. Además, para que la detección sea más robusta frente a cambios de tamaño del objeto que se desea encontrar se toma a cada uno de los templates con su respectiva máscara y se les aplican varios cambios de escala y se utilizaron estas muestras como entrada para el algoritmo de template matching. Una vez corrido el algoritmo para cada par template-máscara, se obtiene como resultado final la corrida que tenga menor diferencia cuadrática y que esté por debajo de un umbral predefinido. La información que se almacena como resultado son las coordenadas del cuadrante que contiene al objeto encontrado. Una vez almacenada esta información, el sistema pasa a la etapa de seguimiento.
+Teniendo en cuenta estos problemas decidimos realizar varias corridas del algoritmo de \textit{template matching}. En primera medida en cada pasada se va modificando template utilizado como parámetro del mismo aprovechando los datos obtenidos en la etapa de entrenamiento. Con esto se ataca de mejor manera el problema de las distintas poses en las que puede estar el objeto en la escena. Además, para que la detección sea más robusta frente a cambios de tamaño del objeto que se desea encontrar se toma a cada uno de los templates y se les aplican varios cambios de escala y se utilizan estas muestras como entrada para el algoritmo de template matching. Una vez corrido el algoritmo para cada template y sus diferentes escalas, se obtiene como resultado final la corrida que tenga menor diferencia cuadrática y que esté por debajo de un umbral predefinido. La información que se almacena como resultado son las coordenadas del cuadrante que contiene al objeto encontrado. Una vez almacenada esta información, el sistema pasa a la etapa de seguimiento.
 
 \subsection{Seguimiento}\label{tracking_rgb}
 Como se explicó al comienzo del capítulo, esta etapa consta de seguir al objeto detectado en la etapa anterior frame a frame. Para concretar este objetivo se necesita encontrar una manera de combinar la información obtenida durante las dos etapas anteriores. Existen muchas maneras de llevar a cabo esta tarea. La forma que elegimos para este trabajo fue utilizar un método de comparación por histogramas.
