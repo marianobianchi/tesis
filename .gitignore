@@ -29,6 +29,8 @@ CMake*
 *.toc
 *.bbl
 *.blg
+*.out
+*.tks
 codigo/videos/moving_circle/*
 codigo/videos/pelotita_naranja_webcam/*
 codigo/videos/rgbd/objs/bowl/*

@@ -240,6 +240,29 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 \section{Método propuesto para profundidad}\label{metodo_rgbd}
 En esta sección explicaremos los métodos utilizados durante las distintas etapas del esquema propuesto para el seguimiento en profundidad, entre los que se encuentra un método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de esta tesis, así como también un método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP). Además, al igual que se hizo en la Sección \ref{metodo_rgb} se detalla para cada etapa del algoritmo como se utiliza cada método y de que manera se los une para formar el sistema de seguimiento.
 
+
+\subsection{Iterative Closest Point (ICP)}\label{ICP}
+En esta sección explicaremos el método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP) surgido en el trabajo \cite{besl1992method}. En este trabajo se intenta encontrar respuesta a uno de los principales problemas en visión en computación: dada cierta información 3D en un sistema de coordenadas de un sensor, que describe una forma que puede corresponder a un modelo y dado un modelo en una representación geométrica distinta, lograr estimar la rotación y traslación óptimas que permitan alinear las dos formas minimizando la distancia entre ambas, permitiendo así determinar la equivalencia de las mismas usando \textit{mean-square} como métrica de distancia.
+
+El algoritmo presentado puede ser utilizado en múltiples tipos de representaciones de datos geométricos como conjunto de puntos, conjuntos de segmentos de líneas, curvas paramétricas, superficies paramétricas, etc. Además se puede utilizar cualquier otra representación siempre que se acompañe a la misma de un método para calcular el punto más cercano de esa forma a un punto dado. Además de necesitar una manera de calcular el punto más cercano, también es necesario un método para obtener la rotación y traslación de mínimos cuadrados.
+
+A continuación presentamos el pseudocódigo para el algoritmo ICP:
+
+%\newpage
+\footnotesize
+\lstinputlisting[language=Python, frame=single]{icp_pseudocode.py}
+\normalsize
+
+Entre las condiciones de corte para este algoritmo hay un límite máximo para la cantidad de iteraciones, el que se encuentra en el pseudocódigo que corta en caso de que dos transformaciones sucesivas difieran en el error cuadrático en menos de un umbral dado y por último una condición parecida que verifica que el error cuadrático de una transformación obtenida sea menor a un umbral.
+
+
+En este mismo trabajo, además de presentar este algoritmo, se demuestra que el mismo converge monótonamente hacia un mínimo local con respecto a la distancia cuadrática media. Sin embargo, nada puede decirse sobre la convergencia hacia el mínimo global deseado.
+
+Notar que el algoritmo no es útil si solo un subconjunto de los puntos se corresponde con el modelo o con un subconjunto del modelo. Lamentablemente esto sucede con la mayoría de los algoritmos de ``pareo'' de formas en 3D. Pero sigue resultando útil si todo el conjunto de puntos se corresponde con parte del modelo.
+
+Entre las ventajas más importantes de este método está el hecho de que maneje los seis grados de libertad y que sea independiente de la forma de representación. Además, no requiere de extracción de descriptores y puede ser fácilmente utilizado en conjunto con otros algoritmos. Por otro lado, una desventaja importante es que es susceptible a outliers. Esto tiene como extensión que el algoritmo no sirve para resolver el problema de segmentar objetos en una escena.
+
+
 \subsection{Alineación de objetos rígidos en una escena}\label{alignment_prerejective}
 El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
 
@@ -254,61 +277,69 @@ Una vez obtenidos los puntos de interés y sus descriptores tanto en el objeto c
 \hat{T} = \argmin_T \varepsilon(T) = \argmin_T \sum_{p \in P}(Tp - q)^2
 \end{equation}
 
-Para lograr esto se realizan los siguientes pasos:
-\begin{enumerate}
-	\item Tomar 3 o más puntos del objeto y sus correspondencias en la escena usando los descriptores de contexto ECV
-	\item Estimar una transformacion usando esas correspondencias
-	\item Aplicar la transformación al objeto
-	\item Buscar \textit{inliers} usando búsqueda de vecinos cercanos entre el objeto transformado y la escena. Si el número de inliers es bajo, volver al primer paso
-	\item Medir el error dado por la fórmula \eqref{eq:mindif} y si es el menor valor encontrado guardar la transformación como resultado
-\end{enumerate}
+A continuación presentamos el pseudocódigo de la heurística RANSAC de este trabajo:
+%\newpage
+\footnotesize
+\lstinputlisting[language=Python, frame=single]{alignment_prerejective_pseudocode.py}
+\normalsize
 
-Esto puede repetirse durante las iteraciones que se pretendan o cuando la diferencia de cuadrados sea menor que un umbral dado. En este trabajo se agrega un paso novedoso a este esquema RANSAC enumerado previamente. Este paso asume una propiedad geométrica de objetos rígidos para descartar rápidamente malas correspondencias. En particular utilizan el hecho que las distancias se mantienen y hacen un chequeo de las diferencias entre las distancias de los bordes del polígono virtual formado por los puntos random tomados en el paso 1 tanto para el objeto como para la escena. Utilizando una medida de distancia entre estos valores y un umbral descartan rápidamente malas correspondencias. Si se asume que no se descartan potenciales poses que alinean bien los modelos, se obtiene la misma probabilidad de éxito de manera mucho más rápida. Notar que al tomar puntos de manera random este método es en realidad una heurística. Es esperable entonces que para dos corridas del método con mismos datos de entrada se obtengan dos resultados distintos.
+El parámetro de corte aquí presentado es la cantidad de iteraciones, pero también se puede tomar como corte si la diferencia de cuadrados es menor que un umbral dado. La utilización del esquema RANSAC garantiza que el método sea robusto frente a outliers.
 
+En este trabajo se agrega un paso novedoso a este esquema RANSAC, que es el paso 2 marcado en el pseudocódigo. Este paso asume una propiedad geométrica de objetos rígidos para descartar rápidamente malas correspondencias. En particular utilizan el hecho que las distancias entre objetos isométricos en un espacio 3D se mantienen al aplicar transformaciones a esos objetos y hacen un chequeo de las diferencias entre las distancias de los bordes del polígono virtual formado por los puntos random tomados en el paso 1 tanto para el objeto como para la escena. Utilizando una medida de distancia entre estos valores y un umbral descartan rápidamente malas correspondencias. Si se asume que no se descartan potenciales poses que alinean bien los modelos, se obtiene la misma probabilidad de éxito de manera mucho más rápida. Notar que al tomar puntos de manera random este método es en realidad una heurística. Es esperable entonces que para dos corridas del método con mismos datos de entrada se obtengan dos resultados distintos.
 
-\subsection{Iterative Closest Point (ICP)}\label{ICP}
-En esta sección explicaremos el método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP) surgido en el trabajo \cite{besl1992method}. En este trabajo se intenta encontrar respuesta a uno de los principales problemas en visión en computación: dada cierta información 3D en un sistema de coordenadas de un sensor, que describe una forma que puede corresponder a un modelo y dado un modelo en una representación geométrica distinta, lograr estimar la rotación y traslación óptimas que permitan alinear las dos formas minimizando la distancia entre ambas, permitiendo así determinar la equivalencia de las mismas usando \textit{mean-square} como métrica de distancia.
-
-El algoritmo presentado puede ser utilizado en múltiples tipos de representaciones de datos geométricos como conjunto de puntos, conjuntos de segmentos de líneas, curvas paramétricas, superficies paramétricas, etc. Además se puede utilizar cualquier otra representación siempre que se acompañe a la misma de un método para calcular el punto más cercano de esa forma a un punto digitalizado dado.
-
-Además de necesitar una manera de calcular el punto más cercano, también es necesario un método para obtener la rotación y traslación de mínimos cuadrados. Para los objetivos de este trabajo era preferible usar un algoritmo basado en cuaterniones como el método de Horn, aunque si se necesitara un método para más de tres dimenciones, entonces el algoritmo más apropiado es utilizar SVD.
-
-Finalmente, el algoritmo ICP requiere los siguientes pasos:
-\begin{itemize}
-	\item Se obtienen el conjunto de puntos a alinear y el modelo
-	\item Se comienza la iteración fijando los vectores de alineación relativos al conjunto de puntos a alinear para obtener una representación de la transformación completa. Luego se repiten los siguientes pasos hasta que algún criterio de convergencia se satisfaga
-	\begin{enumerate}
-		\item Computar los puntos más cercanos
-		\item Tomando esos puntos, computar la alineación
-		\item Aplicar la transformación provista por la alineación
-		\item Terminar la iteración cuando la diferencia del error cuadrático medio entre dos resultados sucesivos sea menor a un
-	\end{enumerate}
- $\delta > 0$ dado
-\end{itemize}
-
-En este trabajo se demostró que este algoritmo converge monótonamente hacia un mínimo local con respecto a la distancia cuadrática media. Sin embargo, nada puede decirse sobre la convergencia hacia el mínimo global deseado.
-
-El algoritmo no es útil si solo un subconjunto de los puntos se corresponde con el modelo o con un subconjunto del modelo. Lamentablemente esto sucede con la mayoría de los algoritmos de ``pareo'' de formas en 3D. Pero sigue resultando útil si todo el conjunto de puntos se corresponde con parte del modelo.
-
-Entre las ventajas más importantes de este método está el hecho de que maneje los seis grados de libertad y que sea independiente de la forma de representación. Además no requiere de extracción de descriptores y puede ser fácilmente utilizado en conjunto con otros algoritmos. Por otro lado, una desventaja importante es que es susceptible a outliers. Esto tiene como extensión que el algoritmo no sirve para resolver el problema de segmentar objetos en una escena.
-
+Este método puede ser utilizado como paso previo a ICP o en su reemplazo. Ambos métodos cumplen el mismo objetivo de buscar una transformación que alinee dos nubes de puntos permitiendo estimar la pose de una nube con respecto a la otra. Sin embargo poseen características distintas que los hacen destacarse en distintos contextos o condiciones.
 
 
 \subsection{Entrenamiento}
-Para esta primera etapa consiste en obtener un modelo del objeto en forma de nube de puntos que pueda ser utilizado en las siguientes etapas. Hay distintas maneras de obtener este modelo y con esto, distintas calidades de modelos a obtener. Además, cuanto más completo sea el modelo, mayor es el tiempo necesario para obtenerlo.
+Esta primera etapa consiste en obtener un modelo del objeto en forma de nube de puntos que pueda ser utilizado en las siguientes etapas. Hay distintas maneras de obtener este modelo y por lo tanto distintas calidades de modelos a obtener. Cuanto más completo sea el modelo, mayor es el tiempo necesario para obtenerlo.
 
 Llamamos vista del objeto a una nube de puntos del mismo tomada desde algún ángulo cualquiera. Esta nube es incompleta ya que no va a incluir las zonas del objeto que no son capturadas por el sensor RGB-D, por ejemplo, la parte de atrás del objeto. Una vista entonces es el modelo más sencillo que se puede obtener para un objeto.
 
 Para obtener un modelo más completo del objeto hay distintas opciones. Una de ellas es generar un modelo CAD del objeto y transformarlo a nube de puntos. Otra opción es tomar muchas vistas distintas del objeto, variando altura desde donde se toma la vista del objeto y a la vez ir rotando alrededor del objeto. Estas vistas pueden luego alinearse usando métodos como los de las secciones \ref{alignment_prerejective} y \ref{ICP} para generar una única nube de puntos del objeto casi tan completa como la que se puede obtener con un modelo CAD.
 
-Dado que en este trabajo priorizamos la etapa del tracking y que uno de los objetivos es tener un sistema de seguimiento fácilmente adaptable y, en un futuro, lograr un seguimiento en tiempo real, optamos por el método más simple y rápido que es tomar como modelo una nube de puntos de una única vista del objeto. Además se verificó el comportamiento de los algoritmos durante una etapa de pruebas preeliminares y los modelos obtenidos de esta manera permitieron obtener un tracking confiable y robusto.
+En la Figura \ref{fig:nube_completa_vs_simple} se muestran dos nubes de puntos distintas desde distintos ángulos. En la fila de arriba vemos una nube completa de un chef de porcelana. En la fila de abajo se muestra una nube de puntos de una sola vista de una taza.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_01.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_02.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_03.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_04.png}
+	\end{subfigure}
+
+
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_01.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_02.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_03.png}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.24\textwidth}
+		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_04.png}
+	\end{subfigure}
+
+	\caption{Fila de arriba: nube de puntos de chef de porcelana completo. Fila de abajo: nube de puntos de una sola vista de una taza.}
+	\label{fig:nube_completa_vs_simple}
+\end{figure}
+
+Dado que en este trabajo priorizamos la etapa del tracking y que uno de los objetivos es tener un sistema de seguimiento fácilmente adaptable y, en un futuro, lograr un seguimiento en tiempo real, optamos por el método más simple y rápido que es tomar como modelo una nube de puntos de una única vista del objeto. Dependiendo del ángulo y altura desde donde se tome la vista del objeto se puede obtener un modelo más o menos completo. Por ejemplo, en el caso de la taza es conveniente tomar su modelo desde una altura considerable en donde se vea parte del interior de la taza y todo el frente. De esta manera se obtiene mucha información sobre la forma y profundidad de la misma y esto va a servir en las siguientes etapas.
+
+Este entrenamiento es similar al necesario en RGB para luego poder utilizar template matching en la detección. Utilizar como modelo una vista del objeto a seguir es comparable a obtener un template RGB del objeto. Ambas formas proveen una información parcial sobre el objeto en donde solo se conoce una porción del mismo.
 
 Una vez almacenada esta información se continúa con la siguiente etapa del sistema: la detección.
 
-\comentarioP{Relacionar con template matching}
-
 \subsection{Detección}\label{deteccion_d}
-Para esta segunda etapa se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas también se observó que si la región donde se buscaba el objeto era lo suficientemente pequeña la búsqueda era más robusta.\comentarioP{Mejor más chica?} Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos. Considerando cada una de estas escalas, dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en la figura \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje ``z'' ya que las pruebas preeliminares dieron buenos resultados de esta manera. La detección se corre en cada uno de estos cuadrantes y puede suceder que:
+Para esta segunda etapa se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas se observó que si se tomaba una nube de puntos de una fracción de la escena que contenía al objeto en búsqueda, la detección era más robusta. Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos. Considerando cada una de estas escalas, dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en la figura \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje ``z'' ya que las pruebas preeliminares dieron buenos resultados de esta manera. La detección se corre en cada uno de estos cuadrantes y puede suceder que:
 \begin{itemize}
 	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
 	\item Se encontró el objeto en un cuadrante
