@@ -1,7 +1,14 @@
 \chapter{Introducción}
 En la actualidad, las posibles aplicaciones de métodos de seguimiento o tracking son muchas y van desde el uso en la industria hasta juegos de consola. Un ejemplo de ello es la fabricación de barcos y autos mediante el uso de robots. Estas tareas se caracterizan por la necesidad de posicionar de manera precisa una herramienta sobre una pieza de trabajo. A través del uso de métodos de tracking se puede conocer la ubicación y pose de la pieza que se desea utilizar con respecto a la ubicación de la cámara y de esta forma saber cómo posicionar la herramienta necesaria para trabajar sobre la pieza en cuestión.
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6382717
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6485264
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=6705416
+% http://ieeexplore.ieee.org/xpls/abs_all.jsp?arnumber=5980145
+% http://arxiv.org/abs/1301.3592
+% http://www.sciencedirect.com/science/article/pii/S095219761400147X
 
 Otra área en donde se utiliza tracking de objetos intensamente es para la generación de estadísticas deportivas, por ejemplo, durante un partido de fútbol, tanto de jugadores como de un equipo. Las posibles aplicaciones en este contexto son mucho más amplias, como por ejemplo análisis de tácticas, verificación de las decisiones del árbitro, resúmenes automáticos de un partido, etc.
+% A review of vision-based systems for soccer video analysis
 
 Actualmente existen sensores de profundidad que en conjunto con una cámara RGB pueden ser utilizados para detectar y seguir a una o más personas en tiempo real. De esta manera, mediante un sistema que procese las imágenes RGB-D de estos sensores, las personas puedan utilizar su cuerpo y sus movimientos para interactuar naturalmente con un dispositivo.
 
@@ -27,7 +34,9 @@ Los métodos elegidos para cada una de las etapas del sistema arrojaron buenos r
 
 La utilización de información tanto RGB como de profundidad posibilita una precisión mucho mayor en la detección y el seguimiento. Es prioritario tener un método de detección preciso y robusto dado que de esto depende lograr altas tasas de seguimiento y mucha precisión en la ubicación reportada por el algoritmo de seguimiento. De la misma forma, es necesario tener un buen mecanismo que combine los métodos de seguimiento RGB y de profundidad para que el resultado refleje una precisión por lo menos igual al mejor de los dos métodos.
 
-En el Capítulo \ref{sensores_rgbd} explicamos de qué manera se obtienen las imágenes y los datos que utilizamos para cada una de las etapas el sistema de seguimiento, el cuál presentamos en el Capítulo \ref{chap:sistema_de_seguimiento}. En este capítulo no solo describimos el sistema sino que presentamos un sistema de seguimiento para RGB, otro para profundidad y dos distintas combinaciones de estos sistemas para obtener dos sistemas de seguimiento RGB-D.
+Esta tesis está organizada de la siguiente forma: En el Capítulo \ref{sensores_rgbd} explicamos de qué manera se obtienen las imágenes y los datos que utilizamos para cada una de las etapas el sistema de seguimiento, el cuál presentamos en el Capítulo \ref{chap:sistema_de_seguimiento}. En este capítulo no solo describimos el sistema sino que presentamos un sistema de seguimiento para RGB, otro para profundidad y dos distintas combinaciones de estos sistemas para obtener dos sistemas de seguimiento RGB-D.
+
+En el Capítulo 4 presentamos una base de datos de objetos RGB-D que fue utilizada para realizar las pruebas y análisis de este trabajo. La base cuenta con información de \textit{ground truth} para una gran variedad de objetos y presenta escenas anotadas en donde aparecen estos objetos.
 
 Más adelante, en el Capítulo \ref{chap:resultados} explicamos de qué manera probamos los sistemas de seguimiento presentados y hacemos un análisis sobre su funcionamiento tomando distintas métricas como referencia. Los resultados recolectados nos permiten hacer una comparación entre métodos y sistemas, justificando así cual es el mejor sistema y en qué condiciones y contexto es conveniente utilizar uno sobre el resto.
 

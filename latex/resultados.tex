@@ -1,12 +1,11 @@
 \chapter{Resultados y análisis}\label{chap:resultados}
 En este capítulo se explican las pruebas realizadas durante el desarrollo de este trabajo a la vez que se analizan los resultados y se hacen hipótesis sobre los valores obtenidos. Se analizan todos los métodos explicados en el capítulo \ref{chap:sistema_de_seguimiento} por separado y se los compara entre sí hasta finalmente obtener de manera objetiva el mejor método de seguimiento.
 
-\section{Experimentación}
 Con el objetivo de elegir los métodos definitivos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para profundidad. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
 
 Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para profundidad, utilizamos como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en profundidad estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
 
-\subsection{Elección del método de seguimiento RGB}
+\section{Elección del método de seguimiento RGB}
 Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
 
 Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \cite{surf} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento.
@@ -97,7 +96,7 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 
 
 
-\subsection{Evaluación del tracking RGB}\label{eval_rgb}
+\section{Evaluación del tracking RGB}\label{eval_rgb}
 A continuación se muestran los resultados del algoritmo de seguimiento elegido para las imágenes RGB con los valores de los parámetros ya fijados. Para todas las pruebas se eligieron tres objetos distintos que aparecen en dos escenas, todos sacados de la base de datos indicada en la sección \ref{base_rgbd}.
 
 Como podemos ver en la Tabla \ref{tab:tabla_rgb} el tracking se comporta de manera muy diversa dependiendo del objeto que se esté analizando. En los ejemplos de la taza y la gorra el algoritmo reporta haber encontrado al objeto en la mayoría de los casos, 85\% y 78\% respectivamente.\comentarioM{Acá me habias puesto un comentario que decía: ¿Qué significa?. Creo que ahora está un poco más claro escrito.} Este valor en conjunto con el promedio de solapamiento pueden darnos un indicio de que tan bien se desempeña el algoritmo. Si observamos el promedio de solapamiento vemos el algoritmo se comporta mucho mejor en el caso de la gorra, con un promedio de solapamiento del 55\%. Creemos que esto se debe a la marcada diferencia de color entre la gorra y el fondo de la imagen. Esto no sucede en el caso de la taza en el que repetidas veces el color de fondo varía entre colores y tonos similares a los de esta lo que provoca que la comparación de histogramas no sea robusta. En el caso del bowl el promedio de solapamiento es alto pero se debe a que el porcentaje de veces que se siguió al objeto es bajo. Como el algoritmo de detección es el ideal, cuantas más veces se usa la detección mejor es el porcentaje de solapamiento. Notamos que en esta escena los cambios de intensidad y textura son muy notorios lo que afecta negativamente al algoritmo.
@@ -140,7 +139,7 @@ Finalmente, existe un color más que puede aparecer: el negro. El método descri
 En el Gráfico \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible explicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
 Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo área de solapamiento es igual a 100\% corresponden a aquellos frames en donde el tracking pierde el objeto y se utiliza al algoritmo de detección ideal para localizar al objeto nuevamente.
 
-\subsection{Evaluación del tracking en profundidad}
+\section{Evaluación del tracking en profundidad}
 En esta sección se muestran los resultados de ICP para las imágenes de profundidad (profundidad) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
 
 \begin{table}[h]
@@ -229,7 +228,7 @@ En la Figura \ref{frame_frame_d} se muestran para cada escena y objeto como se c
 \end{figure}
 
 
-\subsection{Evaluación del tracking en RGB-D}
+\section{Evaluación del tracking en RGB-D}
 Una vez analizados el tracking RGB y profundidad por separado decidimos unir ambos métodos y corroborar como se comporta el tracking combinado. Como se explicó en la sección \ref{metodo_rgbd} la combinación se hizo de dos maneras distintas por lo que en el análisis también distinguiremos cada una de las combinaciones por separado.
 
 \customsubsubsection{Tracking RGB-D con preferencia en profundidad}
@@ -319,7 +318,7 @@ Este resultado parece reafirmar la hipótesis hecha en la primer combinación RG
 
 
 
-\subsection{Evaluación de los métodos de tracking en objetos desconocidos}
+\section{Evaluación de los métodos de tracking en objetos desconocidos}
 Las pruebas analizadas hasta el momento fueron todas realizadas con los mismos objetos y son estos los que se utilizaron durante la selección de métodos y luego la de parámetros. En esta sección se analizarán pruebas corridas con los métodos de las secciones anteriores pero utilizando objetos y escenas nuevas. Estas pruebas se realizaron con el objetivo de verificar el funcionamiento de los algoritmos en condiciones más realistas.
 
 \begin{figure}
@@ -486,7 +485,7 @@ Todas estas comparaciones se mantienen cuando hacemos el análisis de los result
 Con estos resultados podemos decir que el método de seguimiento en profundidad es en general mejor que el seguimiento en RGB, considerando los métodos elegidos en cada caso y para los objetos que se utilizaron durante los experimentos. En cuanto a la combinación de métodos creemos que es mejor utilizar aquella que prioriza el seguimiento en profundidad y que esta supera al seguimiento en profundidad por sí solo. Sin embargo resulta clave poder combinar los métodos de manera de minimizar las ocasiones en que el intento de corrección del resultado con el método secundario, en este caso RGB, empeoren el resultado final. Si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado unicamente en profundidad.
 
 
-\subsection{Evaluación del sistema RGB-D}\label{sec:evaluacion_rgbd}
+\section{Evaluación del sistema RGB-D}\label{sec:evaluacion_rgbd}
 Para finalizar con la evaluación de los métodos, presentamos en esta sección los resultados para todas las escenas antes vistas correspondientes al sistema RGB-D explicado en la sección \ref{metodo_rgbd}.
 
 \begin{table}[h]

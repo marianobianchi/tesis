@@ -5,7 +5,14 @@ Dentro de estos avances logrados en el área, los sensores RGB-D otorgan una nov
 
 La cámara o sensor de profundidad consta de dos elementos: un proyector infrarrojo y una cámara infrarroja. Para poder medir la profundidad de todo lo presente en la escena el proyector imprime con luz infrarroja un patrón conocido. Esta luz es invisible al ojo humano y a las cámaras RGB convencionales. Sin embargo, sí se puede ver con una cámara infrarroja. La cámara infrarroja entonces, se utiliza para obtener el patrón dibujado en la escena. Conociendo el patrón original proyectado, el patrón obtenido con la cámara y la distancia entre la cámara infrarroja y el proyector se pueden aplicar algoritmos de luz estructurada para obtener la profundidad de la escena.
 
-Existen varias implementaciones de cámaras que otorgan esta información y cada una tiene sus propias características en cuanto a calidad de la imagen RGB, frecuencia de cuadros, rango de profundidad, etc. La más conocida de estas cámaras es la llamada ``Kinect'' de Microsoft. Esta cámara posee una resolución default en RGB de unos 640x480 píxeles de 8 bits cada uno, a unos 30 cuadros por segundo. La misma puede otorgar imágenes de hasta 1280x1024 píxeles pero a una frecuencia de cuadros menor. En el caso del video en profundidad, el sensor provee una resolución de imagen de unos 640x480 píxeles y cada uno de ellos tiene una resolución de 11 bits, lo que da una sensibilidad de 2048 niveles. La frecuencia de cuadros que otorga el sensor de profundidad es de unos 30 cuadros por segundo. El rango práctico de distancias que ofrece la cámara está entre 1.2 y 3.5 m, aunque puede dar un rango extendido de unos 0.7 a 6 m.
+Existen varias implementaciones de cámaras que otorgan esta información y cada una tiene sus propias características en cuanto a calidad de la imagen RGB, frecuencia de cuadros, rango de profundidad, etc. La más conocida de estas cámaras es la llamada ``Kinect'' de Microsoft. Esta cámara posee una resolución default en RGB de unos 640x480 píxeles de 8 bits cada uno, a unos 30 cuadros por segundo. La misma puede otorgar imágenes de hasta 1280x1024 píxeles pero a una frecuencia de cuadros menor. En el caso del video en profundidad, el sensor provee una resolución de imagen de unos 640x480 píxeles y cada uno de ellos tiene una resolución de 11 bits, lo que da una sensibilidad de 2048 niveles. La frecuencia de cuadros que otorga el sensor de profundidad es de unos 30 cuadros por segundo. El rango práctico de distancias que ofrece la cámara está entre 1.2 y 3.5 m, aunque puede dar un rango extendido de unos 0.7 a 6 m. En la Figura \ref{fig:sensores_rgbd} se puede ver un esquema de los sensores más populares: ``Kinect'' de Microsoft y ``Xtion'' de Asus.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/sensores/sensores_rgbd.png}
+	\caption{Esquema de los sensores RGB-D. Arriba está el sensor Xtion de Asus. Abajo está el Kinect de Microsoft.}
+    \label{fig:sensores_rgbd}
+\end{figure}
 
 Una de las características de los sensores de profundidad de este tipo es que al utilizar luz infrarroja no necesitan luz para sensar y obtener información. De manera contraria a una cámara RGB, este sensor se ve perjudicado por la luz solar ya que el sol emite luz infrarroja que interfiere con el patrón dibujado por el proyector, haciendo que los datos sensados no sean correctos. Además el método se ve perjudicado cuando existen en la escena objetos como vidrios, espejos y superficies brillantes ya que los haces de luz son reflejados y por lo tanto se modifica el patrón proyectado por el sensor.
 
@@ -150,12 +157,27 @@ Cada imagen RGB consta de tres imagenes, una por cada canal. Para calcular el hi
 	\label{frames_solapados}
 \end{figure}
 
-
 El algoritmo de tracking implementado se puede separar en dos partes. Por un lado tenemos el método de búsqueda y por el otro el algoritmo de comparación por histogramas. El método de búsqueda se utiliza para explorar un espacio predefinido en donde se asume estará el objeto en el siguiente frame. Este algoritmo toma un área de tamaño 9 veces mayor a la del cuadrante reportado por el algoritmo de detección respetando el centro del mismo. Luego divide esta área en cuadrantes los que serán utilizados por el algoritmo de comparación para definir si el objeto está o no allí. En la figura \ref{frames_solapados} se muestra una secuencia de búsqueda por cuadrantes. Para hacer más robusta la búsqueda frente a cambios de tamaño del objeto este mismo método de búsqueda por cuadrantes se realiza varias veces cambiando el tamaño del cuadrante.
 
-La segunda parte del algoritmo de tracking consta en definir cuál de todos los cuadrantes explorados en la etapa de búsqueda es el que contiene el objeto que se está buscando o en caso de fallar en la búsqueda, indicar que el objeto no se encontró en el frame. En un principio en esta etapa se comparaba el histograma de cada uno de los cuadrantes explorados con el cuadrante del frame anterior reportado por el algoritmo de detección. Para esta comparación se tomaba de cada recuadro su histograma para los canales S y V del esquema de colores HSV y se los comparaba utilizando la implementación de comparación de histogramas presente en la librería OpenCV. El método de comparación utilizado se basaba en la diferencia de \textit{Bhattachayyra}. El resultado de estas comparaciones era aquel cuadrante cuya comparación arrojara el menor valor y que se encontrara por debajo de un umbral definido. Si ningún cuadrante arrojaba una comparación menor a este umbral el algoritmo indicaba que el objeto no se encontraba en ese frame.
+La segunda parte del algoritmo de tracking consta en definir cuál de todos los cuadrantes explorados en la etapa de búsqueda es el que contiene el objeto que se está buscando o, en caso de fallar en la búsqueda, indicar que el objeto no se encontró en el frame. Con este objetivo, se compara el histograma de cada uno de los cuadrantes explorados con el cuadrante del frame anterior en donde se reportó haber encontrado el objeto. Para ello se toma de cada recuadro el histograma de los canales S y V del esquema de colores HSV y se los compara utilizando la distancia de \textit{Bhattachayyra}, cuya definición es: Sean $H_1$ y $H_2$ los dos histogramas a comparar, la distancia de Bhattachayyra $d(H_1, H_2)$ se calcula a través de la siguiente fórmula:
 
-El problema con esta aproximación era que al basarse únicamente en el recuadro encontrado en el frame anterior el objeto iba quedando de a poco fuera del recuadro resultante hasta que en un momento quedaba completamente fuera del mismo. Como la diferencia entre los cuadrantes resultantes de cada frame era baja, el algoritmo seguía reportando al objeto como encontrado aunque no fuera así. Para evitar este inconveniente se decidió además comparar el histograma de cada cuadrante de búsqueda con el histograma de uno de los templates del objeto obtenido en la etapa de entrenamiento. En este caso la comparación se realizó utilizando el esquema RGB, calculando el histograma para los tres canales. En las figuras \ref{frame_only_tracking} y \ref{frame_template_tracking} se pueden ver dos secuencias del algoritmo de seguimiento, una con comparación de histogramas unicamente entre frame y frame y otra que agrega además la comparación con el template del objeto respectivamente. El cuadrante de color verde es el reportado por el ground truth como la ubicación del objeto en la escena, en este caso, una taza. El cuadrante de color azul es el reportado por nuestro algoritmo. En la figura \ref{frame_only_tracking} podemos ver como frame a frame el cuadrante azul se va alejando de la taza hasta que en el frame 8 de este extracto de la escena el algoritmo indica que encontró a la taza en una zona que en realidad es parte de la notebook. En la figura \ref{frame_template_tracking} podemos ver en cambio que el área reportada por el algoritmo se mantiene más estable. En el frame 7 aparece un recuadro rojo. Eso significa que el algoritmo de seguimiento perdió el rastro del objeto y en ese frame hizo falta correr el algoritmo de detección. Luego, en los frames 8 y 9 el algoritmo no reporta haber seguido al objeto. Por este motivo es que se decidió utilizar la comparación de histogramas tanto con el frame anterior como con el template del objeto.
+\begin{equation}
+	d(H_1, H_2) = \sqrt{1 - \frac{1}{\sqrt{\bar{H_1} \bar{H_1} N^2}} \sum_I \sqrt{H_1(I) \cdot H_2(I)}}
+\end{equation}
+
+donde
+
+$$
+	\bar{H_k} = \frac{1}{N} \sum_J H_k(J)
+$$
+
+y $N$ es la cantidad de bines del histograma.
+
+Como resultado de estas comparaciones se obtiene un cuadrante cuyo valor de comparación con el del frame anterior es inferior a cierto umbral dado. Si ninguno de los cuadrantes tiene un valor comparativo menor al umbral el algoritmo indica que el objeto no fue encontrado, motivo por el cual se debe volver a la etapa de detección.
+
+El problema con esta aproximación es que al estar basada únicamente en el recuadro encontrado en el frame anterior el objeto puede ir quedando de a poco fuera del recuadro resultante hasta quedar completamente fuera del mismo. Esto puede suceder ya que la diferencia entre dos cuadrantes resultantes sucesivos es relativamente baja. Cuando esto sucede el algoritmo va a seguir reportando al objeto como encontrado aunque el área reportada no incluya ninguna parte del mismo.
+
+Para evitar este inconveniente se realiza una doble comparación de histogramas. Además de la comparación antes mencionada, se compara el histograma de cada cuadrante de búsqueda con el histograma de uno de los templates del objeto obtenido en la etapa de entrenamiento. En este caso la comparación se realiza utilizando el esquema RGB, calculando el histograma para los tres canales.
 
 \begin{figure}
 	\centering
@@ -232,8 +254,10 @@ El problema con esta aproximación era que al basarse únicamente en el recuadro
 	\label{frame_template_tracking}
 \end{figure}
 
-Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden ocurrir dos cosas. Una es si el algoritmo reportó haber encontrado al objeto. En este caso se almacenan los datos necesarios y se continúa utilizando el algoritmo de seguimiento en el frame siguiente. Si en cambio el algoritmo indica que el objeto no se encontró, se vuelve a la etapa de detección explicada previamente.
 
+En las figuras \ref{frame_only_tracking} y \ref{frame_template_tracking} se pueden ver dos secuencias del algoritmo de seguimiento, una con comparación de histogramas únicamente entre frame y frame y otra que agrega además la comparación con el template del objeto respectivamente. El cuadrante de color verde indica la ubicación del objeto en la escena según el ground truth, en este caso, una taza. El cuadrante de color azul es el reportado por nuestro algoritmo. En la Figura \ref{frame_only_tracking} podemos ver como frame a frame el cuadrante azul se aleja de la taza frame a frame hasta que en el frame 8 de este extracto de la escena el algoritmo indica que encontró a la taza en una zona que en realidad es parte de la notebook. En la Figura \ref{frame_template_tracking} podemos ver en cambio que el área reportada por el algoritmo se mantiene más estable. En el frame 7 aparece un recuadro rojo. Eso significa que el algoritmo de seguimiento perdió el rastro del objeto y en ese frame hizo falta correr el algoritmo de detección. Luego, en los frames 8 y 9 el algoritmo no reporta haber seguido al objeto. Por este motivo es que se utiliza la doble comparación de histogramas, tanto con el frame anterior como con el template del objeto.
+
+Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden ocurrir dos cosas: si el algoritmo reporta al objeto como encontrado, se almacenan los datos necesarios y se continúa con el algoritmo de seguimiento en el frame siguiente. En cambio, si el algoritmo indica que el objeto no se encuentra en el frame se vuelve a la etapa de detección explicada previamente.
 
 
 
@@ -292,15 +316,12 @@ En este trabajo se agrega un paso novedoso a este esquema RANSAC, que es el paso
 
 Este método puede ser utilizado como paso previo a ICP o en su reemplazo. Ambos métodos cumplen el mismo objetivo de buscar una transformación que alinee dos nubes de puntos permitiendo estimar la pose de una nube con respecto a la otra. Sin embargo poseen características distintas que los hacen destacarse en distintos contextos o condiciones.
 
-
 \subsection{Entrenamiento}
 Esta primera etapa consiste en obtener un modelo del objeto en forma de nube de puntos que pueda ser utilizado en las siguientes etapas. Hay distintas maneras de obtener este modelo y por lo tanto distintas calidades de modelos a obtener. Cuanto más completo sea el modelo, mayor es el tiempo necesario para obtenerlo.
 
 Llamamos vista del objeto a una nube de puntos del mismo tomada desde algún ángulo cualquiera. Esta nube es incompleta ya que no va a incluir las zonas del objeto que no son capturadas por el sensor RGB-D, por ejemplo, la parte de atrás del objeto. Una vista entonces es el modelo más sencillo que se puede obtener para un objeto.
 
-Para obtener un modelo más completo del objeto hay distintas opciones. Una de ellas es generar un modelo CAD del objeto y transformarlo a nube de puntos. Otra opción es tomar muchas vistas distintas del objeto, variando altura desde donde se toma la vista del objeto y a la vez ir rotando alrededor del objeto. Estas vistas pueden luego alinearse usando métodos como los de las secciones \ref{alignment_prerejective} y \ref{ICP} para generar una única nube de puntos del objeto casi tan completa como la que se puede obtener con un modelo CAD.
-
-En la Figura \ref{fig:nube_completa_vs_simple} se muestran dos nubes de puntos distintas desde distintos ángulos. En la fila de arriba vemos una nube completa de un chef de porcelana. En la fila de abajo se muestra una nube de puntos de una sola vista de una taza.
+Para obtener un modelo más completo del objeto hay distintas opciones. Una de ellas es generar un modelo CAD y transformarlo a nube de puntos. Otra opción es tomar muchas vistas distintas del objeto, variando altura desde donde se toma captura al objeto y a la vez rotando alrededor del mismo. Luego, estas vistas pueden alinearse usando métodos como los de las secciones \ref{alignment_prerejective} y \ref{ICP} para generar una única nube de puntos del objeto casi tan completa como la que se puede obtener con un modelo CAD.
 
 \begin{figure}
 	\centering
@@ -335,21 +356,25 @@ En la Figura \ref{fig:nube_completa_vs_simple} se muestran dos nubes de puntos d
 	\label{fig:nube_completa_vs_simple}
 \end{figure}
 
-Dado que en este trabajo priorizamos la etapa del tracking y que uno de los objetivos es tener un sistema de seguimiento fácilmente adaptable y, en un futuro, lograr un seguimiento en tiempo real, optamos por el método más simple y rápido que es tomar como modelo una nube de puntos de una única vista del objeto. Dependiendo del ángulo y altura desde donde se tome la vista del objeto se puede obtener un modelo más o menos completo. Por ejemplo, en el caso de la taza es conveniente tomar su modelo desde una altura considerable en donde se vea parte del interior de la taza y todo el frente. De esta manera se obtiene mucha información sobre la forma y profundidad de la misma y esto va a servir en las siguientes etapas.
+En la Figura \ref{fig:nube_completa_vs_simple} se muestran dos nubes de puntos distintas desde distintos ángulos. En la fila de arriba vemos una nube completa de un chef de porcelana. En la fila de abajo se muestra una nube de puntos de una sola vista de una taza.
+
+Dado que en este trabajo priorizamos la etapa del tracking y que uno de los objetivos es tener un sistema de seguimiento fácilmente adaptable y, en un futuro, lograr un seguimiento en tiempo real, optamos por el método más simple y rápido que es tomar como modelo una nube de puntos de una única vista del objeto. Dependiendo del ángulo y altura desde donde se tome la vista del objeto se puede obtener un modelo más o menos completo. Por ejemplo, en el caso de la taza es conveniente tomar su modelo desde una altura considerable en donde se vea parte del interior de la taza y todo el frente. De esta manera se obtiene mucha información sobre la forma y profundidad de la misma y esto beneficia al funcionamiento de las siguientes etapas.
 
 Este entrenamiento es similar al necesario en RGB para luego poder utilizar template matching en la detección. Utilizar como modelo una vista del objeto a seguir es comparable a obtener un template RGB del objeto. Ambas formas proveen una información parcial sobre el objeto en donde solo se conoce una porción del mismo.
 
 Una vez almacenada esta información se continúa con la siguiente etapa del sistema: la detección.
 
 \subsection{Detección}\label{deteccion_d}
-Para esta segunda etapa se utilizó el método descripto en la sección \ref{alignment_prerejective} refinando el resultado con ICP. La elección del mismo se realizó luego de correr varias pruebas que corroboraran la factibilidad del mismo. En estas pruebas se observó que si se tomaba una nube de puntos de una fracción de la escena que contenía al objeto en búsqueda, la detección era más robusta. Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho del modelo del objeto a seguir y escalarlos. Considerando cada una de estas escalas, dividimos la escena en cuadrantes de ese tamaño y corrimos el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en la figura \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje ``z'' ya que las pruebas preeliminares dieron buenos resultados de esta manera. La detección se corre en cada uno de estos cuadrantes y puede suceder que:
+En la segunda etapa se utiliza el método descripto en la Sección \ref{alignment_prerejective} refinando el resultado con ICP (ver Sección \ref{ICP}). La elección del mismo se realizó luego de correr varias pruebas que corroboraran su factibilidad. Durante estas pruebas se obtuvieron malos resultados cuando se corría el algoritmo para un objeto en una nube de puntos de un frame proveniente de una secuencia de video RGB-D. Sin embargo, si se tomaba solo una sección de esa nube de puntos en donde entre otras cosas estaba el objeto buscado la detección funcionaba correctamente y con mucha precisión.
+
+Teniendo en cuenta esto se pensó en una variante para la detección que utilice el método elegido. Esta tiene como primer paso obtener el alto y el ancho de la nube de puntos tomada como modelo del objeto a seguir durante el entrenamiento. Luego se divide la escena en cuadrantes cuyo tamaño es el doble de ancho y alto que el del modelo y se corre el método de detección en cada cuadrante. Con el fin de detectar el objeto cuando el mismo se extiende sobre dos o más regiones, la búsqueda se hizo utilizando un marco que recorre todos los cuadrantes y sus uniones, como puede observarse en la figura \ref{frames_solapados}. Notar que la división por cuadrantes solo se realizó en los ejes ``x'' e ``y'' y no en el eje ``z''. La detección se corre en cada uno de estos cuadrantes y puede suceder que:
 \begin{itemize}
 	\item No se encontró el objeto en ningún cuadrante: en este caso el algoritmo indica que el objeto no se encuentra en el frame
 	\item Se encontró el objeto en un cuadrante
-	\item Se encontró el objeto en varios cuadrantes: el algoritmo devuelve la mejor posición encontrada según un puntaje de buena alineación devuelto por el algoritmo \ap.
+	\item Se encontró el objeto en varios cuadrantes: el algoritmo devuelve la mejor posición encontrada según un puntaje de buena alineación devuelto por el algoritmo de la Sección \ref{alignment_prerejective}.
 \end{itemize}
 
-Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el método ``alignment prerejective'' y el cuadrante de la escena donde fue encontrado el mismo. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una forma de obtener los puntos del modelo del objeto en la escena es utilizando un \kdt.
+Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el primer método y el cuadrante de la escena donde fue encontrado. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una forma de obtener los puntos del modelo del objeto en la escena es utilizando un \kdt.
 
 \customsubsubsection{K-D Tree}
 Un \kdt es una estructura de datos que permite organizar puntos en un espacio k-dimensional. En particular es un árbol binario con otras restricciones. Son muy útiles para realizar búsquedas por rango o por vecinos cercanos. Una búsqueda por rango es una búsqueda para obtener todos aquellos puntos del árbol que estén contenidos en un rango determinado para una dimensión determinada, permitiendo combinar hasta k rangos, uno por cada dimensión. La búsqueda por vecinos cercanos tiene como objetivo encontrar el punto del árbol más cercano a un punto recibido como parámetro. Existen implementaciones en las cuales esta búsqueda es logaritmica en la cantidad de puntos del árbol.
@@ -363,9 +388,9 @@ Para obtener los puntos del modelo en la escena, se arma un \kdt con los puntos 
 	\item Si la cantidad de puntos está por encima del 100\%, disminuyo el radio de búsqueda.
 \end{itemize}
 
-Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la siguiente etapa de seguimiento. Si cualquiera de estos pasos fallara, se comienza nuevamente con la etapa de detección en el siguiente frame.
+Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la etapa de seguimiento. Si cualquiera de estos pasos falla, se reporta el objeto como no encontrado y se comienza nuevamente con la etapa de detección en el siguiente frame.
 
-
+\hastaacaverifiquelodelabasededatos
 \subsection{Seguimiento}\label{tracking_d}
 El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
 
