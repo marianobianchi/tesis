@@ -35,9 +35,11 @@ class FrameNamesAndImageProvider(object):
                 last_frame_number = frame_number
 
         # Set initial and last frame number
-        self.offset_frame_count = 1
+        print "# CAMBIAR INICIO"
+        self.offset_frame_count = 29  # 1
         self.next_frame_number = self.offset_frame_count
-        self.last_frame_number = last_frame_number
+        print "# CAMBIAR FIN"
+        self.last_frame_number = 33  # last_frame_number
 
     def _initialize_object(self, obj_path, obj, obj_number):
         self.base_objs_path = obj_path

@@ -12,7 +12,7 @@ from cpp.common import filter_cloud, points, get_min_max, transform_cloud, \
 from metodos_comunes import from_cloud_to_flat_limits, AdaptSearchArea, \
     AdaptLeafRatio, from_flat_to_cloud_limits
 from metodos_de_busqueda import BusquedaAlrededor
-from observar_seguimiento import MuestraBusquedaEnVivo
+from observar_seguimiento import MuestraBusquedaEnVivo, GuardaBusqueda
 
 
 class Finder(object):
@@ -678,12 +678,15 @@ class TemplateAndFrameHistogramFinder(Finder):
             nueva_comparacion = self.object_comparisson(roi)
 
             # Si se quiere ver como va buscando, descomentar la siguiente linea
-            # MuestraBusquedaEnVivo('Buscando el objeto').run(
-            #     img,
-            #     (fil_arr, col_izq),
-            #     (fil_aba, col_der),
-            #     frenar=True,
-            # )
+            print "# GUARDANDO BUSQUEDA RGB"
+            GuardaBusqueda(
+                'corrida_completa_guardada',
+                self._descriptors['nframe']
+            ).run(
+                img,
+                (fil_arr, col_izq),
+                (fil_aba, col_der),
+            )
 
             # Si hubo coincidencia
             if self.is_best_match(nueva_comparacion, valor_comparativo,

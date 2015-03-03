@@ -2,9 +2,13 @@
 
 from __future__ import (unicode_literals, division)
 
+import cv2
+import os
+
 from cpp.common import points
 
 from analisis import Rectangle
+from metodos_comunes import dibujar_cuadrado
 
 
 class Follower(object):
@@ -250,13 +254,70 @@ class DetectionWithCombinedFollowers(Follower):
             # no moviendo el centro del cuadrante
             # r = Rectangle(descriptors['topleft'], descriptors['bottomright'])
             # print "Area segun el seguidor principal:", r.area()
+
             self.upgrade_main_followed_descriptors(descriptors)
+
+            print "# GUARDANDO RGB POR DEPTH"
+            desc = self.descriptors()
+            img_to_save = dibujar_cuadrado(
+                desc['scene_rgb'],
+                desc['topleft'],
+                desc['bottomright'],
+                color=(0, 255, 0)  # VERDE
+            )
+            if not os.path.isdir('corrida_completa_guardada'):
+                os.mkdir('corrida_completa_guardada')
+
+            part_filename = 'seguimiento_depth_frame_{f}'.format(
+                f=desc['nframe']
+            )
+            path = '{p}/{pf}.png'.format(
+                p='corrida_completa_guardada',
+                pf=part_filename,
+            )
+            txt_path = '{p}/{pf}.txt'.format(
+                p='corrida_completa_guardada',
+                pf=part_filename,
+            )
+            cv2.imwrite(path, img_to_save)
+            with open(txt_path, 'w') as f:
+                f.write('topleft = {tl}\n'.format(tl=desc['topleft'],))
+                f.write('bottomright = {br}\n'.format(br=desc['bottomright']))
+
             self.secondary_finder.update(self.descriptors())
             mejora_fue_exitosa, new_descriptors = self.secondary_finder.find(es_deteccion)
 
             if mejora_fue_exitosa:
                 # Calculo y actualizo los descriptores con los valores encontrados
                 self.upgrade_secondary_followed_descriptors(new_descriptors)
+
+                print "# GUARDANDO RGB POR RGB"
+                desc = self.descriptors()
+                img_to_save = dibujar_cuadrado(
+                    desc['scene_rgb'],
+                    desc['topleft'],
+                    desc['bottomright'],
+                    color=(0, 0, 255)  # ROJO
+                )
+                if not os.path.isdir('corrida_completa_guardada'):
+                    os.mkdir('corrida_completa_guardada')
+
+                part_filename = 'mejoramiento_rgb_frame_{f}'.format(
+                    f=desc['nframe']
+                )
+                path = '{p}/{pf}.png'.format(
+                    p='corrida_completa_guardada',
+                    pf=part_filename,
+                )
+                txt_path = '{p}/{pf}.txt'.format(
+                    p='corrida_completa_guardada',
+                    pf=part_filename,
+                )
+                cv2.imwrite(path, img_to_save)
+                with open(txt_path, 'w') as f:
+                    f.write('topleft = {tl}\n'.format(tl=desc['topleft'],))
+                    f.write('bottomright = {br}\n'.format(br=desc['bottomright']))
+
                 # last_descriptors = self.descriptors()
                 # print "    Se mejoró el seguimiento con el seguidor secundario"
                 # r = Rectangle(last_descriptors['topleft'], last_descriptors['bottomright'])

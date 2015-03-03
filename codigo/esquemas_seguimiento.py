@@ -116,7 +116,6 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
 
         self.write_parameter_values()
 
-
     def write_parameter_values(self):
         # Guardo los valores de los parametros
         ap_defaults = self.obj_follower.detector._ap_defaults

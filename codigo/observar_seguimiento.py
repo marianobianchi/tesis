@@ -3,7 +3,7 @@
 #Con esto, todos los strings literales son unicode (no hace falta poner u'algo')
 from __future__ import unicode_literals
 
-
+import os
 import numpy as np
 import cv2
 
@@ -125,3 +125,34 @@ class MuestraBusquedaEnVivo(MuestraDelSeguimiento):
         if frenar:
             while cv2.waitKey(1) & 0xFF != ord('q'):
                 pass
+
+
+class GuardaBusqueda(MuestraBusquedaEnVivo):
+    def __init__(self, path, nframe):
+        self.path = path
+        self.nframe = nframe
+
+    def run(self, img, topleft, bottomright, *args, **kwargs):
+        # Necesario para no pisar la imagen original
+        img_copy = img.copy()
+
+        img_with_rectangle = self.dibujar_seguimiento(
+            img_copy,
+            topleft,
+            bottomright,
+        )
+
+        # Guardo el resultado
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+
+        part_filename = 'busqueda_frame_{f}'.format(f=self.nframe)
+        count = len([p for p in os.listdir(self.path)
+                     if p.startswith(part_filename)])
+        path = '{p}/{pf}_{n:02d}.png'.format(
+            p=self.path,
+            pf=part_filename,
+            n=count + 1,
+        )
+
+        cv2.imwrite(path, img_with_rectangle)
