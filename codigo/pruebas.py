@@ -123,25 +123,26 @@ def prueba_histogramas():
     images = {}
 
     # Taza
-    # model_filename = 'imagenes/taza_modelo'
-    # model_mask = cv2.imread('imagenes/taza_mascara.png', cv2.IMREAD_GRAYSCALE)
+    model_filename = 'imagenes/taza3'
+    model_mask = cv2.imread('imagenes/taza_mascara.png', cv2.IMREAD_GRAYSCALE)
 
     # Gorra
-    model_filename = 'imagenes/gorra_encontrada1'
-    model_mask = cv2.imread('imagenes/gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
+    # model_filename = 'imagenes/gorra_encontrada1'
+    # model_mask = cv2.imread('imagenes/gorra_modelo_mascara.png', cv2.IMREAD_GRAYSCALE)
 
-    # Taza
-    # for filename in ['imagenes/taza_modelo', 'imagenes/taza2',
-    #                  'imagenes/taza3', 'imagenes/taza4',
-    #                  'imagenes/taza_maso_encontrada1', 'imagenes/taza_maso_encontrada2',
-    #                  'imagenes/taza_maso_encontrada5', 'imagenes/taza',
-    #                  'imagenes/taza_maso_encontrada7']:
     # loop over the image paths
-    for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_encontrada',
-                     'imagenes/gorra_encontrada1', 'imagenes/gorra_encontrada2',
-                     'imagenes/gorra_encontrada3', 'imagenes/gorra_seguida1',
-                     'imagenes/gorra_seguida2', 'imagenes/gorra_seguida3',
-                     'imagenes/gorra_seguida4']:
+    # Taza
+    for filename in ['imagenes/taza_modelo', 'imagenes/taza2',
+                     'imagenes/taza3', 'imagenes/taza4',
+                     'imagenes/taza_maso_encontrada1', 'imagenes/taza_maso_encontrada2',
+                     'imagenes/taza_maso_encontrada5', 'imagenes/taza',
+                     'imagenes/taza_maso_encontrada7']:
+    # Gorra
+    # for filename in ['imagenes/gorra_modelo', 'imagenes/gorra_encontrada',
+    #                  'imagenes/gorra_encontrada1', 'imagenes/gorra_encontrada2',
+    #                  'imagenes/gorra_encontrada3', 'imagenes/gorra_seguida1',
+    #                  'imagenes/gorra_seguida2', 'imagenes/gorra_seguida3',
+    #                  'imagenes/gorra_seguida4']:
         mask = None
         image = cv2.imread(filename + '.png')
         image_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -182,9 +183,10 @@ def prueba_histogramas():
             if methodName == 'Correlation':
                 d = 1 - abs(d)
             elif methodName == 'Intersection':
-                d = 1.0 / (d + 1)
+                max_comp = max(sum(rgb_index[model_filename]), sum(hist))
+                d = 1 - d / max_comp
             elif methodName == 'Chi-Squared':
-                d = 1 - 1.0 / math.log(d + 10)
+                d = 1 - 1.0 / (1 + d)
             results['{f}#RGB'.format(f=k)] = d
 
         for (k, hist) in hsv_index.items():
@@ -194,9 +196,10 @@ def prueba_histogramas():
             if methodName == 'Correlation':
                 d = 1 - abs(d)
             elif methodName == 'Intersection':
-                d = 1.0 / (d + 1)
+                max_comp = max(sum(hsv_index[model_filename]), sum(hist))
+                d = 1 - d / max_comp
             elif methodName == 'Chi-Squared':
-                d = 1 - 1.0 / math.log(d + 10)
+                d = 1 - 1.0 / (1 + d)
             results['{f}#HSV'.format(f=k)] = d
 
         # sort the results
@@ -839,4 +842,4 @@ def ver_y_guardar_static_detection():
 
 
 if __name__ == '__main__':
-    ver_y_guardar_static_detection()
+    prueba_histogramas()
