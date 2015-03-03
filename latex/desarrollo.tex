@@ -413,7 +413,7 @@ En esta sección presentamos el sistema de seguimiento de RGB y de profundidad c
 \subsection{Entrenamiento}
 El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados. Una vez ejecutado el entrenamiento se pasa a la etapa de detección.
 
-\subsection{Detección}
+\subsection{Detección}\label{subsec:deteccion_rgbd}
 Teniendo en cuenta los métodos de detección usados en RGB y profundidad se busca una manera de unirlos para obtener un detector más confiable y que aproveche toda la información disponible. Por eso este método podemos dividirlo en dos etapas: detección RGB y detección en profundidad.
 
 Dado que el algoritmo de detección en profundidad es inestable cuando la nube de puntos en donde se busca el objeto tiene una gran superficie, se utiliza como método de detección de la primer sub-etapa al algoritmo de ``template matching'', es decir, el método RGB explicado en la sección \ref{deteccion_rgb}. Si este algoritmo detecta al objeto, se procede con la segunda sub-etapa. Si no hay detección, se reporta que el objeto no fue encontrado en el frame y se continúa con la detección en el próximo frame de la secuencia de video.
