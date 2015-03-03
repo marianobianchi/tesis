@@ -1,21 +1,32 @@
 \chapter{Resultados y análisis}\label{chap:resultados}
 En este capítulo se explican las pruebas realizadas durante el desarrollo de este trabajo a la vez que se analizan los resultados y se hacen hipótesis sobre los valores obtenidos. Se analizan todos los métodos explicados en el capítulo \ref{chap:sistema_de_seguimiento} por separado y se los compara entre sí hasta finalmente obtener de manera objetiva el mejor método de seguimiento.
 
-Con el objetivo de elegir los métodos definitivos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En esta sección explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para profundidad. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+Con el objetivo de elegir los métodos usados en cada etapa de cada sistema de seguimiento se realizaron varias pruebas. En este capítulo explicaremos cuales fueron estas pruebas, cómo se eligieron los valores para los distintos parámetros de cada método y mostraremos los resultados de los métodos elegidos, tanto para RGB como para profundidad. También analizaremos el funcionamiento del sistema de seguimiento RGB-D.
+
+La experimentación realizada es rigurosa. Siguiendo el enfoque presente durante todo este trabajo, se corrieron y analizaron diversas pruebas para cada uno de los métodos de cada sistema por separado buscando los parámetros que mejor generalizaran el comportamiento deseado para los algoritmos. Por este motivo se realizaron pruebas para el seguimiento RGB por un lado, para profundidad por otro y una vez elegidos los parámetros, se analizaron los resultados para la unión de los métodos en el sistema de seguimiento RGB-D.
 
 Para lograr una buena comparación entre métodos de seguimiento cuadro a cuadro, tanto para RGB como para profundidad, utilizamos como método de detección el método ``ideal''. El mismo consta simplemente de tomar los datos provistos por el \textit{ground truth} para los frames en donde se requería correr una detección. En el caso de RGB los datos son tomados directamente desde el ground truth. Como la base de datos solo provee la ubicación del objeto en RGB en el caso de la detección en profundidad estos datos se toman como punto de partida y luego se los refina tomando los datos del modelo 3D del objeto a buscar.
 
-\section{Elección del método de seguimiento RGB}
-Durante el proceso de selección de métodos se corrieron pruebas preeliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos elegidos para este fin. Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
-
-Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \cite{surf} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar un comparador de histogramas para hacer el seguimiento.
-
-El método que mejor se desempeñó en las pruebas preeliminares es el basado en histogramas por lo que se exploraron distintas soluciones basadas en este método utilizando ahora las escenas tomadas de la base de datos. Este método tiene distintas variables a explorar:
+\section{Elección del método de seguimiento RGB}\label{sec:eleccion_rgb}
+Durante el proceso de selección de métodos, se corrieron pruebas preliminares para elegir aquellos que mejor se adaptaran a las escenas y objetos representativos elegidos. Los objetos y escenas utilizados para este fin son los siguientes:
 \begin{itemize}
-	\item Modelo de color: RGB o HSV y canales a utilizar de cada uno
+	\item Taza, que aparece en la escena desk\_1
+	\item Gorra, también en la escena desk\_1
+	\item Bowl, que aparece en la escena desk\_2
+\end{itemize}
+
+Estos objetos y escenas son los que aparecen en las figuras \ref{fig:ejemplo_objetos_base} y \ref{fig:ejemplo_escenas_base}, tomados de la base de datos explicada en la Sección \ref{base_rgbd}.
+
+Una vez hecho un primer filtro, se exploraron algunos parámetros de cada método para obtener los mejores valores de cada uno y luego hacer una selección final entre aquellos que mejor se desempeñaran. En esta sección explicaremos cuales fueron los métodos y cómo llegamos a elegir el definitivo.
+
+Para el seguimiento RGB se tuvieron en cuenta dos métodos distintos. El primero utiliza SURF \cite{surf} para obtener puntos de interés y descriptores y luego un comparador para hacer comparaciones cuadro a cuadro. El segundo método consiste en extraer el histograma de la imagen RGB y utilizar una métrica para comparar histogramas para hacer el seguimiento.
+
+El método que mejor se desempeñó en las pruebas preliminares es el basado en histogramas por lo que se exploraron distintas soluciones basadas en este método utilizando las escenas antes mencionadas. Este método tiene distintas variables a explorar:
+\begin{itemize}
+	\item Modelo de color: RGB o HSV y canales a utilizar de cada modelo
 	\item Cantidad de categorías/celdas del histograma
 	\item Método de comparación de histogramas: \textit{Bhattachayyra}, \textit{Chi-Squared}, \textit{Correlation}, \textit{Intersection}
-	\item Umbrales para las distancias frame a frame y template a frame
+	\item Umbrales para las distancias de los histogramas de los cuadrantes elegidos frame a frame y para la distancia de histogramas del template del objeto al cuadrante del frame en donde se busca
 \end{itemize}
 
 
@@ -26,19 +37,26 @@ El método que mejor se desempeñó en las pruebas preeliminares es el basado en
 	\label{pruebas_eleccion_canales}
 \end{figure}
 
-Para decidir qué esquema de colores, qué canales y cuántas categorías por canal se iban a utilizar se eligieron dos objetos representativos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto pero en donde se lo veía de manera parcial. Una vez tomadas las muestras se eligió una como template/modelo del objeto y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de menor a mayor distancia. Esto se hizo fijando un método de comparación de histogramas. Un ejemplo de esto se puede ver en la Figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
+Para decidir qué esquema de colores, qué canales y cuántas categorías por canal se iban a utilizar, se eligieron dos objetos representativos de la base con sus respectivas escenas y se tomaron muestras de cada uno junto con muestras de distintas texturas de la escena o del mismo objeto (en donde se lo veía de manera parcial).
 
-De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
+Una vez tomadas las muestras se eligió una como template/modelo del objeto y se realizó una comparación entre el modelo y las distintas muestras tomadas de la escena y se ordenaron de menor a mayor distancia, fijando un método de comparación de histogramas, que también se evaluó. Un ejemplo de esto se puede ver en la Figura \ref{pruebas_eleccion_canales}. Esto se hizo con el objetivo de saber qué combinación de esquema, canales y bines por canal clasificaba mejor a las muestras.
+
+\begin{equation}\label{eq:pascal_overlap}
+Overlap(Area_A, Area_B) = \frac{Area_A \cap Area_B}{Area_A \cup Area_B - Area_A \cap Area_B}
+\end{equation}
+
 
 Para cuantificar la efectividad y robustes del tracking de cada algoritmo elegido decidimos evaluar las siguientes variables:
 \begin{itemize}
-	\item Promedio de área solapada: promedio de solapamiento de área, usando el cálculo propuesto en \cite{everinghampascal}, entre el objeto reportado por el algoritmo y el ground truth durante toda la escena teniendo en cuenta únicamente los casos en que se usó el algoritmo de seguimiento.
-	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%\footnote{En la Sección \ref{sec:evaluacion_rgbd} se explica a través de la Figura \ref{fig:accuracy_sistema} por qué se elige este valor.}
+	\item Porcentaje promedio de área solapada (\% promedio de overlap): promedio de solapamiento de área para todos los frames en donde se usó el algoritmo de seguimiento, usando el cálculo propuesto en \cite{everinghampascal}, entre la ubicación (\textit{bounding box} o caja de contorno) del objeto reportada por nuestro algoritmo y la reportada por el ground truth. La fórmula del cálculo es la presentada en la Ecuación \ref{eq:pascal_overlap}.
+	\item Porcentaje de seguimiento: de todas las veces que el objeto aparece en la escena obtenemos el porcentaje de veces que el algoritmo de seguimiento fue exitoso, es decir que lo reporta como encontrado y el área reportada se solapa con el área reportada por el ground truth en al menos un 30\%\footnote{En la Sección \ref{sec:evaluacion_rgbd} se explica por qué se elige este valor.}
 	\item Porcentaje de falsos positivos: cantidad de veces que el algoritmo reporta haber encontrado el objeto cuando en realidad no está en la imagen
 	\item Porcentaje de falsos negativos: cantidad de veces que el algoritmo no encuentra el objeto cuando en realidad el mismo está en la imagen o que lo encuentra pero el área reportada se solapa en menos de un 30\% con el área reportada por el ground truth
 \end{itemize}
 
-Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{tab:tabla_rgb}.
+Para realizar el cálculo de falsos positivos y falsos negativos se tuvo en cuenta la información frame a frame del ground truth así como también los resultados reportados por nuestro algoritmo.
+
+De este análisis surgió que las mejores combinaciones de esquema, canales y bines para estos ejemplos fueron utilizar el canal verde en el caso de RGB con unos 60 bines, los 3 canales RGB con 8 bines por canal y los canales SV del esquema de colores HSV, con 8 y 16 bines respectivamente. Una vez reducido el espectro de posibilidades comenzamos a realizar pruebas con el fin de definir para cada uno de estos esquemas qué método de comparación de histogramas convenía utilizar y con qué valor de umbral se obtenian mejores resultados.
 
 \begin{table}[h]
 	\centering
@@ -94,12 +112,17 @@ Los mejores resultados que obtuvimos se pueden observar en las tablas \ref{prueb
 	\label{tab:tabla_rgb}
 \end{table}
 
+Los mejores resultados que obtuvimos se encuentran en las tablas \ref{pruebas_definitivas_bhatta_green}, \ref{pruebas_definitivas_correl_green} y \ref{tab:tabla_rgb}. Como se puede observar, el método de seguimiento utilizando la distancia de Bhattachayyra combinando los modelos RGB y HSV es el que mejor resultados arroja, superando a los otros métodos en el análisis de falsos positivos y falsos negativos, y en la mayoría de los ejemplos también supera en porcentaje de promedio de solapamiento (overlap) y de seguimiento.
 
 
 \section{Evaluación del tracking RGB}\label{eval_rgb}
-A continuación se muestran los resultados del algoritmo de seguimiento elegido para las imágenes RGB con los valores de los parámetros ya fijados. Para todas las pruebas se eligieron tres objetos distintos que aparecen en dos escenas, todos sacados de la base de datos indicada en la sección \ref{base_rgbd}.
+A continuación se muestran los resultados del algoritmo de seguimiento elegido para las imágenes RGB con los valores de los parámetros ya fijados. Para todas las pruebas se usaron los tres objetos, y las escenas donde aparecen, nombrados en la Sección \ref{sec:eleccion_rgb} sacados de la base de datos indicada en la Sección \ref{base_rgbd}.
 
-Como podemos ver en la Tabla \ref{tab:tabla_rgb} el tracking se comporta de manera muy diversa dependiendo del objeto que se esté analizando. En los ejemplos de la taza y la gorra el algoritmo reporta haber encontrado al objeto en la mayoría de los casos, 85\% y 78\% respectivamente.\comentarioM{Acá me habias puesto un comentario que decía: ¿Qué significa?. Creo que ahora está un poco más claro escrito.} Este valor en conjunto con el promedio de solapamiento pueden darnos un indicio de que tan bien se desempeña el algoritmo. Si observamos el promedio de solapamiento vemos el algoritmo se comporta mucho mejor en el caso de la gorra, con un promedio de solapamiento del 55\%. Creemos que esto se debe a la marcada diferencia de color entre la gorra y el fondo de la imagen. Esto no sucede en el caso de la taza en el que repetidas veces el color de fondo varía entre colores y tonos similares a los de esta lo que provoca que la comparación de histogramas no sea robusta. En el caso del bowl el promedio de solapamiento es alto pero se debe a que el porcentaje de veces que se siguió al objeto es bajo. Como el algoritmo de detección es el ideal, cuantas más veces se usa la detección mejor es el porcentaje de solapamiento. Notamos que en esta escena los cambios de intensidad y textura son muy notorios lo que afecta negativamente al algoritmo.
+Como podemos ver en la Tabla \ref{tab:tabla_rgb}, el tracking se comporta de manera muy diversa dependiendo del objeto que se esté analizando. En los ejemplos de la taza y la gorra el algoritmo reporta haber encontrado al objeto en la mayoría de los casos, 85\% y 78\% respectivamente. Este valor en conjunto con el promedio de solapamiento pueden darnos un indicio de que tan bien se desempeña el algoritmo.
+
+Si observamos el promedio de solapamiento vemos que el algoritmo se comporta mucho mejor en el caso de la gorra, con un promedio de solapamiento del 55\%. Esto se debe a la marcada diferencia de color entre la gorra y el fondo de la imagen. Esto no sucede en el caso de la taza en el que repetidas veces el color de fondo varía entre colores y tonos similares a los de esta, lo que provoca que la comparación de histogramas no sea robusta. Este problema con las variaciones de colores del fondo es común en los métodos basados en histogramas.
+
+En el caso del bowl el promedio de solapamiento es alto pero se debe a que el porcentaje de veces que se siguió al objeto es bajo. Como el algoritmo de detección es el ideal, cuantas más veces se usa la detección mejor es el porcentaje de solapamiento. Notamos que en esta escena los cambios de intensidad y textura son muy notorios lo que afecta negativamente al algoritmo.
 
 
 \begin{figure}
@@ -125,22 +148,28 @@ Como podemos ver en la Tabla \ref{tab:tabla_rgb} el tracking se comporta de mane
 	\label{frame_frame_rgb}
 \end{figure}
 
-En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las distintas escenas. En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}.
+En la Figura \ref{frame_frame_rgb} se visualiza mejor el comportamiento del algoritmo para cada objeto en las escenas ya nombradas (desk\_1 para la taza y la gorra, desk\_2 para el bowl). En cada subfigura se muestra para cada escena y por cada frame el porcentaje de solapamiento entre el área del objeto reportada por el algoritmo y la indicada por el ground truth, siguiendo la métrica de Pascal VOC \cite{everinghampascal}, dada por la Fórmula \ref{eq:pascal_overlap}.
 
 \customsubsubsection{Colores en los gráficos de seguimiento frame a frame}
-Los colores en los puntos del gráfico representan los distintos resultados registrados por cada frame. Si el punto es de color verde, significa que el resultado reportado por nuestro algoritmo coincide con el ground truth en que el objeto no se encuentra en ese frame, es decir, es un verdadero negativo. Si el color es amarillo, significa que el algoritmo reportó haber encontrado al objeto y así también lo hace el ground truth, pero que las áreas reportadas no se solapan entre sí o el porcentaje de solapamiento es menor al 30\%. En este caso es un falso negativo. Pero también diferenciamos otro tipo de falso negativo, y se hace con el color naranja, y se usa cuando nuestro algoritmo no reporta haber encontrado al objeto pero el ground truth indica que el obtejo está en el frame.
+Los colores en los puntos del gráfico representan los distintos resultados registrados por cada frame.
+\begin{itemize}
+	\item Si el punto es de color verde, significa que el resultado reportado por nuestro algoritmo coincide con el ground truth en que el objeto no se encuentra en ese frame, es decir, es un verdadero negativo.
+	\item Si el color es amarillo, significa que el algoritmo reportó haber encontrado al objeto y así también lo hace el ground truth, pero que las áreas reportadas no se solapan entre sí o el porcentaje de solapamiento es menor al 30\%. En este caso es un falso negativo.
+	\item Si el punto es de color naranja, estamos frente a otro tipo de falso negativo. Este color se usa cuando nuestro algoritmo no reporta haber encontrado al objeto pero el ground truth indica que el obtejo está en el frame.
+	\item El rojo indica un falso positivo, es decir, cuando el ground truth indica que el objeto no está en el frame y nuestro algoritmo reporta lo contrario.
+	\item El color azul indica que el resultado reportado por nuestro algoritmo se solapa en un 30\% o más con el área indicada por el ground truth. A diferencia del resto de los colores antes mencionados que aparecen todos sobre el 0 del eje de porcentaje de solapamiento, los puntos azules pueden aparecer a cualquier nivel de este eje. La altura en donde esté el punto azul indica el porcentaje de solapamiento para ese frame.
+	\item El negro solo aplica a los métodos de profundidad presentados. Este color se presenta cuando en distintas corridas del algoritmo para un objeto en una escena se obtienen dos resultados distintos para un mismo frame.
+\end{itemize}
 
-Otro color que puede aparecer en este tipo de gráficos es el color rojo. El rojo indica un falso positivo, es decir, cuando el ground truth indica que el objeto no está en el frame y nuestro algoritmo reporta lo contrario. Además, también está el color azul. Este color indica que el resultado reportado por nuestro algoritmo se solapa en un 30\% o más con el área indicada por el ground truth. A diferencia del resto de los colores antes mencionados que aparecen todos sobre el 0 del eje de porcentaje de solapamiento, los puntos azules pueden aparecer a cualquier nivel de este eje. La altura en donde esté el punto azul indica el porcentaje de solapamiento para ese frame.
-
-Finalmente, existe un color más que puede aparecer: el negro. El método descripto en la Sección \ref{alignment_prerejective} utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan diferir en el resultado, una indicando que se encontró una alineación y la otra que no. Para corroborar la robustes de nuestro algoritmo se lo ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, es decir si se encontró o no se encontró el objeto, ese frame tiene un punto de alguno de los colores antes mencionados a la altura que corresponda. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas que tuvieron un resultado positivo para ese frame.
+El motivo por el cual los puntos de color negro solo pueden aparecer en los resultados de los métodos de seguimiento en profundidad es que el método descripto en la Sección \ref{alignment_prerejective}, presente en estos métodos, utiliza RANSAC como esquema para obtener la estimación de pose. Una de las características de este tipo de esquemas es que la exploración se realiza de manera aleatoria. Esto provoca que dos corridas del algoritmo con mismos valores de entrada puedan diferir en el resultado, una indicando que se encontró una alineación y la otra que no. Para corroborar la robustes de nuestro algoritmo se lo ejecuta varias veces para cada valor de entrada y luego al momento de hacer este gráfico comparamos los valores que obtuvimos en cada corrida para cada frame. Si en todas las corridas se obtuvo el mismo resultado, es decir si se encontró o no se encontró el objeto, ese frame tiene un punto de algún color distinto al negro, entre los colores antes mencionados. Si en cambio hay distintos resultados entre las corridas, ese frame tendrá un punto de color negro y la altura del punto será el promedio del área solapada entre todas las corridas que tuvieron un resultado positivo para ese frame.
 
 
 \customsubsubsection{Análisis del seguimiento frame a frame para RGB}
-En el Gráfico \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En el gráfico \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en el gráfico \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible explicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura de color blanco que pueden camuflarse con otros objetos de la escena.
+En la Figura \ref{frame_frame_rgb_taza} podemos ver que el algoritmo de seguimiento reporta un área que se solapa entre un 15\% y un 50\% en la mayoría de los casos. En la Figura \ref{frame_frame_rgb_gorra} la mayoría oscila entre un 35\% y un 50\% y en la Figura \ref{frame_frame_rgb_bowl} se observa que la mayoría se encuentra entre un 1\% y un 10\%. Una posible explicación de esto es que el algoritmo no funciona correctamente cuando los objetos tienen poca textura y esto empeora si existen objetos cercanos cuya textura sea similar a la del objeto que se está buscando. Este sería el caso de la taza y del bowl. Ambos son objetos con poca textura y de color blanco que pueden camuflarse con otros objetos de la escena.
 Cabe aclarar que en las tres subfiguras antes mencionadas todos los frames cuyo área de solapamiento es igual a 100\% corresponden a aquellos frames en donde el tracking pierde el objeto y se utiliza al algoritmo de detección ideal para localizar al objeto nuevamente.
 
 \section{Evaluación del tracking en profundidad}
-En esta sección se muestran los resultados de ICP para las imágenes de profundidad (profundidad) con los valores de los parámetros fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
+En esta sección se muestran los resultados del tracking basado en ICP para las imágenes de profundidad descripto en la Sección \ref{tracking_rgbd} con los valores de los parámetros ya fijados. Para todas las pruebas se eligieron los mismos tres objetos que para el caso de la evaluación del tracking RGB (ver sección \ref{eval_rgb}).
 
 \begin{table}[h]
 	\centering
@@ -160,7 +189,7 @@ En esta sección se muestran los resultados de ICP para las imágenes de profund
 \label{tabla_d}
 \end{table}
 
-En la Tabla \ref{tabla_d} se puede ver que el tracking se comporta de mejor manera que el algoritmo de RGB. Los tres ejemplos tienen una alta tasa de seguimiento. Además, en los tres casos se tiene un buen balance entre el promedio de solapamiento del área encontrada y el área reportada por el \textit{ground truth} y desvío estándar.
+En la Tabla \ref{tabla_d} se puede ver que el tracking se comporta de mejor manera que el algoritmo de RGB. Los tres ejemplos tienen una alta tasa de seguimiento. Además, en los tres casos se tiene un buen balance entre el promedio de solapamiento del área encontrada y el área reportada por el \textit{ground truth}.
 
 \begin{figure}
 	\centering

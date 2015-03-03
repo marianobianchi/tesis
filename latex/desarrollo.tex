@@ -264,7 +264,7 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 
 
-\section{Método propuesto para profundidad}\label{metodo_rgbd}
+\section{Método propuesto para profundidad}\label{metodo_d}
 En esta sección explicaremos los métodos utilizados durante las distintas etapas del esquema propuesto para el seguimiento en profundidad, entre los que se encuentra un método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de esta tesis, así como también un método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP). Además, al igual que se hizo en la Sección \ref{metodo_rgb} se detalla para cada etapa del algoritmo como se utiliza cada método y de que manera se los une para formar el sistema de seguimiento.
 
 
@@ -390,7 +390,6 @@ Para obtener los puntos del modelo en la escena, se arma un \kdt con los puntos 
 
 Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la etapa de seguimiento. Si cualquiera de estos pasos falla, se reporta el objeto como no encontrado y se comienza nuevamente con la etapa de detección en el siguiente frame.
 
-\hastaacaverifiquelodelabasededatos
 \subsection{Seguimiento}\label{tracking_d}
 El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
 
@@ -406,37 +405,37 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se explora como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procede a tomar los puntos de la escena que suponen ser los del objeto que se estaba buscando. La explicación de cómo se realiza este filtrado se puede ver en la sección \ref{deteccion_d}. Una vez filtrados los puntos de la escena se compara esta cantidad de puntos con la cantidad de puntos que tiene el modelo del objeto. Si los puntos de la escena superan un porcentaje de puntos del modelo se considera que el objeto fue encontrado. Este porcentaje también es uno de los parámetros explorados.
 
 
+
+
 \section{Método propuesto en RGB-D}\label{metodo_rgbd}
-En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_rgbd}.
+En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_d}.
 
 \subsection{Entrenamiento}
-El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista junto con máscaras que segmenten al objeto dentro de esos templates. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados. Una vez ejecutado el entrenamiento se pasa a la etapa de detección.
+El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados. Una vez ejecutado el entrenamiento se pasa a la etapa de detección.
 
 \subsection{Detección}
 Teniendo en cuenta los métodos de detección usados en RGB y profundidad se busca una manera de unirlos para obtener un detector más confiable y que aproveche toda la información disponible. Por eso este método podemos dividirlo en dos etapas: detección RGB y detección en profundidad.
 
 Dado que el algoritmo de detección en profundidad es inestable cuando la nube de puntos en donde se busca el objeto tiene una gran superficie, se utiliza como método de detección de la primer sub-etapa al algoritmo de ``template matching'', es decir, el método RGB explicado en la sección \ref{deteccion_rgb}. Si este algoritmo detecta al objeto, se procede con la segunda sub-etapa. Si no hay detección, se reporta que el objeto no fue encontrado en el frame y se continúa con la detección en el próximo frame de la secuencia de video.
 
-Cuando se encuentra el objeto usando ``template matching'' se pasa a la segunda sub-etapa. En esta sub-etapa se toma el recuadro reportado por el algoritmo de ``template matching'' junto con sus respectivos valores según el sensor de profundidad y se los transforma a puntos en el espacio 3D como se explicó en la sección \ref{sensores_rgbd}. Luego se toma un área cuatro veces mayor al área descripta por esos puntos manteniendo el centro de la misma y se filtra la nube de puntos de la escena obteniendo solo los puntos contenidos en el área marcada. Una vez filtrados los puntos de interés, se corre el método de detección en profundidad explicado en la Sección \ref{deteccion_d}. Si el método reporta haber encontrado al objeto, se da por hallado al objeto y se procede a almacenar la información necesaria para la etapa de seguimiento:
+En la segunda sub-etapa se toma el recuadro reportado por el algoritmo de ``template matching'' junto con sus respectivos valores según el sensor de profundidad y se los transforma a puntos en el espacio 3D como se explicó en la sección \ref{sensores_rgbd}. Luego se toma un área cuatro veces mayor al área descripta por esos puntos manteniendo el centro de la misma y se filtra la nube de puntos de la escena obteniendo solo los puntos contenidos en el área marcada. Una vez filtrados los puntos de interés, se corre el método de detección en profundidad explicado en la Sección \ref{deteccion_d}. Si el método reporta haber encontrado al objeto, se da por hallado al objeto y se procede a almacenar la información necesaria para la etapa de seguimiento:
 \begin{itemize}
 	\item Nube de puntos segmentada de la escena en donde se encontró al objeto
 	\item Modelo del objeto tomado en el entrenamiento alineado a la nube de puntos del ítem anterior
-	\item Template del objeto tomado de la escena a través de la ubicación reportada por el método de detección en profundidad, previamente transformada de puntos 3D a píxeles en la imagen RGB.
+	\item Template del objeto tomado de la escena a través de la ubicación reportada por el método de detección en profundidad, previamente transformada de puntos 3D a coordenadas de píxeles en la imagen RGB.
 \end{itemize}
 
 En caso de que la detección en profundidad no sea exitosa, se reporta al objeto como no encontrado y se vuelve a correr la detección en el siguiente frame.
 
 
 \subsection{Seguimiento}\label{tracking_rgbd}
-De manera similar a la unión de los métodos RGB y de profundidad para la detección, los métodos de seguimiento fueron unidos para lograr un método más robusto de seguimiento utilizando la toda la información disponible. Al igual que la etapa anterior esta etapa puede subdividirse en dos etapas, una para profundidad y otra para RGB.
+De manera similar a la unión de los métodos RGB y de profundidad para la detección, los métodos de seguimiento fueron unidos para lograr un método más robusto de seguimiento utilizando la toda la información disponible. Al igual que la etapa anterior esta etapa puede subdividirse en dos: una para profundidad y otra para RGB.
 
-El método de seguimiento en la primer sub-etapa es el de profundidad ICP explicado en la Sección \ref{tracking_d}. El método utiliza como entrada la información obtenida en la etapa de detección. Si el seguimiento falla, se vuelve a la etapa de detección para intentar encontrar el objeto en el nuevo frame. En caso de ser exitoso se pasa a la siguiente sub-etapa que es la de seguimiento en RGB.
+El método de seguimiento en la primer sub-etapa, la de profundidad, es ICP explicado en la Sección \ref{tracking_d}. El método utiliza como entrada la información obtenida en la etapa de detección. Si el seguimiento falla, se vuelve a la etapa de detección para intentar encontrar el objeto en el nuevo frame. En caso de ser exitoso se pasa a la siguiente sub-etapa que es la de seguimiento en RGB.
 
-Para esta segunda sub-etapa se utiliza la información obtenida con el resultado parcial del seguimiento en profundidad. Dada la nube de puntos segmentada por este algoritmo, se transforman esos puntos en píxeles en la imagen RGB y se obtiene el rectángulo en el dominio 2D más pequeño que contiene a esos píxeles. El algoritmo de seguimiento en RGB utilizado en esta sub-etapa es el mismo que se explicó en la Sección \ref{tracking_rgb}, aunque difiere en la forma de buscar posibles resultados en el frame actual. En este caso, tomando como centro el del rectángulo en RGB reportado por el seguimiento en profundidad, se toman rectángulos de distinto tamaño respetando dicho centro y estos son los rectángulos que sirven de entrada para el seguimiento RGB.
+Para esta segunda sub-etapa se utiliza la información obtenida con el resultado parcial del seguimiento en profundidad. Dada la nube de puntos segmentada por este algoritmo, se transforman esos puntos en coordenadas de píxeles en la imagen RGB y se obtiene el rectángulo en el dominio 2D más pequeño que contiene a esos píxeles. El algoritmo de seguimiento en RGB utilizado en esta sub-etapa es el mismo que se explicó en la Sección \ref{tracking_rgb}, aunque difiere en la forma de buscar posibles resultados en el frame actual. En este caso, tomando como centro el del rectángulo en RGB reportado por el seguimiento en profundidad, se toman rectángulos de distinto tamaño respetando dicho centro y estos son los rectángulos que sirven de entrada para el seguimiento RGB.
 
-A diferencia de la unión de métodos RGB y de profundidad para la detección, en este caso no hace falta que el seguimiento sea exitoso en las dos sub-etapas. Si el seguimiento en profundidad reporta haber encontrado al objeto se intenta mejorar el resultado usando el seguimiento en RGB. Si este segundo método no es exitoso, se reporta el resultado obtenido en profundidad. Por el contrario, si el seguimiento en RGB es exitoso, se reporta dicho resultado como seguimiento en el mundo 2D.
-
-
+A diferencia de la unión de métodos RGB y de profundidad para la detección, en este caso no hace falta que el seguimiento sea exitoso en las dos sub-etapas. Si el seguimiento en profundidad reporta haber encontrado al objeto se intenta mejorar el resultado usando el seguimiento en RGB. Si este segundo método no es exitoso, se reporta el resultado obtenido en profundidad. Por el contrario, si el seguimiento en RGB es exitoso se reporta su resultado.
 
 
 \chapter{Base de datos RGB-D}\label{base_rgbd}
@@ -445,7 +444,6 @@ Durante el desarrollo de este trabajo se utilizaron secuencias con información 
 \section{Objetos}
 La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos están organizados en distintas categorías de manera jerárquica tomando como referencia las relaciones de hiperónimo/hipónimo de WordNet\footnote{Princeton University ``About WordNet.'' WordNet. Princeton University. 2010. http://wordnet.princeton.edu}. En total hay unas 51 categorías. Cada objeto pertenece a una única categoría o clase de objetos y hay entre 3 y 14 instancias de un mismo objeto por cada categoría. Por ejemplo, en la categoría ``taza'' existen 8 instancias diferentes que se corresponden simplemente a distintas tazas ya sea por forma o por color. En total la base cuenta con secuencias de video RGB-D de 300 objetos de uso diario que junto con los distintos ángulos en los que fueron tomadas las escenas forman un total de 250.000 imágenes RGB-D.
 
-Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad constante en una base giratoria. La cámara RGB-D estaba ubicada a un metro de distancia y los videos se grabaron con la cámara montada a distintas alturas relativas a la base. Se filmó una secuencia por vuelta de cada objeto y para cada una de las alturas predefinidas. Cada uno de los frames de estas escenas viene acompañado de mucha información, como por ejemplo una imagen RGB más pequeña en donde está contenido el objeto, una máscara que permite segmentar al objeto del frame RGB, una nube de puntos del objeto segmentado para esa vista, etc. Esta información puede apreciarse en la Figura \ref{datos_objeto_base}.
 
 \begin{figure}
     \centering
@@ -472,10 +470,93 @@ Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad
     \label{datos_objeto_base}
 \end{figure}
 
+
+Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad constante en una base giratoria. La cámara RGB-D estaba ubicada a un metro de distancia y los videos se grabaron con la cámara montada a distintas alturas relativas a la base. Se filmó una secuencia por vuelta de cada objeto y para cada una de las alturas predefinidas. Cada uno de los frames de estas escenas viene acompañado de mucha información, como por ejemplo una imagen RGB más pequeña en donde está contenido el objeto, una máscara que permite segmentar al objeto del frame RGB, una nube de puntos del objeto segmentado para esa vista, etc. Esta información puede apreciarse en la Figura \ref{datos_objeto_base}.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/crop.png}
+        \caption{Taza}
+		\label{fig:taza}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/gorra.png}
+        \caption{Gorra}
+		\label{fig:gorra}
+    \end{subfigure}
+
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/bowl.png}
+        \caption{Bowl}
+		\label{fig:bowl}
+    \end{subfigure}
+	\quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/taza2.png}
+        \caption{Taza 2}
+		\label{fig:taza2}
+    \end{subfigure}
+
+	\quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/lata.png}
+        \caption{Lata de gaseosa}
+		\label{fig:lata}
+    \end{subfigure}
+	\quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/caja.png}
+        \caption{Caja de cereales}
+		\label{fig:caja}
+    \end{subfigure}
+    \caption{Muestra de objetos presentes en la base de datos.}
+    \label{fig:ejemplo_objetos_base}
+\end{figure}
+
+Algunos de los objetos con los que cuenta la base de datos pueden verse en la Figura \ref{fig:ejemplo_objetos_base}. En esta selección vemos instancias objetos de distintas categorías, a excepción de las tazas de las figuras \ref{fig:taza} y \ref{fig:taza2} que son dos instancias distintas de la misma categoría.
+
+
 \section{Escenas}
 Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB-D de escenas normales. Estas escenas cubren entornos cerrados comunes como oficinas, cocinas y sala de reuniones. Las escenas fueron grabadas sosteniendo el sensor RGB-D a la altura de los ojos de una persona mientras la persona que la sostenía caminaba alrededor de la escena. Los objetos que aparecen en la escena son capturados desde distintos ángulos y distancias, pudiendo estar o no ocluídos parcial o totalmente en algunos frames. De todos los objetos que componen la escena solo algunos se corresponden con objetos incluidos en la base de datos. Además, en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase, otorgando la posibilidad de verificar el comportamiento de algoritmos capaces de identificar instancias de objetos particulares o categorías de objetos según la clasificación de WordNet antes mencionada.
 
 Estas escenas fueron anotadas de manera automática con información de ground truth sobre la ubicación de cada objeto en cada frame. En particular, la información de ground truth indica la posición de un bounding box que contiene a cada objeto en cada frame RGB.
+
+\begin{figure}
+    \centering
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/desk_1.png}
+        \caption{Escritorio 1 (desk\_1)}
+		\label{fig:desk_1}
+    \end{subfigure}
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/desk_2.png}
+        \caption{Escritorio 2 (desk\_2)}
+		\label{fig:desk_2}
+    \end{subfigure}
+
+    \quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/table_1.png}
+        \caption{Mesa 1 (table\_1)}
+		\label{fig:table_1}
+    \end{subfigure}
+	\quad
+    \begin{subfigure}[b]{0.4\textwidth}
+        \includegraphics[width=\textwidth]{img/base_rgbd/table_small_2.png}
+        \caption{Mesa pequeña 2 (table\_small\_2)}
+		\label{fig:table_small_2}
+    \end{subfigure}
+
+    \caption{Muestra de escenas presentes en la base de datos.}
+    \label{fig:ejemplo_escenas_base}
+\end{figure}
+
+Algunas de las escenas con las que cuenta la base de datos pueden verse en la Figura \ref{fig:ejemplo_escenas_base}. En esta selección mostramos un frame de cada escena, aunque cada una está compuesta por varios frames. La escena llamada desk\_1 está compuesta por 98 frames, desk\_2 por 190, table por 125 y table\_small por 234.
+
 
 \begin{figure}
     \centering
@@ -504,9 +585,11 @@ Estas escenas fueron anotadas de manera automática con información de ground t
         \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_48_pcd.png}
     \end{subfigure}
 
-    \caption{Frames de ejemplo tomados de una escena de la base RGB-D. Cada columna tiene una imagen RGB en la primer fila y su correspondiente nube de puntos en la segunda fila.}
-    \label{escena_rgbd_base}
+    \caption{Frames de ejemplo tomados de la escena table\_1 de la base RGB-D. Cada columna tiene un frame RGB en la primer fila y su correspondiente nube de puntos en la segunda fila.}
+    \label{fig:escena_rgbd_base}
 \end{figure}
+
+En la Figura \ref{fig:escena_rgbd_base} se muestran tres frames correspondientes a la escena table\_1. Para cada frame se muestra no solo su información RGB sino que además se adjunta una imagen de la nube de puntos correspondiente.
 
 
 \section{Hardware}
