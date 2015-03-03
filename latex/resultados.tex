@@ -32,8 +32,8 @@ El método que mejor se desempeñó en las pruebas preliminares es el basado en 
 
 \begin{figure}
 	\centering
-	\includegraphics[width=\textwidth]{img/results_chi-squared_rgb_16r_4g_4b.png}
-	\caption{Ordenando muestras según comparación por chi-squared, tomando los canales RGB, 16 bines para el canal rojo y 4 para el verde y el azul. El modelo utilizado es un template de la taza sacado de la escena.}
+	\includegraphics[width=\textwidth]{img/results_chi-squared_hsv_8s_16v.png}
+	\caption{Ordenando muestras según comparación por chi-squared, tomando los canales SV del esquema HSV, usando 16 bines para el canal V y 8 para S.}
 	\label{pruebas_eleccion_canales}
 \end{figure}
 
@@ -418,11 +418,19 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 
 Como se esperaba, el algoritmo se comportó muy mal en el caso de la lata. Durante toda la escena el algoritmo reportó encontrar la lata en una zona que no se solapa con la reportada por el ground truth haciendo que el porcentaje de solapamiento sea muy bajo. En el caso de la nueva taza, el algoritmo funcionó de manera muy similar al caso de la taza que se utilizó durante el proceso de pruebas y selección de parámetros. En cuanto a la caja de cereales respecta, el algoritmo funcionó muy bien. A pesar del porcentaje relativamente bajo de veces que se siguió al objeto, las veces en las que hubo seguimiento el porcentaje de solapamiento fue bastante alto, como se puede ver en la Figura \ref{frame_frame_rgb_nuevo}. Un inconveniente que sufrió el algoritmo para esta escena es que la caja de cereales entre los frames 136 y 185 cambia la pose y en vez de estar de frente pasa a estar de costado (ver Figura \ref{fig:caja_de_costado}). Esto provoca que el histograma que describe a la caja en esos frames cambie mucho con respecto al del template que está tomado de frente y de esta manera el seguimiento reporta no encontrar al objeto. Si no se tienen en cuenta esos frames, el porcentaje de veces que se utiliza el algoritmo de seguimiento pasaría a ser de un 89\%.
 
-\begin{figure}
+\begin{figure}[t]
 	\centering
 	\includegraphics[width=\textwidth]{img/frame_a_frame/rgb-caja.png}
 	\caption{Seguimiento frame a frame para la caja de cereales según el tracking en RGB}
 	\label{frame_frame_rgb_nuevo}
+\end{figure}
+
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\textwidth]{img/caja_de_costado.png}
+	\caption{Cuadro de la escena en donde la caja de cereales aparece de costado}
+	\label{fig:caja_de_costado}
 \end{figure}
 
 

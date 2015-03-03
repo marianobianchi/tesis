@@ -276,9 +276,33 @@ El algoritmo presentado puede ser utilizado en múltiples tipos de representacio
 A continuación presentamos el pseudocódigo para el algoritmo ICP:
 
 %\newpage
-\footnotesize
-\lstinputlisting[language=Python, frame=single]{icp_pseudocode.py}
-\normalsize
+% \footnotesize
+% \lstinputlisting[language=Python, frame=single, float]{icp_pseudocode.py}
+% \normalsize
+
+\begin{algorithm}
+\caption{Pseudocódigo ICP}
+\label{lst:icp}
+\begin{algorithmic}
+\Function{icp}{$obj\_points$, $scene\_points$}
+	\State $t \gets TRANSFORMACION\_IDENTIDAD$
+	\State $t\_obj \gets obj\_points$
+	\State $sq\_error \gets MAX\_INT$
+	\While{$no\ se\ cumplen\ condiciones\ de\ corte$}
+		\State $closest\_points \gets get\_closest\_points$($t\_obj$, $scene\_points$)
+		\State $new\_t \gets get\_transformation$($closest\_points$) \Comment{i.e: SVD}
+		\State $t\_obj$ = transformar($t\_obj$, $new\_t$)
+		\State $sq\_dist \gets mean\_sq\_dist$($t\_obj$, $scene$)
+		\If{$abs(sq\_error,\ sq\_dist) < umbral\_de\_error$}
+			\State break \Comment{Salir del while}
+		\EndIf
+		\State $sq\_error \gets sq\_dist$
+	\EndWhile
+
+    \State \Return $t\_obj$, $sq\_error$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
 
 Entre las condiciones de corte para este algoritmo hay un límite máximo para la cantidad de iteraciones, el que se encuentra en el pseudocódigo que corta en caso de que dos transformaciones sucesivas difieran en el error cuadrático en menos de un umbral dado y por último una condición parecida que verifica que el error cuadrático de una transformación obtenida sea menor a un umbral.
 
@@ -306,9 +330,49 @@ Una vez obtenidos los puntos de interés y sus descriptores tanto en el objeto c
 
 A continuación presentamos el pseudocódigo de la heurística RANSAC de este trabajo:
 %\newpage
-\footnotesize
-\lstinputlisting[language=Python, frame=single]{alignment_prerejective_pseudocode.py}
-\normalsize
+% \footnotesize
+% \lstinputlisting[language=Python, frame=single, float]{alignment_prerejective_pseudocode.py}
+% \normalsize
+\begin{algorithm}
+\caption{Pseudocódigo de la heurística de alineación de objetos rígidos}
+\label{lst:icp}
+\begin{algorithmic}
+\Function{$alignment\_prerejective$}{$obj\_data$, $scene\_data$}
+	\State $best\_value \gets MAX\_INT$
+	\State $best\_t \gets TRANSFORMACION\_IDENTIDAD$
+	\State $obj\_desc \gets ecv\_context\_descriptors(obj\_data)$
+    \State $scene\_desc \gets  ecv\_context\_descriptors(scene\_data)$
+	\While{$queden\ iteraciones$} \Comment{RANSAC}
+		\State // Paso 1
+        \State $rand\_desc \gets tomar\_n\_random(obj\_desc)$
+        \State $corresp \gets find\_correspondences(scene\_desc, rand\_desc)$
+        \State // Paso 2: Descarte rapido si no son isometricos
+        \If{\textbf{not} $poligonos\_son\_isometricos(rand\_desc, corresp)$ }
+			\State continue \Comment{Ir a siguiente iteracion}
+		\EndIf
+
+        \State // Paso 3
+		\State $t \gets estimar\_transformacion(rand\_desc, corresp)$
+        \State // Paso 4
+        \State $t\_obj \gets transformar(obj\_data, t)$
+        \State // Paso 5
+        \State $pares\_de\_inliers \gets get\_closest\_points(t\_obj, scene\_data)$
+        \If {$len(pares\_de\_inliers) < umbral\_inliers$}
+			\State continue \Comment{Ir a siguiente iteracion}
+		\EndIf
+        \State // Paso 6
+        \State $sq\_dist \gets mean\_sq\_dist(pares\_de\_inliers)$
+        \If {$sq\_dist < best\_value$}
+            \State $best\_value \gets sq\_dist$
+			\State $best\_t = t$
+		\EndIf
+	\EndWhile
+
+    \State \Return $best\_t, best\_value$
+\EndFunction
+\end{algorithmic}
+\end{algorithm}
+
 
 El parámetro de corte aquí presentado es la cantidad de iteraciones, pero también se puede tomar como corte si la diferencia de cuadrados es menor que un umbral dado. La utilización del esquema RANSAC garantiza que el método sea robusto frente a outliers.
 
@@ -323,40 +387,50 @@ Llamamos vista del objeto a una nube de puntos del mismo tomada desde algún án
 
 Para obtener un modelo más completo del objeto hay distintas opciones. Una de ellas es generar un modelo CAD y transformarlo a nube de puntos. Otra opción es tomar muchas vistas distintas del objeto, variando altura desde donde se toma captura al objeto y a la vez rotando alrededor del mismo. Luego, estas vistas pueden alinearse usando métodos como los de las secciones \ref{alignment_prerejective} y \ref{ICP} para generar una única nube de puntos del objeto casi tan completa como la que se puede obtener con un modelo CAD.
 
-\begin{figure}
+En la Figura \ref{fig:nube_completa} se muestra una nube de puntos completa desde cuatro ángulos distintos de un mismo muñeco con forma de chef de porcelana. En la Figura \ref{fig:nube_simple} se muestra desde distintos ángulos una nube de puntos tomada desde una única vista de un objeto, en este caso una taza, a modo de ilustrar como se ve una nube incompleta.
+
+\begin{figure}[t]
 	\centering
-	\begin{subfigure}[b]{0.24\textwidth}
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_01.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+	\quad
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_02.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_03.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+	\quad
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/chef_04.png}
 	\end{subfigure}
+	\caption{Nube de puntos completa de chef hecho en porcelana.}
+	\label{fig:nube_completa}
+\end{figure}
 
-
-	\begin{subfigure}[b]{0.24\textwidth}
+\begin{figure}[t]
+	\centering
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_01.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+	\quad
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_02.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_03.png}
 	\end{subfigure}
-	\begin{subfigure}[b]{0.24\textwidth}
+	\quad
+	\begin{subfigure}[b]{0.4\textwidth}
 		\includegraphics[width=\textwidth]{img/ejemplos_nubes/taza_04.png}
 	\end{subfigure}
 
-	\caption{Fila de arriba: nube de puntos de chef de porcelana completo. Fila de abajo: nube de puntos de una sola vista de una taza.}
-	\label{fig:nube_completa_vs_simple}
+	\caption{Nube de puntos de una sola vista de una taza.}
+	\label{fig:nube_simple}
 \end{figure}
-
-En la Figura \ref{fig:nube_completa_vs_simple} se muestran dos nubes de puntos distintas desde distintos ángulos. En la fila de arriba vemos una nube completa de un chef de porcelana. En la fila de abajo se muestra una nube de puntos de una sola vista de una taza.
 
 Dado que en este trabajo priorizamos la etapa del tracking y que uno de los objetivos es tener un sistema de seguimiento fácilmente adaptable y, en un futuro, lograr un seguimiento en tiempo real, optamos por el método más simple y rápido que es tomar como modelo una nube de puntos de una única vista del objeto. Dependiendo del ángulo y altura desde donde se tome la vista del objeto se puede obtener un modelo más o menos completo. Por ejemplo, en el caso de la taza es conveniente tomar su modelo desde una altura considerable en donde se vea parte del interior de la taza y todo el frente. De esta manera se obtiene mucha información sobre la forma y profundidad de la misma y esto beneficia al funcionamiento de las siguientes etapas.
 
@@ -445,24 +519,28 @@ Durante el desarrollo de este trabajo se utilizaron secuencias con información 
 La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos están organizados en distintas categorías de manera jerárquica tomando como referencia las relaciones de hiperónimo/hipónimo de WordNet\footnote{Princeton University ``About WordNet.'' WordNet. Princeton University. 2010. http://wordnet.princeton.edu}. En total hay unas 51 categorías. Cada objeto pertenece a una única categoría o clase de objetos y hay entre 3 y 14 instancias de un mismo objeto por cada categoría. Por ejemplo, en la categoría ``taza'' existen 8 instancias diferentes que se corresponden simplemente a distintas tazas ya sea por forma o por color. En total la base cuenta con secuencias de video RGB-D de 300 objetos de uso diario que junto con los distintos ángulos en los que fueron tomadas las escenas forman un total de 250.000 imágenes RGB-D.
 
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/scene.png}
+		\centering
+        \includegraphics[scale=0.24]{img/base_rgbd/scene.png}
         \caption{Frame RGB sin procesar}
     \end{subfigure}
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/crop.png}
-        \caption{Frame RGB recortado al objeto}
+		\centering
+        \includegraphics[width=0.8\textwidth]{img/base_rgbd/crop.png}
+        \caption{Frame RGB recortado}
     \end{subfigure}
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/maskcrop.png}
         \caption{Máscara sobre el frame RGB recortado que segmenta al objeto}
     \end{subfigure}
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/cloud.png}
         \caption{Nube de puntos calculada con la información de profundidad}
     \end{subfigure}
@@ -473,15 +551,17 @@ La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos es
 
 Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad constante en una base giratoria. La cámara RGB-D estaba ubicada a un metro de distancia y los videos se grabaron con la cámara montada a distintas alturas relativas a la base. Se filmó una secuencia por vuelta de cada objeto y para cada una de las alturas predefinidas. Cada uno de los frames de estas escenas viene acompañado de mucha información, como por ejemplo una imagen RGB más pequeña en donde está contenido el objeto, una máscara que permite segmentar al objeto del frame RGB, una nube de puntos del objeto segmentado para esa vista, etc. Esta información puede apreciarse en la Figura \ref{datos_objeto_base}.
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/crop.png}
+		\centering
+        \includegraphics[width=0.8\textwidth]{img/base_rgbd/crop.png}
         \caption{Taza}
 		\label{fig:taza}
     \end{subfigure}
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/gorra.png}
         \caption{Gorra}
 		\label{fig:gorra}
@@ -489,26 +569,29 @@ Para tomar las escenas de los objetos se los filmó mientras giraban a velocidad
 
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/bowl.png}
         \caption{Bowl}
 		\label{fig:bowl}
     \end{subfigure}
 	\quad
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/taza2.png}
+		\centering
+        \includegraphics[width=0.8\textwidth]{img/base_rgbd/taza2.png}
         \caption{Taza 2}
 		\label{fig:taza2}
     \end{subfigure}
-
 	\quad
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/lata.png}
+		\centering
+        \includegraphics[scale=1.25]{img/base_rgbd/lata.png}
         \caption{Lata de gaseosa}
 		\label{fig:lata}
     \end{subfigure}
 	\quad
     \begin{subfigure}[b]{0.4\textwidth}
-        \includegraphics[width=\textwidth]{img/base_rgbd/caja.png}
+		\centering
+        \includegraphics[scale=0.6]{img/base_rgbd/caja.png}
         \caption{Caja de cereales}
 		\label{fig:caja}
     \end{subfigure}
@@ -524,15 +607,17 @@ Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB
 
 Estas escenas fueron anotadas de manera automática con información de ground truth sobre la ubicación de cada objeto en cada frame. En particular, la información de ground truth indica la posición de un bounding box que contiene a cada objeto en cada frame RGB.
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/desk_1.png}
         \caption{Escritorio 1 (desk\_1)}
 		\label{fig:desk_1}
     \end{subfigure}
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/desk_2.png}
         \caption{Escritorio 2 (desk\_2)}
 		\label{fig:desk_2}
@@ -540,12 +625,14 @@ Estas escenas fueron anotadas de manera automática con información de ground t
 
     \quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/table_1.png}
         \caption{Mesa 1 (table\_1)}
 		\label{fig:table_1}
     \end{subfigure}
 	\quad
     \begin{subfigure}[b]{0.4\textwidth}
+		\centering
         \includegraphics[width=\textwidth]{img/base_rgbd/table_small_2.png}
         \caption{Mesa pequeña 2 (table\_small\_2)}
 		\label{fig:table_small_2}
@@ -558,7 +645,7 @@ Estas escenas fueron anotadas de manera automática con información de ground t
 Algunas de las escenas con las que cuenta la base de datos pueden verse en la Figura \ref{fig:ejemplo_escenas_base}. En esta selección mostramos un frame de cada escena, aunque cada una está compuesta por varios frames. La escena llamada desk\_1 está compuesta por 98 frames, desk\_2 por 190, table por 125 y table\_small por 234.
 
 
-\begin{figure}
+\begin{figure}[t]
     \centering
     \begin{subfigure}[b]{0.3\textwidth}
         \includegraphics[width=\textwidth]{img/escena_rgbd/table_1_27.png}

@@ -230,7 +230,8 @@ def prueba_histogramas():
                 ax = fighsv.add_subplot(3, 3, hsv_res_num + 1)
                 hsv_res_num += 1
 
-            ax.set_title("%s: %.5f" % (k, v))
+            # ax.set_title("%s: %.5f" % (k, v))
+            ax.set_title("%.5f" % v)
 
             k = k.split('#')[0]
             ax.imshow(images[k])

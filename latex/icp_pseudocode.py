@@ -20,3 +20,5 @@ def icp(obj_points, scene_points):
             break  # Salir del while
 
         error_cuadratico = sq_dist
+
+    return obj_point_transf, error_cuadratico
