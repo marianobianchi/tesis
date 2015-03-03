@@ -316,11 +316,24 @@ En el único caso que mejoró el promedio de solapamiento es el de la taza en do
 
 Una hipótesis sobre la marcada diferencia del porcentaje de solapamiento entre el tracking RGB-D y usando solo profundidad es la manera en que se hace la comparación de histogramas entre el área de búsqueda del frame actual y uno de los templates del objeto. Para esta comparación, como se explicó en la sección \ref{tracking_rgb}, se toma uno de los templates del objeto obtenido en la etapa de entrenamiento y se calcula su histograma. Como la gorra es casi totalmente roja, el histograma RGB va a estar claramente marcado por la presencia del color rojo. En cambio, en el recuadro reportado por el tracking en profundidad no solo aparece parte o la totalidad del objeto sino que además se incluye parte del fondo del recuadro en donde se encuentra el objeto. Al igual que en el seguimiento RGB, el algoritmo se ve perjudicado por no poder aislar al objeto del fondo de la imagen.
 
-En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver los distintos recuadros analizados por la mejora RGB, el recuadro del frame anterior y el template del objeto utilizado en la comparación. Se marca además cuál es el recuadro del frame actual elegido como el mejor según la comparación RGB.
+En la Figura \ref{mejora_rgb_en_tracking_rgbd} se pueden ver el recuadro reportado por el seguimiento en profundidad (Subfigura \ref{fig:depth_sin_mejorar}) y el que finalmente reporta el sistema RGB-D, que es el seguimiento mejorado usando RGB (Subfigura \ref{fig:rgb_mejorado}). Como podemos ver, no siempre se obtienen mejores resultados al combinar los métodos en profundidad y RGB.
 
 \begin{figure}
-	%\includegraphics[width=\textwidth]{img/frame_a_frame/depth-bowl.png}
-	\caption{Mejora obtenida según RGB para el tracking RGB-D}
+	\centering
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{img/mejora_rgb/depth_frame_31.png}
+		\caption{Recuadro reportado por el seguimiento en profundidad. Se solapa un 53\% con el de ground truth}
+		\label{fig:depth_sin_mejorar}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.4\textwidth}
+		\centering
+		\includegraphics[width=\textwidth]{img/mejora_rgb/rgb_frame_31.png}
+		\caption{Recuadro reportado por el seguimiento en RGB. Se solapa un 31\% con el de ground truth}
+		\label{fig:rgb_mejorado}
+	\end{subfigure}
+	\caption{Supuesta mejora obtenida en RGB luego de correr el seguimiento en profundidad, para el tracking RGB-D}
 	\label{mejora_rgb_en_tracking_rgbd}
 \end{figure}
 
