@@ -14,9 +14,9 @@ Existen varias implementaciones de cámaras que otorgan esta información y cada
     \label{fig:sensores_rgbd}
 \end{figure}
 
-Una de las características de los sensores de profundidad de este tipo es que al utilizar luz infrarroja no necesitan luz para sensar y obtener información. De manera contraria a una cámara RGB, este sensor se ve perjudicado por la luz solar ya que el sol emite luz infrarroja que interfiere con el patrón dibujado por el proyector, haciendo que los datos sensados no sean correctos. Además el método se ve perjudicado cuando existen en la escena objetos como vidrios, espejos y superficies brillantes ya que los haces de luz son reflejados y por lo tanto se modifica el patrón proyectado por el sensor.
+Una de las características de los sensores de profundidad de este tipo es que al utilizar luz infrarroja no necesitan luz para funcionar y obtener información. De manera contraria a una cámara RGB, este sensor se ve perjudicado por la luz solar ya que el sol emite luz infrarroja que interfiere con el patrón dibujado por el proyector, haciendo que los datos obtenidos no sean correctos. Además el método se ve perjudicado cuando existen en la escena objetos como vidrios, espejos y superficies brillantes ya que los haces de luz son reflejados y por lo tanto se modifica el patrón proyectado por el sensor.
 
-La información de profundidad puede utilizarse en conjunto con la de color para rearmar la escena en 3D. Conociendo los parámetros de calibración de la cámara se puede calcular en donde se ubica cada pixel dentro de una escena en 3D y de esta manera obtener lo que se llama ``nube de puntos''. Una nube de puntos es un conjunto de 3-uplas en donde cada valor corresponde a una distancia para cada uno de los ejes que representan un espacio 3D. En la Figura \ref{nube_de_puntos_sola} podemos ver un ejemplo de este tipo de nube de puntos. Cuando se combina una nube de puntos con la información 3D, se puede obtener una nube de puntos más completa, como las que se muestran en la Figura \ref{nube_de_puntos_color}.
+La información de profundidad puede utilizarse en conjunto con la de color para rearmar la escena en 3D. Conociendo los parámetros de calibración de la cámara se puede calcular en donde se ubica cada píxel dentro de una escena en 3D y de esta manera obtener lo que se llama ``nube de puntos''. Una nube de puntos es un conjunto de 3-uplas en donde cada valor corresponde a una distancia para cada uno de los ejes que representan un espacio 3D. En la Figura \ref{nube_de_puntos_sola} podemos ver un ejemplo de este tipo de nube de puntos. Cuando se combina una nube de puntos con la información 3D, se puede obtener una nube de puntos más completa, como las que se muestran en la Figura \ref{nube_de_puntos_color}.
 
 \begin{figure}
 	\centering
@@ -74,22 +74,22 @@ La etapa de entrenamiento en este método consta de tomar varios templates del o
 	\centering
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/templates/0_crop.png}
-		\caption{Rotacion $0^{\circ}$}
+		\caption{Rotación $0^{\circ}$}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/templates/90_crop.png}
-		\caption{Rotacion $90^{\circ}$}
+		\caption{Rotación $90^{\circ}$}
 	\end{subfigure}
 
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/templates/180_crop.png}
-		\caption{Rotacion $180^{\circ}$}
+		\caption{Rotación $180^{\circ}$}
 	\end{subfigure}
 	\quad
 	\begin{subfigure}[b]{0.25\textwidth}
 		\includegraphics[width=\textwidth]{img/templates/270_crop.png}
-		\caption{Rotacion $270^{\circ}$}
+		\caption{Rotación $270^{\circ}$}
 	\end{subfigure}
 	\caption{Templates de una gorra}
 	\label{templates_objeto}
@@ -108,11 +108,11 @@ Para aplicar esta técnica se necesitan tres cosas:
 	\item Método de comparación de imágenes
 \end{itemize}
 
-La técnica consiste en ir moviendo el template sobre la imagen de búsqueda pixel por pixel, de izquierda a derecha y de arriba hacia abajo. En cada pixel, se va comparando el template con el área de la imagen de búsqueda que comienza en el pixel explorado y cuyo tamaño es igual al del template. Esta comparación nos indica la similitud que hay entre el área de la imagen de búsqueda y el template. A medida que se recorre la imagen se va acumulando este valor de comparación junto con la posición del pixel en la imagen, hasta haber recorrido toda la imagen.
+La técnica consiste en ir moviendo el template sobre la imagen de búsqueda píxel por píxel, de izquierda a derecha y de arriba hacia abajo. En cada píxel, se va comparando el template con el área de la imagen de búsqueda que comienza en el píxel explorado y cuyo tamaño es igual al del template. Esta comparación nos indica la similitud que hay entre el área de la imagen de búsqueda y el template. A medida que se recorre la imagen se va acumulando este valor de comparación junto con la posición del píxel en la imagen, hasta haber recorrido toda la imagen.
 
-Una vez recorrida la imagen se busca cual de todas las comparaciones es mejor y se obtiene el pixel donde comienza la región, que junto con el tamaño del template permiten obtener el recuadro de la imagen de búsqueda que más se parece al template.
+Una vez recorrida la imagen se busca cual de todas las comparaciones es mejor y se obtiene el píxel donde comienza la región, que junto con el tamaño del template permiten obtener el recuadro de la imagen de búsqueda que más se parece al template.
 
-Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación pixel por pixel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente fórmula: Sea I la imágen de búsqueda y T el template, la diferencia cuadrática se calcula así:
+Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación píxel por píxel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente fórmula: Sea I la imagen de búsqueda y T el template, la diferencia cuadrática se calcula así:
 \begin{equation}\label{eq:diferencia_cuadratica}
 R(x, y) = \displaystyle\sum\limits_{x', y'} (T(x', y') - I(x + x', y + y'))^2
 \end{equation}
@@ -122,7 +122,7 @@ Teniendo en cuenta el método de comparación elegido, una manera de utilizar es
 
 \customsubsubsection{Esquema de detección}
 
-La información recolectada durante el entrenamiento se toma con la intención de poder aplicar como método de detección al algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. El último parámetro le indica al algoritmo de template matching que comparación usar para emparejar el template a la imagen. En este trabajo se decide utilizar diferencia cuadrática pixel por pixel normalizada, presente en la fórmula \ref{eq:diferencia_cuadratica}
+La información recolectada durante el entrenamiento se toma con la intención de poder aplicar como método de detección al algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. El último parámetro le indica al algoritmo de template matching que comparación usar para emparejar el template a la imagen. En este trabajo se decide utilizar diferencia cuadrática píxel por píxel normalizada, presente en la fórmula \ref{eq:diferencia_cuadratica}
 
 Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates del objeto a buscar puede no ser la misma escena en la que se realiza el seguimiento. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena. Además, la distancia de la cámara al objeto en la escena de búsqueda puede variar y diferir ampliamente de la distancia entre ambos en la escena en donde se capturan los templates del objeto. Por este motivo también puede diferir la escala del objeto en cada escena.
 
@@ -131,7 +131,7 @@ Teniendo en cuenta estos problemas decidimos realizar varias corridas del algori
 \subsection{Seguimiento}\label{tracking_rgb}
 Como se explicó al comienzo del capítulo, esta etapa consta de seguir al objeto detectado en la etapa anterior frame a frame. Para concretar este objetivo se necesita encontrar una manera de combinar la información obtenida durante las dos etapas anteriores. Existen muchas maneras de llevar a cabo esta tarea. La forma que elegimos para este trabajo fue utilizar un método de comparación por histogramas.
 
-Cada imagen RGB consta de tres imagenes, una por cada canal. Para calcular el histograma de una imagen se toman los distintos valores (intensidad) de cada pixel y se cuenta la cantidad de veces que se repite cada uno de esos valores en la imagen. Las imágenes que utilizamos durante el transcurso de este trabajo son de 8 bits por pixel, por lo que cada pixel puede tomar un valor entre 0 y 255. Para que las comparaciones entre histogramas sean más robustas lo que se decidió fue trabajar con histogramas normalizados.
+Cada imagen RGB consta de tres imágenes, una por cada canal. Para calcular el histograma de una imagen se toman los distintos valores (intensidad) de cada píxel y se cuenta la cantidad de veces que se repite cada uno de esos valores en la imagen. Las imágenes que utilizamos durante el transcurso de este trabajo son de 8 bits por píxel, por lo que cada píxel puede tomar un valor entre 0 y 255. Para que las comparaciones entre histogramas sean más robustas lo que se decidió fue trabajar con histogramas normalizados.
 
 
 \begin{figure}
@@ -293,9 +293,9 @@ Entre las ventajas más importantes de este método está el hecho de que maneje
 \subsection{Alineación de objetos rígidos en una escena}\label{alignment_prerejective}
 El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
 
-Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y ocluciones. El objetivo del trabajo \cite{6630856} es combinar entradas del dominio RGB o 2D y de profundidad o 3D de manera eficiente para resolver el problema de la estimación de pose.
+Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y oclusiones. El objetivo del trabajo \cite{6630856} es combinar entradas del dominio RGB o 2D y de profundidad o 3D de manera eficiente para resolver el problema de la estimación de pose.
 
-En este trabajo se realizan una serie de pasos bien definidos hasta obtener una transformación como resultado final que indique la pose del objeto en la escena. En primera instancia, se obtiene un conjunto de puntos de interés utilizando un sistema de \textit{Early Cognitive Vision} (ECV). Los descriptores provenientes de este sistema ECV son considerados atómicos y se los llama \textit{primitivos}. La densidad de estos descriptores está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Cada una de estas primitivas tiene información geométrica y de texturas de manera que sirve como descriptor para imagenes RGB, para nubes de puntos o para una combinación de ambas. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogenea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los píxeles en las regiones homogeneas resultan ser ambiguos para buscar correspondencias.
+En este trabajo se realizan una serie de pasos bien definidos hasta obtener una transformación como resultado final que indique la pose del objeto en la escena. En primera instancia, se obtiene un conjunto de puntos de interés utilizando un sistema de \textit{Early Cognitive Vision} (ECV). Los descriptores provenientes de este sistema ECV son considerados atómicos y se los llama \textit{primitivos}. La densidad de estos descriptores está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Cada una de estas primitivas tiene información geométrica y de texturas de manera que sirve como descriptor para imágenes RGB, para nubes de puntos o para una combinación de ambas. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogénea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los píxeles en las regiones homogéneas resultan ser ambiguos para buscar correspondencias.
 A cada punto de interés se le agrega un descriptor que contempla información de textura y geometría del objeto en una vecindad de puntos predefinida para aumentar la habilidad del método para distinguir falsas correspondencias. A esto se lo llama \textit{ECV context descriptors}.
 
 Una vez obtenidos los puntos de interés y sus descriptores tanto en el objeto como en la escena se utiliza \textit{RANSAC} \cite{ransac} para estimar una transformación que alinee el objeto con la escena. Formalmente lo que se busca es una transformación $\hat{T}$ que minimice la suma de la diferencia de cuadrados entre los puntos p del modelo del objeto P y sus correspondencias con los puntos q en la escena Q:
@@ -377,7 +377,7 @@ Teniendo en cuenta esto se pensó en una variante para la detección que utilice
 Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el primer método y el cuadrante de la escena donde fue encontrado. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una forma de obtener los puntos del modelo del objeto en la escena es utilizando un \kdt.
 
 \customsubsubsection{K-D Tree}
-Un \kdt es una estructura de datos que permite organizar puntos en un espacio k-dimensional. En particular es un árbol binario con otras restricciones. Son muy útiles para realizar búsquedas por rango o por vecinos cercanos. Una búsqueda por rango es una búsqueda para obtener todos aquellos puntos del árbol que estén contenidos en un rango determinado para una dimensión determinada, permitiendo combinar hasta k rangos, uno por cada dimensión. La búsqueda por vecinos cercanos tiene como objetivo encontrar el punto del árbol más cercano a un punto recibido como parámetro. Existen implementaciones en las cuales esta búsqueda es logaritmica en la cantidad de puntos del árbol.
+Un \kdt es una estructura de datos que permite organizar puntos en un espacio k-dimensional. En particular es un árbol binario con otras restricciones. Son muy útiles para realizar búsquedas por rango o por vecinos cercanos. Una búsqueda por rango es una búsqueda para obtener todos aquellos puntos del árbol que estén contenidos en un rango determinado para una dimensión determinada, permitiendo combinar hasta k rangos, uno por cada dimensión. La búsqueda por vecinos cercanos tiene como objetivo encontrar el punto del árbol más cercano a un punto recibido como parámetro. Existen implementaciones en las cuales esta búsqueda es logarítmica en la cantidad de puntos del árbol.
 
 Para obtener los puntos del modelo en la escena, se arma un \kdt con los puntos provenientes del modelo alineado y se filtran uno a uno los puntos de la escena buscando a los que tengan al menos un punto del modelo como vecino cercano dado un cierto radio de distancia. Los puntos que surjan de esta búsqueda son los considerados como encontrados en la escena. El radio de distancia usado en la búsqueda de vecinos cercanos es calculado y actualizado dinámicamente dependiendo de la cantidad de puntos de la escena tomados en el frame anterior. Se comienza con un radio prefijado y una vez que se encuentra el objeto por primera vez, se filtran los puntos del modelo en la escena como explicamos antes y comparando esa cantidad de puntos obtenidos con la cantidad de puntos que tiene el modelo se ajusta el tamaño del radio de acuerdo a los siguientes criterios:
 \begin{itemize}
@@ -399,7 +399,7 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 	\item Distancia máxima de correspondencia: Si entre dos puntos existe una distancia mayor a este valor no se van a tener en cuenta para la búsqueda de correspondencias.
 	\item Número de iteraciones máximo: Criterio de corte.
 	\item Distancia mínima entre transformaciones: Criterio de corte. Si dos transformaciones consecutivas tienen una distancia menor a este valor, el algoritmo termina.
-	\item Suma euclidea mínima: Criterio de corte. Es la diferencia euclidea mínima permitida entre dos pasos del algoritmo.
+	\item Suma euclídea mínima: Criterio de corte. Es la diferencia euclídea mínima permitida entre dos pasos del algoritmo.
 \end{enumerate}
 
 Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se explora como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procede a tomar los puntos de la escena que suponen ser los del objeto que se estaba buscando. La explicación de cómo se realiza este filtrado se puede ver en la sección \ref{deteccion_d}. Una vez filtrados los puntos de la escena se compara esta cantidad de puntos con la cantidad de puntos que tiene el modelo del objeto. Si los puntos de la escena superan un porcentaje de puntos del modelo se considera que el objeto fue encontrado. Este porcentaje también es uno de los parámetros explorados.
@@ -520,7 +520,7 @@ Algunos de los objetos con los que cuenta la base de datos pueden verse en la Fi
 
 
 \section{Escenas}
-Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB-D de escenas normales. Estas escenas cubren entornos cerrados comunes como oficinas, cocinas y sala de reuniones. Las escenas fueron grabadas sosteniendo el sensor RGB-D a la altura de los ojos de una persona mientras la persona que la sostenía caminaba alrededor de la escena. Los objetos que aparecen en la escena son capturados desde distintos ángulos y distancias, pudiendo estar o no ocluídos parcial o totalmente en algunos frames. De todos los objetos que componen la escena solo algunos se corresponden con objetos incluidos en la base de datos. Además, en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase, otorgando la posibilidad de verificar el comportamiento de algoritmos capaces de identificar instancias de objetos particulares o categorías de objetos según la clasificación de WordNet antes mencionada.
+Sumado a las vistas de los objetos, la base cuenta con 8 secuencias de video RGB-D de escenas normales. Estas escenas cubren entornos cerrados comunes como oficinas, cocinas y sala de reuniones. Las escenas fueron grabadas sosteniendo el sensor RGB-D a la altura de los ojos de una persona mientras la persona que la sostenía caminaba alrededor de la escena. Los objetos que aparecen en la escena son capturados desde distintos ángulos y distancias, pudiendo estar o no ocluidos parcial o totalmente en algunos frames. De todos los objetos que componen la escena solo algunos se corresponden con objetos incluidos en la base de datos. Además, en cada escena se combinan distintas clases de objetos y distintas instancias de la misma clase, otorgando la posibilidad de verificar el comportamiento de algoritmos capaces de identificar instancias de objetos particulares o categorías de objetos según la clasificación de WordNet antes mencionada.
 
 Estas escenas fueron anotadas de manera automática con información de ground truth sobre la ubicación de cada objeto en cada frame. En particular, la información de ground truth indica la posición de un bounding box que contiene a cada objeto en cada frame RGB.
 
@@ -593,4 +593,4 @@ En la Figura \ref{fig:escena_rgbd_base} se muestran tres frames correspondientes
 
 
 \section{Hardware}
-Todas las secuencias de video de esta base de datos fueron capturadas utilizando un prototipo de cámara RGB-D fabricada por PrimeSense. Esta cámara graba simultáneamente imágenes RGB y de profundidad, cada una con una resolución de 640x480 píxeles y una frecuencia de 20 frames por segundo. Cada par de imágenes RGB y de profundidad provistos por la cámara están alineados y sincronizados, propiedades provistas por el driver de la cámara. Los puntos 3D en el espacio físico para cada pixel pueden obtenerse usando parámetros del sensor conocidos previamente.
+Todas las secuencias de video de esta base de datos fueron capturadas utilizando un prototipo de cámara RGB-D fabricada por PrimeSense. Esta cámara graba simultáneamente imágenes RGB y de profundidad, cada una con una resolución de 640x480 píxeles y una frecuencia de 20 frames por segundo. Cada par de imágenes RGB y de profundidad provistos por la cámara están alineados y sincronizados, propiedades provistas por el driver de la cámara. Los puntos 3D en el espacio físico para cada píxel pueden obtenerse usando parámetros del sensor conocidos previamente.
