@@ -90,7 +90,7 @@ De este análisis surgió que las mejores combinaciones de esquema, canales y bi
 	    Bowl   & 17.47      & 13.64     & 5.26   & 26.84 \\
 	    \hline
     \end{tabular}
-	\caption{Mejores resultados usando comparación de histogramas por Correlation para el canal verde con 60 bines}
+	\caption{Mejores resultados usando comparación de histogramas por \textit{Correlation} para el canal verde con 60 bines}
 	\label{pruebas_definitivas_correl_green}
 \end{table}
 
@@ -275,7 +275,7 @@ La primera combinación que analizaremos es la que le da prioridad al tracking e
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza   & 65.07      & 90.05     & 0        &   1.7 \\
@@ -346,7 +346,7 @@ La segunda combinación para el tracking RGB-D es la que le da prioridad al trac
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza   & 50.48      & 83.10     & 0      & 8.16  \\
@@ -415,7 +415,7 @@ Teniendo en cuenta esta nueva selección de objetos y escenas y el motivo por el
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza 2  & 29.54      &  35.9     & 0        &  16 \\
@@ -452,7 +452,7 @@ Como se esperaba, el algoritmo se comportó muy mal en el caso de la lata. Duran
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza 2  & 55.79      & 80.51     & 0.27     &   1.2 \\
@@ -489,7 +489,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza 2  & 35.98      & 48.33      & 0.8     & 10.93 \\
@@ -507,7 +507,7 @@ Finalmente analizamos los resultados de los algoritmos de tracking que combinan 
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos}\\
 	Objeto & & & &\\
     \hline
     Taza 2  & 33.62      & 39.32      & 0       & 14.93\\
@@ -539,9 +539,13 @@ Realizando esta comparación entre el seguimiento en profundidad solo y el segui
 
 Finalmente, si comparamos los dos métodos de seguimiento combinados, el método que tiene como principal seguimiento al seguimiento en profundidad supera al que tiene a RGB como principal. Esto se nota por un lado con la escena de la taza, en donde el porcentaje de solapamiento es de un 65\% contra el 50\% del que tiene RGB como principal incluso superándolo en porcentaje de veces seguido. Algo más notorio es en el caso del bowl en donde supera ampliamente en porcentaje de seguimiento y de solapamiento. El análisis de falsos positivos y falsos negativos también es muy favorable para el seguimiento combinado priorizando el método de profundidad.
 
+\customsubsubsection{La selección de parámetros fue correcta}
 Todas estas comparaciones se mantienen cuando hacemos el análisis de los resultados para los objetos que no se utilizaron durante la selección de parámetros, salvo en el caso de la comparación entre seguimiento en profundidad solo y el seguimiento combinado con el de profundidad como principal. Este último parece verse afectado por las correcciones hechas con el seguimiento RGB ya que, salvo en la escena de la lata, es superado por el seguimiento en profundidad notoriamente.
 
-Con estos resultados podemos decir que el método de seguimiento en profundidad es en general mejor que el seguimiento en RGB, considerando los métodos elegidos en cada caso y para los objetos que se utilizaron durante los experimentos. En cuanto a la combinación de métodos creemos que es mejor utilizar aquella que prioriza el seguimiento en profundidad y es mejorado con RGB. Sin embargo, resulta clave poder combinar los métodos de manera de minimizar las ocasiones en que el intento de corrección del resultado con el método secundario, en este caso RGB, empeoren el resultado final. Si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado únicamente en profundidad.
+\customsubsubsection{El seguimiento en profundidad es más robusto}
+Con estos resultados podemos decir que el método de seguimiento en profundidad es en general mejor que el seguimiento en RGB, considerando los métodos elegidos en cada caso y para los objetos que se utilizaron durante los experimentos. En cuanto a la combinación de métodos creemos que es mejor utilizar aquella que prioriza el seguimiento en profundidad y es mejorado con RGB. Sin embargo, resulta clave poder combinar los métodos de manera de minimizar las ocasiones en que el intento de corrección del resultado con el método secundario, en este caso RGB, empeoren el resultado final.\\
+Si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado únicamente en profundidad.
+
 
 
 \section{Evaluación del sistema RGB-D}\label{sec:evaluacion_rgbd}
@@ -556,7 +560,7 @@ accuracy = \frac{\#TP + \#TN}{\#TP + \#TN + \#FP + \#FN}
 	\centering
     \begin{tabular}{|c|c|c|c|c|c|}
     \hline
-    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{Falsos Positivos} & \multirow{2}{1.6cm}{Falsos Negativos} &\\
+    & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces seguido} & \multirow{2}{1.6cm}{\% Falsos Positivos} & \multirow{2}{1.6cm}{\% Falsos Negativos} &\\
 	Objeto & & & & & Accuracy\\
 	\hline
     Taza    & 50.44      & 76.67     &    0           & 16.67    & 83.33 \\
@@ -583,6 +587,7 @@ Si comparamos los resultados del sistema con los resultados de cada método de s
 
 El seguimiento en RGB con detección ideal supera al sistema en el caso de la gorra, siendo 5 puntos mejor en el porcentaje promedio de solapamiento y cerca de 30 puntos más de porcentaje de seguimiento (ver tablas \ref{tab:tabla_rgb} y \ref{tabla_sistema_rgbd}). Esto se debe a la combinación de un modelo de nube de puntos de la gorra malo y el método de detección que resulta poco robusto. También es mejor en el caso de la caja de cereales, superando en 50 puntos tanto al porcentaje de solapamiento como al de veces que se siguió al objeto. En parte esto sucede por motivos similares al de la gorra, sumando que sobre la mitad de la escena y casi hasta el final, la caja queda de perfil a la cámara haciendo que el modelo 3D de la misma no sirva para alinearlo con la escena, y por lo tanto empeorando el rendimiento. Sin embargo, en el resto de las escenas, específicamente para ambas tazas, el bowl y la lata, el sistema supera ampliamente no solo al porcentaje de solapamiento promedio, sino también al porcentaje de veces que se sigue al objeto y el porcentaje de falsos positivos.
 
+\customsubsubsection{La importancia de lograr una buena detección}
 En el caso del seguimiento en profundidad, se nota cómo un buen método de detección, en este caso el método ideal, beneficia al algoritmo de seguimiento. Si comparamos los resultados de las Tablas \ref{tabla_d} y \ref{tabla_d_nuevos} del tracking en profundidad con los de la Tabla \ref{tabla_sistema_rgbd} del sistema RGB-D vemos que en la mayoría de los casos el seguimiento en profundidad con detección ideal supera ampliamente al sistema RGB-D en porcentaje de seguimiento y por bastante también en porcentaje promedio de solapamiento. Sólo en el ejemplo de la lata el sistema se comporta mejor. Sin embargo, el sistema demuestra ser mucho más robusto que el tracking en profundidad ya que mejora en todos los casos el porcentaje de falsos positivos.
 
 A continuación presentamos los gráficos de seguimiento frame a frame para el sistema RGB-D de las escenas de la taza, la gorra y el bowl, en la Figura \ref{frame_frame_d}.
