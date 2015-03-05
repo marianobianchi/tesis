@@ -1862,10 +1862,12 @@ def prueba_deteccion_automatica_sola(objname, objnumber, scenename, scenenumber)
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    for template_threshold in [0.15]:#[0.006, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1]:
+    for template_threshold in [0.2]:#[0.006, 0.01, 0.02, 0.03, 0.04, 0.05, 0.1]:
         detector = RGBTemplateDetector(template_threshold=template_threshold)
 
         finder = Finder()
+
+        show_following = MuestraSeguimientoEnVivo('Deteccion por templates')
 
         follower = RGBFollower(img_provider, detector, finder)
 
@@ -1875,6 +1877,7 @@ def prueba_deteccion_automatica_sola(objname, objnumber, scenename, scenenumber)
             'pruebas_guardadas',
             'deteccion_template_threshold',
             template_threshold,
+            show_following=show_following,
         ).run()
 
         img_provider.restart()
@@ -2034,8 +2037,8 @@ if __name__ == '__main__':
     # definitivo_rgb_hsv_pruebas('bowl', '3', 'desk', '2')
 
     prueba_deteccion_automatica_sola('coffee_mug', '5', 'desk', '1')
-    prueba_deteccion_automatica_sola('cap', '4', 'desk', '1')
-    prueba_deteccion_automatica_sola('bowl', '3', 'desk', '2')
+    # prueba_deteccion_automatica_sola('cap', '4', 'desk', '1')
+    # prueba_deteccion_automatica_sola('bowl', '3', 'desk', '2')
 
 
     ############################################################################

@@ -59,13 +59,22 @@ La segunda etapa, la de detección, radica en encontrar dentro de un cuadro del 
 
 Finalmente, la tercera etapa consiste en seguir cuadro a cuadro el objeto detectado en la etapa anterior. Es decir, teniendo la ubicación del objeto en un cuadro de video se desea identificar la posición del mismo objeto en el siguiente \textit{frame}. Esta etapa es la más importante ya que es la que se ejecuta en cada frame del video. La eficiencia del método de seguimiento cuadro a cuadro es lo que determinará que todo el sistema de seguimiento se consiga realizar eficientemente. Si la técnica de seguimiento tiene una efectividad baja, es decir, no logra identificar la nueva posición del objeto en el siguiente cuadro, se debe volver a la etapa de detección degradando el desempeño de todo el sistema.
 
+En la Figura \ref{fig:esquema} se muestra este esquema de manera gráfica. Las flechas negras indican las transiciones del esquema presentado, y junto a cada transición figuran los datos que se pasan de una etapa a la otra. Las flechas punteadas son transiciones opcionales que indican que el entrenamiento además puede nutrirse de la información recolectada del objeto durante la detección y el seguimiento.
+
+\begin{figure}
+	\centering
+	\includegraphics[scale=0.5]{img/esquema_seguimiento.png}
+	\caption{Gráfico del esquema de seguimiento}
+	\label{fig:esquema}
+\end{figure}
+
 Tomando como base estas etapas, proponemos distintos métodos para cada una de ellas tanto para imágenes sólo RGB, como para \textit{depth} (profundidad) y la combinación RGB-D. La primera etapa del sistema puede ser prescindible si contamos con el modelo RGB-D del objeto a seguir y una cámara calibrada. Este es el caso de estudio de esta tesis, ya que, con el propósito de poder evaluar cuantitativamente el seguimiento de objetos en secuencias de imágenes RGB-D, utilizamos la base de datos con ground truth descripta en la sección \ref{base_rgbd}.
 
 
 
 
 \section{Método propuesto RGB}\label{metodo_rgb}
-En esta sección explicaremos como se implementó el sistema de seguimiento para secuencias de imágenes RGB basándonos en las etapas explicadas previamente.
+En esta sección explicaremos como se implementó el sistema de seguimiento para secuencias de imágenes RGB basándonos en las etapas explicadas previamente. En el entrenamiento, se toman templates del objeto a seguir tratando de cubrir las distintas caras del objeto. En la detección, estos templates se utilizan para aplicar un método de detección por templates llamado \textit{template matching} \cite{brunelli2009template}. Por último, en la etapa de seguimiento utilizamos técnicas de comparación de histogramas para seguir al objeto frame a frame.
 
 \subsection{Entrenamiento}
 La etapa de entrenamiento en este método consta de tomar varios templates del objeto que se desea seguir, donde cada uno de los templates corresponde a una pose distinta. Estos templates pueden tomarse de la misma secuencia de imágenes en donde se va a realizar el seguimiento o de otra escena. Para que las siguientes etapas funcionen de la mejor manera posible es deseable que haya varios templates cubriendo la mayor cantidad de vistas del objeto posible. Por ejemplo, es deseable cubrir las distintas caras de un objeto y desde distintas alturas. En la figura \ref{templates_objeto} se pueden ver los distintos templates tomados de esta manera de una gorra. Una vez almacenados estos templates y sus respectivas máscaras se pasa a la etapa de detección.
@@ -99,7 +108,7 @@ La etapa de entrenamiento en este método consta de tomar varios templates del o
 En esta sección explicaremos el método utilizado para la detección en RGB y la manera de utilizarlo en el esquema de seguimiento propuesto.
 
 \customsubsubsection{Template Matching}
-\textit{Template matching} es una técnica del área de procesamiento de imágenes utilizada para encontrar pequeñas partes de una imagen que sean similares a una imagen de referencia (o template). Esta técnica tiene varias aplicaciones que van desde la robótica hasta el control de calidad de piezas manufacturadas.
+\textit{Template matching} \cite{brunelli2009template} es una técnica del área de procesamiento de imágenes utilizada para encontrar pequeñas partes de una imagen que sean similares a una imagen de referencia (o template). Esta técnica tiene varias aplicaciones que van desde la robótica hasta el control de calidad de piezas manufacturadas.
 
 Para aplicar esta técnica se necesitan tres cosas:
 \begin{itemize}
@@ -112,17 +121,34 @@ La técnica consiste en ir moviendo el template sobre la imagen de búsqueda pí
 
 Una vez recorrida la imagen se busca cual de todas las comparaciones es mejor y se obtiene el píxel donde comienza la región, que junto con el tamaño del template permiten obtener el recuadro de la imagen de búsqueda que más se parece al template.
 
-Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación píxel por píxel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente fórmula: Sea I la imagen de búsqueda y T el template, la diferencia cuadrática se calcula así:
+Existen distintos métodos de comparación de imágenes, cada uno con sus ventajas y desventajas, aunque todos utilizan la comparación píxel por píxel. Uno de los métodos más conocidos es la diferencia cuadrática, que tiene la siguiente ecuación: Sea I la imagen de búsqueda y T el template, la diferencia cuadrática se calcula así:
 \begin{equation}\label{eq:diferencia_cuadratica}
 R(x, y) = \displaystyle\sum\limits_{x', y'} (T(x', y') - I(x + x', y + y'))^2
 \end{equation}
 
 Teniendo en cuenta el método de comparación elegido, una manera de utilizar esta técnica para la detección es definir un umbral para la comparación y aplicar \textit{template matching} entre una imagen y un template. Si el mejor valor de comparación obtenido está por debajo del umbral elegido, se sabe con cierta probabilidad que la detección fue exitosa. Por el contrario, si la comparación está por debajo de ese umbral se asume que se está frente a una detección fallida y se reporta que el template no se encuentra en la imagen.
 
+En la Figura \ref{fig:template_matching} se muestra una imagen utilizada de template o modelo del objeto y el resultado de aplicar este algoritmo sobre una imagen donde aparece ese objeto.
+
+\begin{figure}
+	\centering
+	\begin{subfigure}[b]{0.3\textwidth}
+		\includegraphics[width=\textwidth]{img/template_matching/template.png}
+		\caption{Template}
+	\end{subfigure}
+	\quad
+	\begin{subfigure}[b]{0.5\textwidth}
+		\includegraphics[width=\textwidth]{img/template_matching/scene.png}
+		\caption{Detección marcada en la escena}
+	\end{subfigure}
+	\caption{Resultado del algoritmo template matching}
+	\label{fig:template_matching}
+\end{figure}
+
 
 \customsubsubsection{Esquema de detección}
 
-La información recolectada durante el entrenamiento se toma con la intención de poder aplicar como método de detección al algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. El último parámetro le indica al algoritmo de template matching que comparación usar para emparejar el template a la imagen. En este trabajo se decide utilizar diferencia cuadrática píxel por píxel normalizada, presente en la fórmula \ref{eq:diferencia_cuadratica}
+La información recolectada durante el entrenamiento se toma con la intención de poder aplicar como método de detección al algoritmo de \textit{Template matching}. La implementación utilizada es la que se encuentra presente en la librería \textit{OpenCV} para C++ \cite{website:opencv}. Esta implementación recibe varios parámetros. El primero es el frame de la escena a donde se desea detectar el objeto. El segundo es el template con el que se va a buscar el objeto. El tercero es opcional y es una máscara para el template del objeto. El último parámetro le indica al algoritmo de template matching que comparación usar para emparejar el template a la imagen. En este trabajo se decide utilizar diferencia cuadrática píxel por píxel normalizada, presente en la fórmula \ref{eq:diferencia_cuadratica}
 
 Pero aplicar este método de manera directa no es suficiente. El problema principal es que la escena de donde se obtienen los templates del objeto a buscar puede no ser la misma escena en la que se realiza el seguimiento. Esto significa que las poses del objeto tomadas en la etapa de entrenamiento pueden ser completamente distintas a las poses del objeto en la escena. Además, la distancia de la cámara al objeto en la escena de búsqueda puede variar y diferir ampliamente de la distancia entre ambos en la escena en donde se capturan los templates del objeto. Por este motivo también puede diferir la escala del objeto en cada escena.
 
@@ -264,23 +290,20 @@ Una vez corridas estas dos sub-etapas dentro de la etapa de seguimiento, pueden 
 
 
 
+
+
 \section{Método propuesto para profundidad}\label{metodo_d}
-En esta sección explicaremos los métodos utilizados durante las distintas etapas del esquema propuesto para el seguimiento en profundidad, entre los que se encuentra un método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de esta tesis, así como también un método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP). Además, al igual que se hizo en la Sección \ref{metodo_rgb} se detalla para cada etapa del algoritmo como se utiliza cada método y de que manera se los une para formar el sistema de seguimiento.
+En esta sección explicaremos los métodos utilizados durante las distintas etapas del esquema propuesto para el seguimiento en profundidad, entre los que se encuentra un método de estimación de pose proveniente del trabajo \cite{6630856}, el cual fue utilizado en gran parte de esta tesis, así como también un método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP) \cite{besl1992method}. Además, al igual que se hizo en la Sección \ref{metodo_rgb} se detalla para cada etapa del algoritmo como se utiliza cada método y de que manera se los une para formar el sistema de seguimiento.
+
+En la etapa de entrenamiento tomamos una nube de puntos del objeto, parcial o completa, a modo de modelo del objeto a seguir. En la etapa de detección, utilizamos este modelo y el método del trabajo \cite{6630856} para detectar al objeto e ICP para refinar el resultado. Finalmente, en la última etapa usamos ICP para seguir al objeto cuadro por cuadro.
 
 
 \subsection{Iterative Closest Point (ICP)}\label{ICP}
 En esta sección explicaremos el método de alineación de formas 3D, llamado \textit{Iterative Closest Point} (ICP) surgido en el trabajo \cite{besl1992method}. En este trabajo se intenta encontrar respuesta a uno de los principales problemas en visión en computación: dada cierta información 3D en un sistema de coordenadas de un sensor, que describe una forma que puede corresponder a un modelo y dado un modelo en una representación geométrica distinta, lograr estimar la rotación y traslación óptimas que permitan alinear las dos formas minimizando la distancia entre ambas, permitiendo así determinar la equivalencia de las mismas usando \textit{mean-square} como métrica de distancia.
 
-El algoritmo presentado puede ser utilizado en múltiples tipos de representaciones de datos geométricos como conjunto de puntos, conjuntos de segmentos de líneas, curvas paramétricas, superficies paramétricas, etc. Además se puede utilizar cualquier otra representación siempre que se acompañe a la misma de un método para calcular el punto más cercano de esa forma a un punto dado. Además de necesitar una manera de calcular el punto más cercano, también es necesario un método para obtener la rotación y traslación de mínimos cuadrados.
+El algoritmo presentado puede ser utilizado en múltiples tipos de representaciones de datos geométricos como conjunto de puntos, conjuntos de segmentos de líneas, curvas paramétricas, superficies paramétricas, etc. Además se puede utilizar cualquier otra representación siempre que se acompañe a la misma de un método para calcular el punto más cercano de esa forma a un punto dado. Además de necesitar una manera de calcular el punto más cercano, también es necesario un método para obtener la rotación y traslación de mínimos cuadrados. El pseudocódigo de este algoritmo puede verse en el Método \ref{lst:icp}.
 
-A continuación presentamos el pseudocódigo para el algoritmo ICP:
-
-%\newpage
-% \footnotesize
-% \lstinputlisting[language=Python, frame=single, float]{icp_pseudocode.py}
-% \normalsize
-
-\begin{algorithm}[t]
+\begin{algorithm}[h]
 \caption{Pseudocódigo ICP}
 \label{lst:icp}
 \begin{algorithmic}
@@ -304,7 +327,23 @@ A continuación presentamos el pseudocódigo para el algoritmo ICP:
 \end{algorithmic}
 \end{algorithm}
 
-Entre las condiciones de corte para este algoritmo hay un límite máximo para la cantidad de iteraciones, el que se encuentra en el pseudocódigo que corta en caso de que dos transformaciones sucesivas difieran en el error cuadrático en menos de un umbral dado y por último una condición parecida que verifica que el error cuadrático de una transformación obtenida sea menor a un umbral.
+Entre las condiciones de corte para este algoritmo hay un límite máximo para la cantidad de iteraciones, el que se encuentra en el pseudocódigo que corta en caso de que dos transformaciones sucesivas difieran en el error cuadrático en menos de un umbral dado y por último una condición parecida que verifica que el error cuadrático de una transformación obtenida sea menor a un umbral. En la Figura \ref{fig:ejemplo_icp} se pueden ver dos imágenes, una antes y otra después de haber corrido ICP para alinear las dos nubes de puntos.
+
+
+\begin{figure}[ht]
+	\centering
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{img/icp_ini.png}
+		\caption{Antes de alinear}
+	\end{subfigure}
+	\begin{subfigure}[b]{0.4\textwidth}
+		\includegraphics[width=\textwidth]{img/icp_fin.png}
+		\caption{Después de alinear}
+	\end{subfigure}
+
+	\caption{Ejemplo de una alineación usando ICP}
+	\label{fig:ejemplo_icp}
+\end{figure}
 
 
 En este mismo trabajo, además de presentar este algoritmo, se demuestra que el mismo converge monótonamente hacia un mínimo local con respecto a la distancia cuadrática media. Sin embargo, nada puede decirse sobre la convergencia hacia el mínimo global deseado.
@@ -317,7 +356,7 @@ Entre las ventajas más importantes de este método está el hecho de que maneje
 \subsection{Alineación de objetos rígidos en una escena}\label{alignment_prerejective}
 El problema de determinar una transformación que permita alinear dos superficies ha generado muchas investigaciones en el campo de la visión en computación. Desde la manipulación de objetos en robótica hasta la reconstrucción de un modelo de un objeto o escena a partir de varias imágenes tomadas de distintos ángulos. En general estos métodos requieren una solución precisa para luego poder utilizar el resultado con otros problemas de procesamiento.
 
-Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y oclusiones. El objetivo del trabajo \cite{6630856} es combinar entradas del dominio RGB o 2D y de profundidad o 3D de manera eficiente para resolver el problema de la estimación de pose.
+Hay muchos métodos conocidos para resolver este problema tanto en el dominio 2D como en el 3D y en general están basados en extracción de descriptores para eliminar falsas correspondencias entre las dos superficies o modelos. Es ampliamente conocido el hecho que los descriptores locales proveen una alta estabilidad dada su tolerancia al ruido y oclusiones. El objetivo del trabajo \cite{6630856} es combinar entradas del dominio RGB o 2D y de profundidad o 3D de manera eficiente para resolver el problema de la estimación de pose. Una pose es una rotación y una traslación con respecto a un eje de coordenadas.
 
 En este trabajo se realizan una serie de pasos bien definidos hasta obtener una transformación como resultado final que indique la pose del objeto en la escena. En primera instancia, se obtiene un conjunto de puntos de interés utilizando un sistema de \textit{Early Cognitive Vision} (ECV). Los descriptores provenientes de este sistema ECV son considerados atómicos y se los llama \textit{primitivos}. La densidad de estos descriptores está en un punto intermedio entre una imagen con puntos de interés escasos y descriptores de formas en 3D muy densos. Cada una de estas primitivas tiene información geométrica y de texturas de manera que sirve como descriptor para imágenes RGB, para nubes de puntos o para una combinación de ambas. Este sistema permite clasificar regiones de una imagen en tres categorías: región homogénea, región de borde y región con textura. En este trabajo se usan solo las últimas dos categorías ya que los píxeles en las regiones homogéneas resultan ser ambiguos para buscar correspondencias.
 A cada punto de interés se le agrega un descriptor que contempla información de textura y geometría del objeto en una vecindad de puntos predefinida para aumentar la habilidad del método para distinguir falsas correspondencias. A esto se lo llama \textit{ECV context descriptors}.
@@ -328,14 +367,11 @@ Una vez obtenidos los puntos de interés y sus descriptores tanto en el objeto c
 \hat{T} = \argmin_T \varepsilon(T) = \argmin_T \sum_{p \in P}(Tp - q)^2
 \end{equation}
 
-A continuación presentamos el pseudocódigo de la heurística RANSAC de este trabajo:
-%\newpage
-% \footnotesize
-% \lstinputlisting[language=Python, frame=single, float]{alignment_prerejective_pseudocode.py}
-% \normalsize
-\begin{algorithm}[t]
+El pseudocódigo de este algoritmo puede verse en el Método \ref{lst:alignment_prerejective}.
+
+\begin{algorithm}[h]
 \caption{Pseudocódigo de la heurística de alineación de objetos rígidos}
-\label{lst:icp}
+\label{lst:alignment_prerejective}
 \begin{algorithmic}
 \Function{$alignment\_prerejective$}{$obj\_data$, $scene\_data$}
 	\State $best\_value \gets MAX\_INT$
@@ -451,7 +487,14 @@ Teniendo en cuenta esto se pensó en una variante para la detección que utilice
 Si la detección es positiva, se refina la alineación corriendo ICP entre el modelo del objeto transformado por el primer método y el cuadrante de la escena donde fue encontrado. Con el objetivo de comenzar el seguimiento en las mejores condiciones posibles, se intentan tomar los puntos del objeto buscado pertenecientes a la escena. Esto se realiza porque se asume que el objeto se va modificando cuadro a cuadro, ya sea por movimientos de la cámara o del objeto. Una forma de obtener los puntos del modelo del objeto en la escena es utilizando un \kdt.
 
 \customsubsubsection{K-D Tree}
-Un \kdt es una estructura de datos que permite organizar puntos en un espacio k-dimensional. En particular es un árbol binario con otras restricciones. Son muy útiles para realizar búsquedas por rango o por vecinos cercanos. Una búsqueda por rango es una búsqueda para obtener todos aquellos puntos del árbol que estén contenidos en un rango determinado para una dimensión determinada, permitiendo combinar hasta k rangos, uno por cada dimensión. La búsqueda por vecinos cercanos tiene como objetivo encontrar el punto del árbol más cercano a un punto recibido como parámetro. Existen implementaciones en las cuales esta búsqueda es logarítmica en la cantidad de puntos del árbol.
+Un \kdt \cite{samet2006foundations} es una estructura de datos que permite organizar puntos en un espacio k-dimensional. En particular es un árbol binario con otras restricciones. Son muy útiles para realizar búsquedas por rango o por vecinos cercanos. Una búsqueda por rango es una búsqueda para obtener todos aquellos puntos del árbol que estén contenidos en un rango determinado para una dimensión determinada, permitiendo combinar hasta k rangos, uno por cada dimensión. La búsqueda por vecinos cercanos tiene como objetivo encontrar el punto del árbol más cercano a un punto recibido como parámetro. Existen implementaciones en las cuales esta búsqueda es logarítmica en la cantidad de puntos del árbol. En la Figura \ref{fig:kdtree} se puede observar un \kdt para puntos en dos dimensiones. Notar que cada nodo cumple la misma propiedad que un nodo de un árbol binario de búsqueda (ABB) de que los nodos del subárbol derecho son mayores y los del izquierdo menores, salvo que cambia sutílmente el sentido de mayor o menor. Dependiendo del nivel donde se encuentre el nodo es por la coordenada en que se los compara. En el gráfico se muestra para cada nivel con que coordenada se ordenan los subárboles.
+
+\begin{figure}
+	\centering
+	\includegraphics[width=\textwidth]{img/kdtree.png}
+	\caption{\kdt resultante del conjunto de puntos (2,3), (5,4), (9,6), (4,7), (8,1), (7,2).}
+    \label{fig:kdtree}
+\end{figure}
 
 Para obtener los puntos del modelo en la escena, se arma un \kdt con los puntos provenientes del modelo alineado y se filtran uno a uno los puntos de la escena buscando a los que tengan al menos un punto del modelo como vecino cercano dado un cierto radio de distancia. Los puntos que surjan de esta búsqueda son los considerados como encontrados en la escena. El radio de distancia usado en la búsqueda de vecinos cercanos es calculado y actualizado dinámicamente dependiendo de la cantidad de puntos de la escena tomados en el frame anterior. Se comienza con un radio prefijado y una vez que se encuentra el objeto por primera vez, se filtran los puntos del modelo en la escena como explicamos antes y comparando esa cantidad de puntos obtenidos con la cantidad de puntos que tiene el modelo se ajusta el tamaño del radio de acuerdo a los siguientes criterios:
 \begin{itemize}
@@ -465,7 +508,7 @@ Para obtener los puntos del modelo en la escena, se arma un \kdt con los puntos 
 Para que el algoritmo de búsqueda considere exitosa la detección, la cantidad de puntos filtrados de la escena debe ser mayor o igual al 50\% de los puntos del modelo original. Si todas estas etapas son superadas con éxito, se considera que el objeto fue encontrado y se pasa a la etapa de seguimiento. Si cualquiera de estos pasos falla, se reporta el objeto como no encontrado y se comienza nuevamente con la etapa de detección en el siguiente frame.
 
 \subsection{Seguimiento}\label{tracking_d}
-El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cómo fue la selección de los parámetros para este método y los resultados obtenidos con los parámetros elegidos.
+El método de seguimiento elegido para profundidad es ICP, explicado en la sección \ref{ICP}. En esta sección explicaremos cuales fueron los parámetros explorados para este método y como lo utilizamos dentro del esquema de seguimiento propuesto.
 
 La implementación de ICP utilizada es la incluida en la librería ``Point Cloud Library'' \cite{Rusu_ICRA2011_PCL}. Esta implementación admite distintos parámetros para modificar el comportamiento del método. Los parámetros explorados son los siguientes:
 
@@ -476,13 +519,21 @@ La implementación de ICP utilizada es la incluida en la librería ``Point Cloud
 	\item Suma euclídea mínima: Criterio de corte. Es la diferencia euclídea mínima permitida entre dos pasos del algoritmo.
 \end{enumerate}
 
-Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se explora como el resto de los parámetros. A modo de refinar aún más el resultado, una vez hallada una buena alineación se procede a tomar los puntos de la escena que suponen ser los del objeto que se estaba buscando. La explicación de cómo se realiza este filtrado se puede ver en la sección \ref{deteccion_d}. Una vez filtrados los puntos de la escena se compara esta cantidad de puntos con la cantidad de puntos que tiene el modelo del objeto. Si los puntos de la escena superan un porcentaje de puntos del modelo se considera que el objeto fue encontrado. Este porcentaje también es uno de los parámetros explorados.
+Además, una vez que converge ICP la librería facilita el valor de la suma del cuadrado de las distancias de la nube de puntos inicial a la nube de puntos destino como medida de que tan buena es la alineación obtenida. Este valor se utiliza como umbral para decidir si la respuesta encontrada se considera correcta o no, por lo que también se exploran distintos valores para este umbral, como con el resto de los parámetros, para encontrar el que mejor se adapte a nuestras necesidades.
 
+Esta etapa entonces consta de los siguientes pasos:
+\begin{itemize}
+	\item Tomar la nube reportada por la detección o seguimiento en el frame anterior
+	\item Filtrar de la nube del frame actual los puntos contenidos en un cubo el triple de mayor que la ``bounding box'' que contiene a la nube del paso anterior, cuyo centro es el mismo que el de la ``bounding box''
+	\item Alinear con ICP estas dos nubes
+	\item Si la alineación falla, volver a la etapa de detección
+	\item Si es exitosa, se filtran los puntos de la escena que corresponden al objeto al igual que se explicó en la Sección \ref{deteccion_d} y si los puntos superan un porcentaje de la cantidad de puntos que tiene el modelo, se considera encontrado el objeto y se reporta esta ubicación como resultado. Si los puntos obtenidos de la escena son menos de los esperados, se vuelve a la etapa de detección
+\end{itemize}
 
 
 
 \section{Método propuesto en RGB-D}\label{metodo_rgbd}
-En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_d}.
+En esta sección presentamos el sistema de seguimiento de RGB y de profundidad combinados. Explicaremos de que manera unimos los métodos explicados en las secciones \ref{metodo_rgb} y \ref{metodo_d}. El entrenamiento es una unión directa de los entrenamientos RGB y de profundidad. Para la detección utilizamos \textit{template matching} como primera aproximación y para detectar el objeto en la nube de puntos usamos el mismo algoritmo de detección explicado en la Sección \ref{deteccion_d} previo filtrado de puntos valiéndonos de los datos obtenidos por la detección RGB. Para el seguimiento utilizamos ICP y mejoramos el resultado usando el seguimiento basado en histogramas para RGB.
 
 \subsection{Entrenamiento}
 El entrenamiento para este sistema es simplemente la unión de los entrenamientos de los sistemas RGB y de profundidad. Por lo tanto esta etapa consta de almacenar templates RGB del objeto desde distintos puntos de vista. Además, se necesita una nube de puntos del objeto, ya sea completa o parcial y de ser posible libre de outliers, es decir, bien segmentada. En nuestro sistema todos estos datos son obtenidos de manera offline, es decir, son precalculados. Una vez ejecutado el entrenamiento se pasa a la etapa de detección.
@@ -516,7 +567,7 @@ A diferencia de la unión de métodos RGB y de profundidad para la detección, e
 Durante el desarrollo de este trabajo se utilizaron secuencias con información de \textit{ground truth} de imágenes RGB-D con el objetivo de aplicar los métodos estudiados y tener una referencia para hacer comparaciones y sacar conclusiones sobre su eficacia. Las escenas fueron tomados del trabajo de Kevin Lai et al. \cite{lai2011large} en donde se creó una base de objetos y escenas.
 
 \section{Objetos}
-La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos están organizados en distintas categorías de manera jerárquica tomando como referencia las relaciones de hiperónimo/hipónimo de WordNet\footnote{Princeton University ``About WordNet.'' WordNet. Princeton University. 2010. http://wordnet.princeton.edu}. En total hay unas 51 categorías. Cada objeto pertenece a una única categoría o clase de objetos y hay entre 3 y 14 instancias de un mismo objeto por cada categoría. Por ejemplo, en la categoría ``taza'' existen 8 instancias diferentes que se corresponden simplemente a distintas tazas ya sea por forma o por color. En total la base cuenta con secuencias de video RGB-D de 300 objetos de uso diario que junto con los distintos ángulos en los que fueron tomadas las escenas forman un total de 250.000 imágenes RGB-D.
+La base cuenta con múltiples vistas de un conjunto de objetos. Estos objetos están organizados en distintas categorías de manera jerárquica tomando como referencia las relaciones de hiperónimo/hipónimo de WordNet \cite{wordnet}. En total hay unas 51 categorías. Cada objeto pertenece a una única categoría o clase de objetos y hay entre 3 y 14 instancias de un mismo objeto por cada categoría. Por ejemplo, en la categoría ``taza'' existen 8 instancias diferentes que se corresponden simplemente a distintas tazas ya sea por forma o por color. En total la base cuenta con secuencias de video RGB-D de 300 objetos de uso diario que junto con los distintos ángulos en los que fueron tomadas las escenas forman un total de 250.000 imágenes RGB-D.
 
 
 \begin{figure}[t]
