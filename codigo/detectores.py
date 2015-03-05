@@ -310,11 +310,11 @@ class StaticDetectorWithModelAlignment(DepthStaticDetectorWithPCDFiltering):
                     'object_cloud': obj_scene_cloud,
 
                     # original model transformed
-                    'obj_model': transformed_model_cloud,
+                    'obj_model': best_result_cloud,
 
                     # lo guardo solo para que se guarde la nube de puntos
                     # cuando hago las corridas
-                    'detected_cloud': transformed_model_cloud,
+                    'detected_cloud': best_result_cloud,
                 })
 
                 # show_clouds(

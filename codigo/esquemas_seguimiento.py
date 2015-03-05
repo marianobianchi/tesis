@@ -265,6 +265,12 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
             filename = os.path.join(self.results_path, pcd_filename)
             save_pcd(pcd, str(filename))
 
+            # Guardo el modelo alineado
+            pcd = self.obj_follower.descriptors()['obj_model']
+            pcd_filename = 'model_alignedpoints_frame_{i:03}.pcd'.format(i=nframe)
+            filename = os.path.join(self.results_path, pcd_filename)
+            save_pcd(pcd, str(filename))
+
 
 class FollowingSquemaExploringParameterPCD(FollowingSchemeSavingDataPCD):
     """
