@@ -31,9 +31,14 @@ CMake*
 *.blg
 *.out
 *.tks
+*.nav
+*.snm
 codigo/videos/moving_circle/*
 codigo/videos/pelotita_naranja_webcam/*
 codigo/videos/rgbd/objs/bowl/*
 codigo/videos/rgbd/objs/cap/*
 codigo/videos/rgbd/objs/flashlight/*
 codigo/videos/rgbd/scenes/table_small/*
+codigo/videos/rgbd/objs/cereal_box/
+codigo/videos/rgbd/objs/soda_can/
+codigo/videos/rgbd/scenes/table/
