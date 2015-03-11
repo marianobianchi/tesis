@@ -143,16 +143,88 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Desarrollo}
-\begin{frame}{Desarrollo}
+% TODO: cambiarle el titulo al frame por algo mejor
+\begin{frame}{Distintos esquemas para el mismo problema????}
+    % IDEA DE ESTE SLIDE: motivaciones, por que la separacion de los metodos,
+    % comparar metodos rgb y d
+
+    % Partiendo del esquema antes visto como base de nuestro sistema de seguimiento
+    % nos propusimos desarrollar un sistema de seguimiento RGB, uno en profundidad
+    % y luego utilizar lo mejor de cada uno para crear un sistema RGB-D que
+    % combine lo mejor de cada uno
+    % El motivo por el cual desarrollamos 2 sistemas por separado es para poder
+    % cuantificar las diferencias entre usar alguno de esos sistemas por separado
+    % o uno que los combine y decidir cual se comporta mejor en general o en cada
+    % situacion en particular
     \begin{itemize}
-        \item motivaciones, por que la separacion de los metodos, comparar metodos rgb y d
-        \item explicacion de los métodos, con ejemplos en imagenes
-        \item algun video de ejemplo sobre lo que se espera del sistema
+        \item Sistema RGB completo y funcional
+        \item Sistema en profundidad completo y funcional
+        \item Combinarlos de la mejor manera posible
+        \item Obtener resultados comparables frente a métodos existentes
     \end{itemize}
 
 \end{frame}
 %--- Next Frame ---%
 
+\subsection{Sistema RGB}
+\begin{frame}[t]{Detección RGB}
+
+    En esta etapa usamos un método llamado \textit{template matching}. Para utilizarlo necesitamos:
+    \begin{itemize}
+        \item \textit{templates}: Una o más imágenes del objeto a detectar tomadas de diferentes ángulos
+        \item \textit{escena}: Un frame de un video o imagen en donde se desea ubicar el objeto
+        \item Opcionalmente podemos utilizar máscaras que segmenten al objeto en cada template.
+    \end{itemize}
+\end{frame}
+%--- Next Frame ---%
+
+\begin{frame}[t]{Detección RGB}
+
+    PONER ESTAS IMAGENES
+    \begin{enumerate}
+        \item Un template entero
+        \item Un template segmentado
+        \item Una escena
+    \end{enumerate}
+\end{frame}
+%--- Next Frame ---%
+
+
+
+\begin{frame}[t]{Detección RGB}
+    \begin{block}{Pasos del algoritmo de template matching}
+        Para cada template proveniente del entrenamiento y para cada pixel de la escena, seguir estos pasos:
+        \begin{enumerate}
+            \item Tomar un rectángulo de la escena del tamaño del template cuya esquina superior izquierda sea el pixel actual
+            \item Compararlo con el template (ejemplo: diferencia cuadrática pixel por pixel)
+            \item Si la comparación está por debajo de un umbral predefinido y es el mejor valor encontrado, guardar la ubicación del pixel
+        \end{enumerate}
+        Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Entrenamiento RGB}
+    Como el algoritmo de detección elegido es \textit{template matching}, esta etapa consta simplemente de obtener distintos templates del objeto que se desea seguir, tratando de cubrir las distintas ``caras'' del objeto desde varias alturas. Por ejemplo:
+    \begin{block}
+        PONER UN PAR DE TEMPLATES
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Seguimiento RGB}
+    body
+\end{frame}
+%--- Next Frame ---%
+
+
+
+
+
+% \item explicacion de los métodos, con ejemplos en imagenes
+% \item algun video de ejemplo sobre lo que se espera del sistema
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -184,3 +256,7 @@
 
 
 \end{document}
+
+
+% TODO: Preguntar a Pachi si está bien esto: la detección/seguimiento en RGB no es facilmente utilizable para detectar objetos de una misma clase (no distinguir instancias sino clase de objetos) ya que en general dos objetos de la misma categoría pueden no compartir los mismos colores y esa información que pueden no compartir es justamente de la que se valen los metodos RGB para detectar/seguir un objeto. En template matching si se quieren detectar categorías se debería proveer al método de templates de todas las instancias que se pueden llegar a encontrar.
+% En profundidad en cambio, como en general los objetos de la misma categoría comparten forma, se puede llegar a detectar un objeto dentro de una categoría para el cual no se haya entrenado el método de detección/seguimiento.
