@@ -52,7 +52,7 @@
     \end{figure}
 \end{frame}
 
-\subsection{Vamos por partes...(NO SE COMO LLAMAR A ESTO)}
+\subsection{Vamos por partes... del título}
 \begin{frame}{Seguimiento}
     % El comportamiento esperado de un método de seguimiento es obtener para
     % cada imagen de una secuencia de imágenes o video la ubicación de un
@@ -229,10 +229,100 @@
 
 
 
+\subsection{Sistema en profundidad}
+\begin{frame}[t]{Detección en profundidad}
+
+    Para esta etapa vamos a usar dos métodos de alineación de nubes de puntos y combinarlos. Para usarlos necesitamos:
+    \begin{itemize}
+        \item \textit{vista del objeto}: Una nube de puntos del objeto parcial o completa (similar al concepto de template en RGB)
+        \item \textit{escena}: Una nube de puntos de la escena donde se desea encontrar al objeto
+    \end{itemize}
+\end{frame}
+%--- Next Frame ---%
+
+\begin{frame}[t]{Detección en profundidad - Método 1}
+    El método se llama Iterative Closest Point (ICP)
+    \begin{block}{Algoritmo ICP}
+        Dadas dos nubes de puntos A y B, se siguen los siguientes pasos hasta que alguna condición de corte se cumpla:
+        \begin{enumerate}
+            \item Se calculan los ``puntos más cercanos'' entre A y B
+            \item Se calcula una transformación que una los puntos cercanos de A en B
+            \item Se aplica la transformación sobre A
+        \end{enumerate}
+        Al terminar se devuelve la transformación T proveniente de aplicar todas las transformaciones parciales junto con el error cuadrático medio entre los puntos más cercanos de T(A) y B
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
 
 
-% \item explicacion de los métodos, con ejemplos en imagenes
-% \item algun video de ejemplo sobre lo que se espera del sistema
+
+\begin{frame}[t]{Detección en profundidad - Método 2}
+    % Decir que los descriptores proveen una forma de representar caracteristicas especiales
+    % en una imagen, como puede ser una forma, color, textura, movimiento, etc
+    El método usado es una variante de un esquema RANSAC
+    \begin{block}{RANSAC}
+        Dadas dos nubes de puntos A y B, se calculan sus descriptores (features) y se siguen estos pasos:
+        \begin{enumerate}
+            \item Tomar N descriptores random de A
+            \item Encontrar sus correspondencias en B
+            \item Descartar si los poligonos resultantes no son isométricos
+            \item Si lo son, estimar una transformación entre los descriptores
+            \item Transformar y calcular error cuarático medio
+            \item Almacenar transformación si tiene el menor error hasta ahora
+        \end{enumerate}
+        Al terminar se devuelve la mejor transformación T encontrada y el error cuadrático medio entre los puntos más cercanos de T(A) y B
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Detección en profundidad - Combinación}
+    % Dado que ICP es sensible a outliers y no así RANSAC, utilizamos como método inicial en la detección a RANSAC y refinamos el resultado usando ICP.
+    El método final comienza con una nube de puntos del objeto O y otra de la escena S. Se segmenta la escena de manera similar a \textit{template matching} y para cada segmento se siguen estos pasos:
+    \begin{itemize}
+        \item Aplicar RANSAC entre O y S
+        \item Si no es exitoso, se continua con el siguiente segmento
+        \item Si fue exitoso, aplicar ICP entre RANSAC(O) y S
+        \item Si ICP fue exitoso, se almacena el resultado y se sigue con otro segmento
+    \end{itemize}
+    Si se almacenó algun segmento, se filtran los puntos de la escena correspondientes al objeto en ese segmento, se obtiene su ubicación en coordenadas RGB y se pasa al siguiente frame
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Entrenamiento en profundidad}
+    Como el algoritmo de detección elegido es \textit{template matching}, esta etapa consta simplemente de obtener distintos templates del objeto que se desea seguir, tratando de cubrir las distintas ``caras'' del objeto desde varias alturas. Por ejemplo:
+    \begin{block}{}
+        PONER UN PAR DE TEMPLATES
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Seguimiento en profundidad}
+    Tomando la nube de puntos del objeto segmentado en el frame anterior y la nube de puntos de la escena en el frame actual, se siguen estos pasos:
+    \begin{enumerate}
+        \item Se filtran los puntos de la escena cercanos a la ubicación del objeto en el frame anterior
+        \item Se aplica ICP entre el objeto y los puntos filtrados de la escena
+    \end{enumerate}
+    Si ICP fue exitoso, se devuelve la posición del objeto y se continua en el siguiente frame. Si falla, se vuelve a la etapa de detección sobre el mismo frame.
+\end{frame}
+%--- Next Frame ---%
+
+
+\subsection{Sistema RGB-D}
+\begin{frame}[t]{Sistema RGB-D}
+    \begin{block}{Entrenamiento}
+        Se unen los entrenamientos de RGB y profundidad
+    \end{block}
+    \begin{block}{Detección}
+        Se utiliza primero la detección RGB y si es exitoso se transforman estos datos para utilizarlos con la detección en profundidad. Una detección RGB-D es exitosa siempre que lo sean ambas detecciones por separado.
+    \end{block}
+    \begin{block}{Seguimiento}
+        Primero se aplica el seguimiento en profundidad. Si es exitoso se intenta mejorar con el seguimiento en RGB, partiendo del resultado en profundidad. Un seguimiento RGB-D es exitoso si el seguimiento en profundidad es exitoso. La parte RGB se usa solo para refinar el resultado.
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
