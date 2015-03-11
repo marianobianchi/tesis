@@ -207,7 +207,7 @@
 
 \begin{frame}[t]{Entrenamiento RGB}
     Como el algoritmo de detección elegido es \textit{template matching}, esta etapa consta simplemente de obtener distintos templates del objeto que se desea seguir, tratando de cubrir las distintas ``caras'' del objeto desde varias alturas. Por ejemplo:
-    \begin{block}
+    \begin{block}{}
         PONER UN PAR DE TEMPLATES
     \end{block}
 \end{frame}
@@ -215,7 +215,15 @@
 
 
 \begin{frame}[t]{Seguimiento RGB}
-    body
+    Tomando la ubicación del objeto en el frame anterior, se explora en un área cercana (mucho menor que el área de la escena) de manera similar a la de \textit{template matching} en búsqueda del objeto deseado. Para cada recuadro explorado se siguen estos pasos:
+    \begin{enumerate}
+        \item Calcular histograma del recuadro
+        \item Calcular histograma del recuadro del frame anterior
+        \item Calcular histograma del último template ``matcheado''
+        \item Comparar los histogramas 1-2 y 1-3
+        \item Si ambas comparaciones están por debajo de sus respectivos umbrales y son las mejores, se guarda la ubicación del recuadro (esq. superior izquierda)
+    \end{enumerate}
+    Si se guardó una ubicación, se la devuelve como resultado. Si no, se indica que no se encontró el objeto y se vuelve a la etapa de detección
 \end{frame}
 %--- Next Frame ---%
 
