@@ -7,6 +7,9 @@
 \usetheme{Warsaw}
 % \usetheme{classic}
 
+% multifiguras
+% \usepackage{graphicx}
+\usepackage{subcaption}
 
 
 %datos de la presentacion
@@ -328,18 +331,119 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Resultados}
-\begin{frame}{Resultados}
-    \begin{itemize}
-        \item base de datos
-        \item objetos y escenas elegidos para seleccion de parametros
-        \item seleccion/exploracion de parametros
-        \item analisis sobre los metodos
-        \item resultados por método y del sistema
-        \item resultados del sistema con nuevos objetos
-    \end{itemize}
+\subsection{Base de datos}
+\begin{frame}{Base de datos}
+    % Para poder cuantificar que tan bien funcionaron los métodos y compararlos
+    % entre si utilizamos una BD de objetos y escenas de donde obtuvimos
+    % información de ground truth (verdad absoluta)
+    % La base tiene por un lado objetos, ordenados en diferentes categorías
+    % y con distintas instancias por categoría. Por ejemplo: 5 tazas distintas
+    % para la categoría tazas, 4 gorras en la categoría gorras
+    % Para cada objeto tiene grabadas 3 escenas desde distintas alturas en donde
+    % se filma al objeto girando sobre una base giratoria, se toman imagenes
+    % cada 3 grados, se las segmenta tanto en RGB como en profundidad (nube de
+    % puntos). Suman una totalidad de 300 obj
+    % Además cuenta con 8 escenas en las cuales aparecen algunos de los objetos
+    % de la base. Las escenas están anotadas frame por frame indicando la
+    % ubicación del objeto o de los objetos en ese frame
+    \begin{columns}[t]
+        \begin{column}{5cm}
+            \begin{itemize}
+                \item 300 objetos de uso diario
+                \item 51 categorías
+                \item Segmentados en RGB y en profundidad
+            \end{itemize}
+
+            \begin{figure}
+                \includegraphics[width=0.8\textwidth]{img/base/scene.png}
+            \end{figure}
+
+        \end{column}
+        \begin{column}{5cm}
+            \begin{figure}
+            	\centering
+            	\begin{subfigure}{1.2cm}
+            		\includegraphics[width=\textwidth]{img/base/1.png}
+            	\end{subfigure}
+            	\begin{subfigure}{1.2cm}
+            		\includegraphics[width=\textwidth]{img/base/2.png}
+            	\end{subfigure}
+                \quad
+                \quad
+                \quad
+                \quad
+                \quad
+                \quad
+            	\begin{subfigure}{1.2cm}
+            		\includegraphics[width=\textwidth]{img/base/3.png}
+            	\end{subfigure}
+            	\begin{subfigure}{1.2cm}
+            		\includegraphics[width=\textwidth]{img/base/4.png}
+            	\end{subfigure}
+            \end{figure}
+
+            \begin{itemize}
+                \item 8 escenas
+                \item Distintas instancias y categorías de objetos por escena
+                \item Anotadas en RGB
+            \end{itemize}
+
+        \end{column}
+    \end{columns}
+
+    % \begin{itemize}
+    %     \item objetos y escenas elegidos para seleccion de parametros
+    %     \item seleccion/exploracion de parametros
+    %     \item analisis sobre los metodos
+    %     \item resultados por método y del sistema
+    %     \item resultados del sistema con nuevos objetos
+    % \end{itemize}
 \end{frame}
 %--- Next Frame ---%
 
+\subsection{Selección de objetos para las pruebas}
+\begin{frame}{Selección de objetos para las pruebas}
+    % Decir por que se hicieron dos selecciones. La idea era "tunear" los métodos
+    % y sus parámetros para algunos objetos representativos (3 categorías distintas)
+    % y fijar los valores de parámetros que mejor se desempeñaran para los 3 casos
+
+    % Una vez fijados estos valores, se usaron los otros 3 objetos y escenas donde
+    % aparecen para corroborar la selección de parámetros realizada
+    \begin{block}{Para la selección de parámetros}
+        \begin{itemize}
+            \item 3 objetos: taza blanca, gorra roja, bowl verde-agua
+            \item 2 escenas: escritorio 1 y 2
+        \end{itemize}
+    \end{block}
+
+    % Decir en estos casos por que se eligió cada objeto.
+    % Taza: supuestamente buena para RGB por su textura y para depth por su forma
+    % Lata: buena para depth por su forma, mala para RGB por su textura
+    % Caja: Buena para RGB por su textura y mala para depth por ser plana
+    \begin{block}{De control}
+        \begin{itemize}
+            \item 3 objetos: taza roja con dibujos, lata, caja de cereales
+            \item 2 escenas: mesa grande y mesa pequeña
+        \end{itemize}
+    \end{block}
+\end{frame}
+%--- Next Frame ---%
+
+\subsection{Métricas}
+\begin{frame}[t]{Comparación de resultados vs. ground truth}
+    IMAGEN DEL PDF DE PASCALLIN VOC METRIC QUE MUESTRA LO DE INTERSECCION / UNION
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Selección del umbral de solapamiento}
+    % Decir que es el accuracy: medida de que tan buenos son los resultados
+    % reportados por el algoritmo.
+    FORMULA DEL ACCURACY?\\
+    GRAFICO DE UMBRAL VS ACCURACY\\
+    % Comentar que umbral elegimos para el análisis posterior
+\end{frame}
+%--- Next Frame ---%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
