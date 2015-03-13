@@ -260,7 +260,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Sistema de seguimiento}
+\section{Sistemas de seguimiento}
 \begin{frame}[t]{Sistema de seguimiento}
 
     % IDEA DE ESTE SLIDE: motivaciones, por que la separacion de los metodos,
@@ -294,14 +294,41 @@
 
 
 \subsection{Sistema RGB}
-\begin{frame}[t]{Detección RGB}
+\begin{frame}{Sistema RGB}
+    \begin{columns}
+        \begin{column}{5cm}
+            \begin{figure}
+                \centering
+                \vspace{-15pt}
+                % \hspace*{-20pt}
+                \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
+            \end{figure}
+        \end{column}
 
-    En esta etapa usamos un método llamado \textit{template matching}. Para utilizarlo necesitamos:
-    \begin{itemize}
-        \item \textit{templates}: Una o más imágenes del objeto a detectar tomadas de diferentes ángulos
-        \item \textit{escena}: Un frame de un video o imagen en donde se desea ubicar el objeto
-        \item Opcionalmente podemos utilizar máscaras que segmenten al objeto en cada template.
-    \end{itemize}
+        \begin{column}{0.5cm}
+        \end{column}
+
+        \begin{column}{5cm}
+            \begin{center}
+                \textbf{Detección}
+            \end{center}
+
+            \begin{figure}[t]
+                \centering
+                \vspace{-10pt}
+                \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
+            \end{figure}
+        \end{column}
+    \end{columns}
+
+
+
+    % En esta etapa usamos un método llamado \textit{template matching}. Para utilizarlo necesitamos:
+    % \begin{itemize}
+    %     \item \textit{templates}: Una o más imágenes del objeto a detectar tomadas de diferentes ángulos
+    %     \item \textit{escena}: Un frame de un video o imagen en donde se desea ubicar el objeto
+    %     \item Opcionalmente podemos utilizar máscaras que segmenten al objeto en cada template.
+    % \end{itemize}
 \end{frame}
 %--- Next Frame ---%
 
