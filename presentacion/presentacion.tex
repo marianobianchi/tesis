@@ -103,7 +103,7 @@
     \textbf{Seguimiento de \fcolorbox{red}{white}{objetos} en secuencias de imágenes RGB-D}
     \begin{figure}[t]
         \centering
-        \includegraphics[scale=0.3]{img/escena_con_objetos.jpg}
+        \includegraphics[scale=0.6]{img/escena_con_objetos.jpg}
     \end{figure}
 \end{frame}
 %--- Next Frame ---%
@@ -187,7 +187,7 @@
 
 
 \begin{frame}
-    \textbf{Seguimiento de objetos en secuencias de imágenes \fcolorbox{red}{white}{RGB}-D}
+    \textbf{Seguimiento de objetos en secuencias de \fcolorbox{red}{white}{imágenes RGB}-D}
     % Una imagen RGB-D está compuesta por dos partes. Una de ellas es una
     % imagen RGB
     % Las imágenes RGB son las más comunes y que todos conocen. Es simplemente
@@ -213,7 +213,7 @@
 %--- Next Frame ---%
 
 \begin{frame}{}
-    \textbf{Seguimiento de objetos en secuencias de imágenes RGB-\fcolorbox{red}{white}{D}}
+    \textbf{Seguimiento de objetos en secuencias de \fcolorbox{red}{white}{imágenes} RGB-\fcolorbox{red}{white}{D}}
     % Un sensor RGB-D cuenta con una cámara tipo webcam que otorga imagenes RGB,
     % un proyector infrarrojo y una cámara infrarroja. El proyector dibuja un patrón
     % conocido en la escena, que al ser infrarrojo es invisible al ojo humano.
@@ -262,18 +262,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Sistema de seguimiento}
 \begin{frame}[t]{Sistema de seguimiento}
-    % Un sistema de seguimiento tiene esta pinta. Posee 3 etapas bien definidas
-    \begin{figure}[t]
-        \centering
-        \vspace{-13pt}
-        \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
-    \end{figure}
-\end{frame}
-%--- Next Frame ---%
 
-
-% TODO: cambiarle el titulo al frame por algo mejor
-\begin{frame}{Distintos esquemas para el mismo problema????}
     % IDEA DE ESTE SLIDE: motivaciones, por que la separacion de los metodos,
     % comparar metodos rgb y d
 
@@ -285,15 +274,24 @@
     % cuantificar las diferencias entre usar alguno de esos sistemas por separado
     % o uno que los combine y decidir cual se comporta mejor en general o en cada
     % situacion en particular
-    \begin{itemize}
-        \item Sistema RGB completo y funcional
-        \item Sistema en profundidad completo y funcional
-        \item Combinarlos de la mejor manera posible
-        \item Obtener resultados comparables frente a métodos existentes
-    \end{itemize}
+    % \begin{itemize}
+    %     \item Sistema RGB completo y funcional
+    %     \item Sistema en profundidad completo y funcional
+    %     \item Combinarlos de la mejor manera posible
+    %     \item Obtener resultados comparables frente a métodos existentes
+    % \end{itemize}
 
+
+    % Un sistema de seguimiento tiene esta pinta. Posee 3 etapas bien definidas
+
+    \begin{figure}[t]
+        \centering
+        \vspace{-13pt}
+        \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
+    \end{figure}
 \end{frame}
 %--- Next Frame ---%
+
 
 \subsection{Sistema RGB}
 \begin{frame}[t]{Detección RGB}
