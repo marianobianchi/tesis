@@ -8,16 +8,38 @@
 % \usetheme{classic}
 
 % multifiguras
-% \usepackage{graphicx}
 \usepackage{subcaption}
 
+% multilinea en tablas
+\usepackage{multirow}
 
-%datos de la presentacion
+% texto "parado"
+\usepackage{rotating}
+
+% color de fondo en celdas
+\usepackage{color, colortbl}
+\newcommand{\pricomp}[2]{\only<1>{\cellcolor{#1}#2}\only<2>{#2}}
+\newcommand{\prisegcomp}[3]{\only<1>{\cellcolor{#1}#3}\only<2>{\cellcolor{#2}{#3}}}
+\newcommand{\segcomp}[2]{\only<1>{#2}\only<2>{\cellcolor{#1}#2}}
+\newcommand{\video}[1]{
+    \begin{center}
+        \href{run:#1}{
+            \includegraphics[width=1cm]{img/play.jpeg}
+        }
+    \end{center}
+}
+% Cuadro de texto de color
+\usepackage{xcolor}
+
+% Link a un archivo: \href{run:videos/desk_1.ogv}{\color{red}{DEMO}}
+
+
+% datos de la presentacion
 \title{Seguimiento de objetos en secuencias de imágenes RGB-D}
 \subtitle{Tesis de licenciatura}
 \institute{Facultad de Ciencias Exactas y Naturales}
 \date[18/03/15]{Miércoles 18 de Marzo de 2015}
-\author[Mariano Bianchi]{Mariano Bianchi}
+\author{Mariano Bianchi}
 
 
 \begin{document}
@@ -36,8 +58,15 @@
 \end{frame}
 %--- Next Frame ---%
 
-\subsection{Motivación}
+\subsection{Aplicaciones}
 \begin{frame}{Aplicaciones} % si pongo la opcion [t] el texto empieza desde arriba
+
+    % El seguimiento de objetos en secuencias de imágenes tiene muchas aplicaciones.
+    % Desde hace muchos años es un tema de estudio dentro del área de procesamiento de imágenes
+    % y aún se siguen desarrollando más y mejores herramientas para este fin.
+    % Varias de sus aplicaciones nos las cruzamos todos los días sin darnos cuenta,
+    % como por ejemplo, la generación de estadísticas deportivas. BLABLABLA
+
     % Permite generar estadísitcas deportivas midiendo la distancia recorrida por
     % jugadores de futbol, tiros al arco, goles, faltas realizadas, etc
     \begin{figure}[t]
@@ -56,67 +85,184 @@
 \end{frame}
 
 \subsection{Vamos por partes... del título}
-\begin{frame}{Seguimiento}
+\begin{frame}{}
+    \textbf{\fcolorbox{red}{white}{Seguimiento} de objetos en secuencias de imágenes RGB-D}
     % El comportamiento esperado de un método de seguimiento es obtener para
     % cada imagen de una secuencia de imágenes o video la ubicación de un
     % objeto en algún eje de coordenadas elegido
-    IMAGEN DE UN FRAME CON EL OBJETO EN UN RECUADRO Y MARCANDO LAS COORDENADAS
-    DE LOS PIXELES QUE LO DESCRIBEN
-\end{frame}
-%--- Next Frame ---%
-
-
-
-\begin{frame}{Objetos}
     \begin{figure}[t]
         \centering
-        \includegraphics[scale=0.6]{img/escena_con_objetos.jpg}
+        \includegraphics[scale=0.45]{img/seguimiento_ejemplo.jpg}
     \end{figure}
 \end{frame}
 %--- Next Frame ---%
 
 
 
-\begin{frame}{Secuencia de imágenes}
+\begin{frame}{}
+    \textbf{Seguimiento de \fcolorbox{red}{white}{objetos} en secuencias de imágenes RGB-D}
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.3]{img/escena_con_objetos.jpg}
+    \end{figure}
+\end{frame}
+%--- Next Frame ---%
+
+
+
+\begin{frame}{}
+    \textbf{Seguimiento de objetos en \fcolorbox{red}{white}{secuencias de imágenes} RGB-D}
     % Puede ser un video, una ráfaga de imágenes tomada con una cámara de fotos
-    \begin{figure}[t]
-        \centering
-        \includegraphics[scale=0.35]{img/rafaga_1.jpg}
-    \end{figure}
+    \begin{columns}
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/1.png}
+            \end{figure}
+        \end{column}
+
+        \begin{column}{0.5cm}
+            \centering
+            $\rightarrow$
+        \end{column}
+
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/2.png}
+            \end{figure}
+        \end{column}
+
+        \begin{column}{0.5cm}
+            \centering
+            $\rightarrow$
+        \end{column}
+
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/3.png}
+            \end{figure}
+        \end{column}
+
+    \end{columns}
+
+    \begin{columns}
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/4.png}
+            \end{figure}
+        \end{column}
+
+        \begin{column}{0.5cm}
+            \centering
+            $\rightarrow$
+        \end{column}
+
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/5.png}
+            \end{figure}
+        \end{column}
+
+        \begin{column}{0.5cm}
+            \centering
+            $\rightarrow$
+        \end{column}
+
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rafaga/6.png}
+            \end{figure}
+        \end{column}
+
+    \end{columns}
+    \video{videos/meeting_small.avi}
 \end{frame}
 %--- Next Frame ---%
 
 
 
-\begin{frame}{El RGB de las imágenes RGB-D}
+\begin{frame}
+    \textbf{Seguimiento de objetos en secuencias de imágenes \fcolorbox{red}{white}{RGB}-D}
     % Una imagen RGB-D está compuesta por dos partes. Una de ellas es una
     % imagen RGB
     % Las imágenes RGB son las más comunes y que todos conocen. Es simplemente
     % una fotografía. RGB significa Red Green Blue, que son los colores
     % primarios lumínicos (en el dominio de la luz), es decir, que el resto de los colores puede definirse
     % con una combinación de estos tres colores
-    \begin{block}{}
-        PEGAR UNA IMAGEN RGB CUALQUIERA
-    \end{block}
+    \begin{columns}
+        \begin{column}{8cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/rgb.jpg}
+            \end{figure}
+        \end{column}
+        \begin{column}{3cm}
+            \begin{figure}[t]
+                \centering
+                \includegraphics[width=\textwidth]{img/pixel.png}
+            \end{figure}
+        \end{column}
+    \end{columns}
+
 \end{frame}
 %--- Next Frame ---%
 
-\begin{frame}{El D de las imágenes RGB-D}
+\begin{frame}{}
+    \textbf{Seguimiento de objetos en secuencias de imágenes RGB-\fcolorbox{red}{white}{D}}
     % Un sensor RGB-D cuenta con una cámara tipo webcam que otorga imagenes RGB,
     % un proyector infrarrojo y una cámara infrarroja. El proyector dibuja un patrón
     % conocido en la escena, que al ser infrarrojo es invisible al ojo humano.
     % Luego la cámara infrarroja captura ese patrón proyectado y utilizando algoritmos
     % de luz estructurada junto con las distancias conocidas entre la cámara y proyector
     % infrarrojo se puede obtener la profundidad para cada pixel de la escena.
-    \begin{block}{}
-        MOSTRAR SENSOR RGB-D, contar como funciona y mostrar con el pcl\_viewer una nube de puntos y una imagen RGB-D
-    \end{block}
+    % MOSTRAR SENSOR RGB-D, contar como funciona y mostrar con el pcl\_viewer una nube de puntos y una imagen RGB-D
+    \begin{figure}[t]
+        \centering
+        \includegraphics[width=\textwidth]{img/sensores_rgbd.png}
+    \end{figure}
+    \begin{columns}
+        \begin{column}{2cm}
+            \video{videos/desk_1.ogv}
+        \end{column}
+        \begin{column}{2cm}
+            \video{videos/rgbd.ogv}
+        \end{column}
+    \end{columns}
+
+
+
+
 \end{frame}
 %--- Next Frame ---%
 
 
+
+\subsection{Objetivos}
+\begin{frame}{Objetivos}
+    % Decir en la slide anterior: ahora que todos sabemos de que trata este trabajo, ¿por qué estudiamos este tema?
+    % Lo estudiamos por varios motivos. Principalmente nuestra idea fue tener un sistema de seguimiento completo en RGB-D en donde sea sencillo probar distintos métodos de seguimiento. En segunda instancia queríamos comparar el funcionamiento de métodos de seguimiento clásicos en RGB y en profundidad y poder contrastar resultados, entender las ventajas y desventajas de cada uno y saber en qué casos es preferible RGB por sobre profundidad y vice versa.
+    % Además, nos encontramos con falta de información en la literatura sobre el comportamiento de un sistema de seguimiento RGB-D completo.
+
+    % Vamos entonces a meternos un poco más en el foco de estudio de este trabajo. Hasta ahora veníamos hablando de seguimiento unicamente y en esta ultima parte hablé de un sistema de seguimiento completo. ¿Qué es un sistema de seguimiento?
+    \begin{itemize}
+        \item Implementamos, estudiamos y evaluamos un sistema de seguimiento RGB-D, enfocándonos en la etapa de seguimiento
+        \item Comparamos métodos de seguimiento en RGB y en profundidad y analizamos sus ventajas y desventajas
+        \item Reportamos resultados para un sistema de seguimiento RGB-D completo, no encontrados en la literatura
+    \end{itemize}
+\end{frame}
+%--- Next Frame ---%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sistema de seguimiento}
 \begin{frame}[t]{Sistema de seguimiento}
-    % Un sistema de seguimiento tiene al menos 3 etapas bien definidas
+    % Un sistema de seguimiento tiene esta pinta. Posee 3 etapas bien definidas
     \begin{figure}[t]
         \centering
         \vspace{-13pt}
@@ -126,26 +272,6 @@
 %--- Next Frame ---%
 
 
-\subsection{Objetivos}
-\begin{frame}[t]{Objetivos}
-    \begin{block}{Sistema RGB-D}
-        Implementar, estudiar y evaluar un sistema de seguimiento RGB-D, enfocándonos especialmente en la etapa de seguimiento
-    \end{block}
-    \begin{block}{Análisis}
-        Comparar métodos de seguimiento en RGB y en profundidad y comprender en que casos es conveniente usar uno u otro método, cuándo y de qué manera combinarlos
-    \end{block}
-    % TODO: preguntar por esto
-    \begin{block}{Aportes???}
-        Obtener resultados que puedan ser utilizados como base de comparación frente a otros sistemas de seguimiento
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Desarrollo}
 % TODO: cambiarle el titulo al frame por algo mejor
 \begin{frame}{Distintos esquemas para el mismo problema????}
     % IDEA DE ESTE SLIDE: motivaciones, por que la separacion de los metodos,
@@ -333,6 +459,8 @@
 \section{Resultados}
 \subsection{Base de datos}
 \begin{frame}{Base de datos}
+    % TODO: antes de esta slide comentar algo sobre lo que hicimos despues: una vez que tenemos los sistemas necesitabamos una base que tuviera información de rgb y profundidad, con objetos, escenas e info de ground truth
+
     % Para poder cuantificar que tan bien funcionaron los métodos y compararlos
     % entre si utilizamos una BD de objetos y escenas de donde obtuvimos
     % información de ground truth (verdad absoluta)
@@ -346,6 +474,9 @@
     % Además cuenta con 8 escenas en las cuales aparecen algunos de los objetos
     % de la base. Las escenas están anotadas frame por frame indicando la
     % ubicación del objeto o de los objetos en ese frame
+
+    % Decir algo sobre que solo se mueve la cámara
+
     \begin{columns}[t]
         \begin{column}{5cm}
             \begin{itemize}
@@ -446,69 +577,76 @@
 %--- Next Frame ---%
 
 \subsection{Análisis}
+% TODO: poner un gráfico de los de color que se vea bien, junto con el video que salga de ese gráfico y comentar para que sirve analizar el porcentaje de seguimiento, el promedio de solapamiento. Comentar que se usó una detección estática para comparar y analizar solo el comportamiento del seguimiento
+
+
 \begin{frame}[t]{Comparando seguimientos}
     \small
     % Tablas con el % de seguimiento y solapamiento para RGB, depth y RGB-D
+    % Mostrar con colores RGB vs DEPTH. VERDE=GANA, AMARILLO=EMPATA, ROJO=PIERDE
+    % Contar que el seguimiento en RGB se ve muy afectado por el fondo y el cambio de colores/luz. La gorra y la caja funcionan bien porque contrastan mucho con el fondo pero el resto de los objetos tienen poca textura y colores cuyo histograma puede confundirse con el del fondo
+    % En el caso de profundidad todos funcionan muy parejos salvo la lata y la caja. La lata tiene un modelo muy malo porque refleja la proyeccion infrarroja del sensor y por eso el seguimiento es malo. La caja tiene un buen modelo pero al ser plana no funciona bien.
+    % Decir que si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado únicamente en profundidad
+
     \begin{columns}
         \begin{column}{4cm}
-            \begin{tabular}{|c|c|c|}
-                \hline
-                Obj     & \% seg. & Accu. \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Gorra   & 70      & 90    \\
-                \hline
-                Bowl    & 14.5    & 12    \\
-                \hline
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
+            \begin{tabular}{|c|c|c|c|}
+                \hline    \multirow{6}{*}{\begin{sideways}\parbox{15mm}{RGB}\end{sideways}} & Obj     & \% seg. & \% solap. \\
+                \cline{2-4}
+                & Taza 1  & \pricomp{red}{47.89}   & \pricomp{red}{34.48}   \\
+                \cline{2-4}
+                & Gorra   & 96.97   & 55.68    \\
+                \cline{2-4}
+                & Bowl    & 6.19    & 12.58    \\
+                \cline{2-4}
+                \cline{2-4}
+                & Taza 2  & 35.9    & 29.54    \\
+                \cline{2-4}
+                & Lata    & 0       & 0.01    \\
+                \cline{2-4}
+                & Caja    & 67.62   & 52.11    \\
                 \hline
             \end{tabular}
         \end{column}
         \begin{column}{4cm}
-            \begin{tabular}{|c|c|c|}
+            \begin{tabular}{|c|c|c|c|}
                 \hline
-                Obj     & \% seg. & Accu. \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Gorra   & 70      & 90    \\
-                \hline
-                Bowl    & 14.5    & 12    \\
-                \hline
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
+                \multirow{6}{*}{\begin{sideways}Profundidad\end{sideways}} & Obj     & \% seg. & \% solap. \\
+                \cline{2-4}
+                & Taza 1  & \prisegcomp{green}{yellow}{92.16}    & \prisegcomp{green}{yellow}{66.29} \\
+                \cline{2-4}
+                & Gorra   & 92.67    & 56.85 \\
+                \cline{2-4}
+                & Bowl    & 63.83    & 40.60 \\
+                \cline{2-4}
+                \cline{2-4}
+                & Taza 2  & 80.51   & 55.79 \\
+                \cline{2-4}
+                & Lata    & 10.63   & 12.34 \\
+                \cline{2-4}
+                & Caja    & 30.62   & 44.94 \\
                 \hline
             \end{tabular}
         \end{column}
     \end{columns}
     \begin{columns}
         \begin{column}{4cm}
-            \begin{tabular}{|c|c|c|}
+            \begin{tabular}{|c|c|c|c|}
                 \hline
-                Obj     & \% seg. & Accu. \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Gorra   & 70      & 90    \\
-                \hline
-                Bowl    & 14.5    & 12    \\
-                \hline
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
-                \hline
-                Taza 1  & 34.5    & 85    \\
+                \multirow{6}{*}{\begin{sideways}RGB-D\end{sideways}} & Obj     & \% seg. & \% solap. \\
+                \cline{2-4}
+                & Taza 1  & \segcomp{yellow}{90.05}   & \segcomp{yellow}{65.07} \\
+                \cline{2-4}
+                & Gorra   & 90.82   & 42.83 \\
+                \cline{2-4}
+                & Bowl    & 68.54   & 42.88 \\
+                \cline{2-4}
+                \cline{2-4}
+                & Taza 2  & 48.33   & 35.98 \\
+                \cline{2-4}
+                & Lata    & 23.67   & 18.81 \\
+                \cline{2-4}
+                & Caja    & 23.29   & 35.03 \\
                 \hline
             \end{tabular}
         \end{column}

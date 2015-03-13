@@ -42,3 +42,8 @@ codigo/videos/rgbd/scenes/table_small/*
 codigo/videos/rgbd/objs/cereal_box/
 codigo/videos/rgbd/objs/soda_can/
 codigo/videos/rgbd/scenes/table/
+codigo/corrida_completa_guardada/
+codigo/tutoriales/tutoriales_pcl/alignment_prerejective/alignment_prerejective
+codigo/tutoriales/tutoriales_pcl/icp/iterative_closest_point
+codigo/tutoriales/tutoriales_pcl/icp/pcds
+videos

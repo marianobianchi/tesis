@@ -4,6 +4,7 @@
 
 import numpy as np
 import cv2
+import os
 
 
 ###############################
@@ -113,6 +114,47 @@ def write_video():
     cv2.destroyAllWindows()
 
 
+def write_video_from_images():
+    path = '/home/mbianchi/tesis/codigo/videos/rgbd/scenes/meeting_small/meeting_small_1/'
+    img_regex = 'meeting_small_1_{n}.png'
+    outfname = '/tmp/meeting_small.avi'
+    start_frame = 150
+    end_frame = 180
+
+    # Tomo un frame para definir el tamaño del video
+    frame = cv2.imread(
+        os.path.join(path, img_regex.format(n=start_frame)),
+        cv2.IMREAD_COLOR
+    )
+    height = len(frame)
+    width = len(frame[0])
+
+    # Defino el codec y armo el objeto VideoWriter
+    fourcc = cv2.cv.CV_FOURCC(*'XVID')
+    out = cv2.VideoWriter(
+        outfname, # Video file name
+        fourcc, # Codec
+        10.0, # Frames por segundo
+        (width,height), # Tamaño de los frames
+        True, # Flag de color. True = color, False = gris
+    )
+    start_frame += 1
+    while start_frame <= end_frame:
+        fname = os.path.join(path, img_regex.format(n=start_frame))
+        frame = cv2.imread(fname)
+        start_frame += 1
+
+        # Le aplicamos un efecto a la imagen
+        #frame = cv2.flip(frame,0)
+
+        # Guardo el frame
+        out.write(frame)
+
+    out.release()
+
+    cv2.destroyAllWindows()
+
+
 ################################
 # GETTING STARTED WITH DRAWING
 ################################
@@ -144,4 +186,4 @@ def draw_circle():
 
 
 if __name__ == '__main__':
-    write_video()
+    write_video_from_images()
