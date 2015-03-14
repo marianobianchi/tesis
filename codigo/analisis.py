@@ -457,22 +457,22 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
             fname = img_path_re.format(nframe=nframe)
             img = cv2.imread(fname, cv2.IMREAD_COLOR)
 
-            if gt_fue_exitoso or intersection.area() > 0:
-                img = dibujar_cuadrado(
-                    img,
-                    (gt_fila_sup, gt_col_izq),
-                    (gt_fila_inf, gt_col_der),
-                    color=(0, 255, 0)
-                )
-                algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
-                if metodo == 1:  # si fue seguimiento
-                    algoritmo_color = (255, 0, 0)  # azul
-                img = dibujar_cuadrado(
-                    img,
-                    (fila_sup, col_izq),
-                    (fila_inf, col_der),
-                    color=algoritmo_color,
-                )
+            # if gt_fue_exitoso or intersection.area() > 0:
+                # img = dibujar_cuadrado(
+                #     img,
+                #     (gt_fila_sup, gt_col_izq),
+                #     (gt_fila_inf, gt_col_der),
+                #     color=(0, 255, 0)
+                # )
+            algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
+            if metodo == 1:  # si fue seguimiento
+                algoritmo_color = (255, 0, 0)  # azul
+            img = dibujar_cuadrado(
+                img,
+                (fila_sup, col_izq),
+                (fila_inf, col_der),
+                color=algoritmo_color,
+            )
 
             # Guardo el resultado
             path = '/home/mbianchi/Escritorio/pngs/'
