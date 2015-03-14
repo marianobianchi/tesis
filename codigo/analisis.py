@@ -491,6 +491,112 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
                 subprocess.call(['pcl_viewer', cloud_fname, found_cloud_fname])
 
 
+def dibujar_nubes_encontradas(scenename, scenenum, objname, objnum, paramname,
+                              paramval, corr_num='01'):
+
+    result_path = (
+        'pruebas_guardadas/{sname}_{snum}/{objname}_{objnum}/{pname}/{pval}/{cn}/'.format(
+            sname=scenename,
+            snum=scenenum,
+            objname=objname,
+            objnum=objnum,
+            pname=paramname,
+            pval=paramval,
+            cn=corr_num
+        )
+    )
+    result_data_path = result_path + 'results.txt'
+
+    found_cloud_path_re = 'obj_found_scenepoints_frame_{nframe:03d}.pcd'
+    cloud_path_re = 'videos/rgbd/scenes/{sname}/{sname}_{snum}/{sname}_{snum}_{nframe}.pcd'.format(
+        sname=scenename,
+        snum=scenenum,
+        nframe='{nframe}',
+    )
+    img_path_re = 'videos/rgbd/scenes/{sname}/{sname}_{snum}/{sname}_{snum}_{nframe}.png'.format(
+        sname=scenename,
+        snum=scenenum,
+        nframe='{nframe}',
+    )
+
+    ground_truth = StaticDetector(
+        matfile_path='videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'.format(
+            sname=scenename,
+            snum=scenenum,
+        ),
+        obj_rgbd_name=objname,
+        obj_rgbd_num=objnum,
+    )
+
+    with codecs.open(result_data_path, 'r', 'utf-8') as file_:
+        reach_result_zone = False
+        while not reach_result_zone:
+            line = file_.next()
+            reach_result_zone = line.startswith('RESULTS_SECTION')
+
+        for line in file_.readlines():
+            values = [int(v) for v in line.split(';')]
+
+            nframe = values[0]
+            fue_exitoso = values[1]
+            metodo = values[2]
+            fila_sup = values[3]
+            col_izq = values[4]
+            fila_inf = values[5]
+            col_der = values[6]
+            # size = fila_inf - fila_sup
+
+            ground_truth.update({'nframe': nframe})
+            gt_fue_exitoso, gt_desc = ground_truth.detect()
+            gt_col_izq = gt_desc['topleft'][1]
+            gt_fila_sup = gt_desc['topleft'][0]
+            gt_col_der = gt_desc['bottomright'][1]
+            gt_fila_inf = gt_desc['bottomright'][0]
+
+            rectangle_found = Rectangle(
+                (fila_sup, col_izq),
+                (fila_inf, col_der)
+            )
+            ground_truth_rectangle = Rectangle(
+                (gt_fila_sup, gt_col_izq),
+                (gt_fila_inf, gt_col_der)
+            )
+            intersection = rectangle_found.intersection(
+                ground_truth_rectangle
+            )
+
+            union_area = (
+                rectangle_found.area() + ground_truth_rectangle.area() - intersection.area()
+            )
+
+            if union_area > 0:
+                overlap_area = intersection.area() / union_area
+                print("Overlap_area: " + unicode(overlap_area))
+
+            # fname = img_path_re.format(nframe=nframe)
+            # img = cv2.imread(fname, cv2.IMREAD_COLOR)
+
+            objeto_color = '255,0,0'  # rojo si fue deteccion
+            if metodo == 1:  # si fue seguimiento
+                objeto_color = '0,255,0'  # verde
+
+            cloud_fname = cloud_path_re.format(nframe=nframe)
+            params = [
+                'pcl_viewer',
+                '-bc', '255,255,255',  # Blanco, color de fondo
+                cloud_fname, '-fc', '0,0,0',  # Negro, color de la escena
+            ]
+
+            if fue_exitoso:
+                found_cloud_fname = result_path + found_cloud_path_re.format(nframe=nframe)
+
+                params.append(found_cloud_fname)
+                params.append('-fc')
+                params.append(objeto_color)
+
+            subprocess.call(params)
+
+
 
 if __name__ == '__main__':
     # # Frame size
@@ -1372,6 +1478,13 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
+    dibujar_nubes_encontradas(
+        'desk', '1',
+        'coffee_mug', '5',
+        'definitivo_DEPTH', 'DEFINITIVO',
+        corr_num='01',
+    )
+
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
     ##########################################
@@ -1423,13 +1536,13 @@ if __name__ == '__main__':
     #     param='definitivo_RGB_staticdet',
     #     path='pruebas_guardadas',
     # )
-    dibujar_cuadros_encontrados_y_del_ground_truth(
-        'desk', '1',
-        'cap', '4',
-        'definitivo_RGB_staticdet', 'DEFINITIVO',
-        corr_num='01',
-        show_clouds=False
-    )
+    # dibujar_cuadros_encontrados_y_del_ground_truth(
+    #     'desk', '1',
+    #     'cap', '4',
+    #     'definitivo_RGB_staticdet', 'DEFINITIVO',
+    #     corr_num='01',
+    #     show_clouds=False
+    # )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D
