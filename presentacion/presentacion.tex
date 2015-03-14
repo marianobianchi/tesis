@@ -388,7 +388,7 @@
         \centering
         \includegraphics[scale=0.5]{img/pochoclos/comiendo_1.jpg}
     \end{figure}
-    \video{}
+    \video{videos/seguimiento_rgb.avi}
 \end{frame}
 %--- Next Frame ---%
 
@@ -463,7 +463,6 @@
                 \footnotesize
                 \begin{algorithmic}
                     \Function{icp}{$obj, scene$}
-                    	\State $t \gets T\_IDENTIDAD$
                     	\Loop
                     		\State $get\_closest\_points()$
                     		\State $get\_transformation()$
@@ -488,6 +487,16 @@
 
     \end{columns}
 
+\end{frame}
+%--- Next Frame ---%
+
+
+\begin{frame}[t]{Veamos un ejemplo!}
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.5]{img/pochoclos/comiendo_2.png}
+    \end{figure}
+    % \video{videos/seguimiento_rgb.avi}
 \end{frame}
 %--- Next Frame ---%
 
@@ -552,7 +561,7 @@
                 \end{center}
                 \begin{enumerate}
                     \item ICP
-                    \item Opcionalmente: refinar usando comparación de histogramas
+                    \item Refinar usando comparación de histogramas
                 \end{enumerate}
             }
         \end{column}
@@ -681,7 +690,10 @@
 
 \subsection{Métricas}
 \begin{frame}[t]{Comparación de resultados vs. ground truth}
-    IMAGEN DEL PDF DE PASCALLIN VOC METRIC QUE MUESTRA LO DE INTERSECCION / UNION
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.35]{img/pascal/pascal.png}
+    \end{figure}
 \end{frame}
 %--- Next Frame ---%
 

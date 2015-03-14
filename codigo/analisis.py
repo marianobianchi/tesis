@@ -474,30 +474,16 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
                     color=algoritmo_color,
                 )
 
-            # Muestro el resultado y espero que se apriete la tecla q
-            cv2.imshow(
-                'Frame {n}, {obj}, {scene}'.format(
+            # Guardo el resultado
+            path = '/home/mbianchi/Escritorio/pngs/'
+            cv2.imwrite(
+                path + '{scene}_{n:03d}_{obj}.png'.format(
                     n=nframe,
-                    obj=objname,
-                    scene=scenename+'_'+scenenum
+                    obj=objname + '_' + objnum,
+                    scene=scenename + '_' + scenenum,
                 ),
                 img
             )
-
-            key_pressed = cv2.waitKey(1) & 0xFF
-            while key_pressed != ord('q'):
-                key_pressed = cv2.waitKey(1) & 0xFF
-                if key_pressed == ord('s'):
-                    cv2.imwrite(
-                        'solo_frame-{scene}-{obj}-frame_{n}.png'.format(
-                            n=nframe,
-                            obj=objname+'_'+objnum,
-                            scene=scenename+'_'+scenenum
-                        ),
-                        img
-                    )
-
-            cv2.destroyAllWindows()
 
             if show_clouds:
                 cloud_fname = cloud_path_re.format(nframe=nframe)
