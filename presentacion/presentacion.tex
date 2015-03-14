@@ -31,6 +31,10 @@
 % Cuadro de texto de color
 \usepackage{xcolor}
 
+% Codigo
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
 % Link a un archivo: \href{run:videos/desk_1.ogv}{\color{red}{DEMO}}
 
 
@@ -44,45 +48,19 @@
 
 \begin{document}
 
+
 \maketitle
+% comentar como va a estar organizada la charla
 %--- Next Frame ---%
-
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introducción}
-\begin{frame}[t]{Si nos organizamos...}
-    \tableofcontents
-    % comentar como va a estar organizada la charla
-\end{frame}
-%--- Next Frame ---%
-
-\subsection{Aplicaciones}
-\begin{frame}{Aplicaciones} % si pongo la opcion [t] el texto empieza desde arriba
-
-    % El seguimiento de objetos en secuencias de imágenes tiene muchas aplicaciones.
-    % Desde hace muchos años es un tema de estudio dentro del área de procesamiento de imágenes
-    % y aún se siguen desarrollando más y mejores herramientas para este fin.
-    % Varias de sus aplicaciones nos las cruzamos todos los días sin darnos cuenta,
-    % como por ejemplo, la generación de estadísticas deportivas. BLABLABLA
-
-    % Permite generar estadísitcas deportivas midiendo la distancia recorrida por
-    % jugadores de futbol, tiros al arco, goles, faltas realizadas, etc
-    \begin{figure}[t]
-        \centering
-        \includegraphics[scale=0.5]{img/estadistica.jpg}
-    \end{figure}
-\end{frame}
-
-\begin{frame}{Aplicaciones}
-    % Permite que un robot sepa de que manera tomar un objeto y usarlo como
-    % herramienta de trabajo
-    \begin{figure}[t]
-        \centering
-        \includegraphics[scale=0.12]{img/robot.jpg}
-    \end{figure}
-\end{frame}
+% \begin{frame}[t]{Si nos organizamos...}
+%     \tableofcontents
+%
+% \end{frame}
+% %--- Next Frame ---%
 
 \subsection{Vamos por partes... del título}
 \begin{frame}{}
@@ -241,6 +219,32 @@
 %--- Next Frame ---%
 
 
+\subsection{Aplicaciones}
+\begin{frame}{Aplicaciones} % si pongo la opcion [t] el texto empieza desde arriba
+
+    % El seguimiento de objetos en secuencias de imágenes tiene muchas aplicaciones.
+    % Desde hace muchos años es un tema de estudio dentro del área de procesamiento de imágenes
+    % y aún se siguen desarrollando más y mejores herramientas para este fin.
+    % Varias de sus aplicaciones nos las cruzamos todos los días sin darnos cuenta,
+    % como por ejemplo, la generación de estadísticas deportivas. BLABLABLA
+
+    % Permite generar estadísitcas deportivas midiendo la distancia recorrida por
+    % jugadores de futbol, tiros al arco, goles, faltas realizadas, etc
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.5]{img/estadistica.jpg}
+    \end{figure}
+\end{frame}
+
+\begin{frame}{Aplicaciones}
+    % Permite que un robot sepa de que manera tomar un objeto y usarlo como
+    % herramienta de trabajo
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.12]{img/robot.jpg}
+    \end{figure}
+\end{frame}
+
 
 \subsection{Objetivos}
 \begin{frame}{Objetivos}
@@ -252,7 +256,7 @@
     \begin{itemize}
         \item Implementamos, estudiamos y evaluamos un sistema de seguimiento RGB-D, enfocándonos en la etapa de seguimiento
         \item Comparamos métodos de seguimiento en RGB y en profundidad y analizamos sus ventajas y desventajas
-        \item Reportamos resultados para un sistema de seguimiento RGB-D completo, no encontrados en la literatura
+        \item Reportamos resultados para un sistema de seguimiento RGB-D completo, ausentes en la literatura
     \end{itemize}
 \end{frame}
 %--- Next Frame ---%
@@ -293,6 +297,12 @@
 %--- Next Frame ---%
 
 
+\begin{frame}[t]{title}
+    PONER ALGO CHISTOSO ACÁ, ASI RELAJO UN POCO
+\end{frame}
+%--- Next Frame ---%
+
+
 \subsection{Sistema RGB}
 \begin{frame}{Sistema RGB}
     \begin{columns}
@@ -309,172 +319,264 @@
         \end{column}
 
         \begin{column}{5cm}
-            \begin{center}
-                \textbf{Detección}
-            \end{center}
+            % DETECCION
+            % \begin{block}{Pasos del algoritmo de template matching}
+            %     Para cada template proveniente del entrenamiento y para cada pixel de la escena, seguir estos pasos:
+            %     \begin{enumerate}
+            %         \item Tomar un rectángulo de la escena del tamaño del template cuya esquina superior izquierda sea el pixel actual
+            %         \item Compararlo con el template (ejemplo: diferencia cuadrática pixel por pixel)
+            %         \item Si la comparación está por debajo de un umbral predefinido y es el mejor valor encontrado, guardar la ubicación del pixel
+            %     \end{enumerate}
+            %     Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
+            % \end{block}
+            \only<1>{
+                \begin{center}
+                    \textbf{Detección}: \\ \textit{Template matching}
+                \end{center}
 
-            \begin{figure}[t]
-                \centering
-                \vspace{-10pt}
-                \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
-            \end{figure}
+                \begin{figure}[t]
+                    \centering
+                    \vspace{-15pt}
+                    \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
+                \end{figure}
+            }
+            % ENTRENAMIENTO
+            \only<2>{
+                \begin{center}
+                    \textbf{Entrenamiento}: \\ \textit{Recolección de templates}
+                \end{center}
+
+                \begin{figure}
+                	\centering
+                	\begin{subfigure}[b]{0.4\textwidth}
+                		\includegraphics[width=\textwidth]{img/templates/0_crop.png}
+                	\end{subfigure}
+                	\quad
+                	\begin{subfigure}[b]{0.4\textwidth}
+                		\includegraphics[width=\textwidth]{img/templates/90_crop.png}
+                	\end{subfigure}
+
+                	\begin{subfigure}[b]{0.4\textwidth}
+                		\includegraphics[width=\textwidth]{img/templates/180_crop.png}
+                	\end{subfigure}
+                	\quad
+                	\begin{subfigure}[b]{0.4\textwidth}
+                		\includegraphics[width=\textwidth]{img/templates/270_crop.png}
+                	\end{subfigure}
+                \end{figure}
+            }
+            % SEGUIMIENTO
+            \only<3>{
+                \begin{center}
+                    \textbf{Seguimiento}: \\ \textit{Comparación de histogramas}
+                \end{center}
+                \begin{figure}[t]
+                	\centering
+                    \vspace{-15pt}
+                	\includegraphics[width=\textwidth]{img/template_histogram.png}
+                \end{figure}
+            }
         \end{column}
+
     \end{columns}
 
-
-
-    % En esta etapa usamos un método llamado \textit{template matching}. Para utilizarlo necesitamos:
-    % \begin{itemize}
-    %     \item \textit{templates}: Una o más imágenes del objeto a detectar tomadas de diferentes ángulos
-    %     \item \textit{escena}: Un frame de un video o imagen en donde se desea ubicar el objeto
-    %     \item Opcionalmente podemos utilizar máscaras que segmenten al objeto en cada template.
-    % \end{itemize}
 \end{frame}
 %--- Next Frame ---%
 
-\begin{frame}[t]{Detección RGB}
-
-    PONER ESTAS IMAGENES
-    \begin{enumerate}
-        \item Un template entero
-        \item Un template segmentado
-        \item Una escena
-    \end{enumerate}
-\end{frame}
-%--- Next Frame ---%
-
-
-
-\begin{frame}[t]{Detección RGB}
-    \begin{block}{Pasos del algoritmo de template matching}
-        Para cada template proveniente del entrenamiento y para cada pixel de la escena, seguir estos pasos:
-        \begin{enumerate}
-            \item Tomar un rectángulo de la escena del tamaño del template cuya esquina superior izquierda sea el pixel actual
-            \item Compararlo con el template (ejemplo: diferencia cuadrática pixel por pixel)
-            \item Si la comparación está por debajo de un umbral predefinido y es el mejor valor encontrado, guardar la ubicación del pixel
-        \end{enumerate}
-        Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
-
-
-\begin{frame}[t]{Entrenamiento RGB}
-    Como el algoritmo de detección elegido es \textit{template matching}, esta etapa consta simplemente de obtener distintos templates del objeto que se desea seguir, tratando de cubrir las distintas ``caras'' del objeto desde varias alturas. Por ejemplo:
-    \begin{block}{}
-        PONER UN PAR DE TEMPLATES
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
-
-
-\begin{frame}[t]{Seguimiento RGB}
-    Tomando la ubicación del objeto en el frame anterior, se explora en un área cercana (mucho menor que el área de la escena) de manera similar a la de \textit{template matching} en búsqueda del objeto deseado. Para cada recuadro explorado se siguen estos pasos:
-    \begin{enumerate}
-        \item Calcular histograma del recuadro
-        \item Calcular histograma del recuadro del frame anterior
-        \item Calcular histograma del último template ``matcheado''
-        \item Comparar los histogramas 1-2 y 1-3
-        \item Si ambas comparaciones están por debajo de sus respectivos umbrales y son las mejores, se guarda la ubicación del recuadro (esq. superior izquierda)
-    \end{enumerate}
-    Si se guardó una ubicación, se la devuelve como resultado. Si no, se indica que no se encontró el objeto y se vuelve a la etapa de detección
+\begin{frame}[t]{Veamos un ejemplo!}
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.5]{img/pochoclos/comiendo_1.jpg}
+    \end{figure}
+    \video{}
 \end{frame}
 %--- Next Frame ---%
 
 
 
 \subsection{Sistema en profundidad}
-\begin{frame}[t]{Detección en profundidad}
+\begin{frame}[fragile]{Sistema en profundidad}
+    \begin{columns}
+        \begin{column}{5cm}
+            \begin{figure}
+                \centering
+                \vspace{-15pt}
+                % \hspace*{-20pt}
+                \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
+            \end{figure}
+        \end{column}
 
-    Para esta etapa vamos a usar dos métodos de alineación de nubes de puntos y combinarlos. Para usarlos necesitamos:
-    \begin{itemize}
-        \item \textit{vista del objeto}: Una nube de puntos del objeto parcial o completa (similar al concepto de template en RGB)
-        \item \textit{escena}: Una nube de puntos de la escena donde se desea encontrar al objeto
-    \end{itemize}
-\end{frame}
-%--- Next Frame ---%
+        \begin{column}{0.5cm}
+        \end{column}
 
-\begin{frame}[t]{Detección en profundidad - Método 1}
-    El método se llama Iterative Closest Point (ICP)
-    \begin{block}{Algoritmo ICP}
-        Dadas dos nubes de puntos A y B, se siguen los siguientes pasos hasta que alguna condición de corte se cumpla:
-        \begin{enumerate}
-            \item Se calculan los ``puntos más cercanos'' entre A y B
-            \item Se calcula una transformación que una los puntos cercanos de A en B
-            \item Se aplica la transformación sobre A
-        \end{enumerate}
-        Al terminar se devuelve la transformación T proveniente de aplicar todas las transformaciones parciales junto con el error cuadrático medio entre los puntos más cercanos de T(A) y B
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
+        \begin{column}{5cm}
+            % DETECCION
+            % Tanto RANSAC como ICP son métodos de estimación de pose y alineación
+            % Toman una nube de puntos "query" y otra "escena" y estiman una
+            % transformacion que alinee de la mejor manera "query" segun las
+            % coordenadas de "escena"
+            % La diferencia principal entre ambos métodos es que RANSAC es robusto
+            % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
+            % para refinar el resultado, ICP
+            \only<1>{
+                \begin{center}
+                    \textbf{Detección}: \\ \textit{RANSAC e ICP}
+                \end{center}
 
+                \vspace{-10pt}
+                \begin{figure}[t]
+                    \centering
+                    \begin{subfigure}[b]{0.7\textwidth}
+                        \includegraphics[width=\textwidth]{img/alineacion/icp_ini.png}
+                    \end{subfigure}
+                    \quad
+                    \begin{subfigure}[b]{0.7\textwidth}
+                        \includegraphics[width=\textwidth]{img/alineacion/icp_fin.png}
+                    \end{subfigure}
+                \end{figure}
+            }
+            % ENTRENAMIENTO
+            \only<2>{
+                \begin{center}
+                    \textbf{Entrenamiento}: \\ \textit{Nube de puntos}
+                \end{center}
+                \vspace{-20pt}
+                \begin{figure}
+                	\begin{subfigure}[b]{\textwidth}
+                        \centering
+                		\includegraphics[scale=0.1]{img/nubes/taza_02.png}
+                	\end{subfigure}
+                	\quad
+                	\begin{subfigure}[b]{\textwidth}
+                        \centering
+                		\includegraphics[scale=0.1]{img/nubes/chef_01.png}
+                	\end{subfigure}
+                \end{figure}
+            }
+            % SEGUIMIENTO
+            %
+            \only<3>{
+                \begin{center}
+                    \textbf{Seguimiento}: \\ \textit{ICP}
+                \end{center}
+                % \tiny
+                \footnotesize
+                \begin{algorithmic}
+                    \Function{icp}{$obj, scene$}
+                    	\State $t \gets T\_IDENTIDAD$
+                    	\Loop
+                    		\State $get\_closest\_points()$
+                    		\State $get\_transformation()$
+                    		\State $transform(obj)$
+                    		\State $sq\_dist \gets mean\_sq\_dist()$
+                    	\EndLoop
+                        \State \Return $obj, sq\_dist$
+                    \EndFunction
+                \end{algorithmic}
+                \normalsize
 
+                \begin{columns}
+                    \begin{column}{2cm}
+                        \video{videos/taza_pre_icp.ogv}
+                    \end{column}
+                    \begin{column}{2cm}
+                        \video{videos/taza_post_icp.ogv}
+                    \end{column}
+                \end{columns}
+            }
+        \end{column}
 
-\begin{frame}[t]{Detección en profundidad - Método 2}
-    % Decir que los descriptores proveen una forma de representar caracteristicas especiales
-    % en una imagen, como puede ser una forma, color, textura, movimiento, etc
-    El método usado es una variante de un esquema RANSAC
-    \begin{block}{RANSAC}
-        Dadas dos nubes de puntos A y B, se calculan sus descriptores (features) y se siguen estos pasos:
-        \begin{enumerate}
-            \item Tomar N descriptores random de A
-            \item Encontrar sus correspondencias en B
-            \item Descartar si los poligonos resultantes no son isométricos
-            \item Si lo son, estimar una transformación entre los descriptores
-            \item Transformar y calcular error cuarático medio
-            \item Almacenar transformación si tiene el menor error hasta ahora
-        \end{enumerate}
-        Al terminar se devuelve la mejor transformación T encontrada y el error cuadrático medio entre los puntos más cercanos de T(A) y B
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
+    \end{columns}
 
-
-\begin{frame}[t]{Detección en profundidad - Combinación}
-    % Dado que ICP es sensible a outliers y no así RANSAC, utilizamos como método inicial en la detección a RANSAC y refinamos el resultado usando ICP.
-    El método final comienza con una nube de puntos del objeto O y otra de la escena S. Se segmenta la escena de manera similar a \textit{template matching} y para cada segmento se siguen estos pasos:
-    \begin{itemize}
-        \item Aplicar RANSAC entre O y S
-        \item Si no es exitoso, se continua con el siguiente segmento
-        \item Si fue exitoso, aplicar ICP entre RANSAC(O) y S
-        \item Si ICP fue exitoso, se almacena el resultado y se sigue con otro segmento
-    \end{itemize}
-    Si se almacenó algun segmento, se filtran los puntos de la escena correspondientes al objeto en ese segmento, se obtiene su ubicación en coordenadas RGB y se pasa al siguiente frame
-\end{frame}
-%--- Next Frame ---%
-
-
-\begin{frame}[t]{Entrenamiento en profundidad}
-    Como el algoritmo de detección elegido es \textit{template matching}, esta etapa consta simplemente de obtener distintos templates del objeto que se desea seguir, tratando de cubrir las distintas ``caras'' del objeto desde varias alturas. Por ejemplo:
-    \begin{block}{}
-        PONER UN PAR DE TEMPLATES
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
-
-
-\begin{frame}[t]{Seguimiento en profundidad}
-    Tomando la nube de puntos del objeto segmentado en el frame anterior y la nube de puntos de la escena en el frame actual, se siguen estos pasos:
-    \begin{enumerate}
-        \item Se filtran los puntos de la escena cercanos a la ubicación del objeto en el frame anterior
-        \item Se aplica ICP entre el objeto y los puntos filtrados de la escena
-    \end{enumerate}
-    Si ICP fue exitoso, se devuelve la posición del objeto y se continua en el siguiente frame. Si falla, se vuelve a la etapa de detección sobre el mismo frame.
 \end{frame}
 %--- Next Frame ---%
 
 
 \subsection{Sistema RGB-D}
-\begin{frame}[t]{Sistema RGB-D}
-    \begin{block}{Entrenamiento}
-        Se unen los entrenamientos de RGB y profundidad
-    \end{block}
-    \begin{block}{Detección}
-        Se utiliza primero la detección RGB y si es exitoso se transforman estos datos para utilizarlos con la detección en profundidad. Una detección RGB-D es exitosa siempre que lo sean ambas detecciones por separado.
-    \end{block}
-    \begin{block}{Seguimiento}
-        Primero se aplica el seguimiento en profundidad. Si es exitoso se intenta mejorar con el seguimiento en RGB, partiendo del resultado en profundidad. Un seguimiento RGB-D es exitoso si el seguimiento en profundidad es exitoso. La parte RGB se usa solo para refinar el resultado.
-    \end{block}
+\begin{frame}{Sistema RGB-D}
+    \begin{columns}
+        \begin{column}{5cm}
+            \begin{figure}
+                \centering
+                \vspace{-15pt}
+                % \hspace*{-20pt}
+                \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
+            \end{figure}
+        \end{column}
+
+        \begin{column}{0.5cm}
+        \end{column}
+
+        \begin{column}{5cm}
+            % ENTRENAMIENTO
+            \only<1>{
+                \begin{center}
+                    \textbf{Entrenamiento}: \\ \textit{Nube de puntos y templates}
+                \end{center}
+                \vspace{-20pt}
+                \begin{figure}
+                	\begin{subfigure}[b]{\textwidth}
+                        \centering
+                		\includegraphics[scale=0.15]{img/nubes/taza_02.png}
+                	\end{subfigure}
+                	\quad
+                	\begin{subfigure}[b]{\textwidth}
+                        \centering
+                		\includegraphics[scale=0.7]{img/template_matching/template.png}
+                	\end{subfigure}
+                \end{figure}
+            }
+            % DETECCION
+            % Tanto RANSAC como ICP son métodos de estimación de pose y alineación
+            % Toman una nube de puntos "query" y otra "escena" y estiman una
+            % transformacion que alinee de la mejor manera "query" segun las
+            % coordenadas de "escena"
+            % La diferencia principal entre ambos métodos es que RANSAC es robusto
+            % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
+            % para refinar el resultado, ICP
+            \only<2>{
+                \begin{center}
+                    \textbf{Detección}:
+                \end{center}
+                \begin{enumerate}
+                    \item Template Matching
+                    \item RANSAC
+                    \item ICP
+                \end{enumerate}
+            }
+            % SEGUIMIENTO
+            %
+            \only<3>{
+                \begin{center}
+                    \textbf{Seguimiento}:
+                \end{center}
+                \begin{enumerate}
+                    \item ICP
+                    \item Opcionalmente: refinar usando comparación de histogramas
+                \end{enumerate}
+            }
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\subsection*{}
+\begin{frame}{¿Y ahora cómo seguimos?}
+    % Pero para poder comparar los métodos entre si y saber cual funciona mejor
+    % en que casos necesitamos tener una base de datos con información de
+    % ground truth (la traducción sería de verdad absoluta) con la que podamos
+    % corroborar el comportamiento de cada método y cada sistema
+
+    % TODO: antes de esta slide comentar algo sobre lo que hicimos despues: una vez que tenemos los sistemas necesitabamos una base que tuviera información de rgb y profundidad, con objetos, escenas e info de ground truth
+
+    PONER UNA IMAGEN CON LOS SISTEMAS A LA IZQUIERDA, A LA DERECHA RESULTADOS Y EN EL MEDIO SIGNOS DE PREGUNTA
+    \begin{itemize}
+        \item Analizamos los sistemas propuestos
+        \item Comparamos los resultados arrojados por cada uno
+        \item Definimos ventajas y desventajas
+    \end{itemize}
+
 \end{frame}
 %--- Next Frame ---%
 
@@ -484,7 +586,6 @@
 \section{Resultados}
 \subsection{Base de datos}
 \begin{frame}{Base de datos}
-    % TODO: antes de esta slide comentar algo sobre lo que hicimos despues: una vez que tenemos los sistemas necesitabamos una base que tuviera información de rgb y profundidad, con objetos, escenas e info de ground truth
 
     % Para poder cuantificar que tan bien funcionaron los métodos y compararlos
     % entre si utilizamos una BD de objetos y escenas de donde obtuvimos
@@ -546,19 +647,12 @@
 
         \end{column}
     \end{columns}
-
-    % \begin{itemize}
-    %     \item objetos y escenas elegidos para seleccion de parametros
-    %     \item seleccion/exploracion de parametros
-    %     \item analisis sobre los metodos
-    %     \item resultados por método y del sistema
-    %     \item resultados del sistema con nuevos objetos
-    % \end{itemize}
 \end{frame}
 %--- Next Frame ---%
 
 \subsection{Selección de objetos para las pruebas}
 \begin{frame}{Selección de objetos para las pruebas}
+    SACAR ESTE SLIDE Y COMENTAR ALGO EN EL SLIDE DE LA BASE DE DATOS
     % Decir por que se hicieron dos selecciones. La idea era "tunear" los métodos
     % y sus parámetros para algunos objetos representativos (3 categorías distintas)
     % y fijar los valores de parámetros que mejor se desempeñaran para los 3 casos
@@ -592,6 +686,16 @@
 %--- Next Frame ---%
 
 
+
+\subsection{Análisis}
+\begin{frame}[t]{title}
+    TO DO: poner un gráfico de los de color que se vea bien, junto con el video que salga de ese gráfico y comentar para que sirve analizar el porcentaje de seguimiento, el promedio de solapamiento. Comentar que se usó una detección estática para comparar y analizar solo el comportamiento del seguimiento
+
+\end{frame}
+%--- Next Frame ---%
+
+
+
 \begin{frame}[t]{Selección del umbral de solapamiento}
     % Decir que es el accuracy: medida de que tan buenos son los resultados
     % reportados por el algoritmo.
@@ -600,9 +704,6 @@
     % Comentar que umbral elegimos para el análisis posterior
 \end{frame}
 %--- Next Frame ---%
-
-\subsection{Análisis}
-% TODO: poner un gráfico de los de color que se vea bien, junto con el video que salga de ese gráfico y comentar para que sirve analizar el porcentaje de seguimiento, el promedio de solapamiento. Comentar que se usó una detección estática para comparar y analizar solo el comportamiento del seguimiento
 
 
 \begin{frame}[t]{Comparando seguimientos}
@@ -678,6 +779,12 @@
     \end{columns}
 \end{frame}
 %--- Next Frame ---%
+
+\begin{frame}[t]{Resultados del sistema RGB-D}
+    TABLA RGBD
+\end{frame}
+%--- Next Frame ---%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%

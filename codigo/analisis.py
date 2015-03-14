@@ -457,21 +457,22 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
             fname = img_path_re.format(nframe=nframe)
             img = cv2.imread(fname, cv2.IMREAD_COLOR)
 
-            img = dibujar_cuadrado(
-                img,
-                (gt_fila_sup, gt_col_izq),
-                (gt_fila_inf, gt_col_der),
-                color=(0, 255, 0)
-            )
-            algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
-            if metodo == 1:  # si fue seguimiento
-                algoritmo_color = (255, 0, 0)  # azul
-            img = dibujar_cuadrado(
-                img,
-                (fila_sup, col_izq),
-                (fila_inf, col_der),
-                color=algoritmo_color,
-            )
+            if gt_fue_exitoso or intersection.area() > 0:
+                img = dibujar_cuadrado(
+                    img,
+                    (gt_fila_sup, gt_col_izq),
+                    (gt_fila_inf, gt_col_der),
+                    color=(0, 255, 0)
+                )
+                algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
+                if metodo == 1:  # si fue seguimiento
+                    algoritmo_color = (255, 0, 0)  # azul
+                img = dibujar_cuadrado(
+                    img,
+                    (fila_sup, col_izq),
+                    (fila_inf, col_der),
+                    color=algoritmo_color,
+                )
 
             # Muestro el resultado y espero que se apriete la tecla q
             cv2.imshow(
@@ -1436,6 +1437,13 @@ if __name__ == '__main__':
     #     param='definitivo_RGB_staticdet',
     #     path='pruebas_guardadas',
     # )
+    dibujar_cuadros_encontrados_y_del_ground_truth(
+        'desk', '1',
+        'cap', '4',
+        'definitivo_RGB_staticdet', 'DEFINITIVO',
+        corr_num='01',
+        show_clouds=False
+    )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente D
@@ -1490,13 +1498,13 @@ if __name__ == '__main__':
     #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
-    dibujar_cuadros_encontrados_y_del_ground_truth(
-        'desk', '1',
-        'cap', '4',
-        'definitivo_RGBD_preferD', 'DEFINITIVO',
-        corr_num='01',
-        show_clouds=False
-    )
+    # dibujar_cuadros_encontrados_y_del_ground_truth(
+    #     'desk', '1',
+    #     'cap', '4',
+    #     'definitivo_RGBD_preferD', 'DEFINITIVO',
+    #     corr_num='01',
+    #     show_clouds=False
+    # )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente RGB

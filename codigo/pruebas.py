@@ -728,6 +728,58 @@ def ver_canales_e_histogramas_rgb(img_path):
     plt.show()
 
 
+def histograma_rgb(img_path):
+    img_bgr = cv2.imread(img_path, cv2.IMREAD_COLOR)
+    img_rgb = cv2.cvtColor(img_bgr, cv2.cv.CV_BGR2RGB)
+
+    shape_gray = (img_bgr.shape[0], img_bgr.shape[1])
+
+    # Mostrando canales HSV
+    fig = plt.figure()
+    ax = fig.add_subplot(2, 1, 1)
+    # ax.set_title('Red')
+    ax.set_axis_off()
+    ax.imshow(img_rgb)
+
+    # Mostrando histogramas RGB
+    hist_b = cv2.normalize(
+        cv2.calcHist(
+            [img_bgr],
+            [0],
+            None,
+            [20],
+            [0, 255]
+        )
+    ).flatten().tolist()
+    hist_g = cv2.normalize(
+        cv2.calcHist(
+            [img_bgr],
+            [1],
+            None,
+            [20],
+            [0, 255]
+        )
+    ).flatten().tolist()
+    hist_r = cv2.normalize(
+        cv2.calcHist(
+            [img_bgr],
+            [2],
+            None,
+            [20],
+            [0, 255]
+        )
+    ).flatten().tolist()
+
+    hist_rgb = np.array(hist_b + hist_g + hist_r)
+
+    ax = fig.add_subplot(2, 1, 2)
+    # ax.set_title('Histograma RGB')
+    ax.bar(range(0, len(hist_rgb)), hist_rgb)
+    ax.set_yticks(np.arange(0, 1.1, 0.1))
+
+    plt.show()
+
+
 def probando_mi_metodo_chebysev():
     img_provider = FrameNamesAndImageProvider(
         'videos/rgbd/scenes/',  # scene path
@@ -843,4 +895,4 @@ def ver_y_guardar_static_detection():
 
 
 if __name__ == '__main__':
-    prueba_histogramas()
+    histograma_rgb('imagenes/gorra_modelo.png')
