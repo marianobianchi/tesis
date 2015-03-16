@@ -297,12 +297,6 @@
 %--- Next Frame ---%
 
 
-\begin{frame}[t]{title}
-    PONER ALGO CHISTOSO ACÁ, ASI RELAJO UN POCO
-\end{frame}
-%--- Next Frame ---%
-
-
 \subsection{Sistema RGB}
 \begin{frame}{Sistema RGB}
     \begin{columns}
@@ -579,12 +573,16 @@
 
     % TODO: antes de esta slide comentar algo sobre lo que hicimos despues: una vez que tenemos los sistemas necesitabamos una base que tuviera información de rgb y profundidad, con objetos, escenas e info de ground truth
 
-    PONER UNA IMAGEN CON LOS SISTEMAS A LA IZQUIERDA, A LA DERECHA RESULTADOS Y EN EL MEDIO SIGNOS DE PREGUNTA
-    \begin{itemize}
-        \item Analizamos los sistemas propuestos
-        \item Comparamos los resultados arrojados por cada uno
-        \item Definimos ventajas y desventajas
-    \end{itemize}
+    % PONER UNA IMAGEN CON LOS SISTEMAS A LA IZQUIERDA, A LA DERECHA RESULTADOS Y EN EL MEDIO SIGNOS DE PREGUNTA
+    % \begin{itemize}
+    %     \item Analizamos los sistemas propuestos
+    %     \item Comparamos los resultados arrojados por cada uno
+    %     \item Definimos ventajas y desventajas
+    % \end{itemize}
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.4]{img/diagrama_datos_sistema/datos_sistemas.png}
+    \end{figure}
 
 \end{frame}
 %--- Next Frame ---%
@@ -659,34 +657,34 @@
 \end{frame}
 %--- Next Frame ---%
 
-\subsection{Selección de objetos para las pruebas}
-\begin{frame}{Selección de objetos para las pruebas}
-    SACAR ESTE SLIDE Y COMENTAR ALGO EN EL SLIDE DE LA BASE DE DATOS
-    % Decir por que se hicieron dos selecciones. La idea era "tunear" los métodos
-    % y sus parámetros para algunos objetos representativos (3 categorías distintas)
-    % y fijar los valores de parámetros que mejor se desempeñaran para los 3 casos
-
-    % Una vez fijados estos valores, se usaron los otros 3 objetos y escenas donde
-    % aparecen para corroborar la selección de parámetros realizada
-    \begin{block}{Para la selección de parámetros}
-        \begin{itemize}
-            \item 3 objetos: taza blanca, gorra roja, bowl verde-agua
-            \item 2 escenas: escritorio 1 y 2
-        \end{itemize}
-    \end{block}
-
-    % Decir en estos casos por que se eligió cada objeto.
-    % Taza: supuestamente buena para RGB por su textura y para depth por su forma
-    % Lata: buena para depth por su forma, mala para RGB por su textura
-    % Caja: Buena para RGB por su textura y mala para depth por ser plana
-    \begin{block}{De control}
-        \begin{itemize}
-            \item 3 objetos: taza roja con dibujos, lata, caja de cereales
-            \item 2 escenas: mesa grande y mesa pequeña
-        \end{itemize}
-    \end{block}
-\end{frame}
-%--- Next Frame ---%
+% \subsection{Selección de objetos para las pruebas}
+% \begin{frame}{Selección de objetos para las pruebas}
+%     SACAR ESTE SLIDE Y COMENTAR ALGO EN EL SLIDE DE LA BASE DE DATOS
+%     % Decir por que se hicieron dos selecciones. La idea era "tunear" los métodos
+%     % y sus parámetros para algunos objetos representativos (3 categorías distintas)
+%     % y fijar los valores de parámetros que mejor se desempeñaran para los 3 casos
+%
+%     % Una vez fijados estos valores, se usaron los otros 3 objetos y escenas donde
+%     % aparecen para corroborar la selección de parámetros realizada
+%     \begin{block}{Para la selección de parámetros}
+%         \begin{itemize}
+%             \item 3 objetos: taza blanca, gorra roja, bowl verde-agua
+%             \item 2 escenas: escritorio 1 y 2
+%         \end{itemize}
+%     \end{block}
+%
+%     % Decir en estos casos por que se eligió cada objeto.
+%     % Taza: supuestamente buena para RGB por su textura y para depth por su forma
+%     % Lata: buena para depth por su forma, mala para RGB por su textura
+%     % Caja: Buena para RGB por su textura y mala para depth por ser plana
+%     \begin{block}{De control}
+%         \begin{itemize}
+%             \item 3 objetos: taza roja con dibujos, lata, caja de cereales
+%             \item 2 escenas: mesa grande y mesa pequeña
+%         \end{itemize}
+%     \end{block}
+% \end{frame}
+% %--- Next Frame ---%
 
 \subsection{Métricas}
 \begin{frame}[t]{Comparación de resultados vs. ground truth}
@@ -700,10 +698,12 @@
 
 
 \subsection{Análisis}
-\begin{frame}{Análisis frame por frame}
+\begin{frame}{Análisis frame por frame para el sistema de profundidad}
     % TODO: poner un gráfico de los de color que se vea bien, junto con el video que salga de ese gráfico y comentar para que sirve analizar el porcentaje de seguimiento, el promedio de solapamiento. Comentar que se usó una detección estática para comparar y analizar solo el comportamiento del seguimiento
+    Escena $\leftarrow$ Escritorio. Objeto $\leftarrow$ Taza
     \vspace*{-15pt}
     \begin{figure}
+        \centering
         \includegraphics[scale=0.24]{img/frame_a_frame_depth-taza.png}
     \end{figure}
 
@@ -715,8 +715,16 @@
 \begin{frame}[t]{Selección del umbral de solapamiento}
     % Decir que es el accuracy: medida de que tan buenos son los resultados
     % reportados por el algoritmo.
-    FORMULA DEL ACCURACY?\\
-    GRAFICO DE UMBRAL VS ACCURACY\\
+    \vspace*{-16pt}
+    \small
+    $$
+    accuracy = \frac{\#TP + \#TN}{\#TP + \#TN + \#FP + \#FN}
+    $$
+    \normalsize
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.22]{img/accuracy_sistemaRGBD.png}
+    \end{figure}
     % Comentar que umbral elegimos para el análisis posterior
 \end{frame}
 %--- Next Frame ---%
@@ -797,7 +805,27 @@
 %--- Next Frame ---%
 
 \begin{frame}[t]{Resultados del sistema RGB-D}
-    TABLA RGBD
+    \begin{table}[h]
+    	\centering
+        \begin{tabular}{|c|c|c|c|c|c|}
+        \hline
+        & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
+    	Objeto & & & Accuracy\\
+    	\hline
+        Taza    & 50.44      & 76.67     & 83.33 \\
+        \hline
+        Gorra   & 50.05      & 68.09     & 89.8 \\
+        \hline
+        Bowl    & 28.18      & 45.67     & 71.4 \\
+        \hline
+        Taza 2  & 45.54      & 77.78     & 93.07 \\
+        \hline
+        Lata    & 12.72      & 25.85     & 39.47 \\
+        \hline
+        Caja    &  6.17      &    10     & 26.92 \\
+        \hline
+        \end{tabular}
+    \end{table}
 \end{frame}
 %--- Next Frame ---%
 
@@ -807,9 +835,20 @@
 \section{Conclusiones y trabajo a futuro}
 \begin{frame}{Conclusiones y trabajo a futuro}
     \begin{itemize}
-        \item conclusiones
-        \item mejoras a implementar
+        \item Buena tasa de seguimiento con un modelo sencillo
+        \item Buen comportamiento del seguimiento en profundidad
+        \item Muy importante tener un método de detección robusto y preciso
+        \item El método funciona en escenas en donde tanto los objetos como la cámara se mueven
+        \item Implementar un algoritmo robusto frente a oclusiones (ej: usar filtro de Kalman)
     \end{itemize}
+\end{frame}
+%--- Next Frame ---%
+
+\begin{frame}[t]{¡Muchas gracias a todos!}
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.5]{img/preguntas.jpg}
+    \end{figure}
 \end{frame}
 %--- Next Frame ---%
 

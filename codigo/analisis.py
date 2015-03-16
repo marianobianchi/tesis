@@ -1478,11 +1478,18 @@ if __name__ == '__main__':
     #     path='pruebas_guardadas',
     # )
 
-    dibujar_nubes_encontradas(
+    # dibujar_nubes_encontradas(
+    #     'desk', '1',
+    #     'coffee_mug', '5',
+    #     'definitivo_DEPTH', 'DEFINITIVO',
+    #     corr_num='01',
+    # )
+    dibujar_cuadros_encontrados_y_del_ground_truth(
         'desk', '1',
         'coffee_mug', '5',
         'definitivo_DEPTH', 'DEFINITIVO',
         corr_num='01',
+        show_clouds=False
     )
 
     ##########################################
