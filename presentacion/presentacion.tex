@@ -18,9 +18,9 @@
 
 % color de fondo en celdas
 \usepackage{color, colortbl}
-\newcommand{\pricomp}[2]{\only<1>{\cellcolor{#1}#2}\only<2>{#2}}
-\newcommand{\prisegcomp}[3]{\only<1>{\cellcolor{#1}#3}\only<2>{\cellcolor{#2}{#3}}}
-\newcommand{\segcomp}[2]{\only<1>{#2}\only<2>{\cellcolor{#1}#2}}
+\newcommand{\pricomp}[2]{\only<1>{#2}\only<2>{\cellcolor{#1}#2}\only<3>{#2}}
+\newcommand{\prisegcomp}[3]{\only<1>{#3}\only<2>{\cellcolor{#1}#3}\only<3>{\cellcolor{#2}{#3}}}
+\newcommand{\segcomp}[2]{\only<1>{#2}\only<2>{#2}\only<3>{\cellcolor{#1}#2}}
 \newcommand{\video}[1]{
     \begin{center}
         \href{run:#1}{
@@ -253,11 +253,11 @@
     % Además, nos encontramos con falta de información en la literatura sobre el comportamiento de un sistema de seguimiento RGB-D completo.
 
     % Vamos entonces a meternos un poco más en el foco de estudio de este trabajo. Hasta ahora veníamos hablando de seguimiento unicamente y en esta ultima parte hablé de un sistema de seguimiento completo. ¿Qué es un sistema de seguimiento?
-    \begin{itemize}
+    \begin{enumerate}
         \item Implementamos, estudiamos y evaluamos un sistema de seguimiento RGB-D, enfocándonos en la etapa de seguimiento
         \item Comparamos métodos de seguimiento en RGB y en profundidad y analizamos sus ventajas y desventajas
-        \item Reportamos resultados para un sistema de seguimiento RGB-D completo, ausentes en la literatura
-    \end{itemize}
+        \item Análisis en detalle de un sistema de seguimiento RGB-D completo, poco común en la literatura
+    \end{enumerate}
 \end{frame}
 %--- Next Frame ---%
 
@@ -313,29 +313,8 @@
         \end{column}
 
         \begin{column}{5cm}
-            % DETECCION
-            % \begin{block}{Pasos del algoritmo de template matching}
-            %     Para cada template proveniente del entrenamiento y para cada pixel de la escena, seguir estos pasos:
-            %     \begin{enumerate}
-            %         \item Tomar un rectángulo de la escena del tamaño del template cuya esquina superior izquierda sea el pixel actual
-            %         \item Compararlo con el template (ejemplo: diferencia cuadrática pixel por pixel)
-            %         \item Si la comparación está por debajo de un umbral predefinido y es el mejor valor encontrado, guardar la ubicación del pixel
-            %     \end{enumerate}
-            %     Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
-            % \end{block}
-            \only<1>{
-                \begin{center}
-                    \textbf{Detección}: \\ \textit{Template matching}
-                \end{center}
-
-                \begin{figure}[t]
-                    \centering
-                    \vspace{-15pt}
-                    \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
-                \end{figure}
-            }
             % ENTRENAMIENTO
-            \only<2>{
+            \only<1>{
                 \begin{center}
                     \textbf{Entrenamiento}: \\ \textit{Recolección de templates}
                 \end{center}
@@ -357,6 +336,27 @@
                 	\begin{subfigure}[b]{0.4\textwidth}
                 		\includegraphics[width=\textwidth]{img/templates/270_crop.png}
                 	\end{subfigure}
+                \end{figure}
+            }
+            % DETECCION
+            % \begin{block}{Pasos del algoritmo de template matching}
+            %     Para cada template proveniente del entrenamiento y para cada pixel de la escena, seguir estos pasos:
+            %     \begin{enumerate}
+            %         \item Tomar un rectángulo de la escena del tamaño del template cuya esquina superior izquierda sea el pixel actual
+            %         \item Compararlo con el template (ejemplo: diferencia cuadrática pixel por pixel)
+            %         \item Si la comparación está por debajo de un umbral predefinido y es el mejor valor encontrado, guardar la ubicación del pixel
+            %     \end{enumerate}
+            %     Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
+            % \end{block}
+            \only<2>{
+                \begin{center}
+                    \textbf{Detección}: \\ \textit{Template matching}
+                \end{center}
+
+                \begin{figure}[t]
+                    \centering
+                    \vspace{-15pt}
+                    \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
                 \end{figure}
             }
             % SEGUIMIENTO
@@ -389,6 +389,16 @@
 
 
 \subsection{Sistema en profundidad}
+\begin{frame}[t]{Sistema en profundidad ¿Cómo se ve un video en profundidad?}
+    \begin{figure}[t]
+        \centering
+        \includegraphics[scale=0.5]{img/anteojos/poner_anteojos_3d_5.jpg}
+    \end{figure}
+    \video{videos/seguimiento_depth.avi}
+\end{frame}
+%--- Next Frame ---%
+
+
 \begin{frame}[fragile]{Sistema en profundidad}
     \begin{columns}
         \begin{column}{5cm}
@@ -400,6 +410,7 @@
             \end{figure}
         \end{column}
 
+        % Esta columna vacia esta para separar las otras 2 columnas
         \begin{column}{0.5cm}
         \end{column}
 
@@ -412,25 +423,8 @@
             % La diferencia principal entre ambos métodos es que RANSAC es robusto
             % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
             % para refinar el resultado, ICP
-            \only<1>{
-                \begin{center}
-                    \textbf{Detección}: \\ \textit{RANSAC e ICP}
-                \end{center}
-
-                \vspace{-10pt}
-                \begin{figure}[t]
-                    \centering
-                    \begin{subfigure}[b]{0.7\textwidth}
-                        \includegraphics[width=\textwidth]{img/alineacion/icp_ini.png}
-                    \end{subfigure}
-                    \quad
-                    \begin{subfigure}[b]{0.7\textwidth}
-                        \includegraphics[width=\textwidth]{img/alineacion/icp_fin.png}
-                    \end{subfigure}
-                \end{figure}
-            }
             % ENTRENAMIENTO
-            \only<2>{
+            \only<1>{
                 \begin{center}
                     \textbf{Entrenamiento}: \\ \textit{Nube de puntos}
                 \end{center}
@@ -445,6 +439,23 @@
                         \centering
                 		\includegraphics[scale=0.1]{img/nubes/chef_01.png}
                 	\end{subfigure}
+                \end{figure}
+            }
+            \only<2>{
+                \begin{center}
+                    \textbf{Detección}: \\ \textit{Alignment Prerejective e ICP}
+                \end{center}
+
+                \vspace{-10pt}
+                \begin{figure}[t]
+                    \centering
+                    \begin{subfigure}[b]{0.7\textwidth}
+                        \includegraphics[width=\textwidth]{img/alineacion/icp_ini.png}
+                    \end{subfigure}
+                    \quad
+                    \begin{subfigure}[b]{0.7\textwidth}
+                        \includegraphics[width=\textwidth]{img/alineacion/icp_fin.png}
+                    \end{subfigure}
                 \end{figure}
             }
             % SEGUIMIENTO
@@ -543,7 +554,7 @@
                 \end{center}
                 \begin{enumerate}
                     \item Template Matching
-                    \item RANSAC
+                    \item Alignment Prerejective
                     \item ICP
                 \end{enumerate}
             }
@@ -700,7 +711,17 @@
 \subsection{Análisis}
 \begin{frame}{Análisis frame por frame para el sistema de profundidad}
     % TODO: poner un gráfico de los de color que se vea bien, junto con el video que salga de ese gráfico y comentar para que sirve analizar el porcentaje de seguimiento, el promedio de solapamiento. Comentar que se usó una detección estática para comparar y analizar solo el comportamiento del seguimiento
-    Escena $\leftarrow$ Escritorio. Objeto $\leftarrow$ Taza
+
+    % Cosas para comentar:
+    % Este análisis se realizó para los 3 sistemas y para todos los objetos seleccionados.
+    % Este gráfico en particular se corresponde con el seguimiento en profundidad de una taza
+    % Comentar bien pavo que para los primeros frames hay un solapamiento entre el 50 y 60 %, luego el solapamiento cae a 0. Estos frames en 0 se corresponden con los frames en donde la taza no aparece en la escena. Luego hay una nueva detección y en los frames subsiguientes el solapamiento es aún mejor, llegando a valores entre el 70 y 80 %.
+    % De este gráfico surgen varios análisis posibles:
+    % 1) Conocer frame a frame la precisión del método de seguimiento
+    % 2) Conocer la tasa de seguimiento, es decir, la cantidad de veces que se usa el método de seguimiento
+    % 3) Conocer el promedio de solapamiento y tener una idea general de cómo funciona el método (decir como se calcula el promedio de solapamiento)
+
+    Escena $\leftarrow$ Escritorio. Objeto $\leftarrow$ Taza $\dots$ \% de seguimiento: $\sim$ 92
     \vspace*{-15pt}
     \begin{figure}
         \centering
@@ -711,31 +732,14 @@
 %--- Next Frame ---%
 
 
-
-\begin{frame}[t]{Selección del umbral de solapamiento}
-    % Decir que es el accuracy: medida de que tan buenos son los resultados
-    % reportados por el algoritmo.
-    \vspace*{-16pt}
-    \small
-    $$
-    accuracy = \frac{\#TP + \#TN}{\#TP + \#TN + \#FP + \#FN}
-    $$
-    \normalsize
-    \begin{figure}
-        \centering
-        \includegraphics[scale=0.22]{img/accuracy_sistemaRGBD.png}
-    \end{figure}
-    % Comentar que umbral elegimos para el análisis posterior
-\end{frame}
-%--- Next Frame ---%
-
-
 \begin{frame}[t]{Comparando seguimientos}
     \small
     % Tablas con el % de seguimiento y solapamiento para RGB, depth y RGB-D
     % Mostrar con colores RGB vs DEPTH. VERDE=GANA, AMARILLO=EMPATA, ROJO=PIERDE
     % Contar que el seguimiento en RGB se ve muy afectado por el fondo y el cambio de colores/luz. La gorra y la caja funcionan bien porque contrastan mucho con el fondo pero el resto de los objetos tienen poca textura y colores cuyo histograma puede confundirse con el del fondo
     % En el caso de profundidad todos funcionan muy parejos salvo la lata y la caja. La lata tiene un modelo muy malo porque refleja la proyeccion infrarroja del sensor y por eso el seguimiento es malo. La caja tiene un buen modelo pero al ser plana no funciona bien.
+
+
     % Decir que si no se tiene un método de seguimiento RGB confiable, entonces es preferible utilizar un seguimiento basado únicamente en profundidad
 
     \begin{columns}
@@ -804,7 +808,13 @@
 \end{frame}
 %--- Next Frame ---%
 
+
 \begin{frame}[t]{Resultados del sistema RGB-D}
+    \small
+    $$
+    accuracy = \frac{\#TP + \#TN}{\#TP + \#TN + \#FP + \#FN}
+    $$
+    \normalsize
     \begin{table}[h]
     	\centering
         \begin{tabular}{|c|c|c|c|c|c|}
@@ -830,6 +840,18 @@
 %--- Next Frame ---%
 
 
+\begin{frame}[t]{Selección del umbral de solapamiento}
+    % Decir que es el accuracy: medida de que tan buenos son los resultados
+    % reportados por el algoritmo.
+    \begin{figure}
+        \centering
+        \includegraphics[scale=0.22]{img/accuracy_sistemaRGBD.png}
+    \end{figure}
+    % Comentar que umbral elegimos para el análisis posterior
+\end{frame}
+%--- Next Frame ---%
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Conclusiones y trabajo a futuro}
@@ -838,7 +860,7 @@
         \item Buena tasa de seguimiento con un modelo sencillo
         \item Buen comportamiento del seguimiento en profundidad
         \item Muy importante tener un método de detección robusto y preciso
-        \item El método funciona en escenas en donde tanto los objetos como la cámara se mueven
+        \item El método podría funcionar en escenas en donde tanto los objetos como la cámara se mueven
         \item Implementar un algoritmo robusto frente a oclusiones (ej: usar filtro de Kalman)
     \end{itemize}
 \end{frame}

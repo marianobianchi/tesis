@@ -320,8 +320,30 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
                 nns_y.append(avg_per_frame[i])
 
         # # plot
+        # Solapamiento por frame
         line, = ax.plot(np.arange(1, n + 1), avg_per_frame, '-o')
-        line.set_label('overlap per frame')
+        line.set_label('% Solapamiento por frame')
+
+        # Promedio de solapamiento por frame
+        avg_que_sirven = [
+            avg_per_frame[i]
+            for i, exp in enumerate(explanation_per_frame) if exp != 'VN' and avg_per_frame[i] < 100
+        ]
+        prom, = ax.plot(
+            np.arange(1, n + 1),
+            [np.mean(avg_que_sirven) for i in range(1, n + 1)],
+            'k--'
+        )
+        print('Solapamiento promedio:', np.mean(avg_que_sirven))
+        prom.set_label('Solapamiento promedio')
+
+        # Umbral de solapamiento mínimo elegido
+        prom, = ax.plot(
+            np.arange(1, n + 1),
+            np.ones(n) * min_overlap_area * 100,
+            'c--'
+        )
+
 
         if fps_x:
             fpsl, = ax.plot(fps_x, fps_y, 'o', color='red')
@@ -345,9 +367,9 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
 
         # # axes and labels
         ax.set_ylim(-1, 100)
-        ax.set_xlabel('Frame number')
+        ax.set_xlabel('Numero de frame')
         ax.set_xticks(np.arange(0, n + 4, 5))
-        ax.set_ylabel('average % of overlapping')
+        ax.set_ylabel('% de solapamiento')
         ax.set_yticks(np.arange(0, 101, 5))
         # ax.set_title(
         #     ('Overlapping entre ground truth y el algoritmo para {scn}, {obj}, '
@@ -359,7 +381,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
         #     )
         # )
 
-        ax.legend()
+        ax.legend(loc=4)
 
         name = '{obj}_{param}'.format(
             obj=objnamenum,
@@ -1429,14 +1451,14 @@ if __name__ == '__main__':
     ##########################################################
     # STATIC DETECTION y definitivo DEPTH
     ##########################################################
-    # promedio_frame_a_frame(
-    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
-    #     scenenamenum='desk_1',
-    #     objname='coffee_mug',
-    #     objnum='5',
-    #     param='definitivo_DEPTH',
-    #     path='pruebas_guardadas',
-    # )
+    promedio_frame_a_frame(
+        matfile='videos/rgbd/scenes/desk/desk_1.mat',
+        scenenamenum='desk_1',
+        objname='coffee_mug',
+        objnum='5',
+        param='definitivo_DEPTH',
+        path='pruebas_guardadas',
+    )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1484,13 +1506,13 @@ if __name__ == '__main__':
     #     'definitivo_DEPTH', 'DEFINITIVO',
     #     corr_num='01',
     # )
-    dibujar_cuadros_encontrados_y_del_ground_truth(
-        'desk', '1',
-        'coffee_mug', '5',
-        'definitivo_DEPTH', 'DEFINITIVO',
-        corr_num='01',
-        show_clouds=False
-    )
+    # dibujar_cuadros_encontrados_y_del_ground_truth(
+    #     'desk', '1',
+    #     'coffee_mug', '5',
+    #     'definitivo_DEPTH', 'DEFINITIVO',
+    #     corr_num='01',
+    #     show_clouds=False
+    # )
 
     ##########################################
     # STATIC DETECTION y definitivo RGB y HSV
