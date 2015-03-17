@@ -12,13 +12,13 @@
 #include <sstream>
 #include <vector>
 #include <ctime>
+#include <utility>
 
 using namespace std;
 
 #define QCLOUD_SIZE 10
 
-typedef pcl::PointXYZRGB Point3D;
-typedef pcl::visualization::PointCloudColorHandlerCustom<Point3D> ColorHandler3D;
+
 
 std::string cloud_path;
 
@@ -28,6 +28,7 @@ public:
 
 	typedef pcl::PointXYZRGB PointType;
 	typedef pcl::PointCloud<PointType>::Ptr CloudType;
+    typedef pcl::visualization::PointCloudColorHandlerCustom<PointType> ColorHandlerType;
 
 
 	SimpleOpenNIViewer() {
@@ -47,16 +48,17 @@ public:
 		slptm.tv_sec = 0;
 		slptm.tv_nsec = 30000000L;
 
-		vector<CloudType>::iterator itb = qcloud.begin();
-		vector<CloudType>::iterator ite = qcloud.end();
-		vector<CloudType>::iterator it = itb;
+		vector<pair<CloudType,CloudType> >::iterator itb = qcloud.begin();
+		vector<pair<CloudType,CloudType> >::iterator ite = qcloud.end();
+		vector<pair<CloudType,CloudType> >::iterator it = itb;
         
         pviewer->setBackgroundColor(255.0, 255.0, 255.0);
 		while (!pviewer->wasStopped() && !qcloud.empty())
 		{
-			CloudType cl = *it++;
+			//CloudType cl = *it++;
+            pair<CloudType,CloudType> cls = *it++;
             
-            pviewer->addPointCloud (cl, ColorHandler3D (cl, 0.0, 0.0, 0.0), "pc");
+            pviewer->addPointCloud (cls.first, ColorHandlerType (cls.first, 0.0, 0.0, 0.0), "pc");
             pviewer->spinOnce(10);
             
             pviewer->removePointCloud("pc");
@@ -90,18 +92,31 @@ public:
 		double ttot = 0;
         for(size_t i=first; i <= last; i++)
 		{
-            stringstream pcd_file;
-            pcd_file << dir << "/desk_1_" << i << ".pcd";
+            
 
             time(&start);
+            
+            // Cargo primer nube
+            stringstream pcd_file;
+            pcd_file << dir << "/desk_1_" << i << ".pcd";
 			CloudType cl(new pcl::PointCloud<pcl::PointXYZRGB>);
 			loadCloud(pcd_file.str(), cl);
+            
+            // Cargo segunda nube si hay
+            stringstream pcd_file_2;
+            pcd_file_2 << dir;
+            char d[100];
+            sprintf(d, "/obj_found_scenepoints_frame_%.3d", i);
+            pcd_file_2 << d << ".pcd";
+            CloudType cl2(new pcl::PointCloud<pcl::PointXYZRGB>);
+            loadCloud(pcd_file_2.str(), cl2);
+            
 			time(&end);
 			ttot += difftime (end,start);
 
 			cout << "Clouds left: " << (last-i) << " Time left: " << (ttot/(i-first+1)*(last-i)/60) << " min" << endl;
 
-			qcloud.push_back(cl);
+			qcloud.push_back(make_pair(cl, cl2));
 		}
 	}
 
@@ -109,7 +124,7 @@ public:
 	//pcl::visualization::CloudViewer* pviewer;
     pcl::visualization::PCLVisualizer* pviewer;
     
-	vector<CloudType> qcloud;
+	vector<pair<CloudType,CloudType> > qcloud;
 };
 
 
