@@ -1702,10 +1702,10 @@ if __name__ == '__main__':
     #####################
     # Cargo las imagenes
     #####################
-    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-    #     'videos/rgbd/scenes/', 'desk', '1',
-    #     'videos/rgbd/objs/', 'cap', '4',
-    # )  # path, objname, number
+    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'cap', '4',
+    )  # path, objname, number
 
     # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
     #     'videos/rgbd/scenes/', 'desk', '2',
@@ -1904,10 +1904,10 @@ if __name__ == '__main__':
     # definitivo_depth(table_1_img_provider, 'table', '1', 'soda_can', '4')
 
     # Sexta escena
-    table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'table_small', '2',
-        'videos/rgbd/objs/', 'cereal_box', '4',
-    )  # path, objname, number
-
-    table_small_2_img_provider.reinitialize_object('cereal_box', '4')
-    definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
+    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table_small', '2',
+    #     'videos/rgbd/objs/', 'cereal_box', '4',
+    # )  # path, objname, number
+    #
+    # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
+    # definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')

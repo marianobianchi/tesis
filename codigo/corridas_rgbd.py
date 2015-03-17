@@ -318,20 +318,20 @@ def correr_escena_1():
         'cap', '4'
     )
 
-    # RGB como principal
-    desk_1_img_provider.reinitialize_object('coffee_mug', '5')
-    correr_con_rgb_como_principal(
-        desk_1_img_provider,
-        'desk', '1',
-        'coffee_mug', '5'
-    )
-
-    desk_1_img_provider.reinitialize_object('cap', '4')
-    correr_con_rgb_como_principal(
-        desk_1_img_provider,
-        'desk', '1',
-        'cap', '4'
-    )
+    # # RGB como principal
+    # desk_1_img_provider.reinitialize_object('coffee_mug', '5')
+    # correr_con_rgb_como_principal(
+    #     desk_1_img_provider,
+    #     'desk', '1',
+    #     'coffee_mug', '5'
+    # )
+    #
+    # desk_1_img_provider.reinitialize_object('cap', '4')
+    # correr_con_rgb_como_principal(
+    #     desk_1_img_provider,
+    #     'desk', '1',
+    #     'cap', '4'
+    # )
 
 
 def correr_escena_2():
@@ -347,13 +347,13 @@ def correr_escena_2():
         'bowl', '3'
     )
 
-    # RGB como principal
-    desk_2_img_provider.reinitialize_object('bowl', '3')
-    correr_con_rgb_como_principal(
-        desk_2_img_provider,
-        'desk', '2',
-        'bowl', '3'
-    )
+    # # RGB como principal
+    # desk_2_img_provider.reinitialize_object('bowl', '3')
+    # correr_con_rgb_como_principal(
+    #     desk_2_img_provider,
+    #     'desk', '2',
+    #     'bowl', '3'
+    # )
 
 
 def correr_escena_3():
@@ -369,12 +369,12 @@ def correr_escena_3():
     table_1_img_provider.reinitialize_object('soda_can', '4')
     correr_con_depth_como_principal(table_1_img_provider, 'table', '1', 'soda_can', '4')
 
-    # RGB como principal
-    table_1_img_provider.reinitialize_object('coffee_mug', '1')
-    correr_con_rgb_como_principal(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
-
-    table_1_img_provider.reinitialize_object('soda_can', '4')
-    correr_con_rgb_como_principal(table_1_img_provider, 'table', '1', 'soda_can', '4')
+    # # RGB como principal
+    # table_1_img_provider.reinitialize_object('coffee_mug', '1')
+    # correr_con_rgb_como_principal(table_1_img_provider, 'table', '1', 'coffee_mug', '1')
+    #
+    # table_1_img_provider.reinitialize_object('soda_can', '4')
+    # correr_con_rgb_como_principal(table_1_img_provider, 'table', '1', 'soda_can', '4')
 
 
 def correr_escena_4():
@@ -386,9 +386,9 @@ def correr_escena_4():
     # DEPTH como principal
     correr_con_depth_como_principal(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
 
-    # RGB como principal
-    table_small_2_img_provider.reinitialize_object('cereal_box', '4')
-    correr_con_rgb_como_principal(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
+    # # RGB como principal
+    # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
+    # correr_con_rgb_como_principal(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
 
 
 def sistema_de_seguimiento_automatico_completo(img_provider):
@@ -616,13 +616,13 @@ def sistema_de_seguimiento_automatico_completo_rgb_rgbd(img_provider):
 
 if __name__ == '__main__':
 
-    # correr_escena_1()
-    #
-    # correr_escena_2()
-    #
-    # correr_escena_3()
-    #
-    # correr_escena_4()
+    correr_escena_1()
+
+    correr_escena_2()
+
+    correr_escena_3()
+
+    correr_escena_4()
 
     # Probando deteccion automatica sin seguimiento
     # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
@@ -707,11 +707,11 @@ if __name__ == '__main__':
     # table_1_img_provider.reinitialize_object('soda_can', '4')
     # sistema_de_seguimiento_automatico_completo_rgb_rgbd(table_1_img_provider)
 
-    table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'table_small', '2',
-        'videos/rgbd/objs/', 'cereal_box', '4',
-    )  # path, objname, number
-
-    sistema_de_seguimiento_automatico_completo_rgb_rgbd(
-        table_small_2_img_provider
-    )
+    # table_small_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'table_small', '2',
+    #     'videos/rgbd/objs/', 'cereal_box', '4',
+    # )  # path, objname, number
+    #
+    # sistema_de_seguimiento_automatico_completo_rgb_rgbd(
+    #     table_small_2_img_provider
+    # )

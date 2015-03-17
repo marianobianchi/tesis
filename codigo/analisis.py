@@ -343,7 +343,7 @@ def promedio_frame_a_frame(matfile, scenenamenum, objname, objnum, param, path,
             np.ones(n) * min_overlap_area * 100,
             'c--'
         )
-
+        prom.set_label('Umbral mínimo de solapamiento')
 
         if fps_x:
             fpsl, = ax.plot(fps_x, fps_y, 'o', color='red')

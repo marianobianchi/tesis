@@ -59,9 +59,18 @@ public:
             pair<CloudType,CloudType> cls = *it++;
             
             pviewer->addPointCloud (cls.first, ColorHandlerType (cls.first, 0.0, 0.0, 0.0), "pc");
+            
+            if(!cls.second->empty()){
+                pviewer->addPointCloud (cls.second, ColorHandlerType (cls.second, 255.0, 0.0, 0.0), "pc2");
+            }
+            
             pviewer->spinOnce(10);
             
             pviewer->removePointCloud("pc");
+            
+            if(!cls.second->empty()){
+                pviewer->removePointCloud("pc2");
+            }
             
 			if(it == ite) it = itb;
 
@@ -146,7 +155,7 @@ int main(int argc, char** argv) {
 	SimpleOpenNIViewer v;
 
 	cloud_path = argv[1];
-	v.loadClouds(cloud_path,1,5);
+	v.loadClouds(cloud_path,1,98);
 
 	cout << "Showing clouds ..." << endl << endl;
 
