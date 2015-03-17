@@ -298,21 +298,18 @@
 
 
 \subsection{Sistema RGB}
-\begin{frame}{Sistema RGB}
+\begin{frame}[fragile]{Sistema RGB}
     \begin{columns}
-        \begin{column}{5cm}
+        \begin{column}{0.4\textwidth}
             \begin{figure}
                 \centering
-                \vspace{-15pt}
+                \vspace{-25pt}
                 % \hspace*{-20pt}
                 \includegraphics[scale=0.3]{img/esquema_seguimiento.png}
             \end{figure}
         \end{column}
 
-        \begin{column}{0.5cm}
-        \end{column}
-
-        \begin{column}{5cm}
+        \begin{column}{0.6\textwidth}
             % ENTRENAMIENTO
             \only<1>{
                 \begin{center}
@@ -349,6 +346,7 @@
             %     Una vez recorrida toda la imagen, se devuelve la ubicación del ``mejor recuadro''. Si no se encontró ninguno por debajo del umbral, se indica que no se encontró el objeto en la imagen.
             % \end{block}
             \only<2>{
+                \vspace{-15pt}
                 \begin{center}
                     \textbf{Detección}: \\ \textit{Template matching}
                 \end{center}
@@ -356,18 +354,38 @@
                 \begin{figure}[t]
                     \centering
                     \vspace{-15pt}
-                    \includegraphics[width=\textwidth]{img/template_matching/template_matching_marcado.png}
+                    \includegraphics[width=0.8\textwidth]{img/template_matching/template_matching_marcado.png}
                 \end{figure}
             }
-            % SEGUIMIENTO
             \only<3>{
+                \vspace{-15pt}
+                \begin{center}
+                    \textbf{Detección}: \\ \textit{Template matching}
+                \end{center}
+
+                \footnotesize
+                \begin{algorithmic}
+                    \Function{$custom\_t\_match$}{$templates, scene$}
+                        \For{tmp in templates}
+                            \For{scale in scales}
+                                \State $rescale(tmp, scale)$
+                                \State $template\_matching(tmp, scene)$
+                            \EndFor
+                        \EndFor
+                        \State \Return $best\_template\_matching$
+                    \EndFunction
+                \end{algorithmic}
+                \normalsize
+            }
+            % SEGUIMIENTO
+            \only<4>{
                 \begin{center}
                     \textbf{Seguimiento}: \\ \textit{Comparación de histogramas}
                 \end{center}
                 \begin{figure}[t]
                 	\centering
                     \vspace{-15pt}
-                	\includegraphics[width=\textwidth]{img/template_histogram.png}
+                	\includegraphics[width=0.8\textwidth]{img/template_histogram.png}
                 \end{figure}
             }
         \end{column}
@@ -389,12 +407,19 @@
 
 
 \subsection{Sistema en profundidad}
-\begin{frame}[t]{Sistema en profundidad ¿Cómo se ve un video en profundidad?}
-    \begin{figure}[t]
-        \centering
-        \includegraphics[scale=0.5]{img/anteojos/poner_anteojos_3d_5.jpg}
-    \end{figure}
-    \video{videos/seguimiento_depth.avi}
+\begin{frame}{¿Cómo se ve un video en profundidad?}
+    \begin{columns}
+        \begin{column}{0.8\textwidth}
+            \begin{figure}[t]
+                \vspace{-15pt}
+                \centering
+                \includegraphics[scale=0.4]{img/anteojos/poner_anteojos_3d_5.jpg}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.15\textwidth}
+            \video{videos/seguimiento_depth.avi}
+        \end{column}
+    \end{columns}
 \end{frame}
 %--- Next Frame ---%
 
@@ -415,14 +440,6 @@
         \end{column}
 
         \begin{column}{5cm}
-            % DETECCION
-            % Tanto RANSAC como ICP son métodos de estimación de pose y alineación
-            % Toman una nube de puntos "query" y otra "escena" y estiman una
-            % transformacion que alinee de la mejor manera "query" segun las
-            % coordenadas de "escena"
-            % La diferencia principal entre ambos métodos es que RANSAC es robusto
-            % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
-            % para refinar el resultado, ICP
             % ENTRENAMIENTO
             \only<1>{
                 \begin{center}
@@ -441,6 +458,17 @@
                 	\end{subfigure}
                 \end{figure}
             }
+            % DETECCION:
+            % Explicar que se establecen correspondencias usando "Alignment prerejective".
+            % Estimo correspondencias, busco la transformacion con RANSAC y refino con ICP
+
+            % Tanto RANSAC como ICP son métodos de estimación de pose y alineación
+            % Toman una nube de puntos "query" y otra "escena" y estiman una
+            % transformacion que alinee de la mejor manera "query" segun las
+            % coordenadas de "escena"
+            % La diferencia principal entre ambos métodos es que RANSAC es robusto
+            % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
+            % para refinar el resultado, ICP
             \only<2>{
                 \begin{center}
                     \textbf{Detección}: \\ \textit{Alignment Prerejective e ICP}
@@ -536,7 +564,7 @@
                 	\quad
                 	\begin{subfigure}[b]{\textwidth}
                         \centering
-                		\includegraphics[scale=0.7]{img/template_matching/template.png}
+                		\includegraphics[scale=0.7]{img/templates/coffee_mug_5.png}
                 	\end{subfigure}
                 \end{figure}
             }
@@ -668,34 +696,62 @@
 \end{frame}
 %--- Next Frame ---%
 
-% \subsection{Selección de objetos para las pruebas}
-% \begin{frame}{Selección de objetos para las pruebas}
-%     SACAR ESTE SLIDE Y COMENTAR ALGO EN EL SLIDE DE LA BASE DE DATOS
-%     % Decir por que se hicieron dos selecciones. La idea era "tunear" los métodos
-%     % y sus parámetros para algunos objetos representativos (3 categorías distintas)
-%     % y fijar los valores de parámetros que mejor se desempeñaran para los 3 casos
-%
-%     % Una vez fijados estos valores, se usaron los otros 3 objetos y escenas donde
-%     % aparecen para corroborar la selección de parámetros realizada
-%     \begin{block}{Para la selección de parámetros}
-%         \begin{itemize}
-%             \item 3 objetos: taza blanca, gorra roja, bowl verde-agua
-%             \item 2 escenas: escritorio 1 y 2
-%         \end{itemize}
-%     \end{block}
-%
-%     % Decir en estos casos por que se eligió cada objeto.
-%     % Taza: supuestamente buena para RGB por su textura y para depth por su forma
-%     % Lata: buena para depth por su forma, mala para RGB por su textura
-%     % Caja: Buena para RGB por su textura y mala para depth por ser plana
-%     \begin{block}{De control}
-%         \begin{itemize}
-%             \item 3 objetos: taza roja con dibujos, lata, caja de cereales
-%             \item 2 escenas: mesa grande y mesa pequeña
-%         \end{itemize}
-%     \end{block}
-% \end{frame}
-% %--- Next Frame ---%
+\subsection{Selección de objetos y escenas para las pruebas}
+\begin{frame}{Selección de objetos para las pruebas}
+    \begin{figure}
+        \centering
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.8]{img/templates/coffee_mug_5.png}
+        \end{subfigure}
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.4]{img/templates/0_crop.png}
+        \end{subfigure}
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.6]{img/templates/bowl.png}
+        \end{subfigure}
+
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.7]{img/templates/coffee_mug_1.png}
+        \end{subfigure}
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.7]{img/templates/soda_can.png}
+        \end{subfigure}
+        \begin{subfigure}{0.3\textwidth}
+            \centering
+            \includegraphics[scale=0.35]{img/templates/cereal_box.png}
+        \end{subfigure}
+    \end{figure}
+\end{frame}
+%--- Next Frame ---%
+
+\begin{frame}{Selección de escenas para las pruebas}
+    \begin{figure}
+        \centering
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[scale=0.2]{img/escenas/desk_1.png}
+        \end{subfigure}
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[scale=0.2]{img/escenas/desk_2.png}
+        \end{subfigure}
+
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[scale=0.2]{img/escenas/table_1.png}
+        \end{subfigure}
+        \begin{subfigure}{0.45\textwidth}
+            \centering
+            \includegraphics[scale=0.2]{img/escenas/table_small_2.png}
+        \end{subfigure}
+    \end{figure}
+\end{frame}
+%--- Next Frame ---%
 
 \subsection{Métricas}
 \begin{frame}[t]{Comparación de resultados vs. ground truth}
