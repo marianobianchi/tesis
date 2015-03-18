@@ -479,13 +479,13 @@ def dibujar_cuadros_encontrados_y_del_ground_truth(scenename, scenenum,
             fname = img_path_re.format(nframe=nframe)
             img = cv2.imread(fname, cv2.IMREAD_COLOR)
 
-            # if gt_fue_exitoso or intersection.area() > 0:
-                # img = dibujar_cuadrado(
-                #     img,
-                #     (gt_fila_sup, gt_col_izq),
-                #     (gt_fila_inf, gt_col_der),
-                #     color=(0, 255, 0)
-                # )
+            if gt_fue_exitoso or intersection.area() > 0:
+                img = dibujar_cuadrado(
+                    img,
+                    (gt_fila_sup, gt_col_izq),
+                    (gt_fila_inf, gt_col_der),
+                    color=(0, 255, 0)
+                )
             algoritmo_color = (0, 0, 255)  # rojo si fue deteccion
             if metodo == 1:  # si fue seguimiento
                 algoritmo_color = (255, 0, 0)  # azul
@@ -1451,14 +1451,14 @@ if __name__ == '__main__':
     ##########################################################
     # STATIC DETECTION y definitivo DEPTH
     ##########################################################
-    promedio_frame_a_frame(
-        matfile='videos/rgbd/scenes/desk/desk_1.mat',
-        scenenamenum='desk_1',
-        objname='coffee_mug',
-        objnum='5',
-        param='definitivo_DEPTH',
-        path='pruebas_guardadas',
-    )
+    # promedio_frame_a_frame(
+    #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
+    #     scenenamenum='desk_1',
+    #     objname='coffee_mug',
+    #     objnum='5',
+    #     param='definitivo_DEPTH',
+    #     path='pruebas_guardadas',
+    # )
     # promedio_frame_a_frame(
     #     matfile='videos/rgbd/scenes/desk/desk_1.mat',
     #     scenenamenum='desk_1',
@@ -1626,13 +1626,20 @@ if __name__ == '__main__':
     #     param='definitivo_RGBD_preferD',
     #     path='pruebas_guardadas',
     # )
-    # dibujar_cuadros_encontrados_y_del_ground_truth(
-    #     'desk', '1',
-    #     'cap', '4',
-    #     'definitivo_RGBD_preferD', 'DEFINITIVO',
-    #     corr_num='01',
-    #     show_clouds=False
-    # )
+    dibujar_cuadros_encontrados_y_del_ground_truth(
+        'table', '1',
+        'coffee_mug', '1',
+        'definitivo_RGBD_preferD', 'DEFINITIVO',
+        corr_num='01',
+        show_clouds=False,
+    )
+    dibujar_cuadros_encontrados_y_del_ground_truth(
+        'table_small', '2',
+        'cereal_box', '4',
+        'definitivo_RGBD_preferD', 'DEFINITIVO',
+        corr_num='01',
+        show_clouds=False,
+    )
 
     ##################################################################
     # STATIC DETECTION y seguimiento RGB-D, preferentemente RGB

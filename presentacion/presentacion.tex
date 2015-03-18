@@ -573,6 +573,9 @@
             % Toman una nube de puntos "query" y otra "escena" y estiman una
             % transformacion que alinee de la mejor manera "query" segun las
             % coordenadas de "escena"
+
+            % explicar que se establecen correspondencias usando "Alignment prerejective". Estimo correspondencias, busco la transformacion con RANSAC y refino con ICP
+
             % La diferencia principal entre ambos métodos es que RANSAC es robusto
             % frente a outliers. Por esta razón se utiliza primero RANSAC y luego
             % para refinar el resultado, ICP
@@ -871,41 +874,108 @@
     accuracy = \frac{\#TP + \#TN}{\#TP + \#TN + \#FP + \#FN}
     $$
     \normalsize
-    \begin{table}[h]
-    	\centering
-        \begin{tabular}{|c|c|c|c|c|c|}
-        \hline
-        & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
-    	Objeto & & & Accuracy\\
-    	\hline
-        Taza    & 50.44      & 76.67     & 83.33 \\
-        \hline
-        Gorra   & 50.05      & 68.09     & 89.8 \\
-        \hline
-        Bowl    & 28.18      & 45.67     & 71.4 \\
-        \hline
-        Taza 2  & 45.54      & 77.78     & 93.07 \\
-        \hline
-        Lata    & 12.72      & 25.85     & 39.47 \\
-        \hline
-        Caja    &  6.17      &    10     & 26.92 \\
-        \hline
-        \end{tabular}
-    \end{table}
+    \only<1>{
+        \begin{table}[h]
+        	\centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
+        	Objeto & & & Accuracy\\
+        	\hline
+            Taza    & 50.44      & 76.67     & 83.33 \\
+            \hline
+            Gorra   & 50.05      & 68.09     & 89.8 \\
+            \hline
+            Bowl    & 28.18      & 45.67     & 71.4 \\
+            \hline
+            Taza 2  & 45.54      & 77.78     & 93.07 \\
+            \hline
+            Lata    & 12.72      & 25.85     & 39.47 \\
+            \hline
+            Caja    &  6.17      &    10     & 26.92 \\
+            \hline
+            \end{tabular}
+        \end{table}
+    }
+
+    \only<2>{
+        \begin{table}[h]
+        	\centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
+        	Objeto & & & Accuracy\\
+        	\hline
+            Taza    & 50.44      & 76.67     & \cellcolor{green}83.33 \\
+            \hline
+            Gorra   & 50.05      & 68.09     & \cellcolor{green}89.8 \\
+            \hline
+            Bowl    & 28.18      & 45.67     & \cellcolor{yellow}71.4 \\
+            \hline
+            Taza 2  & 45.54      & 77.78     & \cellcolor{green}93.07 \\
+            \hline
+            Lata    & 12.72      & 25.85     & 39.47 \\
+            \hline
+            Caja    &  6.17      &    10     & 26.92 \\
+            \hline
+            \end{tabular}
+        \end{table}
+    }
+
+    \only<3>{
+        \begin{table}[h]
+        	\centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
+        	Objeto & & & Accuracy\\
+        	\hline
+            Taza    & \cellcolor{green}50.44      & 76.67     & 83.33 \\
+            \hline
+            Gorra   & \cellcolor{green}50.05      & 68.09     & 89.8 \\
+            \hline
+            Bowl    & \cellcolor{red}28.18      & 45.67     & 71.4 \\
+            \hline
+            Taza 2  & \cellcolor{green}45.54      & 77.78     & 93.07 \\
+            \hline
+            Lata    & 12.72      & 25.85     & 39.47 \\
+            \hline
+            Caja    &  6.17      &    10     & 26.92 \\
+            \hline
+            \end{tabular}
+        \end{table}
+    }
+
+    \only<4>{
+        \begin{table}[h]
+        	\centering
+            \begin{tabular}{|c|c|c|c|c|c|}
+            \hline
+            & \multirow{2}{2.4cm}{\% promedio de overlap} & \multirow{2}{2cm}{\% veces ubicado} &\\
+        	Objeto & & & Accuracy\\
+        	\hline
+            Taza    & 50.44      & \cellcolor{yellow}76.67     & 83.33 \\
+            \hline
+            Gorra   & 50.05      & \cellcolor{yellow}68.09     & 89.8 \\
+            \hline
+            Bowl    & 28.18      & \cellcolor{red}45.67     & 71.4 \\
+            \hline
+            Taza 2  & 45.54      & \cellcolor{yellow}77.78     & 93.07 \\
+            \hline
+            Lata    & 12.72      & 25.85     & 39.47 \\
+            \hline
+            Caja    &  6.17      &    10     & 26.92 \\
+            \hline
+            \end{tabular}
+        \end{table}
+    }
+
 \end{frame}
 %--- Next Frame ---%
 
 
-\begin{frame}[t]{Selección del umbral de solapamiento}
-    % Decir que es el accuracy: medida de que tan buenos son los resultados
-    % reportados por el algoritmo.
-    \begin{figure}
-        \centering
-        \includegraphics[scale=0.22]{img/accuracy_sistemaRGBD.png}
-    \end{figure}
-    % Comentar que umbral elegimos para el análisis posterior
-\end{frame}
-%--- Next Frame ---%
+
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -914,7 +984,7 @@
 \begin{frame}{Conclusiones y trabajo a futuro}
     \begin{itemize}
         \item Buena tasa de seguimiento con un modelo sencillo
-        \item Buen comportamiento del seguimiento en profundidad
+        \item Seguimiento en profundidad robusto y con bajas tasas de falsos positivos
         \item Muy importante tener un método de detección robusto y preciso
         \item El método podría funcionar en escenas en donde tanto los objetos como la cámara se mueven
         \item Implementar un algoritmo robusto frente a oclusiones (ej: usar filtro de Kalman)
