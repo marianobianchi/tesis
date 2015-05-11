@@ -118,7 +118,6 @@ class DepthFollower(Follower):
             }
         )
 
-
     def descriptors(self):
         desc = super(DepthFollower, self).descriptors()
         desc.update({

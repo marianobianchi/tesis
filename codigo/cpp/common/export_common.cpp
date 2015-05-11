@@ -28,19 +28,19 @@ BOOST_PYTHON_MODULE(common)
         .def_readonly("x", &Point3D::x)
         .def_readonly("y", &Point3D::y)
         .def_readonly("z", &Point3D::z);
-        
+
 
     def("read_pcd", read_pcd);
     def("save_pcd", save_pcd);
     def("filter_cloud", filter_cloud);
-    
+
     class_<FloatVector>("FloatVector")
         .def(vector_indexing_suite<FloatVector>() );
-    
+
     class_<VectorMat>("VectorMat")
         .def(vector_indexing_suite<VectorMat>() );
-    def("transform_cloud", transform_cloud);    
-    
+    def("transform_cloud", transform_cloud);
+
     def("points", points);
     def("get_point", get_point);
     def("show_clouds", show_clouds);
@@ -56,7 +56,7 @@ BOOST_PYTHON_MODULE(common)
         .def_readonly("max_z", &MinMax3D::max_z);
 
     def("get_min_max", get_min_max3D);
-    
+
     def("compute_centroid", compute_centroid);
 
 }

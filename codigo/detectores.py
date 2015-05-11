@@ -2,12 +2,14 @@
 
 from __future__ import (unicode_literals, division)
 
+import os
 import cv2
 import scipy.io
 
 from cpp.icp import icp, ICPDefaults
 from cpp.common import filter_cloud, save_pcd, get_min_max, show_clouds, \
-    filter_object_from_scene_cloud, points
+    filter_object_from_scene_cloud, points, VectorMat, FloatVector, \
+    transform_cloud
 from cpp.alignment_prerejective import align, APDefaults
 
 from metodos_comunes import from_flat_to_cloud_limits, \
@@ -799,3 +801,53 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
         })
 
         return desc
+
+
+class StaticDepthTransformationDetection(Detector):
+    def detect(self):
+        nframe = self._descriptors['nframe']
+        model = self._descriptors['obj_model']
+
+        transf_file = ('videos/rgbd/resultados_deteccion/{sname}/'
+                       '{sname}_{snum}/{objname}/{objname}_{objnum}/'
+                       '{objname}_{objnum}_{nframe}.txt')
+        transf_file = transf_file.format(
+            sname='desk',
+            snum='1',
+            objname='coffee_mug',
+            objnum='5',
+            nframe=nframe
+        )
+
+        fue_exitoso = False
+        tam_region = 0
+        topleft = (0, 0)
+        bottomright = (0, 0)
+
+        if os.path.isfile(transf_file):
+            fue_exitoso = True
+
+            with open(transf_file, 'r') as file_:
+                transf_matrix = VectorMat()
+                for line in file_:
+                    if line.strip():
+                        values = line.strip().split()
+                        floats = [float(v) for v in values]
+                        float_vec = FloatVector()
+                        float_vec.extend(floats)
+                        transf_matrix.append(float_vec)
+
+            detected_model = transform_cloud(model, transf_matrix)
+
+            topleft, bottomright = from_cloud_to_flat_limits(detected_model)
+            tam_region = max(bottomright[0] - topleft[0],
+                             bottomright[1] - topleft[1])
+
+        detected_descriptors = {
+            'size': tam_region,
+            'location': topleft,  # topleft=(fila, columna)
+            'topleft': topleft,
+            'bottomright': bottomright,
+        }
+
+        return fue_exitoso, detected_descriptors

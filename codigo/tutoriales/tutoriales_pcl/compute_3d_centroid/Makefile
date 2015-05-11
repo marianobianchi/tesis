@@ -1,4 +1,4 @@
-PCL_INCLUDES = -I/usr/include/pcl-1.7/ -I/usr/include/eigen3
+PCL_INCLUDES = -I/usr/local/include/pcl-1.7/ -I/usr/include/eigen3
 PCL_FLAGS = -lpcl_io -lpcl_common
 
 PYTHON_INCLUDE = -I/usr/include/python2.7

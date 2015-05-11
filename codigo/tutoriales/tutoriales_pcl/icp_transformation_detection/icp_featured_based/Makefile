@@ -1,5 +1,5 @@
 
-PCL_INCLUDES = -I/usr/include/pcl-1.7/ -I/usr/include/eigen3
+PCL_INCLUDES = -I/usr/local/include/pcl-1.7/ -I/usr/include/eigen3
 PCL_FLAGS = -lpcl_io -lboost_system -lpcl_common -lpcl_kdtree -lpcl_search -lpcl_filters -lpcl_features -lpcl_sample_consensus #-lpcl_registration -lpcl_segmentation
 
 PYTHON_INCLUDE = -I/usr/include/python2.7

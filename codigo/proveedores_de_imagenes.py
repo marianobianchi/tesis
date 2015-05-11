@@ -35,8 +35,10 @@ class FrameNamesAndImageProvider(object):
                 last_frame_number = frame_number
 
         # Set initial and last frame number
+        print "CAMBIAR INICIO"
         self.offset_frame_count = 1
         self.next_frame_number = self.offset_frame_count
+        print "CAMBIAR FIN"
         self.last_frame_number = last_frame_number
 
     def _initialize_object(self, obj_path, obj, obj_number):
@@ -76,8 +78,18 @@ class FrameNamesAndImageProvider(object):
         )
         return os.path.join(self.obj_path, fname)
 
+    def _obj_pcd_fname(self):
+        generic_fname = '{obj}_{obj_number}_entero.pcd'
+        print "Levantando el modelo entero"
+
+        fname = generic_fname.format(
+            obj=self.obj,
+            obj_number=self.obj_number,
+        )
+        return os.path.join(self.obj_path, fname)
+
     def obj_pcd(self, n=1):
-        fname = self._obj_fname(frame_number=n)
+        fname = self._obj_pcd_fname()
         pc = read_pcd(str(fname))
         return pc
 

@@ -8,7 +8,8 @@ from cpp.icp import ICPDefaults
 from buscadores import Finder, ICPFinder, ICPFinderWithModel
 from metodos_comunes import AdaptLeafRatio, AdaptSearchArea, FixedSearchArea
 from detectores import StaticDetector, DepthStaticDetectorWithPCDFiltering, \
-    StaticDetectorWithModelAlignment, DepthDetection
+    StaticDetectorWithModelAlignment, DepthDetection, \
+    StaticDepthTransformationDetection
 from esquemas_seguimiento import FollowingScheme, FollowingSchemeSavingDataPCD, \
     FollowingSquemaExploringParameterPCD
 from observar_seguimiento import MuestraSeguimientoEnVivo
@@ -1676,6 +1677,48 @@ def prueba_deteccion_automatica_sola(img_provider, scenename, scenenumber,
         img_provider.restart()
 
 
+def correr_modelo_entero(objname, objnumber, scenename, scenenumber):
+    # Set parameters values
+    icp_finder_defaults = ICPDefaults()
+    icp_finder_defaults.euc_fit = 1e-5
+    icp_finder_defaults.max_corr_dist = 0.5
+    icp_finder_defaults.max_iter = 50
+    icp_finder_defaults.transf_epsilon = 1e-5
+
+    det_umbral_score = 1e-3
+    det_obj_scene_leaf = 0.005
+    det_perc_obj_model_points = 0.01
+
+    find_umbral_score = 1e-4
+    find_obj_scene_leaf = 0.002
+    find_perc_obj_model_points = 0.3
+
+    # Create objects
+    img_provider = FrameNamesAndImageProvider(#PreChargedForPCD
+        'videos/rgbd/scenes/', scenename, scenenumber,
+        'videos/rgbd/objs/', objname, objnumber,
+    )  # path, objname, number
+
+    detector = StaticDepthTransformationDetection()
+
+    # finder = ICPFinderWithModel(
+    #     icp_defaults=icp_finder_defaults,
+    #     umbral_score=find_umbral_score,
+    #     obj_scene_leaf=find_obj_scene_leaf,
+    #     perc_obj_model_points=find_perc_obj_model_points,
+    # )
+    finder = Finder()
+
+    follower = DepthFollower(img_provider, detector, finder)
+
+    show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
+
+    FollowingScheme(
+        img_provider,
+        follower,
+        show_following,
+    ).run()
+
 
 if __name__ == '__main__':
     # barrer_detection_frame_size('coffee_mug', '5', 'desk', '1')  # 4 hs
@@ -1702,10 +1745,10 @@ if __name__ == '__main__':
     #####################
     # Cargo las imagenes
     #####################
-    desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
-        'videos/rgbd/scenes/', 'desk', '1',
-        'videos/rgbd/objs/', 'cap', '4',
-    )  # path, objname, number
+    # desk_1_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+    #     'videos/rgbd/scenes/', 'desk', '1',
+    #     'videos/rgbd/objs/', 'cap', '4',
+    # )  # path, objname, number
 
     # desk_2_img_provider = FrameNamesAndImageProviderPreChargedForPCD(
     #     'videos/rgbd/scenes/', 'desk', '2',
@@ -1911,3 +1954,5 @@ if __name__ == '__main__':
     #
     # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
     # definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
+
+    correr_modelo_entero('coffee_mug', '5', 'desk', '1')

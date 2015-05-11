@@ -1,5 +1,5 @@
 
-ICP_INCLUDES = -I/usr/include/pcl-1.7/ -I/usr/include/eigen3
+ICP_INCLUDES = -I/usr/local/include/pcl-1.7/ -I/usr/include/eigen3
 ICP_FLAGS = -lpcl_io -lboost_system -lpcl_kdtree -lpcl_search -lpcl_common
 
 VISUALIZATION_INCLUDES = -I/usr/include/vtk-5.8/

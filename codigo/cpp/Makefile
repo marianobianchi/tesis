@@ -1,8 +1,14 @@
-SUBDIRS = alignment_prerejective depth_to_rgb_pixel_converter icp_follow common
+DIRS = common alignment_prerejective depth_to_rgb_pixel_converter icp_follow
+MAKEDIRS = $(DIRS:%=build-%)
+CLEANDIRS = $(DIRS:%=clean-%)
 
-all: $(SUBDIRS)
+all: $(MAKEDIRS)
 
-$(SUBDIRS):
-	$(MAKE) -C $@
+$(DIRS): $(MAKEDIRS)
+$(MAKEDIRS):
+		$(MAKE) -C $(@:build-%=%)
 
-.PHONY = $(SUBDIRS)
+
+clean: $(CLEANDIRS)
+$(CLEANDIRS):
+	$(MAKE) -C $(@:clean-%=%) clean
