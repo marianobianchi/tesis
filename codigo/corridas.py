@@ -1562,7 +1562,7 @@ def definitivo_depth(img_provider, scenename, scenenumber,
     find_obj_scene_leaf = 0.002
     find_perc_obj_model_points = 0.6
 
-    # Repetir 3 veces para evitar detecciones fallidas por RANSAC
+    # Repetir N veces para minimizar detecciones fallidas por RANSAC
     for i in range(6):
         detector = StaticDetectorWithModelAlignment(
             matfile_path=('videos/rgbd/scenes/{sname}/{sname}_{snum}.mat'
@@ -1685,7 +1685,6 @@ def correr_modelo_entero(objname, objnumber, scenename, scenenumber):
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
-    det_umbral_score = 1e-3
     det_obj_scene_leaf = 0.005
     det_perc_obj_model_points = 0.01
 
@@ -1699,15 +1698,22 @@ def correr_modelo_entero(objname, objnumber, scenename, scenenumber):
         'videos/rgbd/objs/', objname, objnumber,
     )  # path, objname, number
 
-    detector = StaticDepthTransformationDetection()
+    detector = StaticDepthTransformationDetection(
+        transf_file_path='videos/rgbd/resultados_deteccion',
+        sname=scenename,
+        snum=scenenumber,
+        objname=objname,
+        objnum=objnumber,
+        leaf_size=det_obj_scene_leaf,
+        perc_obj_model_pts=det_perc_obj_model_points,
+    )
 
-    # finder = ICPFinderWithModel(
-    #     icp_defaults=icp_finder_defaults,
-    #     umbral_score=find_umbral_score,
-    #     obj_scene_leaf=find_obj_scene_leaf,
-    #     perc_obj_model_points=find_perc_obj_model_points,
-    # )
-    finder = Finder()
+    finder = ICPFinderWithModel(
+        icp_defaults=icp_finder_defaults,
+        umbral_score=find_umbral_score,
+        obj_scene_leaf=find_obj_scene_leaf,
+        perc_obj_model_points=find_perc_obj_model_points,
+    )
 
     follower = DepthFollower(img_provider, detector, finder)
 

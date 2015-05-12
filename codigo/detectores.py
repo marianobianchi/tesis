@@ -804,25 +804,33 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
 
 
 class StaticDepthTransformationDetection(Detector):
+    def __init__(self, transf_file_path, sname, snum, objname, objnum,
+                 leaf_size, perc_obj_model_pts):
+        super(StaticDepthTransformationDetection, self).__init__()
+        transf_file = ('{path}/{sname}/{sname}_{snum}/{objname}/'
+                       '{objname}_{objnum}/{objname}_{objnum}_{nframe}.txt')
+        self.transf_file = transf_file.format(
+            path=transf_file_path,
+            sname=sname,
+            snum=snum,
+            objname=objname,
+            objnum=objnum,
+            nframe='{nframe}'
+        )
+        self.leaf_size = leaf_size
+        self.perc_obj_model_pts = perc_obj_model_pts
+
     def detect(self):
         nframe = self._descriptors['nframe']
         model = self._descriptors['obj_model']
-
-        transf_file = ('videos/rgbd/resultados_deteccion/{sname}/'
-                       '{sname}_{snum}/{objname}/{objname}_{objnum}/'
-                       '{objname}_{objnum}_{nframe}.txt')
-        transf_file = transf_file.format(
-            sname='desk',
-            snum='1',
-            objname='coffee_mug',
-            objnum='5',
-            nframe=nframe
-        )
+        transf_file = self.transf_file.format(nframe=nframe)
 
         fue_exitoso = False
         tam_region = 0
         topleft = (0, 0)
         bottomright = (0, 0)
+
+        detected_descriptors = {}
 
         if os.path.isfile(transf_file):
             fue_exitoso = True
@@ -842,12 +850,99 @@ class StaticDepthTransformationDetection(Detector):
             topleft, bottomright = from_cloud_to_flat_limits(detected_model)
             tam_region = max(bottomright[0] - topleft[0],
                              bottomright[1] - topleft[1])
+            detected_descriptors.update({
+                'detected_cloud': detected_model,
+            })
+            scene_cloud = self._descriptors['pcd']
+            show_clouds(
+                b'Modelo detectado y filtrado vs escena',
+                scene_cloud,
+                detected_model,
+            )
 
-        detected_descriptors = {
+        detected_descriptors.update({
             'size': tam_region,
             'location': topleft,  # topleft=(fila, columna)
             'topleft': topleft,
             'bottomright': bottomright,
-        }
+        })
 
         return fue_exitoso, detected_descriptors
+
+    def calculate_descriptors(self, detected_descriptors):
+        """
+        Obtengo los minimos y maximos en X e Y para depth
+        Filtro los puntos correspondientes a la escena.
+        # TODO: Posible mejora: alinearlo mejor usando ICP
+        """
+        # Esta es la nube de puntos del modelo alineada
+        detected_cloud = detected_descriptors['detected_cloud']
+
+        accepted_points = (
+            self._descriptors['obj_model_points'] * self.perc_obj_model_pts
+        )
+
+        # Defino los valores minimos que debería tener el resultado. Si se
+        # pueden mejorar en el "for" de más adelante, genial!
+        minmax = get_min_max(detected_cloud)
+        detected_descriptors.update({
+            'min_x_cloud': minmax.min_x,
+            'max_x_cloud': minmax.max_x,
+            'min_y_cloud': minmax.min_y,
+            'max_y_cloud': minmax.max_y,
+            'min_z_cloud': minmax.min_z,
+            'max_z_cloud': minmax.max_z,
+        })
+
+        # Filtro la escena al cuadrante que contiene al objeto
+        scene_cloud = self._descriptors['pcd']
+        scene_cloud = filter_cloud(
+            scene_cloud,
+            str("y"),
+            minmax.min_y,
+            minmax.max_y
+        )
+        scene_cloud = filter_cloud(
+            scene_cloud,
+            str("x"),
+            minmax.min_x,
+            minmax.max_x
+        )
+
+        # Filtro los puntos de la escena que se corresponden con el
+        # objeto que estoy buscando
+        obj_scene_cloud = filter_object_from_scene_cloud(
+            detected_cloud,  # object
+            scene_cloud,  # partial scene
+            self.leaf_size,  # radius
+            False,  # show values
+        )
+
+        show_clouds(
+            b'Modelo detectado y filtrado vs escena',
+            scene_cloud,
+            obj_scene_cloud,
+        )
+
+        obj_scene_points = points(obj_scene_cloud)
+
+        extraccion_exitosa = obj_scene_points > accepted_points
+
+        if extraccion_exitosa:
+            minmax = get_min_max(obj_scene_cloud)
+
+            detected_descriptors.update({
+                'min_x_cloud': minmax.min_x,
+                'max_x_cloud': minmax.max_x,
+                'min_y_cloud': minmax.min_y,
+                'max_y_cloud': minmax.max_y,
+                'min_z_cloud': minmax.min_z,
+                'max_z_cloud': minmax.max_z,
+                'object_cloud': obj_scene_cloud,
+            })
+        else:
+            detected_descriptors.update({
+                'object_cloud': detected_cloud,
+            })
+
+        return detected_descriptors
