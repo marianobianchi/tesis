@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 
 from __future__ import (unicode_literals, division)
 
@@ -805,8 +805,11 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
 
 class StaticDepthTransformationDetection(Detector):
     def __init__(self, transf_file_path, sname, snum, objname, objnum,
-                 leaf_size, perc_obj_model_pts):
+                 ap_defaults=None, icp_defaults=None,
+                 umbral_score=1e-3, **kwargs):
         super(StaticDepthTransformationDetection, self).__init__()
+
+        # Deteccion por spin_images/fpfh/cshot
         transf_file = ('{path}/{sname}/{sname}_{snum}/{objname}/'
                        '{objname}_{objnum}/{objname}_{objnum}_{nframe}.txt')
         self.transf_file = transf_file.format(
@@ -817,13 +820,59 @@ class StaticDepthTransformationDetection(Detector):
             objnum=objnum,
             nframe='{nframe}'
         )
-        self.leaf_size = leaf_size
-        self.perc_obj_model_pts = perc_obj_model_pts
 
-    def detect(self):
+        # alignment prerejective e ICP
+        self.umbral_score = umbral_score
+        if ap_defaults is None:
+            # alignment prerejective parameters
+            ap_defaults = APDefaults()
+            ap_defaults.leaf = 0.005
+            ap_defaults.max_ransac_iters = 100
+            ap_defaults.points_to_sample = 3
+            ap_defaults.nearest_features_used = 4
+            ap_defaults.simil_threshold = 0.1
+            ap_defaults.inlier_threshold = 3
+            ap_defaults.inlier_fraction = 0.8
+            # ap_defaults.show_values = True
+
+        self._ap_defaults = ap_defaults
+
+        if icp_defaults is None:
+            # icp parameters
+            icp_defaults = ICPDefaults()
+            icp_defaults.euc_fit = 1e-5
+            icp_defaults.max_corr_dist = 3
+            icp_defaults.max_iter = 50
+            icp_defaults.transf_epsilon = 1e-5
+            # icp_defaults.show_values = True
+
+        self._icp_defaults = icp_defaults
+
+        # Seteo el tamaño de las esferas usadas para filtrar de la escena
+        # los puntos del objeto encontrado
+        first_leaf_size = kwargs.get('first_leaf_size', 0.005)
+        self.adapt_leaf = kwargs.get(
+            'adapt_leaf',
+            AdaptLeafRatio(first_leaf=first_leaf_size)
+        )
+
+        # Seteo el porcentaje de puntos que permito conservar del modelo del
+        # objeto antes de considerar que lo que se encontró no es el objeto
+        self.perc_obj_model_points = kwargs.get('perc_obj_model_points', 0.5)
+
+        # Seteo el tamaño del frame de busqueda. Este valor se va a multiplicar
+        # por la altura y el ancho del objeto. Ej: si se multiplica por 2, el
+        # frame de busqueda tiene un area 4 (2*2) veces mayor que la del objeto
+        self.obj_mult = kwargs.get('obj_mult', 2)
+
+    def transformation_detect(self):
         nframe = self._descriptors['nframe']
         model = self._descriptors['obj_model']
         transf_file = self.transf_file.format(nframe=nframe)
+
+        if not self.adapt_leaf.was_started():
+            model_points = points(model)
+            self.adapt_leaf.set_first_values(model_points)
 
         fue_exitoso = False
         tam_region = 0
@@ -845,6 +894,7 @@ class StaticDepthTransformationDetection(Detector):
                         float_vec.extend(floats)
                         transf_matrix.append(float_vec)
 
+            # Deteccion por spin_images/fpfh/cshot
             detected_model = transform_cloud(model, transf_matrix)
 
             topleft, bottomright = from_cloud_to_flat_limits(detected_model)
@@ -855,7 +905,7 @@ class StaticDepthTransformationDetection(Detector):
             })
             scene_cloud = self._descriptors['pcd']
             show_clouds(
-                b'Modelo detectado y filtrado vs escena',
+                b'Modelo detectado (transformacion estatica) vs escena',
                 scene_cloud,
                 detected_model,
             )
@@ -869,6 +919,29 @@ class StaticDepthTransformationDetection(Detector):
 
         return fue_exitoso, detected_descriptors
 
+    def detect(self):
+        fue_exitoso, detected_descriptors = self.transformation_detect()
+
+        # if fue_exitoso:
+        #     # Alineacion con alignment_prerejective
+        #     minmax = get_min_max(detected_model)
+        #     scene_cloud = self._descriptors['pcd']
+        #     scene_cloud = filter_cloud(
+        #         scene_cloud,
+        #         str("y"),
+        #         minmax.min_y,
+        #         minmax.max_y
+        #     )
+        #     scene_cloud = filter_cloud(
+        #         scene_cloud,
+        #         str("x"),
+        #         minmax.min_x,
+        #         minmax.max_x
+        #     )
+        #
+        #     # Alineacion con ICP
+        return fue_exitoso, detected_descriptors
+
     def calculate_descriptors(self, detected_descriptors):
         """
         Obtengo los minimos y maximos en X e Y para depth
@@ -879,7 +952,7 @@ class StaticDepthTransformationDetection(Detector):
         detected_cloud = detected_descriptors['detected_cloud']
 
         accepted_points = (
-            self._descriptors['obj_model_points'] * self.perc_obj_model_pts
+            self._descriptors['obj_model_points'] * self.perc_obj_model_points
         )
 
         # Defino los valores minimos que debería tener el resultado. Si se
@@ -914,7 +987,7 @@ class StaticDepthTransformationDetection(Detector):
         obj_scene_cloud = filter_object_from_scene_cloud(
             detected_cloud,  # object
             scene_cloud,  # partial scene
-            self.leaf_size,  # radius
+            self.adapt_leaf.leaf_ratio(),  # radius
             False,  # show values
         )
 
@@ -925,6 +998,7 @@ class StaticDepthTransformationDetection(Detector):
         )
 
         obj_scene_points = points(obj_scene_cloud)
+        self.adapt_leaf.set_found_points(obj_scene_points)
 
         extraccion_exitosa = obj_scene_points > accepted_points
 
