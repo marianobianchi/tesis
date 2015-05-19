@@ -919,8 +919,124 @@ class StaticDepthTransformationDetection(Detector):
 
         return fue_exitoso, detected_descriptors
 
+    def alignment_prerejective(self, descriptors):
+        # obtengo tamaño del objeto detetado y me quedo con uno X veces mas grande
+        model_cloud = descriptors['detected_cloud']
+        obj_limits = get_min_max(model_cloud)
+
+        length_func = lambda mul, l: l * mul / 2.0
+        max_length = max(
+            obj_limits.max_x - obj_limits.min_x,
+            obj_limits.max_y - obj_limits.min_y,
+            obj_limits.max_z - obj_limits.min_z,
+        )
+        x_center = obj_limits.max_x - (obj_limits.max_x - obj_limits.min_x)
+        y_center = obj_limits.max_y - (obj_limits.max_y - obj_limits.min_y)
+        z_center = obj_limits.max_z - (obj_limits.max_z - obj_limits.min_z)
+        half_side_length = length_func(self.obj_mult, max_length)
+
+        # obtengo limites de la escena
+        scene_cloud = self._descriptors['pcd']
+        scene_limits = get_min_max(scene_cloud)
+
+        # Filtro la escena y me quedo con la bounding-box de la deteccion por
+        # transformaciones
+        cloud = filter_cloud(
+            scene_cloud,
+            b'x',
+            x_center - half_side_length,
+            x_center + half_side_length
+        )
+        cloud = filter_cloud(
+            cloud,
+            b'y',
+            y_center - half_side_length,
+            y_center + half_side_length
+        )
+        cloud = filter_cloud(
+            cloud,
+            b'z',
+            z_center - half_side_length,
+            z_center + half_side_length
+        )
+
+        show_clouds(
+            b'Escena filtrando el bounding-box',
+            cloud,
+            model_cloud,
+        )
+
+        detected_descriptors = {
+            'topleft': (0, 0),  # (fila, columna)
+            'bottomright': 0,
+        }
+        fue_exitoso = False
+
+        ap_result = align(model_cloud, cloud, self._ap_defaults)
+        if ap_result.has_converged and ap_result.score < self.umbral_score:
+            # Calculate ICP
+            icp_result = icp(ap_result.cloud, cloud, self._icp_defaults)
+
+            if (icp_result.has_converged and
+                    icp_result.score < self.umbral_score):
+                # Filtro los puntos de la escena que se corresponden con el
+                # objeto que estoy buscando
+                obj_scene_cloud = filter_object_from_scene_cloud(
+                    icp_result.cloud,  # object
+                    scene_cloud,  # complete scene
+                    self.adapt_leaf.leaf_ratio(),  # radius
+                    False,  # show values
+                )
+
+                obj_scene_points = points(obj_scene_cloud)
+
+                fue_exitoso = obj_scene_points > accepted_points
+
+                if fue_exitoso:
+                    self.adapt_leaf.set_found_points(obj_scene_points)
+                else:
+                    self.adapt_leaf.reset()
+
+                minmax = get_min_max(obj_scene_cloud)
+
+                topleft, bottomright = from_cloud_to_flat_limits(
+                    obj_scene_cloud
+                )
+                tam_region = max(bottomright[0] - topleft[0],
+                                 bottomright[1] - topleft[1])
+
+                detected_descriptors.update({
+                    'min_x_cloud': minmax.min_x,
+                    'max_x_cloud': minmax.max_x,
+                    'min_y_cloud': minmax.min_y,
+                    'max_y_cloud': minmax.max_y,
+                    'min_z_cloud': minmax.min_z,
+                    'max_z_cloud': minmax.max_z,
+                    'object_cloud': obj_scene_cloud,
+                    'obj_model': icp_result.cloud,  # original model transformed
+                    'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
+                    'size': tam_region,
+                    'location': topleft,
+                    'topleft': topleft,  # (fila, columna)
+                    'bottomright': bottomright,
+                })
+
+
+                show_clouds(
+                  b'Modelo detectado vs escena',
+                  icp_result.cloud,
+                  scene_cloud
+                )
+
+        return fue_exitoso, detected_descriptors
+
     def detect(self):
         fue_exitoso, detected_descriptors = self.transformation_detect()
+
+        if fue_exitoso:
+            fue_exitoso, detected_descriptors = self.alignment_prerejective(
+                detected_descriptors
+            )
 
         # if fue_exitoso:
         #     # Alineacion con alignment_prerejective
