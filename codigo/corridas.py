@@ -1677,53 +1677,84 @@ def prueba_deteccion_automatica_sola(img_provider, scenename, scenenumber,
         img_provider.restart()
 
 
-def correr_modelo_entero(objname, objnumber, scenename, scenenumber):
+def correr_modelo_entero(img_provider, objname, objnumber, scenename, scenenumber):
+    """
+    Deteccion de Nadia realineada con AP e ICP.
+    revisando ap.inlier_fraction
+    """
     # Set parameters values
+    # Set detection parameters values
+    ap_defaults = APDefaults()
+    ap_defaults.leaf = 0.005
+    ap_defaults.max_ransac_iters = 500
+    ap_defaults.points_to_sample = 3
+    ap_defaults.nearest_features_used = 4
+    ap_defaults.simil_threshold = 0.6
+    ap_defaults.inlier_threshold = 4
+    ap_defaults.inlier_fraction = 0.3
+
+    icp_detection_defaults = ICPDefaults()
+    icp_detection_defaults.euc_fit = 1e-10
+    icp_detection_defaults.max_corr_dist = 1
+    icp_detection_defaults.max_iter = 50
+    icp_detection_defaults.transf_epsilon = 1e-6
+
     icp_finder_defaults = ICPDefaults()
     icp_finder_defaults.euc_fit = 1e-5
     icp_finder_defaults.max_corr_dist = 0.5
     icp_finder_defaults.max_iter = 50
     icp_finder_defaults.transf_epsilon = 1e-5
 
+    det_umbral_score = 1e-3
     det_obj_scene_leaf = 0.005
-    det_perc_obj_model_points = 0.01
+    det_perc_obj_model_points = 0.06
 
     find_umbral_score = 1e-4
+    find_adapt_area = FixedSearchArea(3)
+    find_adapt_leaf = AdaptLeafRatio()
     find_obj_scene_leaf = 0.002
-    find_perc_obj_model_points = 0.3
+    find_perc_obj_model_points = 0.06
 
-    # Create objects
-    img_provider = FrameNamesAndImageProvider(#PreChargedForPCD
-        'videos/rgbd/scenes/', scenename, scenenumber,
-        'videos/rgbd/objs/', objname, objnumber,
-    )  # path, objname, number
+    for ap_inlier_fraction in [0.08, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.5, 0.6, 0.7]:
+        ap_defaults.inlier_fraction = ap_inlier_fraction
+        # Repetir N veces para minimizar detecciones fallidas por RANSAC
+        for i in range(3):
+            detector = StaticDepthTransformationDetection(
+                transf_file_path='videos/rgbd/resultados_deteccion',
+                sname=scenename,
+                snum=scenenumber,
+                objname=objname,
+                objnum=objnumber,
+                first_leaf_size=det_obj_scene_leaf,
+                perc_obj_model_points=det_perc_obj_model_points,
+                ap_defaults=ap_defaults,
+                icp_defaults=icp_detection_defaults,
+                umbral_score=det_umbral_score,
+            )
 
-    detector = StaticDepthTransformationDetection(
-        transf_file_path='videos/rgbd/resultados_deteccion',
-        sname=scenename,
-        snum=scenenumber,
-        objname=objname,
-        objnum=objnumber,
-        leaf_size=det_obj_scene_leaf,
-        perc_obj_model_pts=det_perc_obj_model_points,
-    )
+            finder = ICPFinderWithModel(
+                icp_defaults=icp_finder_defaults,
+                umbral_score=find_umbral_score,
+                adapt_area=find_adapt_area,
+                adapt_leaf=find_adapt_leaf,
+                first_leaf_size=find_obj_scene_leaf,
+                perc_obj_model_points=find_perc_obj_model_points,
+            )
 
-    finder = ICPFinderWithModel(
-        icp_defaults=icp_finder_defaults,
-        umbral_score=find_umbral_score,
-        obj_scene_leaf=find_obj_scene_leaf,
-        perc_obj_model_points=find_perc_obj_model_points,
-    )
+            follower = DepthFollower(img_provider, detector, finder)
 
-    follower = DepthFollower(img_provider, detector, finder)
+            # show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
 
-    show_following = MuestraSeguimientoEnVivo('Seguidor ICP')
+            FollowingSquemaExploringParameterPCD(
+                img_provider,
+                follower,
+                # show_following,
+                'pruebas_guardadas',
+                'ap_inlier_fraction',
+                ap_inlier_fraction,
+            ).run()
 
-    FollowingScheme(
-        img_provider,
-        follower,
-        show_following,
-    ).run()
+            img_provider.restart()
 
 
 if __name__ == '__main__':
@@ -1961,4 +1992,18 @@ if __name__ == '__main__':
     # table_small_2_img_provider.reinitialize_object('cereal_box', '4')
     # definitivo_depth(table_small_2_img_provider, 'table_small', '2', 'cereal_box', '4')
 
-    correr_modelo_entero('coffee_mug', '5', 'desk', '1')
+    # Create objects
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '1',
+        'videos/rgbd/objs/', 'coffee_mug', '5',
+    )  # path, objname, number
+    #correr_modelo_entero(img_provider, 'coffee_mug', '5', 'desk', '1')
+
+    img_provider.reinitialize_object('cap', '4')
+    correr_modelo_entero(img_provider, 'cap', '4', 'desk', '1')
+
+    img_provider = FrameNamesAndImageProviderPreChargedForPCD(
+        'videos/rgbd/scenes/', 'desk', '2',
+        'videos/rgbd/objs/', 'bowl', '3',
+    )  # path, objname, number
+    correr_modelo_entero(img_provider, 'desk', '2', 'bowl', '3')

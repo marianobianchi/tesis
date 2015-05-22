@@ -904,11 +904,11 @@ class StaticDepthTransformationDetection(Detector):
                 'detected_cloud': detected_model,
             })
             scene_cloud = self._descriptors['pcd']
-            show_clouds(
-                b'Modelo detectado (transformacion estatica) vs escena',
-                scene_cloud,
-                detected_model,
-            )
+            # show_clouds(
+            #     b'Modelo detectado (transformacion estatica) vs escena',
+            #     scene_cloud,
+            #     detected_model,
+            # )
 
         detected_descriptors.update({
             'size': tam_region,
@@ -960,11 +960,11 @@ class StaticDepthTransformationDetection(Detector):
             z_center + half_side_length
         )
 
-        show_clouds(
-            b'Escena filtrando el bounding-box',
-            cloud,
-            model_cloud,
-        )
+        # show_clouds(
+        #     b'Escena filtrando el bounding-box',
+        #     cloud,
+        #     model_cloud,
+        # )
 
         detected_descriptors = {
             'topleft': (0, 0),  # (fila, columna)
@@ -972,61 +972,70 @@ class StaticDepthTransformationDetection(Detector):
         }
         fue_exitoso = False
 
-        ap_result = align(model_cloud, cloud, self._ap_defaults)
-        if ap_result.has_converged and ap_result.score < self.umbral_score:
-            # Calculate ICP
-            icp_result = icp(ap_result.cloud, cloud, self._icp_defaults)
+        accepted_points = (
+            self._descriptors['obj_model_points'] *
+            self.perc_obj_model_points
+        )
 
-            if (icp_result.has_converged and
-                    icp_result.score < self.umbral_score):
-                # Filtro los puntos de la escena que se corresponden con el
-                # objeto que estoy buscando
-                obj_scene_cloud = filter_object_from_scene_cloud(
-                    icp_result.cloud,  # object
-                    scene_cloud,  # complete scene
-                    self.adapt_leaf.leaf_ratio(),  # radius
-                    False,  # show values
-                )
+        if points(cloud) > accepted_points:
+            ap_result = align(model_cloud, cloud, self._ap_defaults)
+            print "Convergio AP:", ap_result.has_converged
+            print "Score AP:", ap_result.score, "(<", self.umbral_score, ")"
+            if ap_result.has_converged and ap_result.score < self.umbral_score:
+                # Calculate ICP
+                icp_result = icp(ap_result.cloud, cloud, self._icp_defaults)
+                print "Convergio ICP:", icp_result.has_converged
+                print "Score ICP:", icp_result.score, "(<", self.umbral_score, ")"
 
-                obj_scene_points = points(obj_scene_cloud)
+                if (icp_result.has_converged and
+                        icp_result.score < self.umbral_score):
+                    # Filtro los puntos de la escena que se corresponden con el
+                    # objeto que estoy buscando
+                    obj_scene_cloud = filter_object_from_scene_cloud(
+                        icp_result.cloud,  # object
+                        scene_cloud,  # complete scene
+                        self.adapt_leaf.leaf_ratio(),  # radius
+                        False,  # show values
+                    )
 
-                fue_exitoso = obj_scene_points > accepted_points
+                    obj_scene_points = points(obj_scene_cloud)
 
-                if fue_exitoso:
-                    self.adapt_leaf.set_found_points(obj_scene_points)
-                else:
-                    self.adapt_leaf.reset()
+                    fue_exitoso = obj_scene_points > accepted_points
 
-                minmax = get_min_max(obj_scene_cloud)
+                    if fue_exitoso:
+                        self.adapt_leaf.set_found_points(obj_scene_points)
+                    else:
+                        self.adapt_leaf.reset()
 
-                topleft, bottomright = from_cloud_to_flat_limits(
-                    obj_scene_cloud
-                )
-                tam_region = max(bottomright[0] - topleft[0],
-                                 bottomright[1] - topleft[1])
+                    minmax = get_min_max(obj_scene_cloud)
 
-                detected_descriptors.update({
-                    'min_x_cloud': minmax.min_x,
-                    'max_x_cloud': minmax.max_x,
-                    'min_y_cloud': minmax.min_y,
-                    'max_y_cloud': minmax.max_y,
-                    'min_z_cloud': minmax.min_z,
-                    'max_z_cloud': minmax.max_z,
-                    'object_cloud': obj_scene_cloud,
-                    'obj_model': icp_result.cloud,  # original model transformed
-                    'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
-                    'size': tam_region,
-                    'location': topleft,
-                    'topleft': topleft,  # (fila, columna)
-                    'bottomright': bottomright,
-                })
+                    topleft, bottomright = from_cloud_to_flat_limits(
+                        obj_scene_cloud
+                    )
+                    tam_region = max(bottomright[0] - topleft[0],
+                                     bottomright[1] - topleft[1])
+
+                    detected_descriptors.update({
+                        'min_x_cloud': minmax.min_x,
+                        'max_x_cloud': minmax.max_x,
+                        'min_y_cloud': minmax.min_y,
+                        'max_y_cloud': minmax.max_y,
+                        'min_z_cloud': minmax.min_z,
+                        'max_z_cloud': minmax.max_z,
+                        'object_cloud': obj_scene_cloud,
+                        'detected_cloud': icp_result.cloud,  # lo guardo solo para la estadistica
+                        'size': tam_region,
+                        'location': topleft,
+                        'topleft': topleft,  # (fila, columna)
+                        'bottomright': bottomright,
+                    })
 
 
-                show_clouds(
-                  b'Modelo detectado vs escena',
-                  icp_result.cloud,
-                  scene_cloud
-                )
+                    # show_clouds(
+                    #   b'Modelo detectado por TRANSF, AP e ICP vs escena',
+                    #   scene_cloud,
+                    #   icp_result.cloud,
+                    # )
 
         return fue_exitoso, detected_descriptors
 
@@ -1107,11 +1116,11 @@ class StaticDepthTransformationDetection(Detector):
             False,  # show values
         )
 
-        show_clouds(
-            b'Modelo detectado y filtrado vs escena',
-            scene_cloud,
-            obj_scene_cloud,
-        )
+        # show_clouds(
+        #     b'Modelo detectado y filtrado vs escena',
+        #     scene_cloud,
+        #     obj_scene_cloud,
+        # )
 
         obj_scene_points = points(obj_scene_cloud)
         self.adapt_leaf.set_found_points(obj_scene_points)

@@ -264,6 +264,9 @@ class ICPFinderWithModel(ICPFinder):
 
         descriptors = {}
 
+        print "Convergio ICP buscador:", icp_result.has_converged
+        print "Score ICP buscador:", icp_result.score, "(<", self.umbral_score, ")"
+
         if fue_exitoso:
             self.adapt_leaf.set_found_points(points_from_scene)
 
