@@ -155,7 +155,7 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
         # Etapa de detección
         ######################
         print("Detectando en imagen {i}".format(
-            i=self.img_provider.next_frame_number
+            i=self.img_provider.nframe()
         ))
         es_deteccion = True
 
@@ -189,7 +189,7 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
             if fue_exitoso:
                 print(
                     "Buscando en imagen {i}".format(
-                        i=self.img_provider.next_frame_number
+                        i=self.img_provider.nframe()
                     ),
                     ''
                 )
@@ -203,7 +203,7 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
 
                 print("{p}Detectando en imagen {i}".format(
                     p='...MISS... ' if not es_deteccion else '',
-                    i=self.img_provider.next_frame_number,
+                    i=self.img_provider.nframe(),
                 ))
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
@@ -240,7 +240,7 @@ class FollowingSchemeSavingDataPCD(FollowingScheme):
         metodo = 0 si deteccion, 1 si seguimiento
         exito = 0 si fallo, 1 si funciono
         """
-        nframe = self.img_provider.next_frame_number
+        nframe = self.img_provider.nframe()
         exito = 1 if fue_exitoso else 0
 
         values = [nframe, exito, method, int(topleft[0]), int(topleft[1]),
@@ -322,38 +322,41 @@ class FollowingSquemaExploringParameterPCD(FollowingSchemeSavingDataPCD):
 
     def write_parameter_values(self):
         # Guardo los valores de los parametros
-        ap_defaults = self.obj_follower.detector._ap_defaults
-        self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
-        self.file.write(b'ap_max_ransac_iters={v}\n'.format(
-            v=ap_defaults.max_ransac_iters))
-        self.file.write(b'ap_points_to_sample={v}\n'.format(
-            v=ap_defaults.points_to_sample))
-        self.file.write(b'ap_nearest_features_used={v}\n'.format(
-            v=ap_defaults.nearest_features_used))
-        self.file.write(b'ap_simil_threshold={v}\n'.format(
-            v=ap_defaults.simil_threshold))
-        self.file.write(b'ap_inlier_threshold={v}\n'.format(
-            v=ap_defaults.inlier_threshold))
-        self.file.write(b'ap_inlier_fraction={v}\n'.format(
-            v=ap_defaults.inlier_fraction))
+        try:
+            ap_defaults = self.obj_follower.detector._ap_defaults
+            self.file.write(b'ap_leaf={v}\n'.format(v=ap_defaults.leaf))
+            self.file.write(b'ap_max_ransac_iters={v}\n'.format(
+                v=ap_defaults.max_ransac_iters))
+            self.file.write(b'ap_points_to_sample={v}\n'.format(
+                v=ap_defaults.points_to_sample))
+            self.file.write(b'ap_nearest_features_used={v}\n'.format(
+                v=ap_defaults.nearest_features_used))
+            self.file.write(b'ap_simil_threshold={v}\n'.format(
+                v=ap_defaults.simil_threshold))
+            self.file.write(b'ap_inlier_threshold={v}\n'.format(
+                v=ap_defaults.inlier_threshold))
+            self.file.write(b'ap_inlier_fraction={v}\n'.format(
+                v=ap_defaults.inlier_fraction))
 
-        icp_defaults = self.obj_follower.detector._icp_defaults
-        self.file.write(b'det_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
-        self.file.write(
-            b'det_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
-        self.file.write(
-            b'det_max_iter={v}\n'.format(v=icp_defaults.max_iter))
-        self.file.write(b'det_transf_epsilon={v}\n'.format(
-            v=icp_defaults.transf_epsilon))
+            icp_defaults = self.obj_follower.detector._icp_defaults
+            self.file.write(b'det_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+            self.file.write(
+                b'det_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+            self.file.write(
+                b'det_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+            self.file.write(b'det_transf_epsilon={v}\n'.format(
+                v=icp_defaults.transf_epsilon))
 
-        icp_defaults = self.obj_follower.finder._icp_defaults
-        self.file.write(b'seg_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
-        self.file.write(
-            b'seg_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
-        self.file.write(
-            b'seg_max_iter={v}\n'.format(v=icp_defaults.max_iter))
-        self.file.write(b'seg_transf_epsilon={v}\n'.format(
-            v=icp_defaults.transf_epsilon))
+            icp_defaults = self.obj_follower.finder._icp_defaults
+            self.file.write(b'seg_euc_fit={v}\n'.format(v=icp_defaults.euc_fit))
+            self.file.write(
+                b'seg_max_corr_dist={v}\n'.format(v=icp_defaults.max_corr_dist))
+            self.file.write(
+                b'seg_max_iter={v}\n'.format(v=icp_defaults.max_iter))
+            self.file.write(b'seg_transf_epsilon={v}\n'.format(
+                v=icp_defaults.transf_epsilon))
+        except AttributeError:
+            pass
         self.file.write(b'RESULTS_SECTION\n')
         self.file.flush()
 
@@ -409,7 +412,7 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         # Etapa de detección
         ######################
         print("Detectando en imagen {i}".format(
-            i=self.img_provider.next_frame_number
+            i=self.img_provider.nframe()
         ))
         es_deteccion = True
 
@@ -443,7 +446,7 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
             if fue_exitoso:
                 print(
                     "Buscando en imagen {i}".format(
-                        i=self.img_provider.next_frame_number
+                        i=self.img_provider.nframe()
                     ),
                     ''
                 )
@@ -457,7 +460,7 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
 
                 print("{p}Detectando en imagen {i}".format(
                     p='...MISS... ' if not es_deteccion else '',
-                    i=self.img_provider.next_frame_number,
+                    i=self.img_provider.nframe(),
                 ))
                 fue_exitoso, topleft, bottomright = (
                     self.obj_follower.detect()
@@ -494,7 +497,7 @@ class FollowingSchemeSavingDataRGB(FollowingScheme):
         metodo = 0 si deteccion, 1 si seguimiento
         exito = 0 si fallo, 1 si funciono
         """
-        nframe = self.img_provider.next_frame_number
+        nframe = self.img_provider.nframe()
         exito = 1 if fue_exitoso else 0
 
         values = [nframe, exito, method, int(topleft[0]), int(topleft[1]),

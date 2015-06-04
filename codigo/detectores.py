@@ -804,9 +804,7 @@ class RGBDDetector(RGBTemplateDetector, DepthDetection):
 
 
 class StaticDepthTransformationDetection(Detector):
-    def __init__(self, transf_file_path, sname, snum, objname, objnum,
-                 ap_defaults=None, icp_defaults=None,
-                 umbral_score=1e-3, **kwargs):
+    def __init__(self, transf_file_path, sname, snum, objname, objnum):
         super(StaticDepthTransformationDetection, self).__init__()
 
         # Deteccion por spin_images/fpfh/cshot
@@ -820,6 +818,67 @@ class StaticDepthTransformationDetection(Detector):
             objnum=objnum,
             nframe='{nframe}'
         )
+
+    def transformation_detect(self):
+        nframe = self._descriptors['nframe']
+        model = self._descriptors['static_obj_model']
+        transf_file = self.transf_file.format(nframe=nframe)
+
+        fue_exitoso = False
+        tam_region = 0
+        topleft = (0, 0)
+        bottomright = (0, 0)
+
+        detected_descriptors = {}
+
+        if os.path.isfile(transf_file):
+            fue_exitoso = True
+
+            with open(transf_file, 'r') as file_:
+                transf_matrix = VectorMat()
+                for line in file_:
+                    if line.strip():
+                        values = line.strip().split()
+                        floats = [float(v) for v in values]
+                        float_vec = FloatVector()
+                        float_vec.extend(floats)
+                        transf_matrix.append(float_vec)
+
+            # Deteccion por spin_images/fpfh/cshot
+            detected_model = transform_cloud(model, transf_matrix)
+
+            topleft, bottomright = from_cloud_to_flat_limits(detected_model)
+            tam_region = max(bottomright[0] - topleft[0],
+                             bottomright[1] - topleft[1])
+            detected_descriptors.update({
+                'detected_cloud': detected_model,
+            })
+            # scene_cloud = self._descriptors['pcd']
+            # show_clouds(
+            #     b'Modelo detectado (transformacion estatica) vs escena',
+            #     scene_cloud,
+            #     detected_model,
+            # )
+
+        detected_descriptors.update({
+            'size': tam_region,
+            'location': topleft,  # topleft=(fila, columna)
+            'topleft': topleft,
+            'bottomright': bottomright,
+        })
+
+        return fue_exitoso, detected_descriptors
+
+    def detect(self):
+        return self.transformation_detect()
+
+
+class SDTWithPostAlignment(StaticDepthTransformationDetection):
+    def __init__(self, transf_file_path, sname, snum, objname, objnum,
+                 ap_defaults=None, icp_defaults=None,
+                 umbral_score=1e-3, **kwargs):
+        (super(SDTWithPostAlignment, self)
+         .__init__(transf_file_path, sname, snum, objname, objnum))
 
         # alignment prerejective e ICP
         self.umbral_score = umbral_score
@@ -865,63 +924,32 @@ class StaticDepthTransformationDetection(Detector):
         # frame de busqueda tiene un area 4 (2*2) veces mayor que la del objeto
         self.obj_mult = kwargs.get('obj_mult', 2)
 
-    def transformation_detect(self):
-        nframe = self._descriptors['nframe']
-        model = self._descriptors['obj_model']
-        transf_file = self.transf_file.format(nframe=nframe)
+    def _best_alignment_prerejective(self, model_cloud, scene_cloud, times=6):
 
-        if not self.adapt_leaf.was_started():
-            model_points = points(model)
-            self.adapt_leaf.set_first_values(model_points)
+        best_result = align(model_cloud, scene_cloud, self._ap_defaults)
+        best_alignment_score = min(self.umbral_score, best_result.score)
 
-        fue_exitoso = False
-        tam_region = 0
-        topleft = (0, 0)
-        bottomright = (0, 0)
+        for i in range(times - 1):
+            # Puede que fallen los primeros align, por eso hago esto de abajo
+            if not best_result.has_converged:
+                ap_result = align(model_cloud, scene_cloud, self._ap_defaults)
+            else:
+                ap_result = align(best_result.cloud, scene_cloud, self._ap_defaults)
 
-        detected_descriptors = {}
+            if (ap_result.has_converged and
+                    ap_result.score < best_alignment_score):
+                best_alignment_score = ap_result.score
+                best_result = ap_result
 
-        if os.path.isfile(transf_file):
-            fue_exitoso = True
-
-            with open(transf_file, 'r') as file_:
-                transf_matrix = VectorMat()
-                for line in file_:
-                    if line.strip():
-                        values = line.strip().split()
-                        floats = [float(v) for v in values]
-                        float_vec = FloatVector()
-                        float_vec.extend(floats)
-                        transf_matrix.append(float_vec)
-
-            # Deteccion por spin_images/fpfh/cshot
-            detected_model = transform_cloud(model, transf_matrix)
-
-            topleft, bottomright = from_cloud_to_flat_limits(detected_model)
-            tam_region = max(bottomright[0] - topleft[0],
-                             bottomright[1] - topleft[1])
-            detected_descriptors.update({
-                'detected_cloud': detected_model,
-            })
-            scene_cloud = self._descriptors['pcd']
-            # show_clouds(
-            #     b'Modelo detectado (transformacion estatica) vs escena',
-            #     scene_cloud,
-            #     detected_model,
-            # )
-
-        detected_descriptors.update({
-            'size': tam_region,
-            'location': topleft,  # topleft=(fila, columna)
-            'topleft': topleft,
-            'bottomright': bottomright,
-        })
-
-        return fue_exitoso, detected_descriptors
+        return best_result
 
     def alignment_prerejective(self, descriptors):
         # obtengo tamaño del objeto detetado y me quedo con uno X veces mas grande
         model_cloud = descriptors['detected_cloud']
+        if not self.adapt_leaf.was_started():
+            model_points = self._descriptors['static_obj_model_points']
+            self.adapt_leaf.set_first_values(model_points)
+
         obj_limits = get_min_max(model_cloud)
 
         length_func = lambda mul, l: l * mul / 2.0
@@ -937,7 +965,6 @@ class StaticDepthTransformationDetection(Detector):
 
         # obtengo limites de la escena
         scene_cloud = self._descriptors['pcd']
-        scene_limits = get_min_max(scene_cloud)
 
         # Filtro la escena y me quedo con la bounding-box de la deteccion por
         # transformaciones
@@ -973,19 +1000,34 @@ class StaticDepthTransformationDetection(Detector):
         fue_exitoso = False
 
         accepted_points = (
-            self._descriptors['obj_model_points'] *
+            self._descriptors['static_obj_model_points'] *
             self.perc_obj_model_points
         )
 
         if points(cloud) > accepted_points:
-            ap_result = align(model_cloud, cloud, self._ap_defaults)
-            print "Convergio AP:", ap_result.has_converged
-            print "Score AP:", ap_result.score, "(<", self.umbral_score, ")"
+
+            ap_result = self._best_alignment_prerejective(model_cloud, cloud)
+
+            # print "Convergio AP:", ap_result.has_converged
+            # print "Score AP:", ap_result.score, "(<", self.umbral_score, ")"
+
+            # show_clouds(
+            #     b'Escena filtrada vs alignment_prerejective',
+            #     cloud,
+            #     ap_result.cloud,
+            # )
+
             if ap_result.has_converged and ap_result.score < self.umbral_score:
                 # Calculate ICP
                 icp_result = icp(ap_result.cloud, cloud, self._icp_defaults)
-                print "Convergio ICP:", icp_result.has_converged
-                print "Score ICP:", icp_result.score, "(<", self.umbral_score, ")"
+                # print "Convergio ICP:", icp_result.has_converged
+                # print "Score ICP:", icp_result.score, "(<", self.umbral_score, ")"
+
+                # show_clouds(
+                #     b'Escena filtrada vs icp',
+                #     cloud,
+                #     icp_result.cloud,
+                # )
 
                 if (icp_result.has_converged and
                         icp_result.score < self.umbral_score):
@@ -1030,7 +1072,11 @@ class StaticDepthTransformationDetection(Detector):
                         'bottomright': bottomright,
                     })
 
-
+                    # show_clouds(
+                    #   b'Modelo detectado y filtrado vs escena',
+                    #   scene_cloud,
+                    #   obj_scene_cloud,
+                    # )
                     # show_clouds(
                     #   b'Modelo detectado por TRANSF, AP e ICP vs escena',
                     #   scene_cloud,
@@ -1043,105 +1089,11 @@ class StaticDepthTransformationDetection(Detector):
         fue_exitoso, detected_descriptors = self.transformation_detect()
 
         if fue_exitoso:
+            print 'Hubo detección segun transformación de Nadia.'
             fue_exitoso, detected_descriptors = self.alignment_prerejective(
                 detected_descriptors
             )
-
-        # if fue_exitoso:
-        #     # Alineacion con alignment_prerejective
-        #     minmax = get_min_max(detected_model)
-        #     scene_cloud = self._descriptors['pcd']
-        #     scene_cloud = filter_cloud(
-        #         scene_cloud,
-        #         str("y"),
-        #         minmax.min_y,
-        #         minmax.max_y
-        #     )
-        #     scene_cloud = filter_cloud(
-        #         scene_cloud,
-        #         str("x"),
-        #         minmax.min_x,
-        #         minmax.max_x
-        #     )
-        #
-        #     # Alineacion con ICP
-        return fue_exitoso, detected_descriptors
-
-    def calculate_descriptors(self, detected_descriptors):
-        """
-        Obtengo los minimos y maximos en X e Y para depth
-        Filtro los puntos correspondientes a la escena.
-        # TODO: Posible mejora: alinearlo mejor usando ICP
-        """
-        # Esta es la nube de puntos del modelo alineada
-        detected_cloud = detected_descriptors['detected_cloud']
-
-        accepted_points = (
-            self._descriptors['obj_model_points'] * self.perc_obj_model_points
-        )
-
-        # Defino los valores minimos que debería tener el resultado. Si se
-        # pueden mejorar en el "for" de más adelante, genial!
-        minmax = get_min_max(detected_cloud)
-        detected_descriptors.update({
-            'min_x_cloud': minmax.min_x,
-            'max_x_cloud': minmax.max_x,
-            'min_y_cloud': minmax.min_y,
-            'max_y_cloud': minmax.max_y,
-            'min_z_cloud': minmax.min_z,
-            'max_z_cloud': minmax.max_z,
-        })
-
-        # Filtro la escena al cuadrante que contiene al objeto
-        scene_cloud = self._descriptors['pcd']
-        scene_cloud = filter_cloud(
-            scene_cloud,
-            str("y"),
-            minmax.min_y,
-            minmax.max_y
-        )
-        scene_cloud = filter_cloud(
-            scene_cloud,
-            str("x"),
-            minmax.min_x,
-            minmax.max_x
-        )
-
-        # Filtro los puntos de la escena que se corresponden con el
-        # objeto que estoy buscando
-        obj_scene_cloud = filter_object_from_scene_cloud(
-            detected_cloud,  # object
-            scene_cloud,  # partial scene
-            self.adapt_leaf.leaf_ratio(),  # radius
-            False,  # show values
-        )
-
-        # show_clouds(
-        #     b'Modelo detectado y filtrado vs escena',
-        #     scene_cloud,
-        #     obj_scene_cloud,
-        # )
-
-        obj_scene_points = points(obj_scene_cloud)
-        self.adapt_leaf.set_found_points(obj_scene_points)
-
-        extraccion_exitosa = obj_scene_points > accepted_points
-
-        if extraccion_exitosa:
-            minmax = get_min_max(obj_scene_cloud)
-
-            detected_descriptors.update({
-                'min_x_cloud': minmax.min_x,
-                'max_x_cloud': minmax.max_x,
-                'min_y_cloud': minmax.min_y,
-                'max_y_cloud': minmax.max_y,
-                'min_z_cloud': minmax.min_z,
-                'max_z_cloud': minmax.max_z,
-                'object_cloud': obj_scene_cloud,
-            })
         else:
-            detected_descriptors.update({
-                'object_cloud': detected_cloud,
-            })
+            print 'Falló la detección segun transformación de Nadia.'
 
-        return detected_descriptors
+        return fue_exitoso, detected_descriptors

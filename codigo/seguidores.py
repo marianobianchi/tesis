@@ -36,7 +36,7 @@ class Follower(object):
         desc.update({
             'topleft': self._obj_topleft,
             'bottomright': self._obj_bottomright,
-            'nframe': self.img_provider.next_frame_number,
+            'nframe': self.img_provider.nframe(),
         })
         return desc
 
@@ -115,6 +115,8 @@ class DepthFollower(Follower):
             {
                 'obj_model': obj_model,
                 'obj_model_points': pts,
+                'static_obj_model': obj_model,
+                'static_obj_model_points': pts,
             }
         )
 

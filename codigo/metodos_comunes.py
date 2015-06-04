@@ -6,8 +6,139 @@ import time
 
 import numpy as np
 import cv2
+import scipy.io
 
 from cpp.common import get_point, points, get_min_max, compute_centroid
+
+
+class GroundTruthFrame(object):
+    def __init__(self, nframe, obj_data_list):
+        data = {}
+        for obj_data in obj_data_list:
+            obj_name = obj_data[0].flatten()[0]
+            obj_num = obj_data[1].flatten()[0]
+            obj_top = obj_data[2].flatten()[0] - 1
+            obj_bottom = obj_data[3].flatten()[0] - 1
+            obj_left = obj_data[4].flatten()[0] - 1
+            obj_right = obj_data[5].flatten()[0] - 1
+
+            key = '{objname}_{objnum}'.format(objname=obj_name, objnum=obj_num)
+            value = ((obj_top, obj_left), (obj_bottom, obj_right))
+            data[key] = value
+
+        self._data = data
+        self._nframe = nframe
+
+    def _obj_name_num(self, objname_or_namenum, objnum=None):
+        if objnum is None:
+            namenum = objname_or_namenum
+        else:
+            namenum = '{na}_{nu}'.format(na=objname_or_namenum, nu=objnum)
+
+        return namenum
+
+    def appear(self, objname_or_namenum, objnum=None):
+        key = self._obj_name_num(objname_or_namenum, objnum)
+        return key in self._data
+
+    def nframe(self):
+        return self._nframe
+
+    def bounding_box(self, objname_or_namenum, objnum=None):
+        key = self._obj_name_num(objname_or_namenum, objnum)
+        return self._data[key]
+
+    def __iter__(self):
+        """
+        Returns a tuple with objname_objnum, topleft, bottomright
+        """
+        for key, value in self._data.items():
+            yield key, value[0], value[1]
+
+
+class GroundTruthScene(object):
+    def __init__(self, matfile_path):
+        self._frames_data = scipy.io.loadmat(matfile_path)['bboxes'][0]
+
+    def frames(self):
+        """
+        Returns the number of frames in the scene
+        """
+        return len(self._frames_data)
+
+    def __iter__(self):
+        """
+        Iterate through frames of the scene
+        """
+        for i in range(self.frames()):
+            yield GroundTruthFrame(i + 1, self._frames_data[i][0])
+
+
+def list_to_interval_list(l):
+    assert len(l) % 2 == 0, "La lista debe tener longitud par"
+    intervals = []
+    while l:
+        t = tuple(l[:2])
+        intervals.append(t)
+        l = l[2:]
+    return intervals
+
+
+def scene_summary(matfile_path):
+    gts = GroundTruthScene(matfile_path)
+    obj_frames = {}
+    for frame in gts:
+        # Llevo la cuenta de los objetos que estan en el frame
+        objs_in_frame = set()
+        for obj, topleft, bottomright in frame:
+            objs_in_frame.add(obj)
+
+            if obj not in obj_frames:
+                obj_frames[obj] = (False, [])  # False = no estaba en el frame anterior
+
+            if not obj_frames[obj][0]:  # Si no estaba en el frame anterior
+                l = obj_frames[obj][1]
+                l.append(frame.nframe())
+                obj_frames[obj] = (True, l)
+
+        objs_in_other_frames = set(obj_frames.keys()) - objs_in_frame
+        for obj in objs_in_other_frames:
+            if obj_frames[obj][0]:  # Si estaba en el frame anterior
+                l = obj_frames[obj][1]
+                l.append(frame.nframe() - 1)
+                assert len(l) % 2 == 0, "Hubo un error al armar los intervalos"
+                obj_frames[obj] = (False, l)
+
+    for obj in obj_frames:
+        if obj_frames[obj][0]:  # Si estaba en el ultimo frame anterior
+            l = obj_frames[obj][1]
+            l.append(gts.frames())
+            assert len(l) % 2 == 0, "Hubo un error al armar los intervalos finales"
+            obj_frames[obj] = (False, l)
+
+    # Imprimo valores
+    cant_frames = gts.frames()
+    print 'Frames =', cant_frames
+    print ('#A sacar: Negativo == sacar frames donde no aparece. '
+           'Positivo == sacar frames donde aparece')
+    print ''.join(
+        ['Objeto'.center(15),
+         'Intervalos'.center(35),
+         '#Aparicion'.center(15),
+         '#A sacar'.center(15)]
+    )
+
+    for obj, (b, l) in obj_frames.items():
+        l = list_to_interval_list(l)
+        cant_apar = sum([j - i + 1 for i, j in l])
+        a_sacar = 2 * cant_apar - cant_frames
+
+        print ''.join(
+            [obj.rjust(15),
+             '{l}'.format(l=l).rjust(35),
+             '{n}'.format(n=cant_apar).rjust(15),
+             '{p}'.format(p=a_sacar).rjust(15)]
+        )
 
 
 def dibujar_cuadrado(img, topleft, bottomright, color=(0, 0, 0)):
@@ -146,13 +277,14 @@ def from_cloud_to_flat_limits(cloud):
     right = 0
     for i in range(points(cloud)):
         point_xyz = get_point(cloud, i)
-        point_flat = from_cloud_to_flat(point_xyz.y, point_xyz.x, point_xyz.z)
+        if point_xyz.z > 0:
+            point_flat = from_cloud_to_flat(point_xyz.y, point_xyz.x, point_xyz.z)
 
-        top = min(point_flat[0], top)
-        bottom = max(point_flat[0], bottom)
+            top = min(point_flat[0], top)
+            bottom = max(point_flat[0], bottom)
 
-        left = min(point_flat[1], left)
-        right = max(point_flat[1], right)
+            left = min(point_flat[1], left)
+            right = max(point_flat[1], right)
 
     #### NUEVO Y MAS CORTO METODO
     # minmax = get_min_max(cloud)
@@ -430,4 +562,3 @@ class AdaptLeafRatio(object):
 
     def leaf_ratio(self):
         return self.ratios[-1]
-

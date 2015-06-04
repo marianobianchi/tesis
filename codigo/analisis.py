@@ -619,6 +619,8 @@ def dibujar_nubes_encontradas(scenename, scenenum, objname, objnum, paramname,
             subprocess.call(params)
 
 
+def escenas_objetos_y_frames_donde_aparecen():
+    pass
 
 if __name__ == '__main__':
     # # Frame size

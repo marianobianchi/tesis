@@ -14,6 +14,73 @@ from cpp.common import read_pcd
 from cpp.depth_to_rgb import *
 
 
+scene_obj_frames_to_use = {
+    'desk_1': {
+        'coffee_mug_5': [(1, 3), (33, 51), (77, 98)],  # 22/22 (presente/ausente)
+        'soda_can_6': [(1, 2), (31, 58), (69, 98)],  # 30/30
+        'cap_4': [(17, 98)],  # 41/41
+    },
+    'desk_2': {
+        'bowl_3': [(1, 21), (52, 190)],  # 80/80
+        'soda_can_4': [(1, 20), (55, 190)],  # 78/78
+        'flashlight_1': [(1, 26), (127, 190)],  # 60/60
+    },
+    'desk_3': {
+        'flashlight_5': [(1, 67), (126, 228)],  # 85/85
+        'flashlight_3': [(1, 129), (194, 228)],  # 82/82
+        'cereal_box_1': [(1, 113), (186, 228)],  # 78/78
+        'bowl_4': [(1, 66), (129, 228)],  # 83/83
+    },
+    'table_1': {
+        'coffee_mug_1': [(1, 31), (51, 87), (110, 125)],  # 53/53
+        'coffee_mug_4': [(1, 24)] * 2 + [(25, 125)] + [(1, 14)],  # 96/96
+        'bowl_2': [(1, 10)] * 10 + [(12, 125)] + [(8, 11)],  # 114/114
+        'cap_1': [(1, 4)] * 27 + [(5, 125)] + [(1, 3)],  # 116/116
+        'cap_4': [(1, 20)] * 4 + [(21, 125)] + [(1, 9)],  # 97/97
+        'cereal_box_4': [(1, 6)] * 19 + [(7, 125)] + [(1, 5)], # 119, 119
+        'soda_can_4': [(1, 89), (111, 112)],  # 52/52
+        'flashlight_3': [(1, 43), (57, 125)],  # 53/53
+    },
+    'table_small_1': {
+        'coffee_mug_1': [(1, 7), (109, 199)] + [(1, 6)] * 11,  # 82/82
+        'cereal_box_1': [(1, 199)],  # 199/0
+        'soda_can_3': [(1, 4)] * 15 + [(96, 199)],  # 84/84
+        'bowl_4': [(1, 9)] * 7 + [(100, 199)],  # 86/86
+    },
+    'table_small_2': {
+        'cap_4': [],
+        'soda_can_1': [],
+        'cereal_box_4': [],
+    },
+    'meeting_small_1': {
+        'bowl_3': [],
+        'bowl_2': [],
+        'cap_3': [],
+        'soda_can_5': [],
+        'cap_1': [],
+        'cereal_box_2': [],
+        'cereal_box_1': [],
+        'coffee_mug_5': [],
+        'flashlight_5': [],
+        'coffee_mug_6': [],
+        'soda_can_3': [],
+        'flashlight_2': [],
+        'soda_can_1': [],
+    },
+    'kitchen_small_1': {
+        'cap_1': [],
+        'bowl_4': [],
+        'cereal_box_2': [],
+        'coffee_mug_5': [],
+        'soda_can_6': [],
+        'flashlight_5': [],
+        'flashlight_2': [],
+        'soda_can_1': [],
+    },
+
+}
+
+
 class FrameNamesAndImageProvider(object):
     def __init__(self, scene_path, scene, scene_number, obj_path, obj, obj_number):
         scene_path = os.path.join(scene_path, scene)
@@ -196,15 +263,15 @@ class FrameNamesAndImageProvider(object):
     # Images filenames
     def rgb_fname(self):
         assert self.have_images(), 'El proveedor de imágenes no tiene más imágenes disponibles'
-        return self._frame_fname(self.next_frame_number, is_rgb=True)
+        return self._frame_fname(self.nframe(), is_rgb=True)
 
     def depth_fname(self):
         assert self.have_images(), 'El proveedor de imágenes no tiene más imágenes disponibles'
-        return self._frame_fname(self.next_frame_number, is_depth=True)
+        return self._frame_fname(self.nframe(), is_depth=True)
 
     def pcd_fname(self):
         assert self.have_images(), 'El proveedor de imágenes no tiene más imágenes disponibles'
-        return self._frame_fname(self.next_frame_number)
+        return self._frame_fname(self.nframe())
 
     # Images
     def rgb_img(self):
@@ -235,14 +302,14 @@ class FrameNamesAndImageProvider(object):
         return pc
 
     def image_list(self):
-        return [self.rgb_img()]#, self.rgbdepth_img()]
+        return [self.rgb_img()]  # , self.rgbdepth_img()]
 
     def next(self):
         self.next_frame_number += 1
 
     def image_size(self):
         img = self.rgb_img()
-        return len(img), len(img[0]) # filas, columnas
+        return len(img), len(img[0])  # filas, columnas
 
 
 class FrameNamesAndImageProviderPreChargedForPCD(FrameNamesAndImageProvider):
@@ -273,6 +340,77 @@ class FrameNamesAndImageProviderPreChargedForPCD(FrameNamesAndImageProvider):
 
     def pcd(self):
         return self._pcd_images[self.next_frame_number - self.offset_frame_count]
+
+
+class SelectedFrameNamesAndImageProviderPreChargedForPCD(FrameNamesAndImageProvider):
+    def __init__(self, scene_path, scene, scene_number, obj_path, obj, obj_number):
+        scene_path = os.path.join(scene_path, scene)
+        scene_path = os.path.join(scene_path, scene + '_' + scene_number)
+        self.scene_path = scene_path
+        self.scene = scene
+        self.scene_number = scene_number
+
+        self._pcd_images_dict = {}
+        self._initialize_object(obj_path, obj, obj_number)
+
+    def _initialize_object(self, obj_path, obj, obj_number):
+        (super(SelectedFrameNamesAndImageProviderPreChargedForPCD, self)
+         ._initialize_object(obj_path, obj, obj_number))
+
+        self._initialize_nframes(self.scene, self.scene_number, obj, obj_number)
+        self.next_frame = 0
+        self._load_frames()
+
+    def _initialize_nframes(self, scene, scene_number, obj, obj_number):
+        scenenamenum = '{s}_{n}'.format(s=scene, n=scene_number)
+        objnamenum = '{o}_{n}'.format(o=obj, n=obj_number)
+        tuple_frames = scene_obj_frames_to_use[scenenamenum][objnamenum]
+        nframes = []
+        for t in tuple_frames:
+            l = range(t[0], t[1] + 1)
+            nframes.extend(l)
+
+        self.nframes = nframes
+        return nframes
+
+    def _load_frames(self):
+        total_files = len(self.nframes)
+        for i in range(total_files):
+            sys.stdout.write(
+                "Reading pcd file number " +
+                str(i + 1) +
+                "/" +
+                str(total_files) +
+                "\r"
+            )
+            sys.stdout.flush()
+            nframe = self.nframes[i]
+            if nframe not in self._pcd_images_dict:
+                fname = self._frame_fname(nframe)
+                pc = read_pcd(str(fname))
+                self._pcd_images_dict[nframe] = pc
+
+        sys.stdout.write('\n')
+
+    def restart(self):
+        self.next_frame = 0
+
+    def next(self):
+        self.next_frame += 1
+
+    def have_images(self):
+        return self.next_frame < len(self.nframes)
+
+    def nframe(self):
+        try:
+            n = self.nframes[self.next_frame]
+        except:
+            pass
+
+        return n
+
+    def pcd(self):
+        return self._pcd_images_dict[self.nframe()]
 
 
 class FrameNamesAndImageProviderPreChargedForRGB(FrameNamesAndImageProvider):
